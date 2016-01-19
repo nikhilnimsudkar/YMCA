@@ -1,0 +1,260 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    
+<div id="application"></div>
+<script type="text/x-kendo-template" id="layout-template">
+            <div id="cart-wrapper">
+				<div id="cart-header">
+                    
+                    <span id="cart-info">Your Cart: <span><span data-bind="text: cart.contentsCount"></span> items</span></span>
+                </div>
+                <div id="main-section">
+                    <section id="content"></section>
+                </div>
+            </div>
+</script>
+
+<script type="text/x-kendo-template" id="index-template">
+		<span id="add-to-cart">
+            <!--<button class="buy" data-bind="click: addToCart">Add to cart</button>--->
+			<span class="k-button" id="addproduct">Add to Cart</span>
+		</span>
+</script>
+
+<script type="text/x-kendo-template" id="product-template">
+	<span class="buy" data-bind="click: addToCart">Add to cart</span>
+</script>
+
+<script type="text/x-kendo-template" id="checkout-template">
+			<div id="details-checkout">
+                <h1 style="text-align:left;float:left;">Cart Details</h1>
+				<a class="emptycart" href="#" data-bind="click: emptyCart">Empty Cart</a>
+				<table class="checkouttbl">
+					<thead>
+						<tr>
+							<th>Signup Program Details</th>
+							<!--<th>Session</th>-->
+							<th>Remove</th>		
+							<th>Discount</th>					
+							<th>Price</th>
+						</tr>
+					</thead>
+					<tbody data-role="listview" data-bind="source: cart.contents" data-template="large-cart-item">
+					</tbody>
+				</table>
+				<p id="total-checkout"><em>total:</em><span data-bind="text: totalPrice"></span></p>
+				
+				<div id="promo">
+					<span>Promo Code:</span>
+					&nbsp;&nbsp;
+					<span><input type="text" class="k-textbox"></span>
+					<span id="applypromo" class="k-button">Apply</span>
+				</div>
+				
+				<div id="cartbtns">
+					<!--<button id="continueshop" class="k-button" onclick="location.href='programRegistration'" style="float:left;">CONTINUE SHOPPING</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;--->
+					
+					<button id="confirmBtn" class="k-button" onclick="fnCheckout();">Proceed to Payment</button>
+				</div>
+			</div>
+</script>
+
+<script type="text/x-kendo-template" id="large-cart-item">
+            <tr>
+                <td> 
+					<span class="product-name"><strong>Contact: </strong></span>
+					<span data-bind="text: contact.fname"></span>
+					<span data-bind="text: contact.lname"></span>
+					<br>
+
+					<span class="product-name" data-bind="text: item.sessionName"></span>&nbsp;
+					[<span data-bind="text: item.days"></span>]&nbsp;
+					[<span data-bind="text: item.start_time.hours"></span>:<span data-bind="text: item.start_time.minutes"></span>
+					 - 
+					<span data-bind="text: item.end_time.hours"></span>:<span data-bind="text: item.start_time.minutes"></span>]
+					<br>
+
+					<span><strong>Instructor:- </strong></span>
+					<span data-bind="text: item.instructor"></span>
+					<br>
+
+					<span class="product-name" data-bind="text: item.name"></span>&nbsp;
+					[<span><strong>Category:- </strong></span>
+					<span data-bind="text: item.category"></span>]
+					<br>
+					<span data-bind="text: item.description"></span>
+					<br><br>
+				</td>
+				<td align="center">
+					<a data-bind="click: removeFromCart" class="view-selected-items">
+						<img src="resources/img/blue_cross.jpg"  width="30" height="30">
+					</a>
+				</td>
+				<td></td>
+				<td><p class="table-price" data-bind="text: itemPrice"><p></td>
+            </tr>
+</script>
+
+<script>
+	$(document).ready(function() {
+		$( "#addproduct" ).click(function(){
+			 $("#tcSuccessSpan").css("display", "none");		
+			 $("#tcSuccessSpan" ).html("");	
+			 $("#tcErrorSpan").css("display", "none");		
+			 $( "#tcErrorSpan" ).html("");
+			
+			var prodIds = [];
+			$('form').find('input[name="selectedItemSession"]').each(function(){
+				if($("#item_"+this.value).is(':checked')){
+					prodIds.push(this.value);
+				}
+			});
+			//console.log(prodIds.join(','));
+			if(prodIds==""){
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("Please select atleast one signup program");
+				  return;
+			}
+			
+			/*
+			var contactData = [];
+			$('form').find('input[class="usercheck"]').each(function(){
+				if($("#user_"+this.value).is(':checked')){
+					contactData.push(this.value);
+				}
+			});
+			//alert(contactData)
+			if(contactData==""){
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("Please select atleast one Member");
+				  return;
+			}
+				
+			$("#program").fadeOut(200);
+			location.href = '#/product/'+prodIds.join(',')+'/'+contactData.join(',');
+			*/
+			$("#program").fadeOut(200);
+			
+			$.sessionStorage.setItem('product_ids', prodIds.join(','));
+			var isUserLoggedin = "${pageContext.request.userPrincipal.isAuthenticated()}";
+			//alert(isUserLoggedin);
+			if(isUserLoggedin){
+				getFamilymembers();
+			}
+			else{
+				location.href = 'login';
+			}
+			
+		});
+		
+		$( "#cart-info" ).click(function(){
+			 $("#tcSuccessSpan").css("display", "none");		
+			 $("#tcSuccessSpan" ).html("");	
+			 $("#tcErrorSpan").css("display", "none");		
+			 $( "#tcErrorSpan" ).html("");
+			 
+			$("#program").fadeOut(200);
+			location.href = '#/checkout';
+			
+			if(cartPreviewModel.totalPrice()=='$0.00'){
+				$("#promo").hide();
+				$("#confirmBtn").attr("disabled",'disabled');
+			 }
+		});
+	});
+	
+	function getFamilymembers(){
+		$.ajax({
+			  type: "GET",
+			  async: false,
+			  url:"getContacts",
+			  dataType: "json",
+			  success: function( data ) {
+				  if(data.length>0){
+					  var allContacts = "";
+					 
+					  $.each(data, function(i,member) {
+						  allContacts = allContacts + "<div style='margin: 10px;'>";
+						  allContacts = allContacts + "<span><input type='checkbox' name='user_"+member.id+"' id='user_"+member.id+"' value='"+member.id+"' class='usercheck'></span>";
+						  allContacts = allContacts + "&nbsp;&nbsp;<span class='name'>"+member.fname + " " +member.lname+"</span>";
+						  allContacts = allContacts + "</div>";
+					  });
+					  
+					  $("#familymembers").slideDown();
+					  $("#allmembers").html(allContacts);
+					  $("input[type='checkbox']").uniform();
+					 
+				  }
+			  },
+			  error: function( xhr,status,error ){
+				  //alert("1" +status);
+				  console.log(xhr);
+				 
+			  }
+		});
+	}
+	
+	function fnCheckout(){
+		 $("#tcSuccessSpan").css("display", "none");		
+		 $("#tcSuccessSpan" ).html("");	
+		 $("#tcErrorSpan").css("display", "none");		
+		 $( "#tcErrorSpan" ).html("");
+		 
+		 if(cartPreviewModel.totalPrice()=='$0.00'){
+			 $("#tcErrorSpan").css("display", "block");		
+			 $( "#tcErrorSpan" ).html("Please add some programs to signup");
+			 return;
+		 }
+		// validation start
+		$(".k-loading-mask").show();
+		$("#details-checkout").fadeOut("fast");
+		$("#purchase").fadeIn("slow", function(){
+				$(".k-loading-mask").show();
+				$("#pmPrimary").hide();
+				$("#autopayBtn").hide();
+				
+				var trrow = "";
+				if(cart.contents.length>0){
+					$.each(cart.contents, function(i,itemDetailsSession) {
+						var stdt = convertJsonDate(itemDetailsSession.item.start_date);
+						var enddt = convertJsonDate(itemDetailsSession.item.end_date);
+						
+						trrow = trrow + "<tr>";
+			  			trrow = trrow + "<td><span><strong>" + itemDetailsSession.item.sessionName + "</strong></span></td>";
+			  			trrow = trrow + "<td><span>" + itemDetailsSession.item.days + "</span></td>";
+			  			trrow = trrow + "<td><span>" + stdt + " - " + enddt + "</span></td>";
+			  			trrow = trrow + "<td><span>" + itemDetailsSession.item.start_time.hours + ":" + itemDetailsSession.item.start_time.minutes + " - " + itemDetailsSession.item.end_time.hours + ":" + itemDetailsSession.item.end_time.minutes + "</span></td>";
+			  			trrow = trrow + "</tr>";
+			  			
+			  			trrow = trrow + "<tr>";
+			  			trrow = trrow + "<td><span>Sub Total:" + itemDetailsSession.item.price + "</span></td>";
+			  			trrow = trrow + "</tr>";
+					});
+				}
+	  			//ordertotal = ordertotal + parseInt(itemDetailsSession.itemDetails.price);
+	  			
+	  			var row = $(trrow);
+			    row.prependTo("#cart_info table"); 
+			    //console.log(cartPreviewModel);
+			    //console.log(cartPreviewModel.totalPrice());
+				$("#ordertotal").text(cartPreviewModel.totalPrice());
+				
+				$(".k-loading-mask").hide();
+		});
+	}
+	
+	function convertJsonDate(dtObj){
+		var dtStr = "";
+		var sday = dtObj.date;
+		var smonth = parseInt(dtObj.month) + 1;
+		var syear = dtObj.year;
+		
+		dtStr = sday + "/" + smonth + "/" + syear;
+		return dtStr;
+	}
+</script>

@@ -1,0 +1,265 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"    pageEncoding="ISO-8859-1"%>
+<%    	String contextPath = request.getContextPath();    %>
+<script src="<%=contextPath %>/resources/js/app/common_new.js"></script>
+<script src="<%=contextPath %>/resources/js/program-cart-new.js"></script>
+<script src="<%=contextPath %>/resources/js/app/programsignup-cart.js"></script>
+<script src="<%=contextPath %>/resources/js/common.js"></script>
+    
+<div id="main">
+	<div id="content">
+		<div id="searchprogram" class="k-block">
+			<%@ include file="search.jsp" %>
+		</div>
+		<div id="program_details" class="k-block">
+			<div id="program">
+				<input type="hidden" id="familyContactPageType">
+				<!-- programInformation.jsp  -->
+				<div id="program_session" style="width: 100% !important;"></div>
+			</div>
+			<div id="familymembers" style="display:none;">
+				<%@ include file="../common/familymembers.jsp" %>
+			</div>
+			<div id="purchase" style="display:none;">
+				<%@ include file="../payment/payment_cart.jsp" %> 
+			</div>
+			<div id="programsummary" style="display:none;">
+				<%@ include file="../program/ProgramSummary.jsp" %>
+			</div>
+			<div style="clear: both;"></div> 
+			<div id="prgcart">
+				<%@ include file="../programs_cart.jsp" %> 
+			</div>
+			<div class="k-window1" id="popup_add_common" style="display:none;"></div>
+			<div id="contactHealthHistoryDiv" style="display:none;">
+				<%@ include file="../common/contactHealthHistory.jsp" %>
+			</div>
+			<div id="emergencyContact" style="display:none;">
+				<%@ include file="../common/emergencyContact.jsp" %>
+			</div>
+			
+			<div id="authorisedContact" style="display:none;">
+				<%@ include file="../common/authorisedContact.jsp" %>
+			</div>
+			<div id="contactActivityDiv" style="display:none;">
+				<jsp:include page="itemActivity.jsp" ></jsp:include>
+			</div>
+			<div id="contactTransportDiv" style="display:none;">
+				<jsp:include page="itemTransport.jsp" ></jsp:include>
+			</div>
+			<div id="tandc" style="display:none;">
+				<div id="termsDiv" class="formatdiv k-shadow" style="margin-left: 20px; padding: 15px; width: 735px; overflow-y: scroll; height:300px;">     
+					${terms }
+            	</div>
+            	<br><br>
+			   	<div class="formatdiv" style="margin-left:20px;">
+			   		<input type="checkbox" name="chkTermsAndCond" style="margin-top: 10px;">&nbsp;I accept terms and conditions
+			   	</div> 
+			   	<br><br>
+				<div class="formatdiv" style="margin-left:20px;">
+					<span id="confirmsignup" class="k-button">Confirm</span>
+				</div>
+			</div>		
+			<div style="clear: both;"></div> 
+			<div id="statusBlock">
+				<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+				<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<iframe src="<%=contextPath %>/viewPaymentForm" height="1px" width="1px" id="childIframeId" style="position:absolute; bottom:-10px; left:-10px;"></iframe>
+
+<script>
+	$(document).ready(function() {
+		var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+		var eventer = window[eventMethod];
+		var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+		eventer(messageEvent,function(e) {
+			var key = e.message ? "message" : "data";
+			var data = e[key];
+			
+			var jp_request_hash = hash;
+			var orderNumber = paymentOrderId;
+		},false);
+		
+		
+		$("#tcSuccessSpan").css("display", "block");		
+		$("#tcSuccessSpan" ).html("Please search for Programs on left side to enroll.");	
+		
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_programregistration").attr('class','current');
+		
+		$("#page_name").html("PROGRAM MANAGEMENT");
+		
+		var gotocontact = '${gottocontact}';
+		var item_Detail_Ids = $.sessionStorage.getItem('itemDetailsId');
+		var isUserLoggedin = "${pageContext.request.userPrincipal.isAuthenticated()}";
+		
+		if(!isUserLoggedin)
+			$("#cart-header").hide();
+		
+		//alert(isUserLoggedin);
+		if(gotocontact=="true" && item_Detail_Ids!=null && isUserLoggedin){
+			 $("#program_details").css("border-width", "1px");	
+			 $("#program_details").css("margin-top", "20px");	
+			 
+			 $("#tcSuccessSpan").css("display", "none");		
+			 $("#tcSuccessSpan" ).html("");	
+			 $("#tcErrorSpan").css("display", "none");		
+			 $( "#tcErrorSpan" ).html("");
+			 
+			 $("#cart-header").show();
+			 $("#add-to-cart").hide();
+			 $("#program").fadeOut(200);
+			 $("#backtofamily").show();
+			 $("#cart-header").show();
+			 
+			 getFamilymembers();
+		}
+		
+		$( "#addproduct" ).click(function(){
+			
+			console.log(" Add product to cart from program ");
+			
+			 $("#program_details").css("border-width", "1px");	
+			 $("#program_details").css("margin-top", "20px");	
+			 
+			 $("#tcSuccessSpan").css("display", "none");		
+			 $("#tcSuccessSpan" ).html("");	
+			 $("#tcErrorSpan").css("display", "none");		
+			 $( "#tcErrorSpan" ).html("");
+			
+			var item_Detail_Ids = [];
+			$('#program_session').find('input[name="selectedItemSession"]').each(function(){
+				//console.log("  this.value program ::  "+this.value);
+				if($(this).is(':checked')){
+					var itemDetailId = this.value;
+					item_Detail_Ids.push(itemDetailId);
+				}
+			});
+			
+			if(item_Detail_Ids==""){
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("Please select atleast one program");
+				  return;
+			}
+			
+			var programWaitlisted = [];
+			if(item_Detail_Ids.length>0){
+				for (var i = 0; i < item_Detail_Ids.length; i ++) {
+					var id = item_Detail_Ids[i];
+					var obj = $("#itemDetailInfo_"+id);
+					if(obj.length>0 ){
+						var objArr = obj.val();
+						if(objArr!=null && objArr.split("_")[0]<=0){
+							//alert(itemDetailsId+"_"+daysArr[dId]);
+							programWaitlisted.push("\n"+objArr.split("_")[1]);
+						}
+					}
+				}
+			}
+			if(programWaitlisted.length>0){
+				if(confirm("You will be waitlisted for the following Session:"+programWaitlisted.join(", "))){}
+				else
+					return;
+			}
+			
+			$.sessionStorage.setItem('itemDetailsId', item_Detail_Ids.join(','));
+			
+			$("#add-to-cart").hide();
+			$("#program").fadeOut(200);
+			$("#backtofamily").show();
+			
+			var isUserLoggedin = '${pageContext.request.userPrincipal.isAuthenticated()}';
+			//alert(isUserLoggedin);
+			if(isUserLoggedin){
+				getFamilymembers();
+				$("#cart-header").show();
+				// addToCart();
+				/* if ($("#pageType").val() == "EVENT") {
+					//showContactHealthHistoryOrCheckOut('EVENT');
+				} else if ($("#pageType").val() == "FACILITY") {
+					showContactHealthHistoryOrCheckOut('FACILITY');
+				} */
+			}
+			else{
+				if ($("#pageType").val() == "EVENT") {
+					var dispatchTo = "Event";
+				} else {
+					var dispatchTo = "Program";
+				}
+				
+				var window = $("#popup_add");
+				window.clone().kendoWindow({
+					title : "Login",
+					content : "loginPopup?dispatchTo="+dispatchTo,
+					modal : true,
+					width : "500px",
+					height : "550px",
+					data: { dispatchTo: 'program' },
+					close : onClose
+					
+				}).data("kendoWindow").center().open();
+				
+				var onClose = function() {
+			    }
+				$('Div[data-role="draggable"]').css('top', '50px');
+			}
+			if ($("#pageType").val() == "EVENT") {
+				$.sessionStorage.setItem("CartType", "Event");
+			} else {
+				$.sessionStorage.setItem("CartType", "Program");
+			}
+		});
+	});
+	
+</script>
+<script id="terms-conditions-ErrorBox" type="text/x-kendo-template">
+    <p class="error-message-p">Please agree the terms and conditions before Proceding</p>
+	
+    <div class="confirmbutton" align="center"><button class="confirm-terms-conditions k-button" style=" width: 35%;">Ok</button>   
+</script>
+<script>
+	$(document).ready(function() {
+		$("#tandc").hide();
+
+		$("#confirmsignup").click(function(){
+			if(!$("input[name='chkTermsAndCond']:checked").val()){
+				var kendoWindow = $("<div />").kendoWindow({
+		        	title: "Error",
+		        	resizable: false,
+		        	modal: true,
+		        	width:400
+		        });
+		
+	  			kendoWindow.data("kendoWindow")
+		         .content($("#terms-conditions-ErrorBox").html())
+		         .center().open();
+	  			
+		        kendoWindow
+		        .find(".confirm-terms-conditions")
+		        .click(function() {
+		        	if ($(this).hasClass("confirm-terms-conditions")) {         		
+		        		kendoWindow.data("kendoWindow").close();
+		        	}
+		        })
+		        .end();
+		        		
+				return false;
+	 		}else{
+	 			fnCheckout();
+	 		}
+		});
+	});
+</script>
+<style>
+	.k-grid  .k-grid-header  .k-header {
+	    white-space: normal;
+	    word-wrap: break-word;
+	}
+</style>

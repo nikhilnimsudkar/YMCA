@@ -1,0 +1,945 @@
+var items = new kendo.data.DataSource({
+    schema: 
+    { 
+        model: {} 
+    },
+    transport: 
+    { 
+		/*
+        read: 
+        { 
+            url:  "http://localhost:8080/ymca-web/resources/data/menu.json", 
+            dataType: "json" 
+        } */
+		
+		read:  {
+		  url: location.protocol+"//"+location.host+"/ymca-web/getallProducts",
+		  //url: "http://166.78.104.119:8080/ymca-web/getItems",
+		  dataType: "json" // "jsonp" is required for cross-domain requests; use "json" for same-domain requests
+		}
+		
+    }
+});
+
+var contacts = new kendo.data.DataSource({
+    schema: 
+    { 
+        model: {} 
+    },
+    transport: 
+    { 
+		read:  {
+		  url: location.protocol+"//"+location.host+"/ymca-web/getContacts",
+		  //url: "http://166.78.104.119:8080/ymca-web/getContacts",
+		  dataType: "json" // "jsonp" is required for cross-domain requests; use "json" for same-domain requests
+		}
+		
+    }
+});
+
+var alldata = [];
+if($.sessionStorage.getItem('cart')!=null){
+	alldata = JSON.parse($.sessionStorage.getItem('cart'));
+	//console.log(alldata);
+}
+
+var cart = kendo.observable({
+    contents: alldata,
+    cleared: false,
+	errMsg: "",
+	
+    contentsCount: function() {
+        return this.get("contents").length;
+    },
+
+    add: function(item,contact) {
+    	console.log(" cart add observed ");
+        var found = false;
+        this.set("cleared", false);
+		var errMsg = this.errMsg;
+		
+		//console.log(contact);
+			//console.log(item);
+			
+        for (var i = 0; i < this.contents.length; i ++) {
+            var current = this.contents[i];
+            if (current.item.itemDetailsId == item.itemDetailsId && current.contact.contactId == contact.contactId) {
+                //current.set("quantity", current.get("quantity") + 1);
+                found = true;
+                break;
+            }
+        }
+		
+		var cartObj = this;
+        if (found) {
+        	if(current.item.subType == 'EVENT'){
+        		errMsg = errMsg + "\rEvent " + current.item.name + " already exists in cart.";
+        		cartObj.set("errMsg",errMsg);
+    			$("#dspErr").slideDown();
+    			setTimeout(function(){$("#dspErr").slideUp();}, 5000);
+    			
+        		//$("#add-to-cart").hide();
+    			//$("#event").fadeOut(200);
+        	}else{
+        		if(current.item.subType != 'EVENT'){
+        			errMsg = errMsg + "\r\nProgram " + current.item.name + " and Contact " + current.contact.fname + " " + current.contact.lname + " already exists in cart.";
+        			$("#uniform-user_"+current.contact.contactId +" span").attr("class", "");
+        			$("#user_"+current.contact.contactId).attr('checked', false);
+        			cartObj.set("errMsg",errMsg);
+        			$("#dspErr").slideDown();
+        			setTimeout(function(){$("#dspErr").slideUp();}, 5000);
+        		}else{
+        			errMsg = errMsg + "\r\nEvent " + current.item.name + " and Contact " + current.contact.fname + " " + current.contact.lname + " already exists in cart.";
+        			$("#uniform-user_"+current.contact.contactId +" span").attr("class", "");
+        			$("#user_"+current.contact.contactId).attr('checked', false);
+        			cartObj.set("errMsg",errMsg);
+        			$("#dspErr").slideDown();
+        			setTimeout(function(){$("#dspErr").slideUp();}, 5000);
+        		}
+        	}
+		}
+		else {	
+			var signupfound = false;
+			
+			signup.fetch(function() {
+
+				var data = this.data();
+				for (var s = 0; s < data.length; s ++) {
+					if(item.subType != 'EVENT'){
+						if(data[s].itemDetailsId == item.itemDetailsId && data[s].contactId == contact.contactId){
+							errMsg = errMsg + "\r\nYou have already signup for Program " + item.name + " and Contact " + contact.fname + " " + contact.lname + ".";
+							$("#uniform-user_"+contact.contactId +" span").attr("class", "");
+							$("#user_"+contact.contactId).attr('checked', false);
+							cartObj.set("errMsg",errMsg);
+							$("#dspErr").slideDown();
+							setTimeout(function(){$("#dspErr").slideUp();}, 5000);
+							signupfound = true;
+							break;
+						}
+					}
+				}
+			});
+			
+			if(!signupfound){
+				
+				//console.log("Item in add cart: ");
+				//console.log(item);
+				//cartObj.set("errMsg","");
+				var setupfee = getSetupFeeByItemDetailIdAndPartyId(item.itemDetailsId,contact.contactId);
+				
+				var signupPrice = 0;
+				var joinFee = 0;
+				var priceOption = "";
+				var registrationPrice = 0;
+				var depositAmount = 0;
+				var autoDiscount = 0;
+				var packageSize = 0;
+				
+				if (item.signuppriceArr.length >0) {
+					for(i=0; i<item.signuppriceArr.length; i++){
+						priceOption = item.signuppriceArr[i].priceoption;
+						if(priceOption == 'Package'){
+							packageSize = item.signuppriceArr[i].packageSize;
+						}
+					}
+				}
+				
+				if (item.signuppriceArr.length >0) {
+					priceOption = item.signuppriceArr[0].priceoption;
+					joinFee = item.signuppriceArr[0].joinFee;
+					if(contact.isMember){
+						signupPrice = item.signuppriceArr[0].memberPrice;
+						autoDiscount = item.signuppriceArr[0].memberdiscount;
+					}
+					else{
+						signupPrice = item.signuppriceArr[0].nonmemberPrice;
+						autoDiscount = item.signuppriceArr[0].nonmemberdiscount;
+					}
+		    	}
+				
+				if (item.registrationpriceArr.length >0) {
+					if(contact.isMember)
+						registrationPrice = item.registrationpriceArr[0].memberPrice;
+					else
+						registrationPrice = item.registrationpriceArr[0].nonmemberPrice;
+		    	}
+				
+				if (item.depositpriceArr.length >0) {
+					if(contact.isMember)
+						depositAmount = item.depositpriceArr[0].memberPrice;
+					else
+						depositAmount = item.depositpriceArr[0].nonmemberPrice;
+		    	}
+				
+				var FAobj = getFAObj(item.itemDetailsId);
+				var FAamount = 0;
+				if(FAobj!=null && FAobj.length>0){
+					var FApercent = FAobj[0].FApercent;
+					FAamount = (FApercent * signupPrice)/100;
+					
+				}
+				var FAamountUSD = kendo.format("{0:c}", FAamount);
+				var signupPriceVal = 0;
+				var uniqueId = item.itemDetailsId + "_" + contact.contactId;
+				
+				var waitlist = false;
+				var associatedItemsInCart = 0;
+				for (var i = 0; i < this.contents.length; i ++) {
+		            var current = this.contents[i];
+		            if (current.item.itemDetailsId == item.itemDetailsId) {
+		            	associatedItemsInCart = associatedItemsInCart+1;
+		            }
+		        }
+				var capacity_c = parseInt(item.remainingCapacity) - associatedItemsInCart;
+				if(item.remainingCapacity<=0 || capacity_c<=0)
+					waitlist = true;
+					
+				this.contents.push({ item: item, contact:contact , quantity: 1, discount1: 0, discountcode1: '', dicountpriceUSD: '$0.00', uniqueId: uniqueId, priceOption: priceOption, signupPrice: signupPrice, setupFee: setupfee, registrationPrice: registrationPrice, depositAmount: depositAmount, autoDiscount: autoDiscount, FAobj: FAobj, FAamount: FAamount, FAamountUSD: FAamountUSD, waitlist: waitlist, noOfTicketsOrPackages: 1, noOfTickets: 1, signupPriceVal: signupPriceVal, packageSize: packageSize, remainingCapacity: item.remainingCapacity, joinFee: joinFee, specialrequest: ''});
+				
+				if(item.remainingCapacity<=0 || capacity_c<=0){
+					$("#waitlisted_span_"+uniqueId).show();
+				}else{
+					$("#waitlisted_span_"+uniqueId).hide();
+				}
+			}
+        }
+		//console.log(JSON.stringify(this.contents));
+    	//console.log("lavy");
+		$.sessionStorage.setItem('cart', JSON.stringify(this.contents));
+		//console.log($.sessionStorage.getItem('key_name'));
+		//console.log(item);
+		//$("select#signuppricingDD.kendodrop").kendoDropDownList();
+		$("select#signuppricingDD.kendodrop").kendoDropDownList();
+    },
+	
+	updatePromo: function(item,contact,discount1,discountcode1) {
+		//console.log(" cart update observed ");
+        var found = false;
+        this.set("cleared", false);
+
+        for (var i = 0; i < this.contents.length; i ++) {
+            var current = this.contents[i];
+            if (current.item.itemDetailsId == item.itemDetailsId && current.contact.contactId == contact.contactId) {
+                current.set("discount1", discount1);
+				current.set("discountcode1", discountcode1);
+				current.set("dicountpriceUSD", kendo.format("{0:c}",discount1));
+				current.set("item.finalamount", discount1);
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            $.sessionStorage.setItem('cart', JSON.stringify(this.contents));
+        }
+    },
+    
+    updateSpecialRequest: function(item,contact,txt) {
+    	for (var i = 0; i < this.contents.length; i ++) {
+            var current = this.contents[i];
+            if (current.item.itemDetailsId == item.itemDetailsId && current.contact.contactId == contact.contactId) {
+            	current.set("specialrequest", txt);
+            	break;
+            }
+    	}
+    	//console.log(this.contents);
+    	 $.sessionStorage.setItem('cart', JSON.stringify(this.contents));
+    },
+    
+    updateCart: function(item,contact,updateCartFor,objVal) {
+        var found = false;
+        this.set("cleared", false);
+
+        for (var i = 0; i < this.contents.length; i ++) {
+            var current = this.contents[i];
+            if (current.item.itemDetailsId == item.itemDetailsId && current.contact.contactId == contact.contactId) {
+            	var uniqueId = current.uniqueId;
+            	var signupPrice = current.signupPrice;
+            	var priceOption = current.priceOption;
+            	var autoDiscount = current.autoDiscount;
+            	var customdiscountcode = current.discountcode1;
+            	var FAobj = current.FAobj;
+            	var FAamount = current.FAamount;
+            	var noOfTicketsOrPackages = current.noOfTicketsOrPackages;
+            	var remainingCapacity = current.remainingCapacity;
+            	var joinFee = current.joinFee;
+            	
+            	if(updateCartFor == 'SignUpPrice'){
+	            	if (item.signuppriceArr.length >0) {
+	            		priceOption = item.signuppriceArr[objVal].priceOption;
+	            		joinFee = item.signuppriceArr[objVal].joinFee;
+						if(contact.isMember){
+							signupPrice = item.signuppriceArr[objVal].memberPrice;
+							autoDiscount = item.signuppriceArr[objVal].memberdiscount;
+						}else{
+							signupPrice = item.signuppriceArr[objVal].nonmemberPrice;
+							autoDiscount = item.signuppriceArr[objVal].nonmemberdiscount;
+						}
+			    	}
+	            	current.set("signupPriceVal", objVal);
+            	}else{
+            		noOfTicketsOrPackages = objVal;
+            	}
+            	
+            	if(current.item.subType == 'EVENT'){
+	            	if($("#signuppricingDD_"+uniqueId).val() == 0){
+	            		noOfTicketsOrPackagesLabel = "NO OF TICKETS:";
+	            	}else{
+	            		noOfTicketsOrPackagesLabel = "NO OF PACKAGES (Package Size "+current.packageSize+"):";
+	            	}
+	            	
+	            	var noOfTickets = 0; 
+            		if($("#signuppricingDD_"+uniqueId).val() == 0){
+            			noOfTickets = noOfTicketsOrPackages;
+            		}else{
+            			noOfTickets = noOfTicketsOrPackages * current.packageSize;
+            		}
+            			
+            		if(remainingCapacity < noOfTickets){
+            			current.set("waitlist", true);
+            			$("#waitlisted_span_"+uniqueId).show();
+            		}else{
+            			current.set("waitlist", false);
+            			$("#waitlisted_span_"+uniqueId).hide();
+            		}
+            	}else{
+            		noOfTicketsOrPackagesLabel = "NO OF TICKETS:";
+            	}
+            	
+            	if(FAobj!=null && FAobj.length>0){
+            		var FApercent = FAobj[0].FApercent;
+	            	FAamount = (FApercent * signupPrice)/100;
+            	}
+
+            	var FAamountUSD = kendo.format("{0:c}", FAamount);
+            	
+            	current.set("noOfTicketsOrPackagesLabel", noOfTicketsOrPackagesLabel);
+            	current.set("noOfTicketsOrPackages", noOfTicketsOrPackages);
+            	current.set("noOfTickets", noOfTickets);
+	            current.set("priceOption", priceOption);
+            	current.set("signupPrice", signupPrice);
+            	current.set("joinFee", joinFee);
+            	current.set("autoDiscount", autoDiscount);
+				current.set("FAamount", FAamount);
+				current.set("FAamountUSD", FAamountUSD);
+            	if(customdiscountcode!="")
+            		updatePromotionFn(customdiscountcode,current);
+            	
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            $.sessionStorage.setItem('cart', JSON.stringify(this.contents));
+        }
+        fnApplyPromo();
+    },
+	
+    updateWaitlist: function(itemIdsAndremainingCapacity) {
+    	var itemIdAndremainingCapacity = itemIdsAndremainingCapacity.split(",");
+    	//console.log("updateWaitlist: "+itemIdAndremainingCapacity.length);
+    	if(itemIdAndremainingCapacity.length>0){
+	    	for (var r = 0; r < itemIdAndremainingCapacity.length; r ++) {
+		    	var itemId = itemIdAndremainingCapacity[r].split("__S__")[0];
+		    	var remainingCapacity = itemIdAndremainingCapacity[r].split("__S__")[1];
+		    	//var status = itemIdAndremainingCapacity[r].split("__S__")[2]; // available or waitlisted
+		 
+		    	var confirmedItems = 0;
+	    		for (var i = 0; i < this.contents.length; i ++) {
+		            var current = this.contents[i];
+		            
+		            if (current.item.itemDetailsId == itemId) {
+		            	if(remainingCapacity>0){
+		            		remainingCapacity = remainingCapacity-1;
+			            	current.set("waitlist", false);
+		            	}
+		            	else{
+		            		current.set("waitlist", true);
+		            	}
+		            	
+		            }
+		    	}
+		    }
+	    }
+    },
+    
+    remove: function(item) {
+    	//console.log(" cart remove observed ");
+    	var WLitemRemoved = false;
+        for (var i = 0; i < this.contents.length; i ++) {
+            var current = this.contents[i];
+            if (current === item) {
+            	if(current.waitlist)
+                	WLitemRemoved = true;
+            	
+                this.contents.splice(i, 1);
+				//$.sessionStorage.setItem('cart', JSON.stringify(this.contents));
+                break;
+            }
+        }
+        
+        if(!WLitemRemoved){
+        	for (var i = 0; i < this.contents.length; i ++) {
+        		var current = this.contents[i];
+        		if(current.item.itemDetailsId==item.itemDetailsId){
+	        		if(current.waitlist){
+	        			//alert("found");
+	        			current.set("waitlist", false);
+	        			var uniqueId = current.uniqueId;
+	        			$("#waitlisted_span_"+uniqueId).hide();
+	        			break;
+	        		}
+        		}
+        	}
+        }
+        $.sessionStorage.setItem('cart', JSON.stringify(this.contents));
+
+    },
+
+    empty: function() {
+    	//console.log(" program-cart empty observed ");
+        var contents = this.get("contents");
+        contents.splice(0, contents.length);
+        cart.errMsg = '';
+		$.sessionStorage.clear();
+		$("#c_promocode").val("");
+    },
+
+    clear: function() {
+    	//console.log(" cart clear observed ");
+        var contents = this.get("contents");
+        contents.splice(0, contents.length);
+        this.set("cleared", true);
+		$.sessionStorage.clear();
+    },
+    
+    joinFeeAmt: function(item,contact) {
+    	 
+    	var joinFee = 0,
+        contents = this.get("contents"),
+        length = contents.length,
+        i = 0;
+
+	    for (; i < length; i ++) {
+			var current = contents[i];
+			if (current.item === item && current.contact === contact) {
+				joinFee = parseFloat(contents[i].joinFee);
+				break;
+			}
+	    }
+	
+	    return kendo.format("{0:c}", joinFee);
+    },
+	
+	itemamount: function(item,contact) {
+		//console.log(" cart itemamount observed ");
+         var price = 0,
+            contents = this.get("contents"),
+            length = contents.length,
+            i = 0;
+
+        for (; i < length; i ++) {
+			var current = contents[i];
+            if (current.item === item && current.contact === contact) {
+            	price = ((parseFloat(contents[i].signupPrice) * contents[i].noOfTicketsOrPackages) + parseFloat(contents[i].joinFee) + parseFloat(contents[i].setupFee) + parseFloat(contents[i].registrationPrice) + parseFloat(contents[i].depositAmount) - parseFloat(contents[i].autoDiscount) - parseFloat(contents[i].discount1) - parseFloat(contents[i].FAamount)) * contents[i].quantity;
+            	/*
+            	if(contact.isMember)
+            		price = (parseFloat(contents[i].signupPrice) + parseFloat(contents[i].setupFee) + parseFloat(contents[i].item.registrationpriceArr[0].memberprice) + parseFloat(contents[i].item.depositpriceArr[0].memberprice) - parseFloat(contents[i].item.signuppriceArr[0].memberdiscount) - parseFloat(contents[i].discount1)) * contents[i].quantity;
+				else
+					price = (parseFloat(contents[i].signupPrice) + parseFloat(contents[i].setupFee) + parseFloat(contents[i].item.registrationpriceArr[0].nonmemberPrice) + parseFloat(contents[i].item.depositpriceArr[0].nonmemberPrice) - parseFloat(contents[i].item.signuppriceArr[0].nonmemberdiscount) - parseFloat(contents[i].discount1)) * contents[i].quantity;
+				*/
+			}
+        }
+
+        return kendo.format("{0:c}", price);
+	},
+	
+	
+	
+	totaldiscount: function() {
+		//console.log(" cart totaldiscount observed ");
+        var discount = 0,
+            contents = this.get("contents"),
+            length = contents.length,
+            i = 0;
+
+        for (; i < length; i ++) {
+			var current = contents[i];
+			if(!current.waitlist)
+				discount += parseFloat(contents[i].autoDiscount) + parseFloat(contents[i].discount1);
+			/*
+			if(current.contact.isMember)
+            	discount += parseFloat(contents[i].item.signuppriceArr[0].memberdiscount) + parseFloat(contents[i].discount1);
+			else
+				discount += parseFloat(contents[i].item.signuppriceArr[0].nonmemberdiscount) + parseFloat(contents[i].discount1);
+				*/
+        }
+
+        return kendo.format("{0:c}", discount);
+	},
+	
+	totalFA: function() {
+		//console.log(" cart totaldiscount observed ");
+        var fa = 0,
+            contents = this.get("contents"),
+            length = contents.length,
+            i = 0;
+
+        for (; i < length; i ++) {
+			var current = contents[i];
+			if(!current.waitlist)
+				fa += parseFloat(contents[i].FAamount);
+        }
+
+        return kendo.format("{0:c}", fa);
+	},
+	
+    total: function() {
+    	//console.log(" cart total observed ");
+        var price = 0,
+            contents = this.get("contents"),
+            length = contents.length,
+            i = 0;
+
+        for (; i < length; i ++) {
+			var current = contents[i];
+			if(!current.waitlist)
+				price += ((parseFloat(contents[i].signupPrice) * contents[i].noOfTicketsOrPackages)  + parseFloat(contents[i].joinFee) + parseFloat(contents[i].setupFee) + parseFloat(contents[i].registrationPrice) + parseFloat(contents[i].depositAmount) - parseFloat(contents[i].autoDiscount) - parseFloat(contents[i].discount1) - parseFloat(contents[i].FAamount)) * contents[i].quantity;
+			/*
+			if(current.contact.isMember)
+            	price += (parseFloat(contents[i].item.signuppriceArr[0].memberprice) + parseFloat(contents[i].setupFee) + parseFloat(contents[i].item.registrationpriceArr[0].memberprice) + parseFloat(contents[i].item.depositpriceArr[0].memberprice) - parseFloat(contents[i].item.signuppriceArr[0].memberdiscount) - parseFloat(contents[i].discount1)) * contents[i].quantity;
+			else
+				price += (parseFloat(contents[i].item.signuppriceArr[0].nonmemberPrice) + parseFloat(contents[i].setupFee) + parseFloat(contents[i].item.registrationpriceArr[0].nonmemberPrice) + parseFloat(contents[i].item.depositpriceArr[0].nonmemberPrice) - parseFloat(contents[i].item.signuppriceArr[0].nonmemberdiscount) - parseFloat(contents[i].discount1)) * contents[i].quantity;
+				*/
+        }
+
+        return kendo.format("{0:c}", price);
+    }
+});
+
+var layoutModel = kendo.observable({
+    cart: cart
+});
+
+var cartPreviewModel = kendo.observable({
+    cart: cart,
+
+    cartContentsClass: function() {
+        return this.cart.contentsCount() > 0 ? "active" : "empty";
+    },
+
+    removeFromCart: function(e) {
+        //this.get("cart").remove(e.data);
+		var cartData = this.get("cart");
+		var kendoWindow = $("<div />").kendoWindow({
+			title : "Confirm",
+			resizable : false,
+			modal : true,
+			width : 400
+		});
+
+		kendoWindow.data("kendoWindow").content(
+				$("#delete-confirmation").html()).center().open();
+
+		kendoWindow.find(".delete-confirm,.delete-cancel").click(
+		function() {
+			if ($(this).hasClass("delete-confirm")) {
+				//alert("Deleting record...");
+				$(".k-loading-mask").show();
+				cartData.remove(e.data);
+				$(".k-loading-mask").hide();
+			}
+
+			kendoWindow.data("kendoWindow").close();
+		}).end();
+    },
+	
+	updateCart: function(cartItem,d_price,d_code) {
+		cart.updatePromo(cartItem.item,cartItem.contact,d_price,d_code);
+	},
+	
+	updateWaitlistIncart: function(itemIdsAndremainingCapacity) {
+		console.log("updateWaitlistIncart: "+itemIdsAndremainingCapacity);
+		cart.updateWaitlist(itemIdsAndremainingCapacity);
+	},
+	
+    emptyCart: function() {
+        cart.empty();
+		$("#checkout_content").hide();
+		emptycart();
+    },
+
+    itemPrice: function(cartItem) {
+    	return kendo.format("{0:c}", cartItem.signupPrice);
+    },
+    
+    setupPriceTxt: function(cartItem) {
+       	 return kendo.format("{0:c}", cartItem.setupFee);
+    },
+    
+    registrationPriceTxt: function(cartItem) {
+	    return kendo.format("{0:c}", parseFloat(cartItem.registrationPrice));
+    },
+    
+    depositAmountTxt: function(cartItem) {
+	    return kendo.format("{0:c}", parseFloat(cartItem.depositAmount));
+    },
+	
+	discountCode: function(cartItem) {
+        return cartItem.item.signuppriceArr[0].discountcode;
+    },
+    
+	joinFeeTxt: function(cartItem) {
+		//return kendo.format("{0:c}", parseFloat(cartItem.joinFee));
+		return this.get("cart").joinFeeAmt(cartItem.item,cartItem.contact);
+    },
+	
+	discountPrice: function(cartItem) {
+		return kendo.format("{0:c}", cartItem.autoDiscount);
+		/*
+		if(cartItem.contact.isMember)
+        	return kendo.format("{0:c}", cartItem.item.signuppriceArr[0].memberdiscount);
+		else
+			return kendo.format("{0:c}", cartItem.item.signuppriceArr[0].nonmemberdiscount);
+			*/
+    },
+	
+    noOfTicketsOrPackagesVal: function(cartItem) {
+    	return cartItem.noOfTicketsOrPackages;
+    },
+    
+    noOfTicketsOrPackagesLabel: function(cartItem) {
+    	if(!cartItem.noOfTicketsOrPackagesLabel || cartItem.noOfTicketsOrPackagesLabel == ''){
+    		cartItem.noOfTicketsOrPackagesLabel = 'NO OF TICKETS:';
+    	}
+    	return cartItem.noOfTicketsOrPackagesLabel;
+    },
+    
+    signupPriceOption: function(cartItem) {
+    	return cartItem.signupPriceVal;
+    },
+    
+	finalPrice: function(cartItem) {
+        //return kendo.format("{0:c}", this.get("cart").itemamount(cartItem.item,cartItem.contact));
+		return this.get("cart").itemamount(cartItem.item,cartItem.contact);
+    },
+	
+	totalDiscountAmount: function() {
+		 return this.get("cart").totaldiscount();
+    },
+	
+    totalFAPrice: function() {
+        return this.get("cart").totalFA();
+    },
+    
+    totalPrice: function() {
+        return this.get("cart").total();
+    },
+	
+	updatePromoCart: function(e) {
+		 $("#tcSuccessSpan").css("display", "none");		
+		 $("#tcSuccessSpan" ).html("");	
+		 $("#tcErrorSpan").css("display", "none");		
+		 $( "#tcErrorSpan" ).html("");
+		var d_promocode = e.data.discountcode1;
+		var found = false;
+		
+		found = updatePromotionFn(d_promocode,e.data);
+		
+		if (!found) {
+              $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+        }
+		
+    },
+	
+	hidePromoFromCart: function(e) {
+        cart.updatePromo(e.data.item,e.data.contact,parseFloat(0),"");
+		$("#custom_promo_"+e.data.uniqueId).hide();
+    },
+	
+    proceed: function(e) {
+        this.get("cart").clear();
+        sushi.navigate("/");
+    }
+});
+
+var indexModel = kendo.observable({
+    items: items,
+    cart: cart,
+
+    addToCart: function(e) {
+		//console.log(e.data);
+        cart.add(e.data);
+    }
+});
+
+var detailModel = kendo.observable({
+    imgUrl: function() {
+        return "/images/200/" + this.get("current").image
+    },
+
+    price: function() {
+        return kendo.format("{0:c}", this.get("current").price);
+    },
+
+    addToCart: function(e) {
+        cart.add(this.get("current"));
+    },
+
+    setCurrent: function(itemID) {
+        this.set("current", items.get(itemID));
+    },
+
+    previousHref: function() {
+        var id = this.get("current").id - 1;
+        if (id === 0) {
+           id = items.data().length - 1;
+        }
+
+        return "#/menu/" + id;
+    },
+
+    nextHref: function() {
+        var id = this.get("current").id + 1;
+
+        if (id === items.data().length) {
+           id = 1;
+        }
+
+        return "#/menu/" + id;
+    },
+
+    kCal: function() {
+        return kendo.toString(this.get("current").stats.energy /  4.184, "0.0000");
+    }
+});
+
+// added by Lavy
+var productModel = kendo.observable({
+	setCurrent: function(itemID) {
+		//console.log(items.get(itemID));
+        this.set("current", items.get(itemID));
+    },	
+	addToCart: function(e) {
+		//console.log("Add to cart");
+		//console.log(this.get("current"));
+        cart.add(this.get("current"));
+		location.href = '#/checkout';
+    },
+	removeFromCart: function(e) {
+		//console.log(this.get("current"));
+        this.get("cart").remove(this.get("current"));
+    }
+});
+
+// Views and layouts
+var layout = new kendo.Layout("layout-template", { model: layoutModel });
+var cartPreview = new kendo.Layout("cart-preview-template", { model: cartPreviewModel });
+var index = new kendo.View("index-template", { model: indexModel });
+var checkout = new kendo.View("checkout-template", {model: cartPreviewModel });
+var detail = new kendo.View("detail-template", { model: detailModel });
+//added by Lavy
+var productindex = new kendo.View("product-template", { model: productModel });
+
+var sushi = new kendo.Router({
+    init: function() {
+         //console.log("router init");
+        layout.render("#application");
+    }
+});
+
+var viewingDetail = false;
+
+// Routing
+sushi.route("/", function() {
+	//console.log(" sushi.route / ");
+    //console.log("router root route")
+    viewingDetail = false;
+    layout.showIn("#content", index);
+    layout.showIn("#pre-content", cartPreview);
+});
+
+sushi.route("/product/:id/:cid", function(itemDetailsId, ContactsId) {
+	//console.log(" sushi.route /product/:id/:cid ");
+	viewingDetail = false;
+	var itemDetailsId = itemDetailsId.split(",");
+	var contactId = ContactsId.split(",");
+	var addItemToCart = false;
+	
+	$.each(contactId,function(j){
+		contacts.fetch(function() {
+			var cid =  contacts.get(contactId[j]);	
+			$.each(itemDetailsId,function(i){
+				items.fetch(function() {
+					var iid = items.get(itemDetailsId[i]);
+					addItemToCart = true;
+						//alert(addItemToCart);
+					cart.add(iid,cid);
+					//if(iid!='undefined')
+				});
+			});
+		 });
+	});
+	
+	location.href = '#/checkout';
+});
+
+sushi.route("/checkout", function() {
+	//console.log(" sushi.route /checkout ");
+    viewingDetail = false;
+    layout.showIn("#checkout_content", checkout);
+    
+    //alert();
+    //alert(cart.contents.length);
+    
+    cartPreview.hide();
+    
+    $("#promo").show();
+    
+	setTimeout(function(){
+		if(cartPreviewModel.totalPrice()=='$0.00'){
+			$("#promo").hide();
+		}else{
+			$("#promo").show();
+		}
+	}, 500);
+});
+
+sushi.route("/menu/:id", function(itemID) {
+	//console.log(" sushi.route /menu/:id ");
+	//alert(itemID);					  
+    layout.showIn("#pre-content", cartPreview);
+    var transition = "",
+        current = detailModel.get("current");
+	
+	//console.log(detailModel);
+    if (viewingDetail && current) {
+        transition = current.id < itemID ? "tileleft" : "tileright";
+    }
+
+    items.fetch(function(e) {
+        if (detailModel.get("current")) { // existing view, start transition, then update content. This is necessary for the correct view transition clone to be created.
+			layout.showIn("#content", detail, transition);
+            detailModel.setCurrent(itemID);
+        } else {
+            // update content first
+            detailModel.setCurrent(itemID);
+            layout.showIn("#content", detail, transition);
+        }
+    });
+
+    viewingDetail = true;
+});
+
+$(function() {
+    sushi.start();
+	
+});
+
+function updatePromotionFn(d_promocode,cartObj){
+	var found = false;
+	if(d_promocode!=''){
+		$.ajax({
+			  type: "GET",
+			  async: false,
+			  url:"getPromodetails?promocode="+d_promocode,
+			  dataType: "json",
+			  success: function( data ) {
+				  if(data.length==1){
+					  $.each(data, function(i,promo) {
+							if(promo.itemDetails.length>0){
+								  $.each(promo.itemDetails, function(j,itemInfo) {
+										  if(cartObj.item.itemDetailsId == itemInfo.itemDetailsId){
+											  	  var p_price = parseFloat(0);
+											  	  /*
+												  if(cartObj.contact.isMember)
+												  	p_price = cartObj.item.signuppriceArr[0].memberprice;
+												  else
+												  	p_price = cartObj.item.signuppriceArr[0].nonmemberPrice;
+												  */
+											  	  p_price = cartObj.signupPrice;
+											  	
+												 // alert(p_price);
+											  	  var d_price = parseFloat(0);
+												  var discount_type = promo.discounttype;
+												  if(discount_type=='AMOUNT')
+													  d_price = promo.discountValue;
+												  else if(discount_type=='PERCENTAGE'){
+													  d_price = parseFloat(promo.discountPercentage) * parseFloat(p_price);
+													  d_price = d_price/100;
+												  }
+												  cart.updatePromo(cartObj.item,cartObj.contact,d_price,d_promocode);
+												  found = true;
+										  }
+										  
+								  });
+						    }
+						 	
+					  });
+				  }
+				  else{
+					  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcSuccessSpan" ).html("");	
+					  $("#tcErrorSpan").css("display", "block");		
+					  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+					  return;
+				  }
+			  },
+			  error: function( xhr,status,error ){
+				  //alert("1" +status);
+				  console.log(xhr);
+				 
+			  }
+		});
+	}
+	return found;
+}
+
+function updateCart(uniqueId, signupIndexObj, noOfTicketsOrPackagesObj) {
+	//alert(uniqueId);
+	//console.log(index);
+	//console.log(this);
+	//alert(obj.val());
+	
+	var updateCartFor = '';
+	var objVal = '';
+	if(signupIndexObj != null){
+		updateCartFor = 'SignUpPrice';
+		objVal = signupIndexObj.val();
+	}else if(noOfTicketsOrPackagesObj != null){
+		updateCartFor = 'NoOfTicketsOrPackages';
+		objVal = noOfTicketsOrPackagesObj.val();
+	}
+	
+	var itemDetailId = uniqueId.split("_")[0];
+	var contactId = uniqueId.split("_")[1];
+	//cartPreviewModel.updateCart(cartObj.contents[c],parseFloat(discount),promocode);
+	contacts.fetch(function() {
+		var cid =  contacts.get(contactId);	
+		items.fetch(function() {
+			var iid = items.get(itemDetailId);
+			cart.updateCart(iid,cid,updateCartFor,objVal);
+		});
+	});
+}
+
+function updateSpecialRequest(uniqueId, obj) {
+	//if(obj!=null && !typeof obj === undefined ){
+		var itemDetailId = uniqueId.split("_")[0];
+		var contactId = uniqueId.split("_")[1];
+		
+		var spRequestText = obj.val();
+		//alert(spRequestText);
+		contacts.fetch(function() {
+			var cid =  contacts.get(contactId);	
+			items.fetch(function() {
+				var iid = items.get(itemDetailId);
+				cart.updateSpecialRequest(iid,cid,spRequestText);
+			});
+		});
+	//}
+}

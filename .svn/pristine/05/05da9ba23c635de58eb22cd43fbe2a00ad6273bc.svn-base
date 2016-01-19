@@ -1,0 +1,151 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+   <%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="main">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+	<div id="content" style="margin-top:30px;margin-bottom:30px;">
+		<form:form commandName="account" class="bootstrap-frm" id="addMembershipForm" method="post" action="addMember" style="padding:40px;">  
+			<div>
+				  <h2><span>ADD FAMILY</span></h2>
+				  <label><input autofocus type="text" placeholder="First Name" name="firstName" id="firstName" value="" /></label>
+				  <label><input type="text" placeholder="Last Name" name="lastName" id="lastName" value="" /></label>
+				  <input type="text" placeholder="D.O.B" name="dateOfBirth" id="dateOfBirth" value="" style="width:495px;" />
+				  <!-- 
+				  <label><input type="text" placeholder="Work Number" name="workNumber" id="workNumber" value="" /></label>
+				  <label><input type="text" placeholder="Cell Number" name="phoneNumber" id="phoneNumber" value="" /></label>
+				  <label><input type="text" placeholder="Home Number" name="homeNumber" id="homeNumber" value="" /></label>
+				   -->
+				  <label style="margin-top: 11px;"><input type="text" placeholder="Email" name="Email" id="Email" value="" /></label>
+				  
+				  <div id="statusBlock">
+					<span class="k-block k-success-colored" id="tcSuccessSpan1" style="display:none;"></span>
+					<span class="k-block k-error-colored" id="tcErrorSpan1" style="display:none;"></span>
+				  </div>
+					
+				  <button id="addmemberBtn" class="k-button">Add</button>
+			</div>
+		</form:form>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {
+		
+		$( "#addmemberBtn" ).click(function(){	
+			var proceed = false;
+			//$("#tcErrorSpan1").hide();
+			var validator = $("#addMembershipForm").validate({
+				rules: {
+					firstName:"required",
+					lastName:"required",
+					dateOfBirth:{
+						required: true,
+						date: true
+					},
+					Email: {
+						required: false,
+						email: true
+					}
+				},
+				messages: {
+					firstName: "Please specify your Firstname",
+					lastName: "Please specify your Lastname",
+					dateOfBirth: {
+					      required: "Please specify your Date of Birth",
+					      date: "Please enter valid Date of birth"
+					},
+					Email: {
+				      email: "Your email address must be in the format of name@domain.com"
+				    }
+				 },
+				errorPlacement: function(error, element){
+					//alert();
+					
+					 $("#tcErrorSpan1").css("display", "block");		
+					 $( "#tcErrorSpan1" ).html(error);
+				},
+				invalidHandler: function() {
+					console.log(validator);
+				},
+				submitHandler: function(form){
+					//alert("submit");
+					proceed = true;
+					addcurrentfamilymember();
+				}
+			});
+		});		 
+		
+		$("#dateOfBirth").kendoDatePicker({
+			format: "MM/dd/yyyy"
+		});
+	});
+	
+	function addcurrentfamilymember(){
+		$(".k-loading-mask").show();
+		$(".k-loading-text").html("Please wait while the member is added");
+		
+		 $("#tcSuccessSpan").css("display", "none");		
+		 $("#tcSuccessSpan" ).html("");	
+		 $("#tcErrorSpan1").css("display", "none");		
+		 $( "#tcErrorSpan1" ).html("");
+		  
+		//alert($('#addMembershipForm').serialize());
+		$.ajax({
+			  type: "POST",
+			  url: $('#addMembershipForm').attr( "action"),
+			  data: $('#addMembershipForm').serialize(),
+			  success: function( data ) {
+			  	  //alert(data);
+			  	 
+			  	  if(data=='SUCCESS'){
+				  	  $("#tcErrorSpan").css("display", "none");		
+					  $("#tcErrorSpan" ).html("");	
+					  //$("#tcSuccessSpan").css("display", "block");		
+					  //$("#tcSuccessSpan" ).html("Profile Information Updated successfully.");
+					  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 100);
+					  setTimeout(function(){$(".k-loading-text").html("Member was added successfully");$(".k-loading-text").fadeIn("slow");}, 300);
+				  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 500);
+				  	  //setTimeout(function(){location.href='view_membership';}, 7000);
+				  	  //setTimeout(function(){location.reload();}, 7000);
+				  	  getFamilymembers();
+				  	
+				  	  closeAllwindow()
+				  	  $(".k-loading-mask").hide();
+				  	  
+			  	  }
+			  	 else if(data=='DUPE'){
+			  		  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcSuccessSpan" ).html("");	
+					  $("#tcErrorSpan1").css("display", "block");		
+					  $( "#tcErrorSpan1" ).html("Email already exists!");
+					  $(".k-loading-mask").hide();
+			  	  }
+			  	  else{
+			  		  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcSuccessSpan" ).html("");	
+					  $("#tcErrorSpan1").css("display", "block");		
+					  $( "#tcErrorSpan1" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+			  	  }
+				  //$(".k-loading-mask").hide();
+			  },
+			  error: function( xhr,status,error ){
+				  //alert("1" +status);
+				  console.log(xhr);
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan1").css("display", "block");		
+				  $( "#tcErrorSpan1" ).html("There was some error. Please try again later");
+				  $(".k-loading-mask").hide();
+			  }
+		});
+	}
+</script>

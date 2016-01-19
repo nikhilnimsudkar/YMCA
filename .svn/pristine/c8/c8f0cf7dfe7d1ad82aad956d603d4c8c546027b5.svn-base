@@ -1,0 +1,14 @@
+/**
+* @author lavy
+* **/
+package com.serene.job.service;
+
+import java.util.Map;
+
+import com.serene.job.model.JobSchedulerMetadata;
+
+public interface PaymentJobService {
+	
+	public Double computePaymentAmount(Map<String, Object> invoice,JobSchedulerMetadata jobSchedulerMetadata);
+	public Boolean checkDupeByInvoiceIdAndDueDateAndSource(Map<String, Object> invoice, JobSchedulerMetadata jobSchedulerMetadata);
+}

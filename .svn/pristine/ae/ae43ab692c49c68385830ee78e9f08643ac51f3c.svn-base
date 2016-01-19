@@ -1,0 +1,222 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Date;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "signup")
+public class Signup extends BaseObject implements Serializable {
+	
+	private static final long serialVersionUID = -3202944701848397747L;
+	public static final Comparator<Signup> DATE_ORDER_DEC_COMPARATOR = new DateOrderComparator();
+	public Signup(){
+    }
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long signupId;
+	
+	@ManyToOne
+	@JoinColumn(name="accountId")
+	private Account customer;
+	
+	@ManyToOne
+	@JoinColumn(name="contact_id")
+	private User contact;
+	
+	@ManyToOne
+	@JoinColumn(name="product_id")
+	private Product item;
+	
+	@ManyToOne
+	@JoinColumn(name="itemDetailsSession_id")
+	private ItemDetailsSession itemDetailsSession;
+	
+	@OneToOne(cascade={CascadeType.ALL})
+	@JoinColumn(name="paymentmethod_id")
+	private PaymentMethod paymentMethod;
+	 
+	private Long waitlist;
+	
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public String getFinalAmount() {
+		return finalAmount;
+	}
+
+	public void setFinalAmount(String finalAmount) {
+		this.finalAmount = finalAmount;
+	}
+
+	public Date getProgramEndDate() {
+		return programEndDate;
+	}
+
+	public void setProgramEndDate(Date programEndDate) {
+		this.programEndDate = programEndDate;
+	}
+
+	public Date getProgramStartDate() {
+		return programStartDate;
+	}
+
+	public void setProgramStartDate(Date programStartDate) {
+		this.programStartDate = programStartDate;
+	}
+	
+	
+	@Column(name = "contact_name")
+	private String contactName;
+
+	public String getContactName() {
+		return contactName;
+	}
+
+	public void setContactName(String contactName) {
+		this.contactName = contactName;
+	}
+
+	@Column(name = "type")
+	private String type;
+	
+	
+	@Column(name="status")
+	private String status;
+	
+	@Column(name="location")
+	private String location;
+	
+	
+	@Column(name="final_amount")
+	private String finalAmount;
+	
+	
+	@Column(name="program_end_date")
+	private Date programEndDate;
+	
+
+
+	@Column(name = "program_start_date", nullable = false)
+	private Date programStartDate;
+	
+	public Long getSignupId() {
+		return signupId;
+	}
+
+	public void setSignupId(Long signupId) {
+		this.signupId = signupId;
+	}
+
+	public Account getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Account customer) {
+		this.customer = customer;
+	}
+
+	public User getContact() {
+		return contact;
+	}
+
+	public void setContact(User contact) {
+		this.contact = contact;
+	}
+
+	public Product getItem() {
+		return item;
+	}
+
+	public void setItem(Product item) {
+		this.item = item;
+	}
+
+	public ItemDetailsSession getItemDetailsSession() {
+		return itemDetailsSession;
+	}
+
+	public void setItemDetailsSession(ItemDetailsSession itemDetailsSession) {
+		this.itemDetailsSession = itemDetailsSession;
+	}
+
+	public PaymentMethod getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(PaymentMethod paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public Long getWaitlist() {
+		return waitlist;
+	}
+
+	public void setWaitlist(Long waitlist) {
+		this.waitlist = waitlist;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	private static final class DateOrderComparator implements Comparator<Signup> {
+		public int compare(Signup rs1, Signup rs2) {
+			if (rs1.programStartDate.before(rs2.programStartDate) )return 1;
+			if (rs1.programStartDate == rs2.programStartDate) return 0;
+			return -1;
+			
+		}
+
+		
+ 
+	}
+
+}

@@ -1,0 +1,26 @@
+package com.serene.job.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Id;
+
+public class ErrorLogPrimaryKey implements Serializable {
+
+		
+	@Id
+	private String objectName ;
+	@Id
+	private String objectId ;
+	public String getObjectName() {
+		return objectName;
+	}
+	public void setObjectName(String objectName) {
+		this.objectName = objectName;
+	}
+	public String getObjectId() {
+		return objectId;
+	}
+	public void setObjectId(String objectId) {
+		this.objectId = objectId;
+	}
+}

@@ -1,0 +1,56 @@
+/**
+ * @author gpatwa
+ * This is implementation class of InvoiceService
+*/
+
+package com.serene.job.service;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.model.JobSchedulerMetadata;
+import com.serene.job.util.JobUtils;
+
+@Service
+public class InvoiceJobServiceImpl implements InvoiceService {
+
+	private static final Log log = LogFactory.getLog(InvoiceJobServiceImpl.class);
+	
+	@Resource 
+	private JobUtils jobUtils ; 
+
+
+	@Override
+	public Double computeFAAmount(Map<String,Object> signUp,JobSchedulerMetadata jobSchedulerMetadata) {
+		return null;
+	}
+
+
+	@Override
+	public Double computeInvoiceAmount(Map<String, Object> signUp,JobSchedulerMetadata jobSchedulerMetadata) {
+		// TODO Auto-generated method stub
+		
+		// Get Payer records for the sign up 
+		JdbcTemplate jdbcTemplate = jobUtils.getFromJdbcTemplate(jobSchedulerMetadata);
+		String sql = "select * from payer where signupId = ?";
+		List<Map<String,Object>> payers = jdbcTemplate.queryForList(sql,signUp.get("signupId"));
+
+		// TODO calculate amount 
+		
+		return null;
+	}
+
+
+	@Override
+	public Double computePromoAmount(Map<String, Object> signUp,JobSchedulerMetadata jobSchedulerMetadata) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+}

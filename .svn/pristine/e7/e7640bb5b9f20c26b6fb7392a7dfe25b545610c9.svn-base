@@ -1,0 +1,55 @@
+package com.ymca.web.controller;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Controller;
+
+import com.ymca.dao.VolunteerActivityDao;
+import com.ymca.model.Account;
+import com.ymca.model.User;
+import com.ymca.model.VolunteerActivity;
+
+@Controller
+public class BaseController {
+	
+	@Resource
+	private VolunteerActivityDao volunteerActivityDao;
+	
+	protected User getUserByAccount(Account account, User user) {
+		if(account !=null && account.getUser() != null && account.getUser().size()>0){
+			if(account.getUser().size()==1){
+				for(User u: account.getUser()){
+					user = u;
+				}
+			}
+			else{
+				boolean primaryUserFound = false;
+				for(User u: account.getUser()){
+					if(u.isPrimary()){
+						primaryUserFound = true;
+						user = u;
+						break;
+					}
+				}
+				if(user==null && !primaryUserFound){
+					user = account.getUser().iterator().next();
+				}
+			}
+		}
+		return user;
+	}
+	
+	protected List<VolunteerActivity> getVolunteerActivity() {
+		return volunteerActivityDao.findAll();
+	}
+	
+	protected Long convertNullToZero(Long val){
+		if(val==null)
+			 val = 0L;
+		
+		return val;
+	}
+	
+}

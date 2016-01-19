@@ -1,0 +1,571 @@
+package com.serene.job.service;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.Vector;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.VFS;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemOptions;
+import org.apache.commons.vfs2.Selectors;
+import org.apache.commons.vfs2.impl.StandardFileSystemManager;
+import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
+import org.apache.commons.vfs2.provider.sftp.SftpClientFactory;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.ProxyHTTP;
+import com.jcraft.jsch.ProxySOCKS5;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
+import com.serene.job.common.Constants;
+import com.serene.job.util.JobUtils;
+
+@Service
+public class FTPUploadServiceImpl implements FTPUploadService {
+	private static final Log log = LogFactory.getLog(FTPUploadServiceImpl.class);
+	
+	@Resource
+	private JobUtils jobUtils;
+	
+	@Autowired
+	private SystemPropertyService systemPropertyService;
+	
+	public void uploadToFTPServer(String localFilePath) { 
+		log.error("DEBUG -Inside uploadToFTPServer method..");
+		
+		String hostName = systemPropertyService.getPropertyByKeyName(Constants.FTP_HOSTNAME);
+	    String username = systemPropertyService.getPropertyByKeyName(Constants.FTP_USERNAME);
+	    //String password = systemPropertyService.getPropertyByKeyName(Constants.FTP_PASSWORD);
+		
+        File file = new File(localFilePath);
+        String remoteFilePath = "/QA-batch/"+file.getName();
+        
+        uploadToSFTP(localFilePath, remoteFilePath, hostName, username);
+	}
+
+	private void uploadToSFTP(String localFilePath, String remoteFilePath, String hostName, String username) {
+		
+		log.debug("Remote file: " + remoteFilePath);
+		log.debug("Local File: " + localFilePath);
+		
+		File file = new File(localFilePath);
+	    if (!file.exists())
+	            throw new RuntimeException("Error. Local file not found");
+        
+        Session session = null;
+        try {
+        	session = createConnection(hostName,22,username,null,createDefaultOptions());
+			log.debug("SFTP Connection was successful... ");
+		} catch (FileSystemException e) {
+			// TODO Auto-generated catch block
+			log.error("Error while creating connection on uploadToSFTP:- ",e);
+			// send email
+		}
+        
+        ChannelSftp sftpChannel = null;
+        try{
+		        Channel channel = session.openChannel("sftp");
+				channel.connect();
+				sftpChannel = (ChannelSftp) channel;
+				sftpChannel.put(localFilePath, remoteFilePath);
+				log.debug("Upload successful!!");
+				//sftpChannel.exit();
+				//session.disconnect();
+		 } catch (JSchException e) {
+		      e.printStackTrace();  
+		      log.error("JSchException - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		      // send email
+		 } catch (SftpException e) {
+		      e.printStackTrace();
+		      log.error("SftpException - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		      // send email
+		 } catch (Exception e) {
+		      e.printStackTrace();
+		      log.error("Exception - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		      // send email
+		 } finally{
+			 if(sftpChannel!=null)
+				 sftpChannel.exit();
+			 if(session!=null && session.isConnected())
+				 session.disconnect();
+		 }
+	}
+	
+	public String DownloadFileFromSFTPToLocal(String localFilePath, String remoteFilePath, String hostName, String userName) {
+		
+		log.debug("Remote file: " + remoteFilePath);
+		log.debug("Local File: " + localFilePath);
+		ChannelSftp sftpChannel = null;
+		
+		Session session = null;
+        try {
+        	session = createConnection(hostName,22,userName,null,createDefaultOptions());
+			log.debug("SFTP Connection was successful... ");
+		} catch (FileSystemException e) {
+			// TODO Auto-generated catch block
+			log.error("Error while creating connection on DownloadFileFromSFTPToLocal:- ",e);
+			// send email
+		}
+		
+        try{
+		        Channel channel = session.openChannel("sftp");
+				channel.connect();
+				sftpChannel = (ChannelSftp) channel;
+				//sftpChannel.get(remoteFilePath, localFilePath);
+				sftpChannel.get(remoteFilePath,localFilePath);
+				log.debug("download successful!!");
+				//sftpChannel.exit();
+				//session.disconnect();
+				
+				return localFilePath;
+		 } catch (JSchException e) {
+		      e.printStackTrace();  
+		      log.error("JSchException - Error while putting file to SFTP on DownloadFileFromSFTPToLocal:- ",e);
+		 } catch (SftpException e) {
+		      e.printStackTrace();
+		      log.error("SftpException - Error while putting file to SFTP on DownloadFileFromSFTPToLocal:- ",e);
+		 } catch (Exception e) {
+		      e.printStackTrace();
+		      log.error("Exception - Error while putting file to SFTP on DownloadFileFromSFTPToLocal:- ",e);
+		 } finally{
+			 if(sftpChannel!=null)
+				 sftpChannel.exit();
+			 if(session!=null && session.isConnected())
+				 session.disconnect();
+		 }
+        return null;
+	}
+	
+	public String DownloadFileFromSFTPToLocal(String localFilePath, String remoteFilePath, Session session) {
+		
+		log.debug("Remote file: " + remoteFilePath);
+		log.debug("Local File: " + localFilePath);
+		ChannelSftp sftpChannel = null;
+		
+        try{
+		        Channel channel = session.openChannel("sftp");
+				channel.connect();
+				sftpChannel = (ChannelSftp) channel;
+				//sftpChannel.get(remoteFilePath, localFilePath);
+				sftpChannel.get(remoteFilePath,localFilePath);
+				log.debug("download successful!!");
+				//sftpChannel.exit();
+				//session.disconnect();
+				
+				return localFilePath;
+		 } catch (JSchException e) {
+		      e.printStackTrace();  
+		      log.error("JSchException - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		 } catch (SftpException e) {
+		      e.printStackTrace();
+		      log.error("SftpException - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		 } catch (Exception e) {
+		      e.printStackTrace();
+		      log.error("Exception - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		 } finally{
+			 if(sftpChannel!=null)
+				 sftpChannel.exit();
+			 if(session!=null && session.isConnected())
+				 session.disconnect();
+		 }
+        return null;
+	}
+	
+	public void DownloadFileFromSFTP(String remoteFilePath, Session session) {
+		// download file to input stream by name
+		String localFilePath = "";
+		log.debug("Remote file: " + remoteFilePath);
+		log.debug("Local File: " + localFilePath);
+		
+		ChannelSftp sftpChannel = null;
+        
+        try{
+		        Channel channel = session.openChannel("sftp");
+				channel.connect();
+				sftpChannel = (ChannelSftp) channel;
+				//sftpChannel.get(remoteFilePath, localFilePath);
+				InputStream in = sftpChannel.get(remoteFilePath);
+				log.debug("download successful!!");
+				//sftpChannel.exit();
+				//session.disconnect();
+		 } catch (JSchException e) {
+		      e.printStackTrace();  
+		      log.error("JSchException - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		 } catch (SftpException e) {
+		      e.printStackTrace();
+		      log.error("SftpException - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		 } catch (Exception e) {
+		      e.printStackTrace();
+		      log.error("Exception - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		 } finally{
+			 if(sftpChannel!=null)
+				 sftpChannel.exit();
+			 if(session!=null && session.isConnected())
+				 session.disconnect();
+		 }
+	}
+	
+	public String DownloadFilesFromSFTP(Session session, String SFTPWORKINGDIR) {
+		// read all files
+		String downloadedFilePath = System.getProperty("java.io.tmpdir");
+		if ( !(downloadedFilePath.endsWith("/") || downloadedFilePath.endsWith("\\")) )
+			downloadedFilePath = downloadedFilePath + System.getProperty("file.separator");
+		
+		ChannelSftp sftpChannel = null;
+        try{
+		        Channel channel = session.openChannel("sftp");
+				channel.connect();
+				sftpChannel = (ChannelSftp) channel;
+				
+				sftpChannel.cd(SFTPWORKINGDIR);
+				Vector<ChannelSftp.LsEntry> filelist = sftpChannel.ls("*.RSP");
+				/*
+				for(int i=0; i<filelist.size();i++){
+	                log.error("Files found on SFTP: " +filelist.get(i).toString());
+	            }
+	            */
+				for(ChannelSftp.LsEntry entry : filelist) {
+					log.error("Got file: "+entry.getFilename());
+					// get remote file
+					sftpChannel.get(entry.getFilename(), downloadedFilePath + entry.getFilename());
+					downloadedFilePath = downloadedFilePath + entry.getFilename();
+					log.error("Downloaded file to local: "+downloadedFilePath);
+					break;
+				}
+				
+				//sftpChannel.exit();
+				//session.disconnect();
+				
+				return downloadedFilePath;
+		 } catch (JSchException e) {
+		      e.printStackTrace();  
+		      log.error("JSchException - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		 } catch (SftpException e) {
+		      e.printStackTrace();
+		      log.error("SftpException - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		 } catch (Exception e) {
+		      e.printStackTrace();
+		      log.error("Exception - Error while putting file to SFTP on uploadToFTPServer:- ",e);
+		 } finally{
+			 if(sftpChannel!=null)
+				 sftpChannel.exit();
+			 if(session!=null && session.isConnected())
+				 session.disconnect();
+		 }
+        return null;
+	}
+	
+	public static void uploadToFTP(String hostName, String username,
+            String password, File file, String remoteFilePath) {
+
+	    if (!file.exists())
+	            throw new RuntimeException("Error. Local file not found "+file.getPath());
+	
+	    try {
+	    		FileSystemManager manager = VFS.getManager();
+	            //manager.init();
+	
+	            // Create local file object
+	            FileObject localFile = manager.resolveFile(file.getAbsolutePath());
+	
+	            // Create remote file object
+	            FileObject remoteFile = manager.resolveFile(
+	            			createFTPConnectionString(hostName, username, password,
+	                                    remoteFilePath), createDefaultFTPOptions());
+	           
+	            // Copy local file to ftp server
+	            remoteFile.copyFrom(localFile, Selectors.SELECT_SELF);
+	
+	            log.info("File upload success");
+	    } catch (Exception e) {
+	            throw new RuntimeException(e);
+	    } finally {
+	          //manager.close();
+	    }
+	}
+	
+	// Establishing FTP connection
+    public static String createFTPConnectionString(String hostName,
+	    String username, String password, String remoteFilePath) {
+	    return "ftp://" + username + ":" + password + "@" + hostName + "/" + remoteFilePath;
+    }
+	
+    //  Method to setup default FTP config:
+    public static FileSystemOptions createDefaultFTPOptions()
+                    throws FileSystemException {
+            // Create FTP options
+            FileSystemOptions opts = new FileSystemOptions();
+
+            // set passive mode
+            FtpFileSystemConfigBuilder.getInstance().setPassiveMode(opts, true);
+
+            // Root directory set to user home
+            FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(opts, true);
+
+            // Timeout is count by Milliseconds
+            FtpFileSystemConfigBuilder.getInstance().setDataTimeout(opts, 10000);
+
+            return opts;
+    }
+    
+    public static void uploadSFTP(String hostName, String username,
+            String password, String localFilePath, String remoteFilePath) {
+
+	    File file = new File(localFilePath);
+	    if (!file.exists())
+	            throw new RuntimeException("Error. Local file not found");
+	
+	    StandardFileSystemManager manager = new StandardFileSystemManager();
+	    
+	    try {
+	            manager.init();
+	
+	            // Create local file object
+	            FileObject localFile = manager.resolveFile(file.getAbsolutePath());
+	
+	            // Create remote file object
+	            FileObject remoteFile = manager.resolveFile(
+	            			createConnectionString(hostName, username, password,
+	                                    remoteFilePath), createDefaultOptions());
+	            
+	            // Copy local file to ftp server
+	            remoteFile.copyFrom(localFile, Selectors.SELECT_SELF);
+	            //remoteFile.createFile();
+	            
+	
+	            log.info("File upload success");
+	    } catch (Exception e) {
+	            throw new RuntimeException(e);
+	    } finally {
+	          //  manager.close();
+	    }
+	}
+    
+    //  Method to setup default SFTP config:
+    public static FileSystemOptions createDefaultOptions() throws FileSystemException {
+            // Create SFTP options
+            FileSystemOptions opts = new FileSystemOptions();
+            
+            //File sshKey = findSshDir();
+            //System.out.println(sshKey);
+            //SftpFileSystemConfigBuilder.getInstance().setIdentities(opts, new File[]{sshKey});
+           // SftpStaticIdentityAuthenticator keyAuth = new SftpStaticIdentityAuthenticator(sshKey, "password");
+           // SftpFileSystemConfigBuilder.getInstance().setIdentityAuthenticators(opts, new SftpStaticIdentityAuthenticator[] {keyAuth});
+            
+            // SSH Key checking
+            SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+
+            // Root directory set to user home
+            SftpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(opts, true);
+
+            // Timeout is count by Milliseconds
+            SftpFileSystemConfigBuilder.getInstance().setTimeout(opts, 10000);
+
+            return opts;
+    }
+    
+    public static void uploadSFTPWithKey(String hostName, String username, File file, String remoteFilePath) {
+
+	    //File file = new File(localFilePath);
+	    if (!file.exists())
+	            throw new RuntimeException("Error. Local file not found");
+	
+	    StandardFileSystemManager manager = new StandardFileSystemManager();
+	    
+	    try {
+	            manager.init();
+	
+	            // Create local file object
+	            FileObject localFile = manager.resolveFile(file.getAbsolutePath());
+	
+	            // Create remote file object
+	            FileObject remoteFile = manager.resolveFile(
+	            		createSFTPConnectionString(hostName, username,remoteFilePath), 
+	            		createDefaultOptions()
+	            	);
+	            
+	            // Copy local file to ftp server
+	            remoteFile.copyFrom(localFile, Selectors.SELECT_SELF);
+	            //remoteFile.createFile();
+	            
+	
+	            log.info("File upload success");
+	    } catch (Exception e) {
+	            throw new RuntimeException(e);
+	    } finally {
+	          //  manager.close();
+	    }
+	}
+    
+    // Establishing connection
+    public static String createConnectionString(String hostName,
+	    String username, String password, String remoteFilePath) {
+	    return "sftp://" + username + ":" + password + "@" + hostName + "/" + remoteFilePath;
+    }
+    
+    // Establishing connection without password
+    public static String createSFTPConnectionString(String hostName,
+	    String username, String remoteFilePath) {
+	    return "sftp://" + username +  "@" + hostName + "/" + remoteFilePath;
+    }
+    
+    public Session createConnection(String hostname, int port, String username, char password[], FileSystemOptions fileSystemOptions)
+            throws FileSystemException
+        {
+            JSch jsch = new JSch();
+            File sshDir = null;
+            File knownHostsFile = SftpFileSystemConfigBuilder.getInstance().getKnownHosts(fileSystemOptions);
+            File identities[] = SftpFileSystemConfigBuilder.getInstance().getIdentities(fileSystemOptions);
+            if(knownHostsFile != null)
+            {
+                try
+                {
+                    jsch.setKnownHosts(knownHostsFile.getAbsolutePath());
+                }
+                catch(JSchException e)
+                {
+                    throw new FileSystemException("vfs.provider.sftp/known-hosts.error", knownHostsFile.getAbsolutePath(), e);
+                }
+            } else
+            {
+                sshDir = findSshDir();
+                //log.error("1 :: ssh directory was found as: "+sshDir);
+                knownHostsFile = new File(sshDir, "known_hosts");
+                if(knownHostsFile.isFile() && knownHostsFile.canRead())
+                    try
+                    {
+                        jsch.setKnownHosts(knownHostsFile.getAbsolutePath());
+                    }
+                    catch(JSchException e)
+                    {
+                        throw new FileSystemException("vfs.provider.sftp/known-hosts.error", knownHostsFile.getAbsolutePath(), e);
+                    }
+            }
+            if(identities != null)
+            {
+                for(int iterIdentities = 0; iterIdentities < identities.length; iterIdentities++)
+                {
+                    File privateKeyFile = identities[iterIdentities];
+                    try
+                    {
+                        jsch.addIdentity(privateKeyFile.getAbsolutePath());
+                    }
+                    catch(JSchException e)
+                    {
+                        throw new FileSystemException("vfs.provider.sftp/load-private-key.error", privateKeyFile, e);
+                    }
+                }
+
+            } else
+            {
+                if(sshDir == null)
+                    sshDir = findSshDir();
+                File privateKeyFile = new File(sshDir, "id_rsa");
+                //log.error("2 :: ssh directory was found as: "+sshDir);
+                //log.error("2 :: privateKeyFile: "+privateKeyFile);
+                //log.error("2 :: privateKeyFile: "+privateKeyFile.getAbsolutePath());
+                if(privateKeyFile.isFile() && privateKeyFile.canRead())
+                    try
+                    {
+                        jsch.addIdentity(privateKeyFile.getAbsolutePath(),"Serene123");
+                    }
+                    catch(JSchException e)
+                    {
+                        throw new FileSystemException("vfs.provider.sftp/load-private-key.error", privateKeyFile, e);
+                    }
+            }
+            Session session;
+            try
+            {
+                session = jsch.getSession(new String(username), hostname, port);
+                if(password != null)
+                    session.setPassword(new String(password));
+                Integer timeout = SftpFileSystemConfigBuilder.getInstance().getTimeout(fileSystemOptions);
+                if(timeout != null)
+                    session.setTimeout(timeout.intValue());
+                com.jcraft.jsch.UserInfo userInfo = SftpFileSystemConfigBuilder.getInstance().getUserInfo(fileSystemOptions);
+                if(userInfo != null)
+                    session.setUserInfo(userInfo);
+                Properties config = new Properties();
+                String strictHostKeyChecking = SftpFileSystemConfigBuilder.getInstance().getStrictHostKeyChecking(fileSystemOptions);
+                if(strictHostKeyChecking != null)
+                    config.setProperty("StrictHostKeyChecking", strictHostKeyChecking);
+                String preferredAuthentications = SftpFileSystemConfigBuilder.getInstance().getPreferredAuthentications(fileSystemOptions);
+                if(preferredAuthentications != null)
+                    config.setProperty("PreferredAuthentications", preferredAuthentications);
+                String compression = SftpFileSystemConfigBuilder.getInstance().getCompression(fileSystemOptions);
+                if(compression != null)
+                {
+                    config.setProperty("compression.s2c", compression);
+                    config.setProperty("compression.c2s", compression);
+                }
+                String proxyHost = SftpFileSystemConfigBuilder.getInstance().getProxyHost(fileSystemOptions);
+                if(proxyHost != null)
+                {
+                    int proxyPort = SftpFileSystemConfigBuilder.getInstance().getProxyPort(fileSystemOptions);
+                    SftpFileSystemConfigBuilder.ProxyType proxyType = SftpFileSystemConfigBuilder.getInstance().getProxyType(fileSystemOptions);
+                    com.jcraft.jsch.Proxy proxy = null;
+                    if(SftpFileSystemConfigBuilder.PROXY_HTTP.equals(proxyType))
+                    {
+                        if(proxyPort != 0)
+                            proxy = new ProxyHTTP(proxyHost, proxyPort);
+                        else
+                            proxy = new ProxyHTTP(proxyHost);
+                    } else
+                    if(SftpFileSystemConfigBuilder.PROXY_SOCKS5.equals(proxyType))
+                        if(proxyPort != 0)
+                            proxy = new ProxySOCKS5(proxyHost, proxyPort);
+                        else
+                            proxy = new ProxySOCKS5(proxyHost);
+                    if(proxy != null)
+                        session.setProxy(proxy);
+                }
+                if(config.size() > 0)
+                    session.setConfig(config);
+                session.setDaemonThread(true);
+                session.connect();
+            }
+            catch(Exception exc)
+            {
+                throw new FileSystemException("vfs.provider.sftp/connect.error", new Object[] {
+                    hostname
+                }, exc);
+            }
+            return session;
+    }
+    
+    private static File findSshDir()
+    {
+    	File sshDir;
+    	//sshDir = new File("/home/serene");
+    	sshDir = new File("/home/serene", ".ssh");
+    	return sshDir;
+    	/*
+        String sshDirPath = System.getProperty("vfs.sftp.sshdir");
+        
+        if(sshDirPath != null)
+        {
+            sshDir = new File(sshDirPath);
+            if(sshDir.exists())
+                return sshDir;
+        }
+        sshDir = new File(System.getProperty("user.home"), ".ssh");
+        if(sshDir.exists())
+            return sshDir;
+        
+        return new File("");*/
+    }
+}

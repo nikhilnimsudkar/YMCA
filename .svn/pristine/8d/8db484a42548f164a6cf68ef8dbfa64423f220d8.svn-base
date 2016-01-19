@@ -1,0 +1,77 @@
+package com.serene.job.scheduler;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
+
+import com.serene.job.reader.CustomJdbcItemReader;
+
+public class GenericDbToSCJobScheduler extends AbstractJobScheduler implements InitializingBean {
+
+	private Logger log = LoggerFactory.getLogger(GenericSCToDbJobScheduler.class);
+	
+	private String lastUpdatedDateField ;
+	
+	private String lastUpdatedDate ;
+	
+	@PostConstruct
+	public void loadJob() {
+		CustomJdbcItemReader reader =  (CustomJdbcItemReader) applicationContext.getBean("jdbcItemReader",sql, dataSource,resultsetToHashMap);
+		
+		if (StringUtils.contains(sql, "#lastUpdatedDate")) {
+			String startTime = jobDao.getStartTime(jobName);
+			if (StringUtils.isNoneBlank(startTime))  sql = sql.replaceAll("#lastUpdatedDate", startTime);
+		}
+		reader.setSql(sql);
+		
+		fusionItemWriter.setObjectName(scObjectName);
+		fusionItemWriter.setOperation("merge");
+		fusionItemWriter.setFieldMapping(fieldMapping);
+		
+		Step step = stepBuilderFactory.get("step")
+		.chunk(commitSize)
+		.reader(reader)
+		.writer((ItemWriter) fusionItemWriter)
+		.listener(itemListener)
+		.build();
+		
+		job = jobBuilderFactory.get(jobName)
+        .incrementer(new RunIdIncrementer())
+        .flow(step)
+        .end()
+        .build();
+
+	}
+	
+	@Override
+	public void run() {
+		try {
+			JobParametersBuilder parametersBuilder = new JobParametersBuilder();
+			parametersBuilder.addLong("time",System.currentTimeMillis());
+			parametersBuilder.addString("objectName",scObjectName);
+			parametersBuilder.addString("objectIdField",scObjectIdField);
+			JobExecution execution = jobLauncher.run(job, parametersBuilder.toJobParameters());
+			System.out.println("Exit Status : " + execution.getStatus());
+		} catch (Exception e) {
+			log.error("Error while running the job " + jobName, e);
+		}
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		Assert.notNull(jobName, "A job name is required");
+		Assert.notNull(sql, "A sourceSql is required");
+		Assert.notNull(scObjectName, "A scObjectName is required");
+		//Assert.notNull(cronExpression, "A valid cronExpression is required");
+		Assert.notNull(dataSource, "A datasource is required");
+	}
+}

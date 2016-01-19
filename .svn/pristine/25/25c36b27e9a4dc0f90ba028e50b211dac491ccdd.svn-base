@@ -1,0 +1,48 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%@ include file="../../layouts/include_taglib.jsp" %>
+    
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    <link rel="stylesheet" href="<%=contextPath %>/resources/css/styles.css" type="text/css" media="screen"/>
+	<link href="<%=contextPath %>/resources/css/ymca_bootstrap.css" rel="stylesheet" />   
+	<link rel="stylesheet" href="<%=contextPath %>/resources/css/style1.css" type="text/css" media="screen"/>
+    
+<body>
+<div class="k-window1" id="popup_add" style="display:none;"></div>
+
+<div id="main">
+	<div id="content">	
+		<div id="myprofile">
+			<%@ include file="donationProfile.jsp" %> 
+		</div>
+	
+		<div id="donationDetailDiv">
+					<div id="donationRightSection" style="margin-left: 35px;">
+						<div id="tabstrip4" class="k-block"	style="background-color: #FFFFFF; margin-left: -71px; padding: 10px;   width: 450px;">
+							<span class="k-button" id="updProfile"	onclick="location.href='donationDonate'" style="margin-left: 5px;">Give to the Y</span></br>
+							</br>
+							<span>Donation process completed successfully</span>
+							<div id="PaymentInformationBackLnk" align="right" style="margin-top : 25px;">
+					        		<a href="/ymca-web/donationHome">Back to Donation Information</a>
+					        </div>
+						</div>
+					</div>
+				</div>
+	</div>
+</div>
+
+</body>
+
+<script>
+	$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_donation").attr('class','current');
+		
+		$("#page_name").html("DONATION INFORMATION");
+		
+	});
+</script>

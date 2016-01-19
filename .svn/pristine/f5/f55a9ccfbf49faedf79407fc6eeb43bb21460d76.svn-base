@@ -1,0 +1,15 @@
+package com.ymca.web.service;
+
+import java.text.ParseException;
+import java.util.List;
+
+import com.ymca.model.Signup;
+
+public interface PromotionService {
+	
+	public String getPromotions(String itemContactMapStr, String isAuto);
+	
+	public String getPromoMap(String itemDetailId, String contactId, String isAuto, String isRecurring, String amountJSON, String selectedStartDate, List<Signup> cartSignups) throws ParseException;
+	
+	public boolean evaluatePromotionExpression(String sqlExpression, Signup signup, List<Signup> cartSignups);
+}

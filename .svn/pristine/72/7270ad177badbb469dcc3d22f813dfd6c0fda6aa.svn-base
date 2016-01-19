@@ -1,0 +1,69 @@
+
+/* Common functions */
+
+function convertJsonDate(dtObj){
+	var dtStr = "";
+	var sday = dtObj.date;
+	var smonth = parseInt(dtObj.month) + 1;
+	var syear = dtObj.year;
+	var strYear = syear.toString();
+	if(strYear.length==3)
+		strYear = "20"+strYear.substring(1,strYear.length);
+	else
+		strYear = syear;
+	dtStr = sday + "/" + smonth + "/" + strYear;
+	return dtStr;
+}
+
+function currencyFormat (num) {
+    return "$" + num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+}
+
+function formatTime(date) {
+	  var hours = date.getHours();
+	  var minutes = date.getMinutes();
+	  var ampm = hours >= 12 ? 'pm' : 'am';
+	  hours = hours % 12;
+	  hours = hours ? hours : 12; // the hour '0' should be '12'
+	  minutes = minutes < 10 ? '0'+minutes : minutes;
+	  var strTime = hours + ':' + minutes + ' ' + ampm;
+	  return strTime;
+}
+
+function formatDate(inputFormat) {
+	  function pad(s) { return (s < 10) ? '0' + s : s; }
+	  var d = new Date(inputFormat);
+	  return [pad(d.getMonth()+1), pad(d.getDate()), pad(d.getFullYear ())].join('/');
+}
+
+function isNumber(val){
+   if (isNaN(val) || val == 'undefined' || val == null) 
+	   return 0;
+   else
+	   return val;
+}
+
+function backtoregistration(){
+	
+	$(".k-loading-mask").show();
+    
+    $("#tcSuccessSpan").css("display", "none");		
+	$("#tcSuccessSpan" ).html("");	
+	$("#tcErrorSpan").css("display", "none");		
+	$( "#tcErrorSpan" ).html("");
+	$("#purchase").fadeOut();
+	
+	$("#familymembers").fadeOut(200);
+	
+	var cartType = $.sessionStorage.getItem("CartType");
+	
+	if(cartType){
+		if(cartType == 'Program'){
+			$("#program").fadeIn(100);
+			getProgramSession();
+		}else if(cartType == 'Event'){
+			$("#event").fadeIn(100);
+			getEventSession();
+		}
+	}
+}

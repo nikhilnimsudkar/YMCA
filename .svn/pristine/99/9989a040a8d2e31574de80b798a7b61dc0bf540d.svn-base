@@ -1,0 +1,348 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "item_details") 
+@XmlRootElement
+public class ItemDetails extends BaseObject implements Serializable {
+private static final long serialVersionUID = 1L;
+	
+	public ItemDetails(){
+		
+	}	
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", nullable = false)
+	private Long id;
+	
+	@Column(name = "item_name", nullable = false)
+	private String itemName;
+	
+	@Column(name = "description", nullable = false)
+	private String description;
+	
+	@Column(name = "item_type")
+	private String itemType;
+	
+	@Column(name = "status")
+	private String status;
+	
+	@Column(name = "category", nullable = false)
+	private String category;
+	
+	@Column(name = "duration")
+	private String duration;
+	
+	@OneToOne
+	@JoinColumn(name="waivers_and_tc_id_FK")
+	private WaiversAndTC waiversAndTC;
+	
+	@Column(name = "price", nullable = false)
+	private double price;
+
+	@Column(name = "registrationPrice", nullable = false)
+	private double registrationPrice;
+	
+	@Column(name = "start_date", columnDefinition="DATE")
+	private Date startdate;
+	
+	@Column(name = "end_date", columnDefinition="DATE")
+	private Date enddate;
+	
+	private Long capacity;
+	
+	@Column(name = "cancellationcutoffperiod")
+	private Integer cancellationCutOffPeriod;
+	
+	@Column(name = "start_time", columnDefinition="TIME")
+	private Date starttime;
+	
+	@Column(name = "end_time", columnDefinition="TIME")
+	private Date endtime;
+	
+	@Column(name = "RegistrationStartDate", columnDefinition="DATE")
+	private Date registrationStartDate ;
+	
+	private Integer noofdaysinschoolyear;
+	private Integer noofmonthsinschoolyear;
+	
+	@Column(name = "itemSubtype")
+	private String itemSubtype;
+	
+	@Column(name = "gender")
+	private String gender;
+	
+	private Integer minAge;
+	private Integer maxAge;
+	
+	/* Drp this table 
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="product_id")
+	private Product product;
+	*/
+	@OneToOne
+	@JoinColumn(name="locationId")
+	private Locations locations;
+	
+	/*
+	@OneToMany(mappedBy = "itemDetails")
+	private List<ItemDetailsSession> itemDetailsSession;
+	*/
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="itemDetails")
+	private List<ItemDays> itemDays;
+	
+	//@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+	//@JoinColumn(name = "id")	
+	@Transient
+	private List<PricingRule> pricingRules;
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public double getPrice() {
+		return price;
+	}
+
+	public void setPrice(double price) {
+		this.price = price;
+	}
+
+	public Date getRegistrationStartDate() {
+		return registrationStartDate;
+	}
+
+	public void setRegistrationStartDate(Date registrationStartDate) {
+		this.registrationStartDate = registrationStartDate;
+	}
+	
+	public double getRegistrationPrice() {
+		return registrationPrice;
+	}
+	
+	public void setRegistrationPrice(double registrationPrice) {
+		this.registrationPrice = registrationPrice;
+	}
+
+	public Date getStartdate() {
+		return startdate;
+	}
+
+	public void setStartdate(Date startdate) {
+		this.startdate = startdate;
+	}
+
+	public Date getEnddate() {
+		return enddate;
+	}
+
+	public Long getCapacity() {
+		return capacity;
+	}
+
+	public void setCapacity(Long capacity) {
+		this.capacity = capacity;
+	}
+
+	public void setEnddate(Date enddate) {
+		this.enddate = enddate;
+	}
+
+	public Locations getLocations() {
+		return locations;
+	}
+
+	public void setLocations(Locations locations) {
+		this.locations = locations;
+	}
+
+	public List<ItemDays> getItemDays() {
+		return itemDays;
+	}
+
+	public void setItemDays(List<ItemDays> itemDays) {
+		this.itemDays = itemDays;
+	}
+
+	public List<PricingRule> getPricingRules() {
+		return pricingRules;
+	}
+
+	public void setPricingRule(List<PricingRule> pricingRules) {
+		this.pricingRules = pricingRules;
+	}
+
+	public Date getStarttime() {
+		return starttime;
+	}
+
+	public void setStarttime(Date starttime) {
+		this.starttime = starttime;
+	}
+
+	public Date getEndtime() {
+		return endtime;
+	}
+
+	public void setEndtime(Date endtime) {
+		this.endtime = endtime;
+	}
+
+	public String getItemSubtype() {
+		return itemSubtype;
+	}
+
+	public void setItemSubtype(String itemSubtype) {
+		this.itemSubtype = itemSubtype;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public Integer getMinAge() {
+		return minAge;
+	}
+
+	public void setMinAge(Integer minAge) {
+		this.minAge = minAge;
+	}
+
+	public Integer getMaxAge() {
+		return maxAge;
+	}
+
+	public void setMaxAge(Integer maxAge) {
+		this.maxAge = maxAge;
+	}
+
+	public Integer getNoofdaysinschoolyear() {
+		return noofdaysinschoolyear;
+	}
+
+	public void setNoofdaysinschoolyear(Integer noofdaysinschoolyear) {
+		this.noofdaysinschoolyear = noofdaysinschoolyear;
+	}
+
+	public Integer getNoofmonthsinschoolyear() {
+		return noofmonthsinschoolyear;
+	}
+
+	public void setNoofmonthsinschoolyear(Integer noofmonthsinschoolyear) {
+		this.noofmonthsinschoolyear = noofmonthsinschoolyear;
+	}
+
+	public Integer getCancellationCutOffPeriod() {
+		return cancellationCutOffPeriod;
+	}
+
+	public void setCancellationCutOffPeriod(Integer cancellationCutOffPeriod) {
+		this.cancellationCutOffPeriod = cancellationCutOffPeriod;
+	}
+
+	public String getItemName() {
+		return itemName;
+	}
+
+	public void setItemName(String itemName) {
+		this.itemName = itemName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getItemType() {
+		return itemType;
+	}
+
+	public void setItemType(String itemType) {
+		this.itemType = itemType;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public void setPricingRules(List<PricingRule> pricingRules) {
+		this.pricingRules = pricingRules;
+	}
+
+	public String getDuration() {
+		return duration;
+	}
+
+	public void setDuration(String duration) {
+		this.duration = duration;
+	}
+
+	public WaiversAndTC getWaiversAndTC() {
+		return waiversAndTC;
+	}
+
+	public void setWaiversAndTC(WaiversAndTC waiversAndTC) {
+		this.waiversAndTC = waiversAndTC;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

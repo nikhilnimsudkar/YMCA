@@ -1,0 +1,119 @@
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="member_profile_1">
+	<div id="tabstrip" class="k-block" style="border-color:#fcaf17;">
+		<ul>
+			<li class="k-state-active">
+				<span class="head">PRIMARY MEMBER INFORMATION</span>
+			</li>
+		</ul>
+		 <div>
+			<div id="team">
+				<div id="team_info" style="float:left; width:100px; padding-top:50px;">
+					<span class="name">${usInfo.firstName } ${usInfo.lastName }</span>
+				</div>
+				<div style="float:right;padding-top:5px;border:0px solid; width:160px;">
+					<span style="font-size:11px;">I am interested in</span>
+					<div>&nbsp;</div>
+					<div id="team_section" class="scroller" style="font-size:11px">
+						<c:forEach var="vactivity" items="${volunteerActivity}" varStatus="count">
+							<input type="checkbox" id="volunteerActivity" name="volunteerActivity" value="${vactivity.id }" /> ${vactivity.activity } <br />
+						</c:forEach>									
+					</div>
+				</div>
+			</div>
+			<span class="profilepic" style="background: url('${usInfo.profileImage}') transparent no-repeat 0 0;">&nbsp;</span>
+			<div class="moreinfo">Membership and Program Information&nbsp;&nbsp;&nbsp;<span class="viewmore" onclick="view_member('${usInfo.id}')">View</span></div>
+		</div>
+	</div>
+</div>
+
+<c:if test="${ userCount >= 1}">
+<div id="member_profile_2">
+	<div id="tabstrip1" class="k-block">
+		<ul>
+			<li class="k-state-active">
+				<span class="head">ADDITIONAL MEMBER(S)</span>
+			</li>
+		</ul>
+		 <div>
+		 	<c:forEach var="member" items="${userS}" varStatus="count">
+			  	<div id="team">
+					<div id="team_info" style="float:left; width:100px; padding-top:50px;">
+						<span class="name">${member.firstName } ${member.lastName }</span>
+					</div>
+					<div style="float:right;padding-top:5px;border:0px solid; width:160px;">
+						<span style="font-size:11px;">I am interested in</span>
+						<div>&nbsp;</div>
+						<div id="team_section${count.count}" class="scroller" style="font-size:11px;">
+							<c:forEach var="vactivity" items="${volunteerActivity}" varStatus="count">
+								<input type="checkbox" name="volunteerActivity${count.count}" value="${vactivity.activity }" /> ${vactivity.activity } <br />
+							</c:forEach>	
+							<!-- 
+							<input type="checkbox" /> Youth Sports <br />
+							<input type="checkbox" /> Youth Learning <br />
+							<input type="checkbox" /> Child Care <br />
+							<input type="checkbox" /> Swim Class <br />
+							<input type="checkbox" /> Abs Class <br />
+							<input type="checkbox" /> Theme Park <br />
+							<input type="checkbox" /> Riding Class <br />
+							<input type="checkbox" /> Dancing <br />	 -->	
+						</div>
+					</div>
+				</div>
+				<span class="profilepic" style="background: url('${member.profileImage}'); transparent no-repeat 0 0;">&nbsp;</span>
+				<div class="moreinfoenrolled">Enrolled Programs&nbsp;&nbsp;&nbsp;
+					<span class="viewmore" onclick="view_member('${member.id}')">View</span>
+					<span id="removemember" class="viewmore" style="padding-left: 20px;" onclick="remove_member('${member.id}')">Remove</span>
+				</div>
+				<c:if test="${!count.last}"><hr></c:if>
+			</c:forEach>
+			
+			<!-- 
+			<div id="team">
+				<div id="team_info" style="float:left; width:100px; padding-top:50px;">
+					<span class="name">Peter Winslet</span>
+				</div>
+				<div style="float:right;padding-top:5px;border:0px solid; width:160px;">
+					<span style="font-size:11px;">I am interested in</span>
+					<div>&nbsp;</div>
+					<div id="team_section1" class="scroller">
+						<input type="checkbox" /> Youth Sports <br />
+						<input type="checkbox" /> Youth Learning <br />
+						<input type="checkbox" /> Child Care <br />
+						<input type="checkbox" /> Swim Class <br />
+						<input type="checkbox" /> Abs Class <br />
+						<input type="checkbox" /> Theme Park <br />
+						<input type="checkbox" /> Riding Class <br />
+						<input type="checkbox" /> Dancing <br />		
+					</div>
+				</div>
+			</div>
+			<span class="profilepic" style="background: url('resources/img/portal_Images/aboutus1.jpg'); ">&nbsp;</span>
+			<div class="moreinfoenrolled">Enrolled Programs&nbsp;&nbsp;&nbsp;<span class="viewmore">View</span></div>
+			<hr>
+			<div id="team">
+				<div id="team_info" style="float:left; width:100px; padding-top:50px;">
+					<span class="name">Jessica Thompson</span>
+				</div>
+				<div style="float:right;padding-top:5px;border:0px solid; width:160px;">
+					<span style="font-size:11px;">I am interested in</span>
+					<div>&nbsp;</div>
+					<div id="team_section2" class="scroller">
+						<input type="checkbox" /> Youth Sports <br />
+						<input type="checkbox" /> Youth Learning <br />
+						<input type="checkbox" /> Child Care <br />
+						<input type="checkbox" /> Swim Class <br />
+						<input type="checkbox" /> Abs Class <br />
+						<input type="checkbox" /> Theme Park <br />
+						<input type="checkbox" /> Riding Class <br />
+						<input type="checkbox" /> Dancing <br />		
+					</div>
+				</div>
+			</div>
+			<span class="profilepic" style="background: url('resources/img/portal_Images/contactus.jpg'); ">&nbsp;</span>
+			<div class="moreinfoenrolled">Enrolled Programs&nbsp;&nbsp;&nbsp;<span class="viewmore">View</span></div>
+			 -->
+		</div>
+	</div>
+</div>
+</c:if>

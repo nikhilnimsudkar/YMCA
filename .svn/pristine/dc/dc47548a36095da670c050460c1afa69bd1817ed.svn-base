@@ -1,0 +1,120 @@
+package com.ymca.web.service;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.ParameterExpression;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.springframework.stereotype.Service;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.UserDao;
+import com.ymca.model.Account;
+import com.ymca.model.User;
+
+@Service 
+public class ContactService {
+	
+	@Resource
+	private UserDao userDao;
+	
+	@Resource
+	private AccountDao accountDao;
+		
+	@PersistenceContext
+	public EntityManager em;
+	
+	public List<Object[]> getAccountDetails(String firstName, String lastName, String emailAddress) {
+		
+		List<Object[]> customerList = null;		
+		customerList = this.createQuery(firstName, lastName, emailAddress);
+		return customerList;
+	}
+	
+	public List<Object[]> createQuery(String fName, String lName, String email) {
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = builder.createQuery(Object[].class);		
+		Root<User> i = query.from(User.class);
+
+		ParameterExpression<String> firstName = builder.parameter(String.class);
+		ParameterExpression<String> lastName = builder.parameter(String.class);
+		ParameterExpression<String> emailAddress = builder.parameter(String.class);
+		ParameterExpression<String> phone = builder.parameter(String.class);
+		ParameterExpression<String> gender = builder.parameter(String.class);
+		ParameterExpression<String> membershipId = builder.parameter(String.class);
+		ParameterExpression<Date> dateOfBirth = builder.parameter(Date.class);
+		
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		
+		
+		if(!"".equals(fName)){
+			predicates.add(builder.and(builder.like(i.<String>get("firstName"), firstName)));
+		}
+		if(!"".equals(lName)){
+			predicates.add(builder.and(builder.like(i.<String>get("lastName"), lastName)));
+		}
+		if(!"".equals(email)){
+			predicates.add(builder.and(builder.like(i.<String>get("emailAddress"), emailAddress)));
+		}
+		/*if(!"".equals(phn)){
+			predicates.add(builder.and(builder.like(i.<String>get("phone"), phone)));
+		}
+		if(!"".equals(gen)){
+			predicates.add(builder.and(builder.like(i.<String>get("gender"), gender)));
+		}
+		if(!"".equals(mid)){
+			predicates.add(builder.and(builder.like(i.<String>get("facilityAccessNumber"), membershipId)));
+		}
+		if(dob != null){
+			predicates.add(builder.and(builder.equal(i.get("dateOfBirth"), dateOfBirth)));
+		}*/
+		
+		query.multiselect(i);		
+		query.where(predicates.toArray(new Predicate[]{}));
+
+		TypedQuery<Object[]> typequery = em.createQuery(query);
+		if(!"".equals(fName.trim())){
+			typequery.setParameter(firstName, fName);
+		}
+		if(!"".equals(lName.trim())){
+			typequery.setParameter(lastName, lName);
+		}
+		if(!"".equals(email.trim())){
+			typequery.setParameter(emailAddress, email);
+		}
+		/*if(!"".equals(phn.trim())){
+			typequery.setParameter(phone, phn);
+		}
+		if(!"".equals(gen.trim())){
+			typequery.setParameter(gender, gen);
+		}
+		if(!"".equals(mid.trim())){
+			typequery.setParameter(membershipId, mid);
+		}
+		if(dob != null){
+			typequery.setParameter(dateOfBirth, dob);
+		}*/
+				
+		List<Object[]> lstObj = typequery.getResultList();
+		return lstObj;
+	}
+	
+	public User getPrimaryUserByCustomerId(Long customerId) {		
+		User user = null;
+		Account account = accountDao.findByAccountId(customerId);
+		if (account != null) {
+			user = userDao.getByPrimaryContact(account, true);		
+		}		
+		return user;		
+	}
+	
+}

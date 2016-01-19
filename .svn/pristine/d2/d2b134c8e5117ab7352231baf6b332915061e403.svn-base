@@ -1,0 +1,55 @@
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="is_list">
+	<div style="height: 32px;">
+		<span class="head">In-service/ Vacation Grid</span>
+		<span id="iscancelsignup" class="k-button">CANCEL SIGNUP</span>
+	</div>
+	
+	<div>
+		<table id="inservice_list"  style="table-layout: fixed; display:none">
+			<colgroup>
+				<col style='width: 36px' />
+			</colgroup>
+			<thead>
+				<tr>
+					<th data-field='randomFieldName'>&nbsp;</th>
+					<c:forEach var="fields" items="${gridfields}" varStatus="counter">
+						<th data-field=${fn:replace(fn:replace(fn:replace(fields, ' ', ''),'#',''),'/','')}>${fields}</th>
+					</c:forEach>
+					<!-- 
+  						<th>Type</th>
+  						<th>Location</th>
+  						<th>Start Time</th>
+  						<th>End Time</th>
+  						<th>Age Range</th>
+  						<th>Gender</th>
+  						<th>M / # of available slots</th>
+  						<th>Tu / # of available slots</th>
+  						<th>W / # of available slots</th>
+  						<th>Th / # of available slots</th>
+  						<th>F / # of available slots</th>
+  					 -->
+  				</tr>
+ 			</thead>
+ 				
+ 			<tbody>
+  				<c:forEach var="itemdetail" items="${inserviceObj}" varStatus="counter">
+  				<tr>
+  					<td><input type="checkbox"></td>
+					<td>${itemdetail[0]}</td>
+					<td>${itemdetail[1]}</td>
+					<td><fmt:formatDate type="time" pattern="hh:mm a"  value="${itemdetail[2]}" /></td>
+					<td><fmt:formatDate type="time" pattern="hh:mm a"  value="${itemdetail[3]}" /></td>
+					<td><fmt:formatDate type="date" pattern="dd MMM YYYY"  value="${itemdetail[4]}" /></td>
+					<td><fmt:formatDate type="date" pattern="dd MMM YYYY"  value="${itemdetail[5]}" /></td>
+				</tr>
+				</c:forEach>
+ 			</tbody>
+ 		</table>
+	</div>
+</div>
+    		
+<div align="center" style="margin: 10px;">
+	<span id="issignup" class="k-button" style="text-shadow:none;">SIGN UP FOR PACKAGE</span>
+	<span id="signupindays" class="k-button" style="text-shadow:none;">SIGN UP FOR INDIVIDUAL DAYS</span>
+</div>		

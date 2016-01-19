@@ -1,0 +1,48 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+   
+    
+<body>
+
+<div >
+	<!-- <div id="content"> -->		
+		<div id="paymentDetailDiv">	
+			<div class="bootstrapBorder" >
+				<div align="center" style="margin-top: 30px;margin-bottom: 30px;">
+					<select id="AddCardBank" name="AddCardBank" style="width:230px;">
+		                <option value="">--Select Payment Method--</option>
+		                <option value="AddCardInfo">Add Card Info</option>
+		                <option value="AddBankInfo">Add Bank Info</option>
+		            </select>
+		        </div>	
+			 			
+				<div id="addBankInfoDiv" style="display:none; ">
+					<%@ include file="../../views/payment/AddBankInfo.jsp" %> 
+				</div>
+				<div id="addCardInfoDiv" style="display:none; ">
+					<%@ include file="../../views/payment/AddCardInfo.jsp" %> 
+				</div>
+			</div>
+		</div>
+	</div>
+<!-- </div> -->
+</body>
+
+<script>
+	$(document).ready(function() {	
+		$('#AddCardBank').on('change', function() {
+			  if(this.value == ''){
+				  $("#addCardInfoDiv").css("display", "none");
+				  $("#addBankInfoDiv").css("display", "none");
+			  }
+			  if(this.value == 'AddCardInfo'){
+				  $("#addBankInfoDiv").css("display", "none");
+				  $("#addCardInfoDiv").css("display", "block");
+			  }
+			  if(this.value == 'AddBankInfo'){
+				  $("#addCardInfoDiv").css("display", "none");
+				  $("#addBankInfoDiv").css("display", "block");
+			  }
+		});
+	});
+</script>

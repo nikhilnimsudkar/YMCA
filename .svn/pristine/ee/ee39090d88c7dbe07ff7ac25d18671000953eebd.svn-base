@@ -1,0 +1,117 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+       
+<body>
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="main">
+<div id="content" style="margin-top:30px;margin-bottom:30px;">
+		<form:form commandName="paymentMethod" class="bootstrap-frm" id="addCardInfoForm" method="post" action="addCardInfo" style="border: none;">  
+			<div>
+				  <h2><span>Add Card Information</span></h2>				  
+				  <input type="text" placeholder="Full Name on Card" name="fullName" id="fullName" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Card Number" name="cardNumber" id="cardNumber" value="" style="width: 230px;"/>
+				  <!-- <input type="text" placeholder="Expiration Month" name="expirationMonth" id="expirationMonth" value="" style="width: 230px;"/> -->
+				  <select id="expirationMonth" name="expirationMonth" style="width: 230px;">
+                      <option value="">Month</option>
+                      <option value="01">01</option>
+                      <option value="02">02</option>
+                      <option value="03">03</option>
+                      <option value="04">04</option>
+                      <option value="05">05</option>
+                      <option value="06">06</option>
+                      <option value="07">07</option>
+                      <option value="08">08</option>
+                      <option value="09">09</option>
+                      <option value="10">10</option>
+                      <option value="11">11</option>
+                      <option value="12">12</option>
+                  </select>
+				  <!-- <input type="text" placeholder="Expiration Year" name="expirationYear" id="expirationYear" value="" style="width: 230px;"/> -->
+				  <select class="span12" id="addCardExpirationYear" name="expirationYear" style="width: 230px;">
+                      <option>Year</option>                                          
+                  </select>
+				  <input type="password" placeholder="Security Code" name="securityCode" id="securityCode" value="" style="width: 230px;"/> 
+				  
+				  
+				  <h2><span>Billing Address Information</span></h2>
+				  <input type="text" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" value=""  style="width: 230px;"/>
+				  <input type="text" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing Zipcode" name="billingZipcode" id="billingZipcode" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing City" name="billingCity" id="billingCity" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing State" name="billingState" id="billingState" value="" style="width: 230px;"/><br />
+				  
+				  
+				  <!-- <label><input type="text" name="paymentId" id="paymentId" value="" style="display:none;" /></label> -->
+				  <%-- <input type="text" style="display:none;" name="paymentId" value="${paymentInfo.paymentId}">
+				  <input type="text" style="display:none;" name="accountId" value="${paymentInfo.accountId}">
+				   --%>
+				  <div id="statusBlock">
+					<span class="k-block k-success-colored" id="addCardSuccessSpan"></span>
+					<span class="k-block k-error-colored" id="addCardErrorSpan"></span>
+				  </div>
+					
+				  <span id="addCardInfoButton" class="k-button" style="width: 150px; text-shadow: none;">Add</span>
+			</div>
+			<div id="PaymentInformationBackLnk" align="right">
+	        		<a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a>
+	        </div>
+		</form:form>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {	
+		var currentYear = new Date().getFullYear();
+		for(var i=0; i<30 ; i++){
+			$('#addCardExpirationYear').append($('<option>', {value: currentYear,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		
+		$( "#addCardInfoButton" ).click(function(){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait while the Card Information is Updated");			
+			$.ajax({
+				  type: "POST",
+				  url: $('#addCardInfoForm').attr( "action"),
+				  data: $('#addCardInfoForm').serialize(),
+				  success: function( data ) {				  	  
+				  	  if(data=='SUCCESS'){
+					  	  $("#addCardErrorSpan").css("display", "none");		
+						  $("#addCardErrorSpan" ).html("");	
+						  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+						  setTimeout(function(){$(".k-loading-text").html("Card Information Added successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+					  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+					  	  
+					  	  $("#addCardSuccessSpan").css("display", "block");		
+						  $("#addCardSuccessSpan" ).html("Card Information Added successfully");
+						  $(".k-loading-mask").hide();
+					  	  //setTimeout(function(){location.reload();}, 7000);
+					  	  
+				  	  }else if(data == 'NOT_FOUND'){
+				  		  $("#addCardSuccessSpan").css("display", "none");		
+						  $("#addCardSuccessSpan" ).html("");	
+						  $("#addCardErrorSpan").css("display", "block");		
+						  $( "#addCardErrorSpan" ).html("Payment Information Not Found.");
+						  $(".k-loading-mask").hide();
+				  	  }else {
+				  		  $("#addCardSuccessSpan").css("display", "none");		
+						  $("#addCardSuccessSpan" ).html("");	
+						  $("#addCardErrorSpan").css("display", "block");		
+						  $( "#addCardErrorSpan" ).html("There was some error. Please try again later");
+						  $(".k-loading-mask").hide();
+				  	  }					  
+				  },
+				  error: function( xhr,status,error ){
+					  $("#addCardSuccessSpan").css("display", "none");		
+					  $("#addCardSuccessSpan" ).html("");	
+					  $("#addCardErrorSpan").css("display", "block");		
+					  $( "#addCardErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+				  }
+			});
+			
+		});		   
+	});
+</script>
+
+</body>

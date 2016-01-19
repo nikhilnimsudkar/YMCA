@@ -1,0 +1,83 @@
+package com.ymca;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
+import org.springframework.cache.support.SimpleCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportResource;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.servlet.view.UrlBasedViewResolver;
+import org.springframework.web.servlet.view.tiles3.TilesConfigurer;
+import org.springframework.web.servlet.view.tiles3.TilesView;
+
+import com.serene.bootstrap.WebServiceBootStrap;
+
+@Configuration
+@Import({CoreConfig.class, WebSecurityConfig.class,WebServiceBootStrap.class, WebMvcConfig.class})
+@ComponentScan(basePackages={"com.ymca.web"})
+@EnableAutoConfiguration
+@EnableTransactionManagement
+@EnableCaching
+@EnableAsync
+//@EnableWs
+//@ImportResource({"classpath:/META-INF/spring/**/*-context.xml","classpath:/app-mail.xml","classpath:/META-INF/spring/securityContext.xml"})
+@ImportResource({"classpath:/META-INF/spring/**/*-context.xml","classpath:/app-mail.xml"})
+public class WebConfig {
+
+	private Logger log = Logger.getLogger(WebConfig.class.getName());
+    public static void main(String[] args) {
+        //SpringApplication.run(WebConfig.class, args);
+    }
+    
+    /*
+    @Bean
+    public MessageSource messageSource(){
+
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasenames("classpath:META-INF/i18n/messages");
+        messageSource.setFallbackToSystemLocale(false);
+        return messageSource;
+    }
+    */
+
+	@Bean
+    public CacheManager cacheManager() {
+        SimpleCacheManager cacheManager = new SimpleCacheManager();
+        List<ConcurrentMapCache> caches = new ArrayList<ConcurrentMapCache>();
+        caches.add(new ConcurrentMapCache("ymca-web"));
+        caches.add(new ConcurrentMapCache("ymca-core"));
+        caches.add(new ConcurrentMapCache("wsUtilChache"));
+		cacheManager.setCaches(caches);
+        return cacheManager;
+    }
+	
+    @Bean
+    public UrlBasedViewResolver viewResolver(){
+        log.info("Entering tiles configurer");
+        UrlBasedViewResolver viewResolver = new UrlBasedViewResolver();
+        viewResolver.setViewClass(TilesView.class);
+        return viewResolver;
+    }
+    
+    @Bean
+    public TilesConfigurer tilesConfigurer(){
+    	log.info("Entering tiles configurer");
+        String[] defs = {"/WEB-INF/layouts/layouts.xml","/WEB-INF/views/**/views.xml" };
+        TilesConfigurer tilesConfigurer = new TilesConfigurer();
+        tilesConfigurer.setDefinitions(defs);
+        return tilesConfigurer;
+    }
+    
+    // Web Service Dispatcher
+
+}

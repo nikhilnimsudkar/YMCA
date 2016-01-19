@@ -1,0 +1,131 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "customer_fa") 
+@XmlRootElement
+public class CustomerFA extends BaseObject implements Serializable {
+private static final long serialVersionUID = 1L;
+	
+	public CustomerFA(){
+	}	
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getProductCategory() {
+		return productCategory;
+	}
+
+	public void setProductCategory(String productCategory) {
+		this.productCategory = productCategory;
+	}
+
+	public Long getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(Long accountId) {
+		this.accountId = accountId;
+	}
+
+	public String getFaPercentage() {
+		return faPercentage;
+	}
+
+	public void setFaPercentage(String faPercentage) {
+		this.faPercentage = faPercentage;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Date getFaStartdate() {
+		return faStartdate;
+	}
+
+	public void setFaStartdate(Date faStartdate) {
+		this.faStartdate = faStartdate;
+	}
+
+	public Date getFaEndDate() {
+		return faEndDate;
+	}
+
+	public void setFaEndDate(Date faEndDate) {
+		this.faEndDate = faEndDate;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", nullable = false)
+	private Long id;
+	
+	@Column(name = "product_category", nullable = false)
+	private String productCategory;
+	
+	@Column(name = "accountId", nullable = false)
+	private Long accountId;
+	
+	@Column(name = "fa_Percentage")
+	private String faPercentage;
+	
+	@Column(name = "status")
+	private String status;
+		
+	@Column(name = "fa_start_date", columnDefinition="DATE")
+	private Date faStartdate;
+	
+	@Column(name = "end_date", columnDefinition="DATE")
+	private Date faEndDate;
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	
+}

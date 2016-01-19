@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+ <definition name="searchHome" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/signup/cart.jsp" />
+  </definition>
+  
+<!--   <definition name="addprogramtocart" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/program/ProgramRegistration.jsp" />
+  </definition>
+  
+  <definition name="viewProgramDetails" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/program/viewProgramAttendance.jsp" />
+  </definition>
+  
+  <definition name="viewAllPrograms" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/program/viewAllPrograms.jsp" />
+  </definition>
+  
+  <definition name="cancelProgram" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/program/cancelProgramWizard.jsp" />
+  </definition>
+  
+  <definition name="viewScheduledProgram" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/program/viewScheduledProgram.jsp" />
+  </definition> -->
+</tiles-definitions>

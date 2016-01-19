@@ -1,0 +1,278 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+@Entity
+@Table(name = "payment")
+public class Payment extends BaseObject implements Serializable {
+	private static final long serialVersionUID = -3202944701848397747L;
+
+	public Payment(){
+    }
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "paymentId", nullable = false)
+	private Long paymentId;
+	
+	@Column(name = "transactionId")
+    private Long transactionId;
+	
+	@Column(name = "amount", nullable = false)
+	private double amount;
+	private String status;
+	private String description;
+	
+	private String paymentNumber;
+	private String type;
+	private String paymentMethod;
+	
+	@Temporal(TemporalType.DATE)
+	private Date dueDate;
+	
+	@Temporal(TemporalType.DATE)
+	private Date paymentDate;
+	 
+	private String reason;
+	
+	@Column(name="PaymentMode_c")
+	private String paymentMode_c;
+	
+	@Column(name = "paymentMode", nullable = false)
+	private String paymentMode;
+	
+	@Transient
+	private String category;
+	
+	private Calendar lastUpdated;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="accountId")
+	private Account customer;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="contact_id")
+	private User contact;	
+	
+	@OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "signupId")
+    private Signup signup;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="InvoiceId")
+	private Invoice invoice;
+	
+	@OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payerId")
+    private Payer payer;
+	
+	public Long getPaymentId() {
+		return paymentId;
+	}
+
+	public void setPaymentId(Long paymentId) {
+		this.paymentId = paymentId;
+	}
+
+	public Invoice getInvoice() {
+		return invoice;
+	}
+
+	public void setInvoice(Invoice invoice) {
+		this.invoice = invoice;
+	}
+
+	public Long getTransactionId() {
+		return transactionId;
+	}
+
+	public void setTransactionId(Long transactionId) {
+		this.transactionId = transactionId;
+	}
+
+	public double getAmount() {
+		return amount;
+	}
+
+	public void setAmount(double amount) {
+		this.amount = amount;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public Signup getSignup() {
+		return signup;
+	}
+
+	public void setSignup(Signup signup) {
+		this.signup = signup;
+	}
+
+
+	public String getPaymentNumber() {
+		return paymentNumber;
+	}
+
+	public void setPaymentNumber(String paymentNumber) {
+		this.paymentNumber = paymentNumber;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public Date getDueDate() {
+		return dueDate;
+	}
+
+	public void setDueDate(Date dueDate) {
+		this.dueDate = dueDate;
+	}
+
+	public Date getPaymentDate() {
+		return paymentDate;
+	}
+
+	public void setPaymentDate(Date paymentDate) {
+		this.paymentDate = paymentDate;
+	}
+
+	public String getReason() {
+		return reason;
+	}
+
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+
+	
+	public String getPaymentMode() {
+		return paymentMode;
+	}
+
+	public void setPaymentMode(String paymentMode) {
+		this.paymentMode = paymentMode;
+	}
+
+	public Account getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Account customer) {
+		this.customer = customer;
+	}
+
+	public User getContact() {
+		return contact;
+	}
+
+	public void setContact(User contact) {
+		this.contact = contact;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public Payer getPayer() {
+		return payer;
+	}
+
+	public void setPayer(Payer payer) {
+		this.payer = payer;
+	}
+
+	public Calendar getLastUpdated() {
+		return lastUpdated;
+	}
+
+	public void setLastUpdated(Calendar lastUpdated) {
+		this.lastUpdated = lastUpdated;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((paymentId == null) ? 0 : paymentId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Payment other = (Payment) obj;
+		if (paymentId == null) {
+			if (other.paymentId != null)
+				return false;
+		} else if (!paymentId.equals(other.paymentId))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "Payment [transactionId=" + transactionId + ", amount=" + amount
+				+ ", status=" + status + ", description=" + description
+				+ ", paymentNumber=" + paymentNumber + ", type=" + type
+				+ ", paymentMethod=" + paymentMethod + ", dueDate=" + dueDate
+				+ ", paymentDate=" + paymentDate + ", reason=" + reason
+				+ ", category=" + category + ", customer=" + customer
+				+ ", contact=" + contact + ", signup=" + signup + "]";
+	}
+
+	
+}

@@ -1,0 +1,1828 @@
+
+/* Common functions */
+
+function convertJsonDate(dtObj){
+	try {
+		var dtStr = "";
+		var sday = ("0" + (dtObj.date)).slice(-2);
+		var smonth = ("0" + (dtObj.month + 1)).slice(-2);
+		var syear = dtObj.year;
+		var strYear = syear.toString();
+		if(strYear.length==3)
+			strYear = "20"+strYear.substring(1,strYear.length);
+		else
+			strYear = syear;
+		dtStr = smonth + "/" + sday + "/" + strYear;
+		return dtStr;
+	} catch(e) {
+		return "";
+	}
+}
+
+function convertTimeToDate(dtObj){
+	try {
+		var date1 = new Date(dtObj);
+		var dateStr =  date1.toString("MM/dd/yyyy");   
+		//alert(dateStr);
+		return dateStr ;
+	} catch(e) {
+		return "";
+	}
+}
+
+
+
+function currencyFormat (num) {
+    return "$" + num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+}
+
+function formatTime(date) {
+	var UTCtime = date.getTime();
+	//console.log(UTCtime);
+	var now = new Date();
+	var timezoneOffset = now.getTimezoneOffset();
+	//console.log(timezoneOffset);
+	var timezoneInMillisecond = timezoneOffset * 60000;
+	
+	var date = new Date(UTCtime + timezoneInMillisecond);
+	//console.log(date);
+	  var hours = date.getHours();
+	  var minutes = date.getMinutes();
+	  var ampm = hours >= 12 ? 'pm' : 'am';
+	  hours = hours % 12;
+	  hours = hours ? hours : 12; // the hour '0' should be '12'
+	  minutes = minutes < 10 ? '0'+minutes : minutes;
+	  var strTime = hours + ':' + minutes + ' ' + ampm;
+	  return strTime;
+}
+
+function formatDate(inputFormat) {
+	  function pad(s) { return (s < 10) ? '0' + s : s; }
+	  var d = new Date(inputFormat);
+	  return [pad(d.getMonth()+1), pad(d.getDate()), pad(d.getFullYear ())].join('/');
+}
+
+function isNumber(val){
+   if (isNaN(val) || val == 'undefined' || val == null) 
+	   return 0;
+   else
+	   return val;
+}
+
+function backtoregistration(){
+	
+	$(".k-loading-mask").show();
+    
+    $("#tcSuccessSpan").css("display", "none");		
+	$("#tcSuccessSpan" ).html("");	
+	$("#tcErrorSpan").css("display", "none");		
+	$( "#tcErrorSpan" ).html("");
+	$("#purchase").fadeOut();
+	
+	$("#familymembers").fadeOut(200);
+	commonSearch();
+}
+
+function ArrNoDupe(a) {
+    var temp = {};
+    for (var i = 0; i < a.length; i++)
+        temp[a[i]] = true;
+    var r = [];
+    for (var k in temp)
+        r.push(k);
+    return r;
+}
+
+function unique(list) {
+    var result = [];
+    $.each(list, function(i, e) {
+        if ($.inArray(e, result) == -1) result.push(e);
+    });
+    return result;
+}
+
+/*function validateCheckout(cartType) {
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	console.log(" validateCheckout 86 ");
+	var contactData = [];
+	console.log(" validateCheckout 92 ");
+	if(cartType && (cartType == 'EVENT' || cartType == 'FACILITY')){
+		console.log(" validateCheckout 89 ");
+		contactData.push($("#loggedInUserContactId").val());
+	} else {
+		$('#allmembers').find('input[class="usercheck"]').each(function(){
+			if($("#user_"+this.value).is(':checked')){
+				contactData.push(this.value);
+			}
+		});
+	}
+	var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+	if(withinRegistrationDate(itemDetailsId,contactData.join(','))){
+		console.log(" validateCheckout 116 ");
+		if(checkAgeRange(itemDetailsId,contactData.join(','))){
+			console.log(" validateCheckout 118 ");
+			$.sessionStorage.setItem('contact_ids', contactData.join(','));
+			location.href = '#/product/'+itemDetailsId+'/'+contactData.join(',');
+			//console.log(" validateCheckout 122 ");
+			return true;
+		}
+	}else{
+		console.log(" validateCheckout 124 ");
+		$("#tcSuccessSpan").css("display", "none");		
+		$("#tcSuccessSpan" ).html("");	
+		$("#tcErrorSpan").css("display", "block");
+		$( "#tcErrorSpan" ).html("Registration date has expired for some of the Selected Programs");
+	}
+	return false;
+}*/
+
+function validateCheckout(cartType) {
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+
+	var itemContactMapStr = $.sessionStorage.getItem('itemContactMapStr');
+	var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+	if(withinRegistrationDate()){
+		//if(checkAgeRange()){
+			//$.sessionStorage.setItem('contact_ids', contactData.join(','));
+			location.href = '#/product/'+itemContactMapStr;
+			//console.log(" validateCheckout 122 ");
+			return true;
+		//}
+	}else{
+		console.log(" validateCheckout 124 ");
+		$("#tcSuccessSpan").css("display", "none");		
+		$("#tcSuccessSpan" ).html("");	
+		$("#tcErrorSpan").css("display", "block");
+		$( "#tcErrorSpan" ).html("Registration date has expired for some of the Selected Programs");
+	}
+	return false;
+}
+
+
+function loadContacts() {
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getContacts",
+		  dataType: "json",
+		  success: function( data ) {
+			  contacts.read({ data: data});
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(xhr);
+		  }
+	});
+}
+
+function getFamilymembers(){
+	
+	if($("#pageType").val() != 'EVENT' && $("#pageType").val() != 'FACILITY'){
+		var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+		loadContacts();
+		initProducts();
+		
+		var ccDataLst = $.sessionStorage.getItem('ccDataLst');
+		if(ccDataLst!=null && typeof ccDataLst != 'undefined'){
+			ccDataLst = ccDataLst.split(";;");
+			console.log("Inside add child care loop");
+			//alert(ccDataLst.length);
+			items.fetch(function() {
+				var data = this.data();
+				//console.log(data);
+				for (var i = 0; i < ccDataLst.length; i ++) {
+					var ccData = ccDataLst[i].split("__");
+					
+					var itemDetailId = ccData[0];
+					if(typeof itemDetailId != 'undefined' && itemDetailId!=-9){
+						if(itemDetailsId.indexOf(itemDetailId)>=0){
+							var iid = items.get(itemDetailId);
+							if (iid.signuppriceArr.length >0) {
+								 iid.set("signuppriceArr[0].memberPrice",ccData[1]);
+								 iid.set("signuppriceArr[0].nonmemberPrice",ccData[1]);
+								 iid.set("days",ccData[2]);
+								 iid.set("dayId",ccData[3]);
+								 iid.set("WL_Text_For_CC",ccData[4]);
+								 iid.set("WLDays",ccData[5]);
+								 iid.set("hasWLDays",ccData[6]);
+								 iid.set("hasConfirmedDays",ccData[7]);
+							}
+						}
+					}
+				}
+			});
+		}
+				  
+		  var isAnyAllowToPickStartDate = false;
+		  var isAnyAllowToPickGrade = false;
+		  var products = items.data();
+		  for(var i=0;i<products.length;i++){
+			 var item = products[i];
+			 if(item.allowToPickStartDate && item.allowToPickStartDate == 'Yes'){
+				  isAnyAllowToPickStartDate = true;
+			  }
+			  if(item.allowToPickGrade && item.allowToPickGrade == 'Yes'){
+				  isAnyAllowToPickGrade = true;
+			  }
+		  }
+		  
+		  var allProducts = "<table>";
+		  allProducts = allProducts + "<tr style='margin-left: 10px;'>";
+		  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><b>Items</b></td>";
+		  allProducts = allProducts + "<td>";
+		  allProducts = allProducts + "<table>";
+		  allProducts = allProducts + "<tr>";
+		  allProducts = allProducts + "<td style='margin-left: 10px;' width='30px'></td>";
+		  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><b>Contact</b></td>";
+		  if(isAnyAllowToPickStartDate){
+			  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><b>Start date</b></td>";
+		  }
+		  if(isAnyAllowToPickGrade){
+			  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><b>Grade Level</b></td>";
+		  }
+		  allProducts = allProducts + "</tr>";
+		  allProducts = allProducts + "</table>";
+		  allProducts = allProducts + "</td>";
+		  allProducts = allProducts + "</tr>";
+		  
+		  allProducts = allProducts + "<tr><td colspan='2'><hr></td></tr>";
+		  
+		  for(var i=0;i<products.length;i++){
+			  var product = products[i];
+			  allProducts = allProducts + "<tr style='margin-left: 10px;'>";
+			  allProducts = allProducts + "<td style='margin-left: 20px; vertical-align: top;' width='150px'>";
+			  allProducts = allProducts + "<span class='name'><b>"+product.name+"</b></span>";
+			  allProducts = allProducts + "</td>";
+			  
+			  allProducts = allProducts + "<td>";
+			  allProducts = allProducts + "<table>";
+			  var contactsData = contacts.data();
+			  var isAnyContactForProduct = false;
+			  for(var j=0;j<contactsData.length;j++){
+				  var contact = contactsData[j];
+				  var cGender = contact.gender ;
+				  if (typeof(cGender) == 'undefined') {
+					  cGender = "";
+				  }
+				  var pGender = product.gender ;
+				  if (typeof(pGender) == 'undefined') {
+					  pGender = "";
+				  }
+				  
+				  if(contact.age > 0 && contact.age >= product.minAge && contact.age <= product.maxAge && (pGender ==''  || cGender =='' || pGender.indexOf(cGender.substring(0,1)) >= 0 )) {
+					  isAnyContactForProduct = true;
+					  allProducts = allProducts + "<tr>";
+					  allProducts = allProducts + "<td style='margin-left: 10px;' width='30px'><span><input type='checkbox' name='user_"+product.id+"_"+contact.contactId+"' id='user_"+product.id+"_"+contact.contactId+"' value='"+product.id+"_"+contact.contactId+"' class='usercheck'></span></td>";
+					  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><span class='name'>"+contact.fname+" "+contact.lname+"</span></td>";
+					  if(product.allowToPickStartDate && product.allowToPickStartDate == 'Yes'){
+						  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><span><input style='width:130px;' name='ccStartDate_"+product.id+"_"+contact.contactId+"' id='ccStartDate_"+product.id+"_"+contact.contactId+"'></span></td>";
+					  }
+					  if(product.allowToPickGrade && product.allowToPickGrade == 'Yes'){
+						  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><span><select name='GradeLevel' id='GradeLevel"+product.id+"_"+contact.contactId+"'>" +
+						  		"<option value='PreK'>Pre-K</option>" +
+						  		"<option value='K'>K</option>" +
+						  		"<option value='1'>1</option>" +
+						  		"<option value='2'>2</option>" +
+						  		"<option value='3'>3</option>" +
+						  		"<option value='4'>4</option>" +
+						  		"<option value='5'>5</option>" +
+						  		"<option value='6'>6</option>" +
+						  		"<option value='7'>7</option>" +
+						  		"<option value='8'>8</option>" +
+						  		"<option value='9'>9</option>" +
+						  		"<option value='10'>10</option>" +
+						  		"<option value='11'>11</option>" +
+						  		"<option value='12'>12</option>" +
+						  		"</select></span></td>";
+					  }
+					  allProducts = allProducts + "</tr>";
+				  }
+			  }
+			  if(!isAnyContactForProduct){
+				  allProducts = allProducts + "<tr><td style='margin-left: 10px;' colspan='3'><span>No contact found within the program age range or gender.";
+				  allProducts = allProducts + "</span></td></tr>";
+			  }
+			  allProducts = allProducts + "</table>";
+			  allProducts = allProducts + "</td>";
+			  allProducts = allProducts + "</tr>";
+		  }
+		  allProducts = allProducts + "</table>";
+		  
+		  $("#familymembers").slideDown();
+		  $("#allmembers").html(allProducts);
+		  
+		  for(var i=0;i<products.length;i++){
+			  var product = products[i];
+			  var contactsData = contacts.data();
+			  for(var j=0;j<contactsData.length;j++){
+				  var contact = contactsData[j];
+				  if(product.allowToPickStartDate && product.allowToPickStartDate == 'Yes'){
+					  $("#ccStartDate_"+product.id+"_"+contact.contactId).kendoDatePicker({
+						  format: "MM/dd/yyyy",
+						  min: new Date()
+					  });
+				  }
+			  }
+		  }
+		  $("select[name='GradeLevel']").kendoDropDownList();
+		  $("input[type='checkbox']").uniform();
+	}
+}
+
+function showContactHealthHistoryOrCheckOut(cartType){
+	console.log("   cartType  ::  "+cartType);
+	var contactData = [];
+	
+	if(cartType && cartType == 'EVENT' || cartType && cartType == 'FACILITY'){
+		contactData.push($("#loggedInUserContactId").val());
+	}
+	
+	$('#allmembers').find('input[class="usercheck"]').each(function(){
+		if($("#user_"+this.value).is(':checked')){
+			contactData.push(this.value);
+		}
+	});
+	if(contactData.length <= 0){
+		  console.log("No contacts to show health history.");
+		  $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan" ).html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $( "#tcErrorSpan" ).html("Please select atleast one Member");
+		  return ;
+	}
+	console.log(" showContactHealthHistory program ");
+	var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+	var itemDetailIds = itemDetailsId.replace(",,", ",");
+	console.log(" showContactHealthHistory   itemDetailIds  --->  "+itemDetailIds);
+	if(itemDetailIds){
+		$.ajax({
+			  type: "GET", 
+			  url:"isHealthHistoryRequired?itemDetailId="+itemDetailIds,
+			  async:false,
+			  dataType: "json",
+			  success: function( data ) {
+				  console.log(" showContactHealthHistory 361 ");
+				  if(data && data.RESULT == 'YES'){
+					  console.log(" getContactHistory 363 ");
+					  //$("#contactHealthHistoryDiv").slideDown();
+					  $("#checkout_content").hide();
+					  if(validateCheckout(cartType)){
+					  //if(validateCheckout(cartType)){
+						  setTimeout(function(){
+							  if(cart.errMsg==""){
+								  $("#familymembers").fadeOut(200);
+								  getContactHistory(contactData);
+							  }
+						  }, 1000);
+					  }
+				  }else{
+					  console.log(" showContactHealthHistory 373 ");
+					  if(validateCheckout(cartType)){
+						  setTimeout(function(){
+							  if(cart.errMsg==""){
+								  $("#familymembers").fadeOut(200);
+								  showEmergencyContactIfFlagIsSet();
+								  /*if(cartType && cartType == 'CAMP'){
+									  showCampActivityAndTransportService();
+								  } else if(cartType && cartType == 'CHILD CARE'){
+									  	showEmergencyContactIfFlagIsSet();
+								  }else{
+										$("#checkout_content").show();
+								  }*/
+							  }
+						  }, 1000);
+					  }
+				  }
+			  },
+			  error: function( xhr,status,error ){
+				  console.log(" isHealthHistoryRequired "+xhr);
+			  }
+		});
+	}else{
+		$("#contactHealthHistoryDiv").slideDown();
+	}
+}
+
+function hideContactHealthHistory(){
+	$("#contactHealthHistoryDiv").hide();
+}
+
+function addfamilyMember(){
+	$.ajax({
+		  type: "GET",
+		  url:"addMember",
+		  async:false,
+		  success: function( data ) {
+			 console.log("  data : :: "+data);
+			  $("#popup_add").html(data);
+			 // $("#popup_add").show();
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(xhr);
+		  }
+	});
+}
+
+function closeAllwindow(){
+
+	 $("div.k-window1").each(function(index, element){
+		var window = $(this);
+		if (!window.data("kendoWindow")) {
+			window.kendoWindow({
+				width: "1050px"
+			});
+		}
+		window.data("kendoWindow").close();
+	});
+}
+
+function fnApplyPromo(isFromUpdateCart){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 
+	 //alert();
+	 var promocode = $( "#c_promocode" ).val();
+	 
+	 if((promocode=='' || typeof promocode=='undefined') && isFromUpdateCart){
+		 return;
+	 }
+	 
+	 if(promocode=='' || typeof promocode=='undefined'){
+		  $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan" ).html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $( "#tcErrorSpan" ).html("Please enter Valid Promco code");
+		  return;
+	 }
+	 var cartObj = this.cart;
+	 var found = false;
+	 $.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getPromodetails?promocode="+promocode,
+		  dataType: "json",
+		  success: function( data ) {
+			  console.log(data);
+			  if(data.length==1){
+				  $.each(data, function(i,promo) {
+					  if(promo.itemDetails.length>0){
+						  
+						  for (var c = 0; c < cartObj.contents.length; c ++) {
+							  
+								  $.each(promo.itemDetails, function(j,itemInfo) {
+									  
+										  if(cartObj.contents[c].item.itemDetailsId == itemInfo.itemDetailsId){
+											  var p_price = parseFloat(0);
+											  /*
+											  if(cartObj.contents[c].contact.isMember)
+												p_price = cartObj.contents[c].item.signuppriceArr[0].memberprice;
+											  else
+												p_price = cartObj.contents[c].item.signuppriceArr[0].nonmemberPrice;
+											*/
+										  	  proRatedSignupPrice = cartObj.contents[c].proRatedSignupPrice;
+										  	  
+											  var noOfTicketsOrPackages = 1;
+											  if(cartObj.contents[c].item.programType == 'EVENT'){
+												  noOfTicketsOrPackages = cartObj.contents[c].noOfTicketsOrPackages;
+											  }
+											  if(proRatedSignupPrice > 0){
+												  p_price = proRatedSignupPrice * parseInt(noOfTicketsOrPackages);
+											  }else{
+												  p_price = cartObj.contents[c].signupPrice * parseInt(noOfTicketsOrPackages);
+											  }
+											  
+											  var discount = parseFloat(0);
+											  var discount_type = promo.discounttype;
+											  if(discount_type=='AMOUNT')
+												  discount = promo.discountValue;
+											  else if(discount_type=='PERCENTAGE'){
+												  discount = parseFloat(promo.discountPercentage) * parseFloat(p_price);
+												  discount = discount/100;
+											  }
+											  
+											  $( ".custom_promo" ).show();
+											  cartPreviewModel.updateCart(cartObj.contents[c],parseFloat(discount),promocode);
+											  //break;
+											  found = true;
+										  }
+										  
+								  });
+								  
+							}
+					  }
+				  });
+			  }
+			  else{
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+				  return;
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+	 
+	 if (!found) {
+		 $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan" ).html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+	  }
+}
+
+function fnUpdatePromo(){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 //alert();
+	console.log(this);
+}
+
+function fnSignupTerms(){
+	var isTCNeeded = false;
+	var products = items.data();
+	for(var i=0;i<products.length;i++){
+		var product = products[i];
+		if(product.needTC && product.needTC == 'Yes'){
+			isTCNeeded = true;
+		}
+	}
+	
+	if(isTCNeeded){
+		$("#details-checkout").fadeOut("fast");
+		$("#tandc").show();
+	}else{
+		fnCheckout();
+	}
+}
+
+function fnCheckout(){
+	
+	// all other should be hide here
+	$("#contactActivityDiv").hide();
+	$("#contactTransportDiv").hide();
+	$("#tandc").hide();
+	
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 
+	 /*
+	 if(cartPreviewModel.totalPrice()=='$0.00'){
+		 $("#tcErrorSpan").css("display", "block");		
+		 $( "#tcErrorSpan" ).html("Please add atleast 1 program to signup");
+		 return;
+	 }*/
+	// validation start
+	 
+	//fillPaymentMethodDD();
+	$(".k-loading-mask").show();
+	$("#payment_cart").show();
+	$("#details-checkout").fadeOut("fast");
+	$("#purchaseinfoPg").css("width", "1000px");	
+	$("#purchase").fadeIn("slow", function(){
+			$(".k-loading-mask").show();
+			$("#pmPrimary").hide();
+			$("#autopayBtn").hide();
+			
+			var trrow = "";
+			if(cart.contents.length>0){
+				$.each(cart.contents, function(i,itemDetailsSession) {
+					
+					//if(!itemDetailsSession.waitlist){
+						var stdt = convertJsonDate(itemDetailsSession.item.start_date);
+						var enddt = convertJsonDate(itemDetailsSession.item.end_date);
+						var stTime = new Date(itemDetailsSession.item.start_time.time);
+						var endTime = new Date(itemDetailsSession.item.end_time.time);
+						var selectedStartDate = itemDetailsSession.selectedStartDate;
+						/*
+						if(itemDetailsSession.contact.isMember)
+							discount = parseFloat(itemDetailsSession.item.memberdiscount) + parseFloat(itemDetailsSession.discount1);
+						else
+							discount = parseFloat(itemDetailsSession.item.nonmemberdiscount) + parseFloat(itemDetailsSession.discount1);
+						
+						if(itemDetailsSession.contact.isMember)
+							itemprice = (parseFloat(itemDetailsSession.item.memberprice) - parseFloat(itemDetailsSession.item.memberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+						else
+							itemprice = (parseFloat(itemDetailsSession.item.nonmemberprice) - parseFloat(itemDetailsSession.item.nonmemberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+						*/
+						
+						var signupPrice = itemDetailsSession.signupPrice;
+						if(itemDetailsSession.proRatedSignupPrice && itemDetailsSession.proRatedSignupPrice > 0){
+							signupPrice = itemDetailsSession.proRatedSignupPrice;
+						}
+						
+						var discount = parseFloat(itemDetailsSession.autoDiscount) + parseFloat(itemDetailsSession.discount1);
+						var fa = parseFloat(itemDetailsSession.FAamount);
+						
+						var itemprice = 0;
+						var subtotal = 0;
+						
+						var isChargeAmount = true;
+		            	if(itemDetailsSession.item.programType == 'CHILD CARE' && (itemDetailsSession.item.category != 'IN-SERVICE' || itemDetailsSession.item.category != 'After School') && itemDetailsSession.item.hasConfirmedDays == 'false'){
+		    				isChargeAmount = false;
+		    			}else if(itemDetailsSession.waitlist){
+		    				isChargeAmount = false;
+		    			}
+		            	
+						//if(itemDetailsSession.item.programType == 'CHILD CARE'){ // && itemDetailsSession.item.category == 'After School'
+						if(isChargeAmount){
+			            	//if(itemDetailsSession.item.programType == 'CHILD CARE' && itemDetailsSession.item.category != 'IN-SERVICE'){
+								itemprice = calculateItemAmountOnCart(itemDetailsSession);
+								subtotal = calculateSubTotalOnCart(itemDetailsSession);
+							/*}else{
+								itemprice = ((parseFloat(signupPrice) * itemDetailsSession.noOfTicketsOrPackages) + parseFloat(itemDetailsSession.joinFee) + parseFloat(itemDetailsSession.setupFee)  + parseFloat(itemDetailsSession.registrationPrice) + parseFloat(itemDetailsSession.depositAmount) - parseFloat(itemDetailsSession.autoDiscount) - parseFloat(itemDetailsSession.discount1) - parseFloat(itemDetailsSession.FAamount)) * itemDetailsSession.quantity;
+								subtotal = (parseFloat(signupPrice) * itemDetailsSession.noOfTicketsOrPackages) + parseFloat(itemDetailsSession.joinFee) + parseFloat(itemDetailsSession.setupFee) + parseFloat(itemDetailsSession.registrationPrice) + parseFloat(itemDetailsSession.depositAmount);
+							}*/
+						}
+						trrow = trrow + "<table width='100%'><tr>";
+						trrow = trrow + "<td><span><strong>" + itemDetailsSession.contact.fname + " " + itemDetailsSession.contact.lname + "";
+						
+						if(itemDetailsSession.item.programType=='PROGRAM' || itemDetailsSession.item.programType=='EVENT' || (itemDetailsSession.item.programType=='CHILD CARE' && itemDetailsSession.item.category == 'After School')){
+							if(itemDetailsSession.waitlist)
+								trrow = trrow + "<span class='alertNotice'> (WAITLISTED)</span>"
+						}
+						else if(itemDetailsSession.item.programType=='CHILD CARE'){
+							if(itemDetailsSession.item.hasWLDays){
+								trrow = trrow + "<span class='alertNotice'> ("+itemDetailsSession.item.WL_Text_For_CC+")</span>"
+							}
+						}
+								
+								
+						trrow = trrow + "<br>"  + itemDetailsSession.item.name + " [Category: " + itemDetailsSession.item.category + "]</strong>";
+								if(selectedStartDate && selectedStartDate != ''){
+									trrow = trrow + "<br>Selected Start Date: "+selectedStartDate;
+								}
+								trrow = trrow + "</span></td>";
+						trrow = trrow + "<td><span>" + itemDetailsSession.item.days + "</span></td>";
+						trrow = trrow + "<td><span>" + stdt + " - " + enddt + "</span></td>";
+						trrow = trrow + "<td><span>" + formatTime(stTime)  + " - " +  formatTime(endTime) + "</span></td>";
+						trrow = trrow + "</tr>";
+						
+						trrow = trrow + "<tr height='10px;'>";
+						trrow = trrow + "<td colspan='3' align='right'>Sub Total</td>";
+						/*
+						if(itemDetailsSession.contact.isMember)
+							trrow = trrow + "<td align='center'><span>" + currencyFormat(itemDetailsSession.item.memberprice) + "</span></td>";
+						else
+							trrow = trrow + "<td align='center'><span>" + currencyFormat(itemDetailsSession.item.nonmemberprice) + "</span></td>";
+						*/
+	
+						trrow = trrow + "<td align='center'><span>" + currencyFormat(subtotal) + "</span></td>";
+						trrow = trrow + "</tr>";
+						
+						trrow = trrow + "<tr height='10px;'>";
+						trrow = trrow + "<td colspan='3' align='right'>Discount</td>";
+						trrow = trrow + "<td align='center'><span class='discountpricelbl'>-" + currencyFormat(discount) + "</span></td>";
+						trrow = trrow + "</tr>";
+						
+						trrow = trrow + "<tr height='10px;'>";
+						trrow = trrow + "<td colspan='3' align='right'>FA Amount</td>";
+						trrow = trrow + "<td align='center'><span class='discountpricelbl'>-" + currencyFormat(fa) + "</span></td>";
+						trrow = trrow + "</tr>";
+						
+						trrow = trrow + "<tr height='10px;'>";
+						trrow = trrow + "<td colspan='3' align='right'>Final amount</td>";
+						trrow = trrow + "<td align='center'><span>" + currencyFormat(itemprice) + "</span></td>";
+						trrow = trrow + "</tr>";
+						
+						trrow = trrow + "<tr height='10px;'>";
+						trrow = trrow + "<td></td>";
+						trrow = trrow + "</tr></table>";
+					//}
+				});
+			}
+			$("#cartitem").html(trrow);
+			$("#ordertotal").text(cartPreviewModel.totalPrice());
+			
+			$(".k-loading-mask").hide();
+	});
+}
+
+function cancelProgram(signupId){
+	
+}
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function checkKeyPressEventIsNumeric(e){
+	if(e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)){
+		return false;
+    }
+}
+
+function fillPaymentMethodDD(){
+	var paymentMethodHtml = '';		
+	$.ajax({
+		  type: "GET",
+		  url: "viewPaymentInformationByLoggedInUser",								  
+		  success: function( data ) {				  	  
+			  if(data != null && data.length > 0){	
+				  $.ajax({
+					  type: "GET",
+					  url: "getACHPaymentInformationByLoggedInUser",								  
+					  success: function( achData ) {											  										  
+						  									  
+						  if(data != null && data.length > 0){														 
+							  for(var i = 0; i<data.length; i++){        
+								   var dataArr = data[i];
+								   //p.portalStatus, p.paymentType, p.isPrimary, p.paymentId, p.nickName, p.cardNumber, p.expirationMonth, p.expirationYear										       
+								   //paymentInfoRadio						   
+								   /* if(dataArr[2]){
+									   paymentMethodHtml += '<option selected value="'+ dataArr[8] +'">'+ dataArr[4] +' '+dataArr[5] +' '+dataArr[6] +'/'+dataArr[7]+'</option>';
+									   $("#paymentTokenIdSpan").html(dataArr[8]);
+								   }else{
+									   paymentMethodHtml += '<option value="'+ dataArr[8] +'">'+ dataArr[4] +' '+dataArr[5] +' '+dataArr[6] +'/'+dataArr[7]+'</option>';
+								   }	 */				
+								   if(dataArr[2]){
+									   paymentMethodHtml += '<option selected value="'+ dataArr[9] + '_' + dataArr[6] +'">'+ dataArr[7] +' '+dataArr[3] +' '+dataArr[4] +'/'+dataArr[5]+'</option>';
+									   $("#paymentTokenIdSpan").html(dataArr[6]);
+									}else{
+									   paymentMethodHtml += '<option value="'+ dataArr[9] + '_' + dataArr[6] +'">'+ dataArr[7] +' '+dataArr[3] +' '+dataArr[4] +'/'+dataArr[5]+'</option>';
+									}
+							  }
+						  }
+				  		  if(achData != null && achData.length > 0){
+							  for(var i = 0; i<achData.length; i++){        
+							       var dataArr = achData[i];
+							       //p.transId,  p.bankRoutingNumber, p.fullName, p.paymentType,  p.checkingAccountNumber, p.driversLicenseNumber, p.stateOfDL, p.phoneNumber, p.nickName, p.portalStatus,  p.tokenNumber , p.paymentId, p.isPrimary											       
+							       if(dataArr[12]){
+							    	   paymentMethodHtml += '<option selected value="'+ dataArr[11] + '_' + dataArr[10] +'">'+ dataArr[2] +', '+dataArr[4] +'</option></span>';
+							    	   $("#paymentTokenIdSpan").html(dataArr[8]);
+							       }else{
+							    	   paymentMethodHtml += '<option value="'+ dataArr[11] + '_' + dataArr[10] +'">'+ dataArr[2] +', '+dataArr[4] +'</option></span>';
+							       }													       
+						      }
+				  		  }
+					      
+					  },
+					  error: function( xhr,status,error ){
+						  $("#statusBlock").css("display", "block");	
+						  $("#tcloginErrorSpan").css("display", "block");	
+						  $( "#tcloginErrorSpan" ).html("There was some error. Please try again later");	
+						  $(".k-loading-mask").hide();								  		 
+					  }
+					});
+				}										 
+		  },
+		  error: function( xhr,status,error ){
+			  $("#statusBlock").css("display", "block");	
+			  $("#tcloginErrorSpan").css("display", "block");	
+			  $( "#tcloginErrorSpan" ).html("There was some error. Please try again later");	
+			  $(".k-loading-mask").hide();								  		 
+		  }
+	});
+	
+	paymentMethodHtml += '<option value="New">Add New Card</option>';
+    paymentMethodHtml += '<option value="NewBank">Add New Bank Info</option>';
+    $("#paymentInfoRadio").html(paymentMethodHtml);
+    $("#paymentInfoRadio").kendoDropDownList();
+}
+
+function computePrice(arr, type){
+	//console.log(arr);
+	var pricecell = "";
+ 	$.each(arr, function(i,price) {
+
+ 		if(price.type=='Sign Up'){
+ 			pricecell = pricecell + "<span>" +price.priceoption + "</span>";
+ 			if(price.priceoption!="")
+ 				pricecell = pricecell + "<span>: </span>";
+ 			
+ 			if(type=="M")
+ 				pricecell = pricecell + "<span>$" +price.memberPrice + "</span>";
+ 			else
+ 				pricecell = pricecell + "<span>$" +price.nonmemberPrice + "</span>";
+ 			
+ 			pricecell = pricecell + "<br>";
+ 		}
+ 	});
+ 	
+ 	return pricecell;
+}
+
+function getSetupFeeByItemDetailIdAndPartyId(itemDetailId,partyId){
+	var setupfee = 0;
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getSetupFeeByItemDetailIdAndPartyId?itemDetailId="+itemDetailId+"&partyId="+partyId,
+		  dataType: "json",
+		  success: function( data ) {
+			  console.log(data);
+			  setupfee = data;
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("Error while getting setup fee");
+			 
+		  }
+	});
+	return setupfee;
+}
+
+function getFAObj(itemDetailId){
+	var FAObj;
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getFA?itemDetailId="+itemDetailId,
+		  dataType: "json",
+		  success: function( data ) {
+			  console.log(data);
+			  FAObj = data;
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("Error while getting setup fee");
+			 
+		  }
+	});
+	return FAObj;
+}
+
+/*function withinRegistrationDate(iIds, cIds){
+	var proceed = false;
+	
+	var itemDetailsId = iIds.split(",");
+	var contactId = cIds.split(",");
+	for(var c = 0; c<contactId.length; c++){  
+		for(var i = 0; i<itemDetailsId.length; i++){  
+			$.ajax({
+				  type: "GET",
+				  async: false,
+				  url:"checkProgramRegistrationDate?itemDetailId="+itemDetailsId[i]+"&contactId="+contactId[c],
+				  dataType: "json",
+				  success: function( data ) {
+					  //console.log(data);
+					  if(data)
+						  proceed = true;
+					  else
+						  proceed = false;
+				  },
+				  error: function( xhr,status,error ){
+					  proceed = false;
+					 
+				  }
+			});
+			if(!proceed)
+				break;
+		}
+	}
+	
+	//alert(proceed);
+	return proceed;
+}*/
+
+function withinRegistrationDate(){
+	var proceed = false;
+	var itemContactMapStr = $.sessionStorage.getItem('itemContactMapStr');
+	var itemContactMap = itemContactMapStr.split(",");
+	
+	for(var i = 0; i<itemContactMap.length; i++){
+		var itemContactStr = itemContactMap[i];
+		var itemContact = itemContactStr.split("_");
+		$.ajax({
+			  type: "GET",
+			  async: false,
+			  url:"checkProgramRegistrationDate?itemDetailId="+itemContact[0]+"&contactId="+itemContact[1],
+			  dataType: "json",
+			  success: function( data ) {
+				  //console.log(data);
+				  if(data)
+					  proceed = true;
+				  else
+					  proceed = false;
+			  },
+			  error: function( xhr,status,error ){
+				  proceed = false;
+				 
+			  }
+		});
+		if(!proceed)
+			break;
+	}
+	return proceed;
+}
+
+function checkAndUpdateCapacity(){
+	var proceed = false;
+	var itemIdsAndremainingCapacity = "";
+	var itemIdsConfirmedAndWaitlistedItems = [];
+	
+	//var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+	//uniqueitemDetailsId = ArrNoDupe(itemDetailsId);
+	//console.log(uniqueitemDetailsId);
+	
+	//alert(itemDetailsId);
+	if(cart.contents.length>0){
+		var itemDetailsId = getUniqueItemDetailIdsFromCart(cart).join(",");
+		
+		var itemDetailId = itemDetailsId.split(",");
+		for(var k=0; k<itemDetailId.length; k++){
+			var itemIdsAndSelectedDays = [];
+			var confirmedItems = 0;
+			var waitlistedItems = 0;
+			
+			$.each(cart.contents, function(i,itemsData) {
+				if(itemDetailId[k]==itemsData.item.itemDetailsId){
+				
+					if(itemsData.item.programType=='CHILD CARE' && itemsData.item.category!='After School'){
+						var daysId = itemsData.item.dayId;
+						daysId = daysId.replace(new RegExp(",", 'g'), ";");
+						var hasWLDays = itemsData.item.hasWLDays;
+						var selectedDays = itemsData.item.days;
+						selectedDays = selectedDays.replace(new RegExp(",", 'g'), ";");
+						
+						var WLDays = " ";
+						if(WLDays.length>0){
+							 WLDays = itemsData.item.WLDays;
+						}
+						itemIdsAndSelectedDays.push(itemDetailId[k]+" AND "+selectedDays+" AND "+daysId+" AND "+hasWLDays+" AND "+WLDays);
+					}
+					else{
+						console.log("   itemsData.item.programType  >>>  "+itemsData.item.programType);
+						var noOfTickets = 1;
+						if(itemsData.item.programType == 'EVENT'){
+							noOfTickets = parseInt(itemsData.noOfTickets)
+						}
+						console.log("   itemsData.noOfTickets  >>>  "+itemsData.noOfTickets);
+						if(itemsData.item.itemDetailsId==itemDetailId[k]){
+							if(itemsData.waitlist)
+								waitlistedItems = parseInt(waitlistedItems) + parseInt(noOfTickets);
+							else
+								confirmedItems = parseInt(confirmedItems) + parseInt(noOfTickets);
+						}
+					}
+				}
+			});
+			itemIdsConfirmedAndWaitlistedItems.push(itemDetailId[k]+"_"+confirmedItems+"_"+waitlistedItems+"_"+itemIdsAndSelectedDays.join('::')+"_END");
+		}
+	}
+	
+	console.log(itemIdsConfirmedAndWaitlistedItems);
+	//alert(itemIdsConfirmedAndWaitlistedItems);
+	if(itemIdsConfirmedAndWaitlistedItems.length>0){
+		$.ajax({
+			  type: "GET",
+			  async: false,
+			  url:"checkAndUpdateCapacity?itemIdsConfirmedAndWaitlistedItems="+itemIdsConfirmedAndWaitlistedItems.join(",").replace(new RegExp("__", 'g'), "_ _"),
+			  success: function( data ) {
+				  //alert("data: "+data)
+				  //console.log(data);
+				  var capacityUpdateStatus = data.split("^")[0];
+				  itemIdsAndremainingCapacity = data.split("^")[1];
+				  //alert("capacityUpdateStatus:"+capacityUpdateStatus);
+				  //console.log(data);
+				  if(capacityUpdateStatus=="true")
+					  proceed = true;
+				  else{
+					  proceed = false;
+					  //alert("itemIdsAndremainingCapacity: "+itemIdsAndremainingCapacity);
+					  
+				  }
+			  },
+			  error: function( xhr,status,error ){
+				  proceed = false;
+				 
+			  }
+		});
+	}
+	
+	/*
+	if(!proceed && itemIdsAndSelectedDays.length>0){
+		proceed = true;
+	}*/
+	//UpdateCapacityAfterPaymentFail();
+	//proceed = false;
+	if(!proceed){
+		$("#tcSuccessSpan").css("display", "none");		
+		$("#tcSuccessSpan" ).html("");	
+		$("#tcErrorSpan").css("display", "block");		
+		$( "#tcErrorSpan" ).html("Sorry the programs you selected has already been booked, Please check your updated cart");
+		
+		if(itemIdsAndremainingCapacity!=""){
+			 cartPreviewModel.updateWaitlistIncart(itemIdsAndremainingCapacity);
+		}
+		
+		setTimeout(function(){
+			gotocartpage();
+		}, 3000);
+		
+	}
+	
+	return proceed;
+}
+
+function UpdateCapacityAfterPaymentFail(){
+	var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+	//itemDetailsId = ArrNoDupe(itemDetailsId);
+	
+	if(cart.contents.length>0){
+
+		$.each(cart.contents, function(i,itemsData) {
+			var itemIdsAndSelectedDays = [];
+			var confirmedItems = 0;
+			var waitlistedItems = 0;
+			
+			if(itemsData.item.programType=='CHILD CARE' && itemsData.item.category!='After School'){
+				var daysId = itemsData.item.dayId;
+				var hasWLDays = itemsData.item.hasWLDays;
+				var selectedDays = itemsData.item.days;
+				selectedDays = selectedDays.replace(new RegExp(",", 'g'), ";");
+				
+				var WLDays = " ";
+				if(WLDays.length>0){
+					 WLDays = itemsData.item.WLDays;
+				}
+				itemIdsAndSelectedDays.push(selectedDays+" AND "+daysId+" AND "+hasWLDays+" AND "+WLDays);
+				
+			} else {
+				var qty = 1 ;
+				if(itemsData.item.programType == 'EVENT'){
+				     qty = parseInt(itemsData.noOfTickets)
+				 }
+				if(itemsData.waitlist)
+					waitlistedItems = waitlistedItems + qty;
+				else
+					confirmedItems = confirmedItems + qty;
+			}
+
+			// TODO need to optimize and make call a single call  
+			var itemDetailId =  itemsData.item.itemDetailsId ;
+			$.ajax({
+				  type: "GET",
+				  async: false,
+				  url:"UpdateCapacityAfterPaymentFail?itemDetailsId="+itemDetailId+"&confirmedItems="+confirmedItems+"&waitlistedItems="+waitlistedItems+"&itemIdsAndSelectedDays="+itemIdsAndSelectedDays.join('::'),
+				  dataType: "json",
+				  success: function( data ) {
+					  console.log(data);
+				  },
+				  error: function( xhr,status,error ){
+					  console.log(error);
+				  }
+			});
+			
+		});
+	}
+	
+/*	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"UpdateCapacityAfterPaymentFail?itemDetailsId="+itemDetailsId+"&confirmedItems="+confirmedItems+"&waitlistedItems="+waitlistedItems,
+		  dataType: "json",
+		  success: function( data ) {
+			  console.log(data);
+		  },
+		  error: function( xhr,status,error ){
+			 			 
+		  }
+	});*/
+}
+
+/*function checkAgeRange(iIds, cIds){
+	var proceed = false;
+	var errMsg = "";
+	
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"checkAgeRange?itemDetailIds="+iIds+"&contactIds="+cIds,
+		  success: function( data ) {
+			  console.log(data);
+			  var ageStatus = data.split("_")[0];
+			  errMsg = data.split("_")[1];
+			 // alert(ageStatus);
+			  if(ageStatus=="true")
+				  proceed = true;
+			  else
+				  proceed = false;
+		  },
+		  error: function( xhr,status,error ){
+			  proceed = false;
+			 
+		  }
+	});
+	
+	//alert(proceed);
+	if(!proceed){
+		$("#tcSuccessSpan").css("display", "none");		
+		$("#tcSuccessSpan" ).html("");	
+		$("#tcErrorSpan").css("display", "block");		
+		$( "#tcErrorSpan" ).html("You cannot register for program due to below errors: <br>"+errMsg);
+		return;
+	}
+	
+	return proceed;
+}*/
+
+function isMember(contactId){
+	var proceed = false;
+	
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"checkIfMember?contactId="+contactId,
+		  success: function( data ) {
+			  
+			  if(data)
+				  proceed = true;
+			  else
+				  proceed = false;
+		  },
+		  error: function( xhr,status,error ){
+			  proceed = false;
+			 
+		  }
+	});
+	
+	return proceed;
+}
+
+function showCampActivityAndTransportService(){
+	//$("#checkout_content").show();
+	hideAllWizrad();
+
+	var cIds = "";
+	var item_Detail_Ids =  "" ; 
+	$('#allmembers').find('input[class="usercheck"]').each(function(){
+		if($("#user_"+this.value).is(':checked')){
+			var cId = this.value.split("_")[1];
+			var contact = getContactDataSource(cId);
+			cIds = cIds + contact.id + "_" + contact.fname + " "  + contact.lname  + "," ;
+		}
+	});
+	$('#program_session').find('input[name="selectedItemSession"]').each(function(){
+		if($(this).is(':checked')){
+			item_Detail_Ids = item_Detail_Ids + this.value + "," ;
+		}
+	});
+	
+	var ccItemDetailIds = [];
+	$('#childcare_list').find('input[name="days_slot"]').each(function(){
+		if($("#slot_"+this.value).is(':checked')){
+			var itemdayId = this.value;
+			var itemDetailsId = itemdayId.split("_")[1];
+			ccItemDetailIds.push(itemDetailsId);
+		}
+	});
+	var inServiceItemDetailId =  $("input[name=inServiceRadio]:checked").val();
+	if(inServiceItemDetailId && inServiceItemDetailId > 0){
+		ccItemDetailIds.push(inServiceItemDetailId);
+	}
+	
+	var afterSchoolItemDetailId =  $("input[name=afterSchoolRadio]:checked").val();
+	if(afterSchoolItemDetailId && afterSchoolItemDetailId > 0){
+		ccItemDetailIds.push(afterSchoolItemDetailId);
+	}
+	ccItemDetailIds = ArrNoDupe(ccItemDetailIds);
+	
+	//item_Detail_Ids = item_Detail_Ids.slice(0,-1);
+	item_Detail_Ids = item_Detail_Ids + ""+ ccItemDetailIds.join(",");
+	cIds = cIds.slice(0,-1);
+	
+	loadActivityTransportData(item_Detail_Ids,cIds,false);
+	//gotocheckout();
+}
+
+function showEmergencyContactIfFlagIsSet(){
+	var itemDetailIds = $.sessionStorage.getItem('itemDetailsId');
+	$.ajax({
+		  type: "GET", 
+		  url:"showEmergencyContact?itemDetailsId="+itemDetailIds,
+		  async:false,
+		  dataType: "json",
+		  success: function( data ) {
+			  if(data){
+				  $("#familymembers").fadeOut(200);
+				  $("#checkout_content").hide();
+				  $("#contactHealthHistoryDiv").hide();
+				  showEmergencyContact();
+			  }else{
+				  /*
+				  $("#familymembers").fadeOut(200);
+				  $("#checkout_content").show();
+				  $("#contactHealthHistoryDiv").hide();*/
+				  //gotocheckout();
+				  showAuthorisedContactIfFlagIsSet();
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(" Error on showEmergencyContactIfFlagIsSet: "+xhr);
+			  showAuthorisedContactIfFlagIsSet();
+		  }
+	});
+}
+
+/*function showEmergencyContact(){
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getEmergencyContacts",
+		  dataType: "json",
+		  success: function( data ) {
+			  if(data.length>0){
+				  var allContacts = "";
+				 
+				  $.each(data, function(i,member) {
+					  //alert(member.isChild);
+					  allContacts = allContacts + "<div style='margin: 10px;'>";
+					  allContacts = allContacts + "<div style='float:left; width:200px;'>";
+					  if(member.isAdult)
+						  allContacts = allContacts + "<span><input type='radio' name='emergency_user_' id='user_"+member.contactId+"' value='"+member.contactId+"' class='usercheck' checked='checked'></span>";
+					  else
+						  allContacts = allContacts + "<span><input type='radio' name='emergency_user_' id='user_"+member.contactId+"' value='"+member.contactId+"' class='usercheck'></span>";
+					  allContacts = allContacts + "&nbsp;&nbsp;<span class='name'>"+member.fname + " " +member.lname+"</span>";
+					  allContacts = allContacts + "</div>";
+					  
+					  
+					  allContacts = allContacts + "<div style='float:left;'>";
+					  allContacts = allContacts + "&nbsp;&nbsp;<span>["+member.age+"]</span>";
+					  allContacts = allContacts + "</div>";
+					  
+					  
+					  allContacts = allContacts + "</div>";
+					  allContacts = allContacts + "<div style='clear: both;'></div> ";
+				  });
+				  
+				  $("#emergencyContact").slideDown();
+				  $("#allEmergencyContacts").html(allContacts);
+				  $("input[type='checkbox']").uniform();
+				  $("#input[name='membertype_']").kendoDropDownList();
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+}*/
+
+
+function hideAllWizrad(){
+	$("#familymembers").fadeOut(200);
+	$("#contactHealthHistoryDiv").hide();
+	$("#emergencyContact").hide();
+	$("#authorisedContact").hide();
+	$("#contactActivityDiv").hide();
+	$("#contactTransportDiv").hide();
+	$(".k-loading-mask").hide();
+}
+function gotocheckout(){
+	hideAllWizrad();
+	$(".k-loading-mask").show();
+	$("#details-checkout").css("width", "1000px");	
+	$("#checkout_content").show();
+	$(".k-loading-mask").hide();
+}
+
+function showAuthorisedContactIfFlagIsSet(){
+	var itemDetailIds = $.sessionStorage.getItem('itemDetailsId');
+	$.ajax({
+		  type: "GET", 
+		  url:"showAuthorisedContact?itemDetailsId="+itemDetailIds,
+		  async:false,
+		  dataType: "json",
+		  success: function( data ) {
+			  if(data){
+				  $("#familymembers").fadeOut(200);
+				  $("#checkout_content").hide();
+				  $("#contactHealthHistoryDiv").hide();
+				  $("#emergencyContact").hide();
+				  showAuthorisedContact();
+			  }else{
+				  $("#familymembers").fadeOut(200);
+				  $("#checkout_content").hide();
+				  $("#contactHealthHistoryDiv").hide();
+				  $("#emergencyContact").hide();
+				  
+				  showCampActivityAndTransportService();
+				  //gotocheckout();
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(" Error on showAuthorisedContactIfFlagIsSet: "+xhr);
+			  //showCampActivityAndTransportService();
+			  //gotocheckout();
+		  }
+	});
+}
+
+function showEmergencyContact(){
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getEmergencyContacts",
+		  dataType: "json",
+		  success: function( data ) {
+			  if(data.length>0){
+				  
+				  var products = items.data();
+				  
+				  var allProducts = "<table>";
+				  allProducts = allProducts + "<tr style='margin-left: 10px;'>";
+				  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><b>Items</b></td>";
+				  allProducts = allProducts + "<td>";
+				  allProducts = allProducts + "<table>";
+				  allProducts = allProducts + "<tr>";
+				  allProducts = allProducts + "<td style='margin-left: 10px;' width='30px'></td>";
+				  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><b>Contact</b></td>";
+				  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><b>Age</b></td>";
+				  allProducts = allProducts + "</tr>";
+				  allProducts = allProducts + "</table>";
+				  allProducts = allProducts + "</td>";
+				  allProducts = allProducts + "</tr>";
+				  
+				  allProducts = allProducts + "<tr><td colspan='2'><hr></td></tr>";
+				  
+				  for(var i=0;i<products.length;i++){
+					  var product = products[i];
+					  allProducts = allProducts + "<tr style='margin-left: 10px;'>";
+					  allProducts = allProducts + "<td style='margin-left: 20px; vertical-align: top;' width='150px'>";
+					  allProducts = allProducts + "<span class='name'><b>"+product.name+"</b></span>";
+					  allProducts = allProducts + "</td>";
+					  
+					  allProducts = allProducts + "<td>";
+					  allProducts = allProducts + "<table>";
+					  var noOfContacts = 0;
+					  var contactsData = contacts.data();
+					  for(var j=0;j<contactsData.length;j++){
+						  var contact = contactsData[j];
+						  var isEmergencyContact = false;
+						  var emergencyContact;
+						  for(var k=0;k<data.length;k++){
+							  if(contact.contactId == data[k].id){
+								  isEmergencyContact = true;
+								  emergencyContact = data[k];
+							  }
+						  }
+						  if(isEmergencyContact){
+							  if(emergencyContact.age >= 18){
+								  noOfContacts++;
+								  allProducts = allProducts + "<tr>";
+								  
+									  if(emergencyContact && emergencyContact.isLoggedInUser && emergencyContact.isLoggedInUser == 'Y'){
+										  allProducts = allProducts + "<td style='margin-left: 10px;' width='30px'><span><input type='radio' name='emg_user_"+product.id+"' id='emg_user_"+product.id+"_"+contact.contactId+"' value='"+contact.contactId+"' class='usercheck'  checked='checked'></span></td>";  
+									  }else{
+										  allProducts = allProducts + "<td style='margin-left: 10px;' width='30px'><span><input type='radio' name='emg_user_"+product.id+"' id='emg_user_"+product.id+"_"+contact.contactId+"' value='"+contact.contactId+"' class='usercheck'  ></span></td>";
+									  }
+									  
+									  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><span class='name'>"+contact.fname+" "+contact.lname+"</span></td>";
+									  if(emergencyContact){
+										  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><span>["+emergencyContact.age+"]</span></td>";
+								  }
+								  
+								  allProducts = allProducts + "</tr>";
+							  }
+						  }
+					  }
+					  
+					  if(noOfContacts == 0){
+						  allProducts = allProducts + "<tr><td style='margin-left: 10px;' colspan='3'><span>No adult contact found.";
+						  allProducts = allProducts + "</span></td></tr>";
+					  }
+					  
+					  allProducts = allProducts + "</table>";
+					  allProducts = allProducts + "</td>";
+					  allProducts = allProducts + "</tr>";
+				  }
+				  
+				  $("#EmgContactCounter").val(noOfContacts);
+				 
+				  allProducts = allProducts + "</table>";
+				  
+				  $("#emergencyContact").slideDown();
+				  $("#allEmergencyContacts").html(allProducts);
+				  $("input[type='radio']").uniform();
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(xhr);
+		  }
+	});
+}
+
+function isValidEmergencyContact(){
+	var products = items.data();
+	for(var i=0;i<products.length;i++){
+		  var product = products[i];
+		  if($("#EmgContactCounter").val() > 0){
+			  // Do Nothing
+			  /*if(!$("input[name=emg_user_"+product.id+"]:checked").val()){
+				  	$("#tcSuccessSpan").css("display", "none");
+					$("#tcSuccessSpan" ).html("");
+					$("#tcErrorSpan").css("display", "block");
+					$("#tcErrorSpan" ).html("Please select emergency contact for each item");
+					return false;
+			  }*/
+		  }else{
+			  	$("#tcSuccessSpan").css("display", "none");
+				$("#tcSuccessSpan" ).html("");
+				$("#tcErrorSpan").css("display", "block");
+				$("#tcErrorSpan" ).html("Please select emergency contact for each item");
+				return false;
+		  }
+	}
+	return true;
+}
+
+function showAuthorisedContact(){
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getAuthorisedContacts",
+		  dataType: "json",
+		  success: function( data ) {
+			  if(data.length>0){
+				  var products = items.data();
+				  
+				  var allProducts = "<table>";
+				  allProducts = allProducts + "<tr style='margin-left: 10px;'>";
+				  allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><b>Items</b></td>";
+				  allProducts = allProducts + "<td>";
+				  allProducts = allProducts + "<table>";
+				  allProducts = allProducts + "<tr>";
+				  allProducts = allProducts + "<td style='margin-left: 10px;' width='30px'></td>";
+				  allProducts = allProducts + "<td style='margin-left: 20px;' width='250px'><b>Contact</b></td>";
+				  /*allProducts = allProducts + "<td style='margin-left: 20px;' width='150px'><b>Age</b></td>";*/
+				  allProducts = allProducts + "</tr>";
+				  allProducts = allProducts + "</table>";
+				  allProducts = allProducts + "</td>";
+				  allProducts = allProducts + "</tr>";
+				  
+				  allProducts = allProducts + "<tr><td colspan='2'><hr></td></tr>";
+				  
+				  for(var i=0;i<products.length;i++){
+					  var product = products[i];
+					  allProducts = allProducts + "<tr style='margin-left: 10px;'>";
+					  allProducts = allProducts + "<td style='margin-left: 20px; vertical-align: top;' width='150px'>";
+					  allProducts = allProducts + "<span class='name'><b>"+product.name+"</b></span>";
+					  allProducts = allProducts + "</td>";
+					  
+					  allProducts = allProducts + "<td>";
+					  allProducts = allProducts + "<table>";
+					  
+					  var contactsData = contacts.data();
+					  
+					  allProducts = allProducts + "<tr>";
+					  allProducts = allProducts + "<td style='margin-left: 10px;' width='250px'><span>";
+					  allProducts = allProducts + "<select id='auth_user_"+product.id+"' multiple='multiple'>";
+					  for(var j=0;j<contactsData.length;j++){
+						  var contact = contactsData[j];
+						  var isEmergencyContact = false;
+						  var emergencyContact;
+						  for(var k=0;k<data.length;k++){
+							  if(contact.contactId == data[k].id){
+								  isEmergencyContact = true;
+								  emergencyContact = data[k];
+							  }
+						  }
+						  if(isEmergencyContact){
+							  allProducts = allProducts + "<option value='"+contact.contactId+"'>"+contact.fname+" "+contact.lname+" ["+emergencyContact.age+"]</option>";
+						  }
+					  }
+					  allProducts = allProducts + "</select>";
+					  
+					  allProducts = allProducts + "</span></td>";
+					  allProducts = allProducts + "</tr>";
+					  
+					  allProducts = allProducts + "</table>";
+					  allProducts = allProducts + "</td>";
+					  allProducts = allProducts + "</tr>";
+				  }
+				 
+				  allProducts = allProducts + "</table>";
+				  
+				  $("#authorisedContact").slideDown();
+				  $("#allAuthorisedContacts").html(allProducts);
+				  for(var i=0;i<products.length;i++){
+					  var product = products[i];
+					  $('#auth_user_'+product.id+' :nth-child(1)').prop('selected', true);
+					  /*$("#auth_user_"+product.id).multiselect({
+						  includeSelectAllOption: true
+					  });*/
+				  }
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(xhr);
+		  }
+	});
+}
+
+/*function showAuthorisedContact(){
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getAuthorisedContacts",
+		  dataType: "json",
+		  success: function( data ) {
+			  if(data.length>0){
+				  var allContacts = "";
+				 
+				  $.each(data, function(i,member) {
+					  //alert(member.isChild);
+					  allContacts = allContacts + "<div style='margin: 10px;'>";
+					  allContacts = allContacts + "<div style='float:left; width:200px;'>";
+					  if(member.isAdult)
+						  allContacts = allContacts + "<span><input type='radio' name='authorised_user_' id='user_"+member.contactId+"' value='"+member.contactId+"' class='usercheck' checked='checked'></span>";
+					  else
+						  allContacts = allContacts + "<span><input type='radio' name='authorised_user_' id='user_"+member.contactId+"' value='"+member.contactId+"' class='usercheck'></span>";
+					  allContacts = allContacts + "&nbsp;&nbsp;<span class='name'>"+member.fname + " " +member.lname+"</span>";
+					  allContacts = allContacts + "</div>";
+					  
+					  allContacts = allContacts + "<div style='float:left;'>";
+					  allContacts = allContacts + "&nbsp;&nbsp;<span>["+member.age+"]</span>";
+					  allContacts = allContacts + "</div>";
+					  
+					  
+					  allContacts = allContacts + "</div>";
+					  allContacts = allContacts + "<div style='clear: both;'></div> ";
+				  });
+				  
+				  //alert(allContacts);
+				  $("#authorisedContact").slideDown();
+				  $("#allAuthorisedContacts").html(allContacts);
+				  
+				  $("input[type='checkbox']").uniform();
+				  $("#input[name='membertype_']").kendoDropDownList();
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+}*/
+
+function replaceAll(string, find, replace) {
+	  return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+
+function getActivitiesyByCIdAndItemId(cId,itemId){
+	var actParam = "";
+	if (typeof(activityDataSource) != "undefined") {
+		var data = activityDataSource.data();
+		for (var i = 0; i < data.length; i++) {
+			var actData = data[i] ;	
+			if (cId == actData.cId && itemId == actData.parentItemId && (actData.priority != null || actData.priority != 'null')) {
+				actParam = actParam  + actData.cId + "$" + actData.parentItemId +  "$" + actData.associatedItemId + "$"  + actData.priority + "#";
+			}
+		}
+	}
+	console.log(" actParam "+actParam);
+	if (actParam == "") actParam = " ";
+	return actParam;
+}
+
+function showInserviceIndividualDays(itemDetailId){
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"showInserviceIndividualDays?itemDetailId="+itemDetailId,
+		  dataType: "json",
+		  success: function( data ) {
+			  if(data.length>0){
+				  var allContacts = "";
+				  
+				  var hasPastDateInDays = false;
+				  $.each(data, function(i,itemDetailDay) {
+					  //alert(member.isChild);
+					  var showdisplay = "block";
+					  if(itemDetailDay.hasPastDates){
+						  showdisplay = "none";
+						  hasPastDateInDays = true;
+					  }
+					  //alert(showdisplay);
+					  allContacts = allContacts + "<div style='margin: 10px; display:"+showdisplay+"'>";
+					  allContacts = allContacts + "<div style='float:left; width:200px;'>";
+						  allContacts = allContacts + "<span><input type='checkbox' name='inServiceSelectedDays' id='inServiceSelectedDays_"+itemDetailDay.dayId+"' value='"+itemDetailDay.remainingcapacity+"' class='usercheck'></span>";
+						  allContacts = allContacts + "&nbsp;&nbsp;<span class='name' style='margin-left: 50px;'>"+itemDetailDay.day + " [" +itemDetailDay.remainingcapacity+"]</span>";
+					  allContacts = allContacts + "</div>";
+					  allContacts = allContacts + "<input type='hidden' name='memberprice' id='memberprice_"+itemDetailDay.dayId+"' value='"+itemDetailDay.memberprice+"'>";
+					  allContacts = allContacts + "<input type='hidden' name='nonmemberprice' id='nonmemberprice_"+itemDetailDay.dayId+"' value='"+itemDetailDay.nonmemberprice+"'>";
+					  allContacts = allContacts + "<input type='hidden' name='hasPastDates' id='hasPastDates_"+itemDetailDay.dayId+"' value='"+itemDetailDay.hasPastDates+"'>";
+					  allContacts = allContacts + "<input type='hidden' name='signupDate' id='signupDate_"+itemDetailDay.dayId+"' value='"+convertJsonDate(itemDetailDay.date_c)+"'>";
+					  allContacts = allContacts + "<input type='hidden' name='isCapacity' id='isCapacity_"+itemDetailId+"_"+itemDetailDay.dayId+"' value='"+itemDetailDay.remainingcapacity+"'>";
+					  
+					  allContacts = allContacts + "<div style='float:left; width:200px;'>";
+					  allContacts = allContacts + "&nbsp;&nbsp;<span>Date:</span>&nbsp;<span>["+convertJsonDate(itemDetailDay.date_c)+"]</span>";
+					  allContacts = allContacts + "</div>";
+					 
+					  allContacts = allContacts + "<div style='float:left;'>";
+					  allContacts = allContacts + "&nbsp;&nbsp;<span>Member Price:</span>&nbsp;<span>["+currencyFormat(itemDetailDay.memberprice)+"]</span>";
+					  allContacts = allContacts + "&nbsp;/&nbsp;<span>Nonmember Price:</span>&nbsp;<span>["+currencyFormat(itemDetailDay.nonmemberprice)+"]</span>";
+					  allContacts = allContacts + "</div>";
+					  
+					  allContacts = allContacts + "</div>";
+					  allContacts = allContacts + "<div style='clear: both;'></div> ";
+					  
+				  });
+				  allContacts = allContacts + "<input type='hidden' name='hasPastDateInDays' id='hasPastDateInDays' value='"+hasPastDateInDays+"'>";
+				  
+				  $("#selectInServiceDays").slideDown();
+				  $("#allinservicedays").html(allContacts);
+				  if(hasPastDateInDays){
+					  $("#pkgPriceInfo").html("");
+					  $("#pkgPriceInfo").hide();
+				  }
+				  $("input[type='checkbox']").uniform();
+				  //$("#input[name='membertype_']").kendoDropDownList();
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+}
+
+function populateItemDetailIds(item_Detail_Ids){
+	var savedItemDetailId = $.sessionStorage.getItem('itemDetailsId');
+	//var itemDetailIdLst = item_Detail_Ids.join(',');
+	//alert(savedItemDetailId);
+	if(savedItemDetailId!=null && typeof savedItemDetailId !='undefined'){
+		var array = savedItemDetailId.split(",");
+		$.each(array,function(i){
+			if($.inArray(array[i], item_Detail_Ids) == -1){
+			   //alert(array[i]);
+			   item_Detail_Ids.push(array[i]);
+			}
+		});
+	}
+	
+	$.sessionStorage.setItem('itemDetailsId', unique(item_Detail_Ids).join(","));
+	return item_Detail_Ids;
+}
+
+function getUniqueItemDetailIdsFromCart(cartObj){
+	var other = [], id;
+	
+	$.each(cartObj.contents, function(i,itemsData) {
+	   id = itemsData.item.itemDetailsId; 
+	   // create it and assign it to a new empty array
+	   if($.inArray(id, other) == -1)
+	      other.push(id);
+	
+	});
+	
+	//console.log(other);
+	return other;
+}
+
+function initProducts(){
+	var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+	
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getallProducts?ids="+itemDetailsId,
+		  dataType: "json",
+		  success: function( products ) {
+			  items.read({ data: products });
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(xhr);
+		  }
+	 });
+}
+
+function getItemFromDataSource(id){
+	var object = null ;
+	if (typeof(items) != "undefined") {
+		var data = items.data();
+		for (var i = 0; i < data.length; i++) {
+			var d = data[i] ;	
+			if (id == d.id) {
+				object = d;
+			}
+		}
+	}
+	return object ;
+}
+
+function getContactDataSource(cId){
+	var object = null ;
+	if (typeof(contacts) != "undefined") {
+		var data = contacts.data();
+		for (var i = 0; i < data.length; i++) {
+			var d = data[i] ;	
+			if (cId == d.id) {
+				object = d;
+			}
+		}
+	}
+	return object ;
+}
+
+function isValidPricingRule(contact,pricingRule,item){
+	var isValid = false ;
+	if (contact.age >= pricingRule.fromAge && contact.age <= pricingRule.toAge) {
+		isValid = true;
+	}
+	if(item.programType != 'EVENT'){
+		var pricing = getPricingRule(contact,item);
+		if (pricingRule.id != pricing.id) {
+			isValid = false;
+		}
+	}
+	return isValid;
+}
+
+function getPricingRule(contact,item){
+	var pricingRule = null ;
+	for(var j=0; j<item.signuppriceArr.length; j++){
+		var pricing  = item.signuppriceArr[j]
+		if (contact.age >= pricing.fromAge && contact.age <= pricing.toAge) {
+			pricingRule = pricing;
+			break ;
+		}
+	}
+	if (pricingRule == null) {
+		pricingRule = item.signuppriceArr[0];
+	}
+	return pricingRule;
+}
+
+function getPriceByAge(contact,item,memberField,nonNemberField) {
+	var pricingRule = getPricingRule(contact,item);
+	return getPriceByMemberNonMember(contact,pricingRule,memberField,nonNemberField);
+}
+
+function getPriceByMemberNonMember(contact,pricingRule,memberField,nonNemberField){
+	if(contact.isMember) return pricingRule[memberField];
+	else 	return pricingRule[nonNemberField];
+}
+
+function monthDiff(d1, d2) {
+    var months;
+    months = (d2.getFullYear() - d1.getFullYear()) * 12;
+    months -= d1.getMonth() + 1;
+    months += d2.getMonth() + 1;
+    return months <= 0 ? 0 : months;
+}
+
+function getSelectedContacts(){
+	var selectedContacts = {};
+	$('#allmembers').find('input[class="usercheck"]').each(function(){
+		if($("#user_"+this.value).is(':checked')){
+			var cId = this.value.split("_")[1];
+			var contact = getContactDataSource(cId);
+			selectedContacts[cId] = contact ;
+		}
+	});
+	return selectedContacts ;
+}
+
+function getPrimaryOrFirstAdultContact(){
+	var selectedContacts = getSelectedContacts() ;
+	var c = null ;
+	for (var cid in selectedContacts) {
+		var sc = selectedContacts[cid] ;
+		if (sc.isPrimary) {
+			c = sc;
+			break;
+		}
+	}
+	if (c == null) {
+		for (var cid in selectedContacts) {
+			var sc = selectedContacts[cid] ;
+			if (sc.age >= 18) {
+				c = sc;
+				break;
+			}
+		}		
+	}
+	return c ;
+
+}

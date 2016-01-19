@@ -1,0 +1,666 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+
+/**
+ * This class represents the basic "Payment" object in YMCA Portal that allows for Payment process management.  
+ */
+@Entity
+@Table(name = "payment_method")
+public class PaymentMethod extends BaseObject implements Serializable {
+	private static final long serialVersionUID = -3202944701848397747L;
+
+	public PaymentMethod(){
+    }
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long paymentId;
+
+    @Column(name = "payment_type")
+   	private String paymentType;                    	
+    
+    @Column(name = "card_number")
+    private String cardNumber;
+    
+    @Column(name = "expiration_month", length = 2)
+    private String expirationMonth;
+
+    @Column(name = "expiration_year", length = 2)
+    private String expirationYear;
+    
+    @Column(name = "full_name")
+    private String fullName;
+    
+    @Column(name = "billing_address_line1")
+    private String billingAddressLine1;                
+    
+    @Column(name = "billing_address_line2")
+    private String billingAddressLine2;
+    
+    @Column(name = "billing_city")
+    private String billingCity;
+    
+    @Column(name = "billing_state")
+    private String billingState;
+    
+    @Column(name = "billing_country")
+    private String billingCountry;
+    
+    @Column(name = "is_Primary")
+    private Integer isPrimary;
+
+    @Column(name = "status")
+    private Integer status;
+    
+    @Column(name = "security_code")
+    private String securityCode;
+    
+    @Column(name = "billing_zip")
+    private String billingZip;
+    
+    @Column(name = "nick_name")
+    private String nickName;
+    
+    @Column(name = "bank_routing_number")
+    private String bankRoutingNumber;
+    
+    @Column(name = "checking_account_number")
+    private String checkingAccountNumber;
+    
+    @Column(name = "drivers_license_number")
+    private String driversLicenseNumber;
+    
+    @Column(name = "state_of_dl")
+    private String stateOfDL;
+    
+    @Column(name = "order_number")
+    private String orderNumber;
+    
+    @Column(name = "phone_number")
+    private String phoneNumber;
+    
+    @Column(name = "token_number")
+    private String tokenNumber;  
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name="accountId")
+	private Account customer;
+    
+    @Column(name = "portal_status")
+    private String portalStatus;  
+    
+    @Column(name = "card_type")
+    private String cardType;  
+    
+	@Column(name = "trans_id")
+    private String transId;    
+    
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "paymentId")
+    private List<Donation> donation = new ArrayList<Donation>();
+    
+    @Column(name = "oldToken")
+    private String oldToken;
+    
+	/**
+	 * @return the paymentId
+	 */
+	public Long getPaymentId() {
+		return paymentId;
+	}
+
+	/**
+	 * @param paymentId the paymentId to set
+	 */
+	public void setPaymentId(Long paymentId) {
+		this.paymentId = paymentId;
+	}
+
+
+	/**
+	 * @return the paymentType
+	 */
+	public String getPaymentType() {
+		return paymentType;
+	}
+
+	/**
+	 * @param paymentType the paymentType to set
+	 */
+	public void setPaymentType(String paymentType) {
+		this.paymentType = paymentType;
+	}
+
+	/**
+	 * @return the cardNumber
+	 */
+	public String getCardNumber() {
+		return cardNumber;
+	}
+
+	/**
+	 * @param cardNumber the cardNumber to set
+	 */
+	public void setCardNumber(String cardNumber) {
+		this.cardNumber = cardNumber;
+	}
+
+	/**
+	 * @return the fullName
+	 */
+	public String getFullName() {
+		return fullName;
+	}
+
+	/**
+	 * @param fullName the fullName to set
+	 */
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+
+	/**
+	 * @return the billingAddressLine1
+	 */
+	public String getBillingAddressLine1() {
+		return billingAddressLine1;
+	}
+
+	/**
+	 * @param billingAddressLine1 the billingAddressLine1 to set
+	 */
+	public void setBillingAddressLine1(String billingAddressLine1) {
+		this.billingAddressLine1 = billingAddressLine1;
+	}
+
+	/**
+	 * @return the billingAddressLine2
+	 */
+	public String getBillingAddressLine2() {
+		return billingAddressLine2;
+	}
+
+	/**
+	 * @param billingAddressLine2 the billingAddressLine2 to set
+	 */
+	public void setBillingAddressLine2(String billingAddressLine2) {
+		this.billingAddressLine2 = billingAddressLine2;
+	}
+
+	/**
+	 * @return the billingCity
+	 */
+	public String getBillingCity() {
+		return billingCity;
+	}
+
+	/**
+	 * @param billingCity the billingCity to set
+	 */
+	public void setBillingCity(String billingCity) {
+		this.billingCity = billingCity;
+	}
+
+	/**
+	 * @return the billingState
+	 */
+	public String getBillingState() {
+		return billingState;
+	}
+
+	/**
+	 * @param billingState the billingState to set
+	 */
+	public void setBillingState(String billingState) {
+		this.billingState = billingState;
+	}
+
+	/**
+	 * @return the billingCountry
+	 */
+	public String getBillingCountry() {
+		return billingCountry;
+	}
+
+	/**
+	 * @param billingCountry the billingCountry to set
+	 */
+	public void setBillingCountry(String billingCountry) {
+		this.billingCountry = billingCountry;
+	}
+
+	/**
+	 * @return the isPrimary
+	 */
+	public Integer getIsPrimary() {
+		return isPrimary;
+	}
+
+	/**
+	 * @param isPrimary the isPrimary to set
+	 */
+	public void setIsPrimary(Integer isPrimary) {
+		this.isPrimary = isPrimary;
+	}
+
+	/**
+	 * @return the status
+	 */
+	public Integer getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+
+	public String getSecurityCode() {
+		return securityCode;
+	}
+
+	public void setSecurityCode(String securityCode) {
+		this.securityCode = securityCode;
+	}
+
+	public String getBillingZip() {
+		return billingZip;
+	}
+
+	public void setBillingZip(String billingZip) {
+		this.billingZip = billingZip;
+	}
+
+	public String getNickName() {
+		return nickName;
+	}
+
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
+	}
+
+	public String getBankRoutingNumber() {
+		return bankRoutingNumber;
+	}
+
+	public void setBankRoutingNumber(String bankRoutingNumber) {
+		this.bankRoutingNumber = bankRoutingNumber;
+	}
+
+	public String getCheckingAccountNumber() {
+		return checkingAccountNumber;
+	}
+
+	public void setCheckingAccountNumber(String checkingAccountNumber) {
+		this.checkingAccountNumber = checkingAccountNumber;
+	}
+
+	public String getDriversLicenseNumber() {
+		return driversLicenseNumber;
+	}
+
+	public void setDriversLicenseNumber(String driversLicenseNumber) {
+		this.driversLicenseNumber = driversLicenseNumber;
+	}
+
+	public String getStateOfDL() {
+		return stateOfDL;
+	}
+
+	public void setStateOfDL(String stateOfDL) {
+		this.stateOfDL = stateOfDL;
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public String getTokenNumber() {
+		return tokenNumber;
+	}
+
+	public void setTokenNumber(String tokenNumber) {
+		this.tokenNumber = tokenNumber;
+	}
+
+	public Account getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Account customer) {
+		this.customer = customer;
+	}
+
+	public String getPortalStatus() {
+		return portalStatus;
+	}
+
+	public void setPortalStatus(String portalStatus) {
+		this.portalStatus = portalStatus;
+	}
+
+	public String getCardType() {
+		return cardType;
+	}
+
+	public void setCardType(String cardType) {
+		this.cardType = cardType;
+	}
+
+	public String getTransId() {
+		return transId;
+	}
+
+	public void setTransId(String transId) {
+		this.transId = transId;
+	}
+
+	public List<Donation> getDonation() {
+		return donation;
+	}
+
+	public void setDonation(List<Donation> donation) {
+		this.donation = donation;
+	}
+
+	public String getOldToken() {
+		return oldToken;
+	}
+
+	public void setOldToken(String oldToken) {
+		this.oldToken = oldToken;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime
+				* result
+				+ ((bankRoutingNumber == null) ? 0 : bankRoutingNumber
+						.hashCode());
+		result = prime
+				* result
+				+ ((billingAddressLine1 == null) ? 0 : billingAddressLine1
+						.hashCode());
+		result = prime
+				* result
+				+ ((billingAddressLine2 == null) ? 0 : billingAddressLine2
+						.hashCode());
+		result = prime * result
+				+ ((billingCity == null) ? 0 : billingCity.hashCode());
+		result = prime * result
+				+ ((billingCountry == null) ? 0 : billingCountry.hashCode());
+		result = prime * result
+				+ ((billingState == null) ? 0 : billingState.hashCode());
+		result = prime * result
+				+ ((billingZip == null) ? 0 : billingZip.hashCode());
+		result = prime * result
+				+ ((cardNumber == null) ? 0 : cardNumber.hashCode());
+		result = prime * result
+				+ ((cardType == null) ? 0 : cardType.hashCode());
+		result = prime
+				* result
+				+ ((checkingAccountNumber == null) ? 0 : checkingAccountNumber
+						.hashCode());
+		result = prime * result
+				+ ((customer == null) ? 0 : customer.hashCode());
+		result = prime * result
+				+ ((donation == null) ? 0 : donation.hashCode());
+		result = prime
+				* result
+				+ ((driversLicenseNumber == null) ? 0 : driversLicenseNumber
+						.hashCode());
+		result = prime * result
+				+ ((expirationMonth == null) ? 0 : expirationMonth.hashCode());
+		result = prime * result
+				+ ((expirationYear == null) ? 0 : expirationYear.hashCode());
+		result = prime * result
+				+ ((fullName == null) ? 0 : fullName.hashCode());
+		result = prime * result
+				+ ((isPrimary == null) ? 0 : isPrimary.hashCode());
+		result = prime * result
+				+ ((nickName == null) ? 0 : nickName.hashCode());
+		result = prime * result
+				+ ((paymentId == null) ? 0 : paymentId.hashCode());
+		result = prime * result
+				+ ((paymentType == null) ? 0 : paymentType.hashCode());
+		result = prime * result
+				+ ((phoneNumber == null) ? 0 : phoneNumber.hashCode());
+		result = prime * result
+				+ ((portalStatus == null) ? 0 : portalStatus.hashCode());
+		result = prime * result
+				+ ((securityCode == null) ? 0 : securityCode.hashCode());
+		result = prime * result
+				+ ((stateOfDL == null) ? 0 : stateOfDL.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result
+				+ ((tokenNumber == null) ? 0 : tokenNumber.hashCode());
+		result = prime * result
+				+ ((oldToken == null) ? 0 : oldToken.hashCode());
+		result = prime * result + ((transId == null) ? 0 : transId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PaymentMethod other = (PaymentMethod) obj;
+		if (bankRoutingNumber == null) {
+			if (other.bankRoutingNumber != null)
+				return false;
+		} else if (!bankRoutingNumber.equals(other.bankRoutingNumber))
+			return false;
+		if (billingAddressLine1 == null) {
+			if (other.billingAddressLine1 != null)
+				return false;
+		} else if (!billingAddressLine1.equals(other.billingAddressLine1))
+			return false;
+		if (billingAddressLine2 == null) {
+			if (other.billingAddressLine2 != null)
+				return false;
+		} else if (!billingAddressLine2.equals(other.billingAddressLine2))
+			return false;
+		if (billingCity == null) {
+			if (other.billingCity != null)
+				return false;
+		} else if (!billingCity.equals(other.billingCity))
+			return false;
+		if (billingCountry == null) {
+			if (other.billingCountry != null)
+				return false;
+		} else if (!billingCountry.equals(other.billingCountry))
+			return false;
+		if (billingState == null) {
+			if (other.billingState != null)
+				return false;
+		} else if (!billingState.equals(other.billingState))
+			return false;
+		if (billingZip == null) {
+			if (other.billingZip != null)
+				return false;
+		} else if (!billingZip.equals(other.billingZip))
+			return false;
+		if (cardNumber == null) {
+			if (other.cardNumber != null)
+				return false;
+		} else if (!cardNumber.equals(other.cardNumber))
+			return false;
+		if (cardType == null) {
+			if (other.cardType != null)
+				return false;
+		} else if (!cardType.equals(other.cardType))
+			return false;
+		if (checkingAccountNumber == null) {
+			if (other.checkingAccountNumber != null)
+				return false;
+		} else if (!checkingAccountNumber.equals(other.checkingAccountNumber))
+			return false;
+		if (customer == null) {
+			if (other.customer != null)
+				return false;
+		} else if (!customer.equals(other.customer))
+			return false;
+		if (donation == null) {
+			if (other.donation != null)
+				return false;
+		} else if (!donation.equals(other.donation))
+			return false;
+		if (driversLicenseNumber == null) {
+			if (other.driversLicenseNumber != null)
+				return false;
+		} else if (!driversLicenseNumber.equals(other.driversLicenseNumber))
+			return false;
+		if (expirationMonth == null) {
+			if (other.expirationMonth != null)
+				return false;
+		} else if (!expirationMonth.equals(other.expirationMonth))
+			return false;
+		if (expirationYear == null) {
+			if (other.expirationYear != null)
+				return false;
+		} else if (!expirationYear.equals(other.expirationYear))
+			return false;
+		if (fullName == null) {
+			if (other.fullName != null)
+				return false;
+		} else if (!fullName.equals(other.fullName))
+			return false;
+		if (isPrimary == null) {
+			if (other.isPrimary != null)
+				return false;
+		} else if (!isPrimary.equals(other.isPrimary))
+			return false;
+		if (nickName == null) {
+			if (other.nickName != null)
+				return false;
+		} else if (!nickName.equals(other.nickName))
+			return false;
+		if (paymentId == null) {
+			if (other.paymentId != null)
+				return false;
+		} else if (!paymentId.equals(other.paymentId))
+			return false;
+		if (paymentType == null) {
+			if (other.paymentType != null)
+				return false;
+		} else if (!paymentType.equals(other.paymentType))
+			return false;
+		if (phoneNumber == null) {
+			if (other.phoneNumber != null)
+				return false;
+		} else if (!phoneNumber.equals(other.phoneNumber))
+			return false;
+		if (portalStatus == null) {
+			if (other.portalStatus != null)
+				return false;
+		} else if (!portalStatus.equals(other.portalStatus))
+			return false;
+		if (securityCode == null) {
+			if (other.securityCode != null)
+				return false;
+		} else if (!securityCode.equals(other.securityCode))
+			return false;
+		if (stateOfDL == null) {
+			if (other.stateOfDL != null)
+				return false;
+		} else if (!stateOfDL.equals(other.stateOfDL))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (tokenNumber == null) {
+			if (other.tokenNumber != null)
+				return false;
+		} else if (!tokenNumber.equals(other.tokenNumber))
+			return false;
+		if (transId == null) {
+			if (other.transId != null)
+				return false;
+		} else if (!transId.equals(other.transId))
+			return false;
+		if (oldToken == null) {
+			if (other.oldToken != null)
+				return false;
+		} else if (!oldToken.equals(other.oldToken))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "PaymentMethod [paymentId=" + paymentId + ", paymentType="
+				+ paymentType + ", cardNumber=" + cardNumber
+				+ ", expirationMonth=" + expirationMonth + ", expirationYear="
+				+ expirationYear + ", fullName=" + fullName
+				+ ", billingAddressLine1=" + billingAddressLine1
+				+ ", billingAddressLine2=" + billingAddressLine2
+				+ ", billingCity=" + billingCity + ", billingState="
+				+ billingState + ", billingCountry=" + billingCountry
+				+ ", isPrimary=" + isPrimary + ", status=" + status
+				+ ", securityCode=" + securityCode + ", billingZip="
+				+ billingZip + ", nickName=" + nickName
+				+ ", bankRoutingNumber=" + bankRoutingNumber
+				+ ", checkingAccountNumber=" + checkingAccountNumber
+				+ ", driversLicenseNumber=" + driversLicenseNumber
+				+ ", stateOfDL=" + stateOfDL + ", phoneNumber=" + phoneNumber
+				+ ", tokenNumber=" + tokenNumber + ", customer=" + customer
+				+ ", portalStatus=" + portalStatus + ", cardType=" + cardType
+				+ ", transId=" + transId + ", donation=" + donation + "]";
+	}
+
+	public String getOrderNumber() {
+		return orderNumber;
+	}
+
+	public void setOrderNumber(String orderNumber) {
+		this.orderNumber = orderNumber;
+	}
+
+	public String getExpirationMonth() {
+		return expirationMonth;
+	}
+
+	public void setExpirationMonth(String expirationMonth) {
+		this.expirationMonth = expirationMonth;
+	}
+
+	public String getExpirationYear() {
+		return expirationYear;
+	}
+
+	public void setExpirationYear(String expirationYear) {
+		this.expirationYear = expirationYear;
+	}
+
+	
+}

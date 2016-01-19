@@ -1,0 +1,45 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.ItemDetail;
+
+public interface ItemDetailDao extends GenericDao<ItemDetail, Long>  {
+	
+	ItemDetail getById(Long id);
+	
+	@Query("select i from ItemDetail i inner join i.location l where l.id =?1 and DATE(i.registrationStartDate)= DATE(?2) and i.type= ?3")
+	ItemDetail getByLocationsAndRegistrationStartDate(Long locationId,Date date,String type);
+	
+	//@Query("select i from ItemDetail i where i.itemType =?1 and i.itemSubtype =?2 ")
+	List<ItemDetail> findByType_AndSubType_(String itemType,String subType);
+	
+	//@Query("select i from ItemDetail i inner join i.locations l where i.itemType =?1 and i.itemSubtype =?2 and l.locationId =?3 ")
+	//List<ItemDetail> findByType_AndSubType_AndlocationId(String itemType,String subType,Long locId);
+	
+	@Query("select distinct i.subType from ItemDetail i where i.type =?1")
+	List<Object[]> getDistinctItemsubtypeByType(String type);
+	
+	//@Query("select distinct type from ItemDetail")
+	//List<ItemDetail> findDistinct();
+	
+	//@Query("select distinct RecordName from ItemDetail where type = ?1")
+	List<ItemDetail> findDistinctItemDetailByType(String type);
+	
+	//@Query("select distinct recordName from ItemDetails where itemType = ?1")
+	List<ItemDetail> findDistinctItemDetailBySubType(String SubType);
+	
+	//@Query("select i from ItemDetail i where i.type='MEMBERSHIP' and i.startDate >=?1 and i.endDate <=?2 and i.type=?3 and i.recordName=?4 and i.location=?5")
+	//List<ItemDetail> getMembershipProgram(Date startDate, Date endDate, String category, String recordName, Location location);
+	
+	@Query("select  i.id, i.recordName, i.description, i.type, i.duration, i.waiversAndTC.tcDescription, l.tier, i.id from ItemDetail i inner join i.location l where l.id =?1 and i.type='MEMBERSHIP' and i.status='ACTIVE'")	
+	List<Object[]> getMembershipProgramByLocation(Long locationId);
+	
+	List<ItemDetail> findBySubType(String subType);
+	
+	List<ItemDetail> findByStatus(String status);
+	
+}

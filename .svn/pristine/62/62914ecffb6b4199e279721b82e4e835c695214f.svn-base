@@ -1,0 +1,13 @@
+package com.serene.job.dao;
+
+import org.springframework.stereotype.Repository;
+
+import com.serene.job.model.ChildObject;
+import com.serene.job.model.ChildObjectPrimaryKey;
+
+
+@Repository
+public interface ChildObjectDao  extends GenericDao<ChildObject,ChildObjectPrimaryKey> {    
+
+	
+}

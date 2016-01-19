@@ -1,0 +1,417 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+   
+   <script>
+   
+	$(document).ready(function(){
+		$("select#signuppricingDD.kendodrop").kendoDropDownList();
+	});
+	
+	</script>
+<div id="application"></div>
+<script type="text/x-kendo-template" id="layout-template">
+            <div id="cart-wrapper">
+				<div id="cart-header">
+                    
+                    <span id="cart-info">Your Cart: <span><span data-bind="text: cart.contentsCount"></span> items</span></span>
+                </div>
+                <div id="main-section">
+					<span id="dspErr" class="k-block k-error-colored" data-bind="text: cart.errMsg" style="display:none; padding: 4px 30px 4px 15px;"></span>
+                    <section id="content"></section>
+					<section id="checkout_content"></section>
+                </div>
+            </div>
+</script>
+
+<script type="text/x-kendo-template" id="index-template">
+	<div align="center">
+		<span id="add-to-cart">
+            <span class="k-button" id="addproduct">Continue</span>
+		</span>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="product-template">
+	<span class="buy" data-bind="click: addToCart">Continue</span>
+</script>
+
+<script type="text/x-kendo-template" id="checkout-template">
+			<div id="details-checkout">
+                <h1 style="text-align:left;float:left;">Cart Details</h1>
+				<a class="emptycart" href="#" data-bind="click: emptyCart">Empty Cart</a>
+
+				<div style="margin-bottom:20px; text-align: left;">
+					<span class="alertNotice">If you need to add a 3rd party payer, please stop and contact a Y agent to continue the sign up process.</span>
+					<br><br>
+					<span class="alertNotice">Wait-listed items are not included in the total price, please continue with the sign up process to register for the wait-listed items.</span>
+					<br><br>
+					<span class="alertNotice">Waitlist will be auto charged once spot opens</span>
+					<br><br>
+					<span data-bind="text: InserviceMessage"></span>
+				</div>				
+
+				<table class="checkouttbl">
+					<thead>
+						<tr>
+							<th>Signup Details</th>
+							<!--<th>Session</th>-->
+							<th></th>						
+							<th align="right">Price</th>
+						</tr>
+					</thead>
+					<tbody data-role="listview" data-bind="source: cart.contents" data-template="large-cart-item">
+					</tbody>
+				</table>
+				
+				<div style="height: 170px;">
+					<div style="width: 100%; float: right;  margin-top: 10px;">
+						<p id="total-discount"><em>Discount:</em>
+						<span class="discountpricelbl">-</span>
+						<span class="discountpricelbl" data-bind="text: totalDiscountAmount"></span></p>
+						
+						<div id="promo" style="display:none;">
+							<span>Promo Code:</span>
+							&nbsp;&nbsp;
+							<span><input id="c_promocode" type="text" class="k-textbox" data-bind="value: manualPromoEntered"></span>
+							<span id="applypromo" class="k-button" onclick="fnApplyPromo(false);">Apply</span>
+						</div>
+											
+					</div>		
+
+					<div>
+						<p id="total-discount"><em>Total FA:</em>
+						<span class="discountpricelbl">-</span>
+						<span class="discountpricelbl" data-bind="text: totalFAPrice"></span></p>
+					</div>		
+					<div style="clear: both;"></div> 					
+					<div>
+						<p id="total-checkout"><em>total:</em><span data-bind="text: totalPrice"></span></p>
+					</div>
+				</div>
+				<div style="clear: both;"></div> 
+				
+				<div id="cartbtns">
+					
+					<button id="backtofamily" class="k-button" onclick="fnGotoFamilyMember();" style="display:none;"><< Back</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<!-- <button id="continueshopping" class="k-button" onclick="continueshop();">Continue Shopping</button> -->
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<c:if test="${empty agentUid}">
+						<button id="confirmBtn" class="k-button" onclick="fnSignupTerms();">Checkout</button>
+					</c:if>
+					<c:if test="${not empty agentUid}">
+						<button id="confirmBtn" class="k-button" onclick="fnCheckout();">Checkout</button>
+					</c:if>
+				</div>
+			</div>
+
+</script>
+
+<script type="text/x-kendo-template" id="large-cart-item">
+            <tr>
+                <td>
+					#if (item.programType == 'Event') { #
+						<span><b>Event Signup</b></span>
+					# } else if (item.programType == 'Program') { #
+						<span><b>Program Signup</b></span>
+					# } else if (item.programType == 'Child Care' && item.category == 'After School') { #
+						<span><b>After School Signup</b></span>
+					# } else if (item.programType == 'Child Care' && item.category == 'In Service') { #
+						<span><b>In Service Signup</b></span>
+					# } else if (item.programType == 'Child Care') { #
+						<span><b>Child Care Signup</b></span>
+					# } #
+					<br><br>
+					<span data-bind="text: contact.fname"></span>
+					<span data-bind="text: contact.lname"></span>
+					<!---
+					#if (waitlist) { #
+						<span class="alertNotice" id="waitlisted_span_#= uniqueId #"> [ Waitlisted ] </span>
+					# } else {#
+						<span class="alertNotice" id="waitlisted_span_#= uniqueId #" style="display: none;"> [ Waitlisted ] </span>
+					# } # --->
+					<span class="alertNotice" id="waitlisted_span_#= uniqueId #" data-bind="text: waitlistTxt"></span>
+					<br><br>
+
+					#if (selectedStartDate && selectedStartDate != '') { #
+						Selected Start Date: <span  data-bind="text: selectedStartDate"></span><br>
+					# } #
+					<span  data-bind="text: item.sessionName"></span><br>
+					
+					#if (item.category != 'Transportation') { #
+						[<span data-bind="text: item.days"></span>]
+					# } else { #
+						[<span data-bind="text: item.start_date_text"></span>]
+					# } #
+					#if (item.category != 'Transportation') { #
+						[<span>#= formatTime(new Date(item.start_time.time)) #</span>
+					 	- 
+						<span>#= formatTime(new Date(item.end_time.time)) #</span>]
+					# } else { #
+						[<span>#= formatTime(new Date(item.start_time.time)) #</span>]
+					# } #
+					<br>
+
+					<span><strong>Instructor:- </strong></span>
+					<span data-bind="text: item.instructor"></span>
+					<br>
+
+					<span class="product-name" data-bind="text: item.name"></span>&nbsp;
+					[<span><strong>Category:- </strong></span>
+					<span data-bind="text: item.category"></span>]
+					<br>
+					<span data-bind="text: item.description"></span>
+					<br><br>
+				</td>
+				<td align="left" style="padding-right: 0px; padding-top: 15px;" valign="top">
+					<textarea name="sp_request" id="sp_request_#= uniqueId #" data-bind="text: specialrequest" rows="3" cols="15" onkeyup="updateSpecialRequest('#= uniqueId #', $(this))" placeholder="Enter any Special Request"></textarea>
+					<br><br><br><br>
+					<a data-bind="click: removeFromCart" class="view-selected-items" style="text-decoration: underline; cursor:pointer;">
+						<!--<img src="resources/img/blue_cross.jpg"  width="30" height="30">-->
+						Remove
+					</a>
+				</td>
+				<td align="right" width="280px" style="padding-top: 15px;" valign="top">
+					<!-- signup price -->
+					<p class="signup_price" id="signup_price_#= uniqueId #">
+						<span>SIGNUP PRICE:</span>
+						#if (item.signuppriceArr.length >0) { #
+						<span>
+							<select id="signuppricingDD_#= uniqueId #" name="signuppricingDD_#= uniqueId #" class="kendodrop" data-bind="value: signupPriceOption" onchange="updateCart('#= uniqueId #', 'SignUpPrice', $(this))" style="width:120px;">
+								# for(i=0; i<item.signuppriceArr.length; i++){ #
+									# if(isValidPricingRule(contact,item.signuppriceArr[i],item)) { #								
+										<option value="#=i#">#=item.signuppriceArr[i].priceoption # ($ #= getPriceByAge(contact,item,'memberPrice','nonmemberPrice', item.signuppriceArr[i].priceoption) #)</option>
+									# } #
+								# } #
+							</select>
+						</span>
+						# } #
+						<!--<span class="table-price" data-bind="text: itemPrice"><span>-->
+					</p>
+					
+					<!-- pro-rated price -->
+					#if (proRatedSignupPrice > 0) { #	<!-- isMinPayment &&  -->
+					<p class="join_fee" id="join_fee_#= uniqueId #">
+						<span>PRO RATED PRICE:</span>
+						<span class="table-price cartpricedisplay" data-bind="text: proRatedSignupPriceTxt"><span>
+					</p>
+					# } #
+
+					<!-- No of tickets -->
+					#if (item.programType == 'Event') { #
+					<p class="setup_price" id="no_of_tickets_packages_#= uniqueId #">
+						<span id="no_of_tickets_packages_label_#= uniqueId #" data-bind="text: noOfTicketsOrPackagesLabel">NO OF TICKETS:</span>
+						<span>
+							<input name="no_of_tickets_packages_text_#= uniqueId #" id="no_of_tickets_packages_text_#= uniqueId #" class="k-textbox" maxlength="3" data-bind="value: noOfTicketsOrPackagesVal" onkeyup="updateCart('#= uniqueId #', 'NoOfTicketsOrPackages', $(this))" style="width: 40px;" onkeypress="return checkKeyPressEventIsNumeric(event)" value="">
+						<span>
+					</p>
+					# } #
+
+					#if (automaticPaymentInd) { #
+						#if (hideBillingOption == false) { #
+							<p class="signup_price" id="billing_option_#= uniqueId #">
+						# } else { #
+							<p class="signup_price" id="billing_option_#= uniqueId #" style="display:none">
+						# } #
+								<span>BILLING OPTION:</span>
+								<span>
+									<select disabled="disabled" id="billingOptionDD_#= uniqueId #" name="billingOptionDD_#= uniqueId #" class="kendodrop" data-bind="value: billingOptionVal" onchange="updateCart('#= uniqueId #', 'BillingOption', $(this))" style="width:120px;">
+										<option value="Automatic">Automatic</option>
+									</select>
+								</span>
+							</p>
+						
+					# } else { #
+					<p class="signup_price" id="billing_option_#= uniqueId #">
+						<span>BILLING OPTION:</span>
+						<span>
+							<select id="billingOptionDD_#= uniqueId #" name="billingOptionDD_#= uniqueId #" class="kendodrop" data-bind="value: billingOptionVal" onchange="updateCart('#= uniqueId #', 'BillingOption', $(this))" style="width:120px;">
+								<option value="Automatic">Automatic</option>
+								<option value="Manual">Manual</option>
+							</select>
+						</span>
+					</p>
+					# } #
+
+					<!-- auto promo signup dsp --->
+					#if(promotionMap != undefined){#
+						#for(var k=0; k<promotionMap.length; k++){#
+							#if(promotionMap[k].AutoPromo == 'Yes' && promotionMap[k].PromoRuleType == 'Sign Up' && promotionMap[k].discountValue > 0){#
+								<p class="auto_promo" id="auto_promo_signup_#= uniqueId #">
+									<span class="table-price" title="#= promotionMap[k].Description #">#= promotionMap[k].PromoCode #</span>
+									<span class="cartpricedisplay">
+										<span class="discountpricelbl">-</span>
+										<span class="table-price discountpricelbl" >#= promotionMap[k].discountValue #<span>
+									</span>
+								</p>
+								#if(promotionMap[k].noOfDiscountMonths > 0){#
+									<p class="auto_promo">
+										<span class="table-price">No of month's for discount:</span>
+										<span class="table-price cartpricedisplay">#= promotionMap[k].noOfDiscountMonths #</span>
+									</p>
+								#}#
+							#}#
+						#}#
+					#}#
+
+					<!-- manual promo signup --->
+					<p class="custom_promo" style="display:none;" id="manual_promo_signup_#= uniqueId #"></p>
+					
+					<!-- join price -->
+					#if (joinFee > 0) { #
+					<p class="join_fee" id="join_fee_#= uniqueId #">
+						<span>JOIN FEE:</span>
+						<span class="table-price cartpricedisplay" data-bind="text: joinFeeTxt"><span>
+					</p>
+					# } #
+
+					<!-- auto promo join fee dsp --->
+					#if(promotionMap != undefined){#
+						#for(var k=0; k<promotionMap.length; k++){#
+							#if(promotionMap[k].AutoPromo == 'Yes' && promotionMap[k].PromoRuleType == 'JoinFee' && promotionMap[k].discountValue > 0){#
+								<p class="auto_promo">			
+									<span class="table-price">#= promotionMap[k].PromoCode #</span>
+									<span class="cartpricedisplay">
+										<span class="discountpricelbl">-</span>
+										<span class="table-price discountpricelbl" >#= promotionMap[k].discountValue #<span>
+									</span>
+								</p>
+								#if(promotionMap[k].noOfDiscountMonths > 0){#
+									<p class="auto_promo">
+										<span class="table-price">No of month's for discount:</span>
+										<span class="table-price cartpricedisplay">#= promotionMap[k].noOfDiscountMonths #</span>
+									</p>
+								#}#
+							#}#
+						#}#
+					#}#
+
+					<!-- manual promo join fee --->
+					<p class="custom_promo" style="display:none;" id="manual_promo_joinfee_#= uniqueId #"></p>
+
+					<!-- setup price -->
+					#if (setupFee > 0) { #
+						<p class="setup_price" id="setup_price_#= uniqueId #">
+					# } else { #
+						<p class="setup_price" id="setup_price_#= uniqueId #" style="display:none">
+					# } #
+						<span>SETUP FEE:</span>
+						<span id="setup_price_text_#= uniqueId #" class="table-price cartpricedisplay" data-bind="text: setupPriceTxt"><span>
+					</p>
+					
+					<!-- auto promo setup fee dsp --->
+					#if(promotionMap != undefined){#
+						#for(var k=0; k<promotionMap.length; k++){#
+							#if(promotionMap[k].AutoPromo == 'Yes' && promotionMap[k].PromoRuleType == 'SetUpFee' && promotionMap[k].discountValue > 0){#
+								<p class="auto_promo">			
+									<span class="table-price">#= promotionMap[k].PromoCode #</span>
+									<span class="cartpricedisplay">
+										<span class="discountpricelbl">-</span>
+										<span class="table-price discountpricelbl" >#= promotionMap[k].discountValue #<span>
+									</span>
+								</p>
+								#if(promotionMap[k].noOfDiscountMonths > 0){#
+									<p class="auto_promo">
+										<span class="table-price">No of month's for discount:</span>
+										<span class="table-price cartpricedisplay">#= promotionMap[k].noOfDiscountMonths #</span>
+									</p>
+								#}#
+							#}#
+						#}#
+					#}#
+
+					<!-- manual promo setup fee --->
+					<p class="custom_promo" style="display:none;" id="manual_promo_setupfee_#= uniqueId #"></p>
+					
+					<!-- registration price -->
+					#if (registrationPrice > 0) { #
+						<p class="registration_price" id="registration_price_#= uniqueId #">
+					# } else { #
+						<p class="registration_price" id="registration_price_#= uniqueId #" style="display:none">
+					# } #
+						<span>REGISTRATION FEE:</span>
+						<span id="registration_price_text_#= uniqueId #" class="table-price cartpricedisplay" data-bind="text: registrationPriceTxt"><span>
+					</p>
+					
+					<!-- auto promo registration dsp --->
+					#if(promotionMap != undefined){#
+						#for(var k=0; k<promotionMap.length; k++){#
+							#if(promotionMap[k].AutoPromo == 'Yes' && promotionMap[k].PromoRuleType == 'Registration' && promotionMap[k].discountValue > 0){#
+								<p class="auto_promo">			
+									<span class="table-price">#= promotionMap[k].PromoCode #</span>
+									<span class="cartpricedisplay">
+										<span class="discountpricelbl">-</span>
+										<span class="table-price discountpricelbl" >#= promotionMap[k].discountValue #<span>
+									</span>
+								</p>
+								#if(promotionMap[k].noOfDiscountMonths > 0){#
+									<p class="auto_promo">
+										<span class="table-price">No of month's for discount:</span>
+										<span class="table-price cartpricedisplay">#= promotionMap[k].noOfDiscountMonths #</span>
+									</p>
+								#}#
+							#}#
+						#}#
+					#}#
+
+					<!-- manual promo registration --->
+					<p class="custom_promo" style="display:none;" id="manual_promo_registration_#= uniqueId #"></p>
+
+					<!-- deposit price -->
+					#if (depositAmount > 0) { #
+					<p class="deposit_price" id="deposit_price_#= uniqueId #">
+						<span>DEPOSIT AMOUNT:</span>
+						<span class="table-price cartpricedisplay" data-bind="text: depositAmountTxt"><span>
+					</p>
+					# } #
+
+					<!-- auto promo deposit dsp --->
+					#if(promotionMap != undefined){#
+						#for(var k=0; k<promotionMap.length; k++){#
+							#if(promotionMap[k].AutoPromo == 'Yes' && promotionMap[k].PromoRuleType == 'Deposit' && promotionMap[k].discountValue > 0){#
+								<p class="auto_promo">			
+									<span class="table-price">#= promotionMap[k].PromoCode #</span>
+									<span class="cartpricedisplay">
+										<span class="discountpricelbl">-</span>
+										<span class="table-price discountpricelbl" >#= promotionMap[k].discountValue #<span>
+									</span>
+								</p>
+								#if(promotionMap[k].noOfDiscountMonths > 0){#
+									<p class="auto_promo">
+										<span class="table-price">No of month's for discount:</span>
+										<span class="table-price cartpricedisplay">#= promotionMap[k].noOfDiscountMonths #</span>
+									</p>
+								#}#
+							#}#
+						#}#
+					#}#
+				
+					<!-- manual promo deposit --->
+					<p class="custom_promo" style="display:none;" id="manual_promo_deposit_#= uniqueId #"></p>
+
+					<!-- FA Amount -->
+					#if (FAamount > 0) { #
+					<p class="FAAmount" id="FAAmount_#= uniqueId #">
+						<span>FA AMOUNT:</span>
+						<span class="cartpricedisplay">
+							<span class="discountpricelbl">-</span>
+							<span class="table-price discountpricelbl" data-bind="text: FAamountUSD"><span>
+						</span>
+					</p>
+					# } #
+
+					<!-- Final Amount dsp --->
+					<p>
+						<span class="table-price">FINAL AMOUNT:</span>
+						<span class="table-price cartpricedisplay" data-bind="text: finalPrice"><span>
+					</p>
+				</td>
+            </tr>
+</script>
+
+<script id="delete-confirmation" type="text/x-kendo-template">
+    <p class="delete-message">Are you sure you want to remove this item from cart?</p>
+	
+    <div class="confirmbutton"><button class="delete-confirm k-button">Yes</button>&nbsp;&nbsp;&nbsp;
+    <span class="delete-cancel k-button">No</span></div>
+</script>

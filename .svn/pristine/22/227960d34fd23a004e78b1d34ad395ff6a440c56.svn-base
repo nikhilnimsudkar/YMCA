@@ -1,0 +1,676 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+
+
+/**
+ * This class represents the basic "Membership" object in YMCA Portal that allows for Membership management.  
+ *
+ */
+@Entity
+@Table(name = "account")
+public class Account extends BaseObject implements Serializable {
+    private static final long serialVersionUID = 3832626162173359411L;
+    
+
+	public Account(){
+    	
+    }
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)    
+    private Long accountId;					// required  PK
+    
+	@Column(name = "name", nullable = false)
+   	private String name;                    	
+    
+    @Column(name = "AddressLine1", nullable = false)
+    private String addressLine1;                
+    
+    @Column(name = "AddressLine2")
+    private String addressLine2;
+    
+    @Column(name = "City", nullable = false)
+    private String city;
+    
+    @Column(name = "State", nullable = false)
+    private String state;
+    
+    @Column(name = "Country",columnDefinition=" default 'US'")
+    private String country;    
+    
+    @Column(name = "email", nullable = false)
+   	private String email;  
+    
+    @Column(name = "PostalCode")
+    private String postalCode;
+    
+    @Column(name = "PartyId")
+    private Long PartyId ;
+    
+    @Column(name = "Location_c")
+    private String location ;
+    
+    @Column(name = "reset_password", columnDefinition="boolean default false")
+   	private boolean resetPassword;  
+    @Column(name = "token")
+   	private String token;  
+    @Column(name = "sentdate", columnDefinition="DATETIME")
+   	private Date sentdate;  
+    @Column(name = "passwordresetdate", columnDefinition="DATETIME")
+   	private Date passwordresetdate;  
+    
+    @Transient
+    private Long usrId;  
+    
+    @Transient
+    private String username;                  
+	
+    @Transient
+    private String password;                  
+	
+    @Transient
+    private String passwordHint;
+	
+    @Transient
+    private String firstName;                   
+	
+    @Transient
+    private String lastName;                    
+    
+    @Transient
+    private String phoneNumber;
+    
+    @Transient
+    private String homeNumber;
+    
+    @Transient
+    private String workNumber;
+	
+    @Transient
+    private Date dateOfBirth;	
+    
+    @Transient
+    private String website;
+    
+    @Transient
+    private String tcDescription;   
+    
+    @Transient
+    private String transId;
+    
+    @Transient
+    private String joiningFee;
+    
+    @Transient
+    private String productPrice;
+    
+    @Transient
+    private String locationId;
+    
+    @Transient
+    private String signUpProductType;    
+    
+    @Transient
+    private String membershipFrequency;
+    
+    @Transient
+    private String itemDetailsId;
+    
+    @Transient
+    private String expirationMonth;
+    
+    @Transient
+    private String expirationYear;
+    
+    @Transient
+    private String nickName;
+    
+    @Transient
+    private String loggedInUserEmailId;
+    
+    @Transient
+    private String savePayment;
+    
+    //@OneToOne
+    //private Contact contact;
+    
+    /*@OneToMany(cascade={CascadeType.ALL})
+	@JoinColumn(name="accountId")
+	@IndexColumn(name="idx")
+    private Set<Contact> contact = new HashSet<Contact>(0);*/
+    
+    //@OneToMany(cascade={CascadeType.ALL})
+    //@JoinColumn(name="accountId")
+    //private Set<User> user = new HashSet<User>(0);
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "accountId")
+    private Set<User> user = new HashSet<User>(0);
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "accountId")
+    private List<Activity> interactions = new ArrayList<Activity>();
+    
+    @Transient
+    private List<User> userLst = new ArrayList<>();
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "accountId")
+    private List<PaymentMethod> paymentMethod = new ArrayList<PaymentMethod>();
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "accountId")
+    private List<Donation> donation = new ArrayList<Donation>();
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "accountId")
+    private List<Payment> payment = new ArrayList<Payment>();
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "accountId")
+    private List<Signup> signup = new ArrayList<Signup>();
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "accountId")
+    private List<Invoice> invoice = new ArrayList<Invoice>();
+    
+    @Transient
+    private String productId;
+    
+    @Transient
+    private String paymentMethodId;
+    
+    private Calendar lastUpdated;
+    
+
+	public List<Payment> getPayment() {
+		return payment;
+	}
+
+	public void setPayment(List<Payment> payment) {
+		this.payment = payment;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getAddressLine1() {
+		return addressLine1;
+	}
+
+	public void setAddressLine1(String addressLine1) {
+		this.addressLine1 = addressLine1;
+	}
+
+	public String getAddressLine2() {
+		return addressLine2;
+	}
+
+	public void setAddressLine2(String addressLine2) {
+		this.addressLine2 = addressLine2;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public Long getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(Long accountId) {
+		this.accountId = accountId;
+	}
+
+	public Long getUsrId() {
+		return usrId;
+	}
+
+	public void setUsrId(Long usrId) {
+		this.usrId = usrId;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getPasswordHint() {
+		return passwordHint;
+	}
+
+	public void setPasswordHint(String passwordHint) {
+		this.passwordHint = passwordHint;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPostalCode() {
+		return postalCode;
+	}
+
+	public void setPostalCode(String postalCode) {
+		this.postalCode = postalCode;
+	}
+
+	public boolean isResetPassword() {
+		return resetPassword;
+	}
+
+	public void setResetPassword(boolean resetPassword) {
+		this.resetPassword = resetPassword;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	public Date getSentdate() {
+		return sentdate;
+	}
+
+	public void setSentdate(Date sentdate) {
+		this.sentdate = sentdate;
+	}
+
+	public Date getPasswordresetdate() {
+		return passwordresetdate;
+	}
+
+	public void setPasswordresetdate(Date passwordresetdate) {
+		this.passwordresetdate = passwordresetdate;
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public String getHomeNumber() {
+		return homeNumber;
+	}
+
+	public void setHomeNumber(String homeNumber) {
+		this.homeNumber = homeNumber;
+	}
+
+	public String getWorkNumber() {
+		return workNumber;
+	}
+
+	public void setWorkNumber(String workNumber) {
+		this.workNumber = workNumber;
+	}
+
+	public Date getDateOfBirth() {
+		return dateOfBirth;
+	}
+
+	public void setDateOfBirth(Date dateOfBirth) {
+		this.dateOfBirth = dateOfBirth;
+	}
+
+	public String getWebsite() {
+		return website;
+	}
+
+	public void setWebsite(String website) {
+		this.website = website;
+	}
+
+	public String getTcDescription() {
+		return tcDescription;
+	}
+
+	public void setTcDescription(String tcDescription) {
+		this.tcDescription = tcDescription;
+	}
+
+	/*public Set<User> getUser() {
+		return user;
+	}
+
+	public void setUser(Set<User> user) {
+		this.user = user;
+	}*/
+
+	public Set<User> getUser() {
+		return user;
+	}
+
+	public void setUser(Set<User> user) {
+		this.user = user;
+	}
+
+	public List<User> getUserLst() {
+		return userLst;
+	}
+
+	public void setUserLst(List<User> userLst) {
+		this.userLst = userLst;
+	}
+
+	
+
+	public List<Activity> getInteractions() {
+		return interactions;
+	}
+
+	public void setInteractions(List<Activity> interactions) {
+		this.interactions = interactions;
+	}
+
+	public List<PaymentMethod> getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(List<PaymentMethod> paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public List<Donation> getDonation() {
+		return donation;
+	}
+
+	public void setDonation(List<Donation> donation) {
+		this.donation = donation;
+	}
+
+	public List<Signup> getSignup() {
+		return signup;
+	}
+
+	public void setSignup(List<Signup> signup) {
+		this.signup = signup;
+	}
+
+	public String getProductId() {
+		return productId;
+	}
+
+	public void setProductId(String productId) {
+		this.productId = productId;
+	}
+
+	public String getPaymentMethodId() {
+		return paymentMethodId;
+	}
+
+	public void setPaymentMethodId(String paymentMethodId) {
+		this.paymentMethodId = paymentMethodId;
+	}
+
+	public String getTransId() {
+		return transId;
+	}
+
+	public void setTransId(String transId) {
+		this.transId = transId;
+	}
+
+	public String getJoiningFee() {
+		return joiningFee;
+	}
+
+	public void setJoiningFee(String joiningFee) {
+		this.joiningFee = joiningFee;
+	}
+
+	public String getProductPrice() {
+		return productPrice;
+	}
+
+	public void setProductPrice(String productPrice) {
+		this.productPrice = productPrice;
+	}
+
+	public String getSignUpProductType() {
+		return signUpProductType;
+	}
+
+	public void setSignUpProductType(String signUpProductType) {
+		this.signUpProductType = signUpProductType;
+	}
+
+	@Override
+	public String toString() {
+		return "Account [accountId=" + accountId + ", name=" + name
+				+ ", addressLine1=" + addressLine1 + ", addressLine2="
+				+ addressLine2 + ", city=" + city + ", state=" + state
+				+ ", country=" + country + ", email=" + email + ", postalCode="
+				+ postalCode + ", PartyId=" + PartyId + ", Location_c="
+				+ location + ", resetPassword=" + resetPassword + ", token="
+				+ token + ", sentdate=" + sentdate + ", passwordresetdate="
+				+ passwordresetdate + ", usrId=" + usrId + ", username="
+				+ username + ", password=" + password + ", passwordHint="
+				+ passwordHint + ", firstName=" + firstName + ", lastName="
+				+ lastName + ", phoneNumber=" + phoneNumber + ", homeNumber="
+				+ homeNumber + ", workNumber=" + workNumber + ", dateOfBirth="
+				+ dateOfBirth + ", website=" + website + ", tcDescription="
+				+ tcDescription + ", transId="
+				+ transId + ", joiningFee=" + joiningFee + ", productPrice="
+				+ productPrice + ", locationId=" + locationId
+				+ ", signUpProductType=" + signUpProductType
+				+ ", membershipFrequency=" + membershipFrequency
+				+ ", itemDetailsId=" + itemDetailsId + ", expirationMonth="
+				+ expirationMonth + ", expirationYear=" + expirationYear
+				+ ", nickName=" + nickName + ", loggedInUserEmailId="
+				+ loggedInUserEmailId + ", savePayment=" + savePayment
+				+ ", user=" + user + ", interactions=" + interactions
+				+ ", membership=" +  ", userLst=" + userLst
+				+ ", paymentMethod=" + paymentMethod + ", donation=" + donation
+				+ ", payment=" + payment + ", signup=" + signup + ", invoice="
+				+ invoice + ", productId=" + productId + ", paymentMethodId="
+				+ paymentMethodId + "]";
+	}
+	
+	public String getMembershipFrequency() {
+		return membershipFrequency;
+	}
+
+	public void setMembershipFrequency(String membershipFrequency) {
+		this.membershipFrequency = membershipFrequency;
+	}
+
+	public String getItemDetailsId() {
+		return itemDetailsId;
+	}
+
+	public void setItemDetailsId(String itemDetailsId) {
+		this.itemDetailsId = itemDetailsId;
+	}
+
+	public String getLoggedInUserEmailId() {
+		return loggedInUserEmailId;
+	}
+
+	public void setLoggedInUserEmailId(String loggedInUserEmailId) {
+		this.loggedInUserEmailId = loggedInUserEmailId;
+	}
+
+	public String getExpirationMonth() {
+		return expirationMonth;
+	}
+
+	public void setExpirationMonth(String expirationMonth) {
+		this.expirationMonth = expirationMonth;
+	}
+
+	public String getExpirationYear() {
+		return expirationYear;
+	}
+
+	public void setExpirationYear(String expirationYear) {
+		this.expirationYear = expirationYear;
+	}
+
+	public String getNickName() {
+		return nickName;
+	}
+
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
+	}
+
+
+
+	public String getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(String locationId) {
+		this.locationId = locationId;
+	}
+
+	public Long getPartyId() {
+		return PartyId;
+	}
+
+	public void setPartyId(Long partyId) {
+		PartyId = partyId;
+	}
+
+	public String getLocation_c() {
+		return location;
+	}
+
+	public void setLocation_c(String location_c) {
+		location_c = location_c;
+	}
+
+	public List<Invoice> getInvoice() {
+		return invoice;
+	}
+
+	public void setInvoice(List<Invoice> invoice) {
+		this.invoice = invoice;
+	}
+
+	public String getSavePayment() {
+		return savePayment;
+	}
+
+	public void setSavePayment(String savePayment) {
+		this.savePayment = savePayment;
+	}
+	
+
+	public Calendar getLastUpdated() {
+		return lastUpdated;
+	}
+
+	public void setLastUpdated(Calendar lastUpdated) {
+		this.lastUpdated = lastUpdated;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((PartyId == null) ? 0 : PartyId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Account other = (Account) obj;
+		if (PartyId == null) {
+			if (other.PartyId != null)
+				return false;
+		} else if (!PartyId.equals(other.PartyId))
+			return false;
+		return true;
+	}
+	
+}

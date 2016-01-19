@@ -1,0 +1,532 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<div id="programinfoPg">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+	
+	<c:choose>
+<c:when test="${NoMembersHip==null }">
+
+	<div id="tabstrip3" class="k-block" style="background-color:#FFFFFF; padding:9px;margin-left:7px;">	
+		<span id="head" class="head" width="100%" style="margin-left: 4px;">MEMBERSHIP DETAILS</span>
+		&nbsp;&nbsp;
+		<span id="upmembershipBtn" class="k-button upmembershipBtnCls">Update Membership</span>
+		<br><br><br>
+		
+		<div id="mem_frm"  style="background-color: #fffff9; padding:10px; width:90%; margin-left:20px; min-height:250px;">
+			<div id="updatemeberFrm" style="display:none;">
+				<input type="radio" name="updatemembership" id="transfermembershipBtn">&nbsp;Transfer Membership
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="radio" name="updatemembership" id="changemembershipBtn">&nbsp;Change Membership
+				
+				
+				<div id="tranfermemberFrm" style="margin-top:15px; padding:10px;">
+					
+					<div style="float:left;">
+						Transfer From Member:<br><br>
+						<select name="transferfrom_pick" id="transferfrom_pick" style="width:220px;">
+							<option value="Amy">Amy</option>
+						</select>
+					</div>
+					
+					<div class="transfer">&nbsp;</div>
+					
+					<div style="float:left;">
+						Transfer To Member:<br><br>
+						<select name="transferto_pick" id="transferto_pick" style="width:220px;">
+							<option value="Test">Test</option>
+						</select>
+					</div>
+					
+					<div style="width:100%; position:absolute; top:535px; left:-195px;" align="right">
+						<span id="nextBtn" class="k-button">Next >></span>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					</div>
+				</div>
+			</div>
+			
+			<div id="cart" style="display:none;">
+				<%@ include file="transfercart.jsp" %> 
+			</div>
+			
+			<div id="tandc" style="display:none;">
+      			<section>
+        			<div class="terms">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+        			<br><br>
+        			<input type="checkbox" name="chkTermsAndCond" style="margin-top: 10px;">&nbsp;I accept terms and conditions
+				</section>
+				
+				<div id="movefromtandc" style="width:100%; position:absolute; top:535px; left:-195px;" align="right"> 
+					<span id="gotocart" class="k-button"><< Previous</span>
+					<span id="gotosummary" class="k-button">Next >></span>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				</div>
+				
+				<div id="movefromtandc1" style="width:100%; position:absolute; top:535px; left:-195px; display:none;" align="right">
+					<span id="gotochangecartp" class="k-button"><< Previous</span>
+					<span id="gotonewsummary" class="k-button">Next >></span>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				</div>
+			</div>
+			
+			<div id="summary" style="display:none;">
+				<div>
+					<div>
+						<strong>Membership transferred from: </strong><br>
+						<span style="font-weight: normal">Kate winslet</span><br>
+						<span><strong>Membership ID:</strong></span>&nbsp;IND007
+					</div>
+					
+					<div style="margin-top:30px;">
+						<strong>Membership transferred to: </strong><br>
+						<span style="font-weight: normal">Amy Wilson</span><br>
+						<span><strong>New Membership ID:</strong></span>&nbsp;IND007
+					</div>
+					
+					<div style=" margin-top:20px;">
+						<strong>Membership Details: </strong><br>
+						<div style="background-color: #fffff9;">
+						<table cellpadding="0" cellspacing="10" width="100%" rules="none" style="">
+							<tr>
+								<td width="230px"><span>${labelVal.get("membershipNo") } </span></td>
+								<td width="20px"><strong>:</strong></td>
+								<td><span>${member.membershipNumber}</span></td>
+							</tr>
+							<!-- <tr><td ><hr></td></tr> -->
+							<tr>
+								<td><span>${labelVal.get("membershipType") }</span></td>
+								<td><strong>:</strong></td>
+								<td><span>${member.membershipType}</span></td>
+							</tr>
+							<!-- <tr><td ><hr></td></tr> -->
+							<tr>
+								<td><span>${labelVal.get("membershipStartDate") }</span></td>
+								<td><strong>:</strong></td>
+								<td><span><fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${member.membershipBeginDate}" /></span></td>
+							</tr>
+						</table>
+						</div>
+					</div>
+				</div>
+				
+				<div style="width:100%; position:absolute; top:535px; left:-195px;" align="right"> 
+					<span id="gototandcp" class="k-button"><< Previous</span>
+					<span id="gotoconfirmation" class="k-button">Confirm Transfer</span>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				</div>
+			</div>
+			
+			<div id="confirmation" style="display:none;">
+				The Membership has been transferred
+			</div>
+			
+			<!-- change membership -->
+			<div id="changemembershipFrm" style="display:none;">
+				<div>
+					<div style=" margin-top:20px;">
+						<strong>Your Membership Details: </strong><br>
+						<div style="background-color: #fffff9;">
+						<table cellpadding="0" cellspacing="10" width="100%" rules="none" style="">
+							<tr>
+								<td width="230px"><span>${labelVal.get("membershipNo") }</span></td>
+								<td width="20px"><strong>:</strong></td>
+								<td><span>${member.membershipNumber}</span></td>
+							</tr>
+							<!-- <tr><td ><hr></td></tr> -->
+							<tr>
+								<td><span>${labelVal.get("membershipType") }</span></td>
+								<td><strong>:</strong></td>
+								<td><span>${member.membershipType}</span></td>
+							</tr>
+							<!-- <tr><td ><hr></td></tr> -->
+							<tr>
+								<td><span>${labelVal.get("membershipStartDate") }</span></td>
+								<td><strong>:</strong></td>
+								<td><span><fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${member.membershipBeginDate}" /></span></td>
+							</tr>
+						</table>
+						</div>
+					</div>
+					
+					<div style=" margin-top:20px;">
+						<strong>Select New Membership Option: </strong><br><br>
+						
+						<div style="margin-bottom:20px;">
+							Select Location:
+							<select name="location" id="location" style="width:250px;">
+								<c:forEach var="location" items="${locations}" varStatus="count">
+									<option value="${location.locationId }">${location.branchName }</option>
+								</c:forEach>
+							</select>
+							&nbsp;&nbsp;&nbsp;&nbsp;
+							<input type="radio" name="adult" id="adult">
+							Adult Membership
+						</div>
+						
+						<div class="k-block" style="background-color:#FFFFFF;">
+						<table cellpadding="0" id="memberlst" width="100%">
+							<thead>
+								<tr class="lsthead">
+									<th>&nbsp;</th>
+									<th width="60px;">ID</th>
+									<th width="180px;">Product Name</th>
+									<th width="240px;">Product Description</th>			
+									<th width="140px;">Product Price</th>			
+									<th width="60px">&nbsp;</th>
+								</tr>
+							</thead>
+							<tbody id="salesAccData" style="min-height: 200px;">
+								
+								<c:forEach var="product" items="${products }">
+						            <tr>
+						            	<td>
+											<input type="radio" id="tandc${product.productId }" name="termsAndCondition" class="termsAndCondition" />
+										  	<input class="tcSpan" style="display:none;" value="<c:out value='${product.waiversAndTC.tcDescription}'/>"></input>	
+										  	<span class="memProductIdSpan"	style="display:none;"><c:out value="${product.productId}"/></span>  
+										  	<span class="memProductNameSpan"	style="display:none;"><c:out value="${product.productName}"/></span>  
+										  	<span class="memProductDescSpan"	style="display:none;"><c:out value="${product.description}"/></span>  
+										  	<span class="memProductTypeSpan"	style="display:none;"><c:out value="${product.productType}"/></span>  
+										  	<span class="memProductDurationSpan"	style="display:none;"><c:out value="${product.duration}"/></span>  
+										  	<span class="memPricingRuleIdSpan"	style="display:none;"><c:out value="${product.pricingRule.pricingRuleId}"/></span>
+										  	<span class="memTierPriceSpan"	style="display:none;"><c:out value="${product.pricingRule.tierPrice}"/></span>						
+										</td>
+						            	<td width="60px" align="left">${product.productId }</td>
+										<td width="180px" align="left">${product.productName }</td>
+										<td width="240px" align="left">${product.description }</td>				
+										<td width="140px" align="left">$ ${product.pricingRule.tierPrice}</td>
+										<td width="60px" align="left">&nbsp;</td>
+										<%-- <td>${product.pricingRule.tierPrice }</td> --%>
+										
+										
+						            </tr>
+						        </c:forEach>	
+							</tbody>
+						</table>  
+						</div>
+					</div>
+				</div>
+				
+				<div style="width:100%; position:relative; margin-top:10px;" align="right"> 
+					<span id="gotochangecart" class="k-button">Next >></span>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				</div>
+			</div>
+			
+			<div id="newmembership_summary" style="display:none;">
+				<div style=" margin-top:20px;">
+					<strong>New Membership Summary: </strong><br>
+					<div style="background-color: #fffff9;">
+					<table cellpadding="0" cellspacing="10" width="100%" rules="none" style="">
+				<tr>
+							<td width="230px"><span>${labelVal.get("membershipNo") }</span></td>
+							<td width="20px"><strong>:</strong></td>
+							<td><span>${member.membershipNumber}</span></td>
+						</tr>
+						
+						<tr>
+							<td><span>${labelVal.get("membershipType") }</span></td>
+							<td><strong>:</strong></td>
+							<td><span>${member.membershipType}</span></td>
+						</tr>
+						
+						<tr>
+							<td><span>${labelVal.get("membershipStartDate") }</span></td>
+							<td><strong>:</strong></td>
+							<td><span><fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${member.membershipBeginDate}" /></span></td>
+						</tr>
+						<tr>
+							<td><span>${labelVal.get("membershipStatus") }</span></td>
+							<td><strong>:</strong></td>
+							<td><span>${signup.status }</span></td>
+						</tr>
+						<!-- <tr><td ><hr></td></tr> -->
+						<tr>
+							<td><span>${labelVal.get("membershipFee") }</span></td>
+							<td><strong>:</strong></td>
+							<td><span>$ ${member.membershipPrice}</span></td>
+						</tr>
+						<!-- <tr><td ><hr></td></tr> -->
+						<tr>
+							<td><span>${labelVal.get("membershipFeeFreq") }</span></td>
+							<td><strong>:</strong></td>
+							<td><span>${member.membershipDuration}YEARLY</span></td>
+						</tr>
+						<!-- <tr><td ><hr></td></tr> -->
+						<tr>
+							<td><span>${labelVal.get("membersshipFeeNextBillingDate") }</span></td>
+							<td><strong>:</strong></td>
+							<td><span><fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${signup.membersshipFeeNextBillingDate }" /></span></td>
+						</tr>
+					</table>
+					</div>
+				</div>
+				
+				<div style="width:100%; position:absolute; top:535px; left:-195px;" align="right"> 
+					<span id="gotochangetandcp" class="k-button"><< Previous</span>
+					<span id="gotochangeconfirmation" class="k-button">Confirm</span>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				</div>
+			</div>
+			
+			<div id="changeconfirmation" style="display:none;">
+				The Membership has been changed
+			</div>
+			
+			<div id="mem_detail">
+				<table cellpadding="0" cellspacing="10" width="100%" rules="none" style="">
+					<tr>
+						<td width="230px"><span>${labelVal.get("membershipNo") }  </span></td>
+						<td width="20px"><strong>:</strong></td>
+						<td><span>${member.membershipNumber}</span></td>
+					</tr>
+					<!-- <tr><td ><hr></td></tr> -->
+					<tr>
+						<td><span>${labelVal.get("membershipType") }  </span></td>
+						<td><strong>:</strong></td>
+						<td><span>${member.membershipType}</span></td>
+					</tr>
+					<!-- <tr><td ><hr></td></tr> -->
+					<tr>
+						<td><span>${labelVal.get("membershipStartDate") }</span></td>
+						<td><strong>:</strong></td>
+						<td><span><fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${member.membershipBeginDate}" /></span></td>
+					</tr>
+					<!-- <tr><td ><hr></td></tr> -->
+					<!-- 
+					<tr>
+						<td><span>MembershipEndDate</span></td>
+						<td><span><fmt:formatDate type="date" pattern="MM/dd/yyyy"
+								value="${member.membershipEndDate}" /></span></td>
+					</tr> -->
+					<tr>
+ 						<td><span>${labelVal.get("membershipStatus") }</span></td>
+						<td><strong>:</strong></td>
+						<td><span>${signup.status }</span></td>
+					</tr>
+					<!-- <tr><td ><hr></td></tr> -->
+					<tr>
+						<td><span>${labelVal.get("membershipFee") }</span></td>
+						<td><strong>:</strong></td>
+						<td><span>$ ${member.membershipPrice}</span></td>
+					</tr>
+					
+					<tr>
+						<td><span>${labelVal.get("membershipFeeFreq") }</span></td>
+						<td><strong>:</strong></td>
+						<td><span>${member.membershipDuration}YEARLY</span></td>
+					</tr>
+					
+					<tr>
+						<td><span>${labelVal.get("membersshipFeeNextBillingDate") }</span></td>
+						<td><strong>:</strong></td>
+						<td><span><fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${signup.membersshipFeeNextBillingDate }" /></span></td>
+					</tr>
+					
+					<tr>
+						<td><span>${labelVal.get("paymentMethod") }</span></td>
+						<td><strong>:</strong></td>
+						<td><span>${paymentInfoLst[0].cardNumber} ${paymentInfoLst[0].expirationMonth}/${paymentInfoLst[0].expirationYear} ${paymentInfoLst[0].paymentType}</span></td>
+					</tr>
+					<tr>
+						<td colspan="2"></td>
+						<td><span id="upmembershipBtn" class="k-button upmembershipBtnCls">Update Membership</span></td>
+					</tr>
+					<!-- <tr><td ><hr></td></tr> -->
+					<!-- 
+					<tr>
+								<td><span>ProductId</span></td>
+							
+								<td><span>${member.productId}</span></td>
+							</tr> 
+							
+					
+					<tr>
+						<td><span>PricingRuleId</span></td>
+						<td><span>${member.pricingRuleId}</span></td>
+						</tr>
+						
+					<tr>
+						<td><span>ContactName</span></td>
+						<td><span>${member.contactName}</span></td>
+					</tr>
+					
+					<tr>
+						<td><span>ContactPartyId</span></td>
+						<td><span>${member.contactPartyId}</span></td>
+					</tr>
+					
+					<tr>
+						<td><span>CustomerPartyId</span></td>
+						<td><span>${member.customerPartyId}</span></td>
+					</tr>-->
+				</table>
+			</div>
+	</div>
+</div>
+</c:when>
+<%-- </c:choose> --%>
+
+<c:otherwise>
+<div id="noMemberShip" class="k-block" style="background-color:#FFFFFF; padding:9px;margin-left:7px;width:120%;height:1000000%;">
+	<center><font color="	#eb8120" ><c><b> ${NoMembersHip }</b></c></font><br></center>
+	<br>
+	<center>Your membership is <b>inactive</b>. Please reactivate your membership..!</center>
+	
+	<center><span id="regNow" onclick="location.href='signup'" class="k-button" style="margin-top:20px; width: 150px; text-shadow: none;">REACTIVATE</span></center>
+	
+	
+	
+	</div>
+	</c:otherwise>
+	
+	</c:choose>
+
+<script>
+	$(document).ready(function(){
+		//$("#updatemeberFrm").hide();
+		$("#tranfermemberFrm").hide();
+		$("#location").kendoDropDownList();
+		
+		$( ".upmembershipBtnCls" ).click(function(){
+			$("#head").html("UPDATE MEMBERSHIP");
+			$("#upmembershipBtn").hide();
+			$("#mem_detail").html("");
+			//$("#mem_detail").html($("#updatemeberFrm").html());
+			$("#updatemeberFrm").show();
+		});
+		
+		$( "#transfermembershipBtn" ).click(function(){
+			//alert();
+			//$("#tranfermemberFrm").css("margin-top","10px;")
+			$("#changemembershipFrm").hide();
+			$("#tranfermemberFrm").show();
+			$("#transferfrom_pick").kendoDropDownList();
+			$("#transferto_pick").kendoDropDownList();
+		});
+		//$("#transfermember_pick").kendoDropDownList();
+		
+		$( "#changemembershipBtn" ).click(function(){
+			//location.href='signup';
+			$("#tranfermemberFrm").hide();
+			$("#changemembershipFrm").show();
+			
+		});
+		
+		$( "#nextBtn" ).click(function(){
+			$("#head").html("PAYMENT METHOD");
+			$("#updatemeberFrm").hide();
+			$("#cart").show();
+		});
+		
+		$( "#gotoUpdate" ).click(function(){
+			$("#head").html("UPDATE MEMBERSHIP");
+			$("#updatemeberFrm").show();
+			$("#cart").hide();
+		});
+		
+		$( "#gototandc" ).click(function(){
+			$("#head").html("Terms And Conditions");
+			$("#tandc").show();
+			$("#cart").hide();
+		});
+		
+		$( "#gotocart" ).click(function(){
+			$("#head").html("PAYMENT METHOD");
+			$("#tandc").hide();
+			$("#cart").show();
+		});
+		
+		$( "#gotosummary" ).click(function(){
+			$("#head").html("SUMMARY");
+			$("#tandc").hide();
+			$("#summary").show();
+		});
+		
+		$( "#gototandcp" ).click(function(){
+			$("#head").html("Terms And Conditions");
+			$("#tandc").show();
+			$("#summary").hide();
+		});
+		
+		$( "#gotoconfirmation" ).click(function(){
+			$("#head").html("TRANSFER CONFIRMATION");
+			$("#summary").hide();
+			$("#confirmation").show();
+		});
+		
+		$( "#gotochangecart" ).click(function(){
+			$("#head").html("PAYMENT METHOD");
+			$("#updatemeberFrm").hide();
+			$("#changemembershipFrm").hide();
+			$("#cart").show();
+			
+			$("#movefromcart").hide();
+			$("#movefromcart1").show();
+		});
+		
+		$( "#gotochangemembership" ).click(function(){
+			$("#updatemeberFrm").show();
+			$("#changemembershipFrm").show();
+			$("#cart").hide();
+
+			$("#movefromcart").show();
+			$("#movefromcart1").hide();
+		});
+		
+		$( "#gotochangetandc" ).click(function(){
+			$("#head").html("Terms And Conditions");
+			$("#tandc").show();
+			$("#cart").hide();
+			
+			$("#movefromtandc").hide();
+			$("#movefromtandc1").show();
+		});
+		
+		$( "#gotochangecartp" ).click(function(){
+			$("#head").html("PAYMENT METHOD");
+			$("#tandc").hide();
+			$("#cart").show();
+			
+			$("#movefromcart").hide();
+			$("#movefromcart1").show();
+		});
+		
+		$( "#gotochangetandcp" ).click(function(){
+			$("#head").html("Terms And Conditions");
+			$("#tandc").show();
+			$("#newmembership_summary").hide();
+			
+			$("#movefromtandc").hide();
+			$("#movefromtandc1").show();
+		});
+		
+		$( "#gotonewsummary" ).click(function(){
+			$("#updatemeberFrm").hide();
+			$("#tandc").hide();
+			$("#newmembership_summary").show();
+			
+			$("#movefromtandc").show();
+			$("#movefromtandc1").hide();
+		});
+		
+		$( "#gotochangeconfirmation" ).click(function(){
+			$("#head").html("CHANGE CONFIRMATION");
+			$("#changeconfirmation").show();
+			$("#newmembership_summary").hide();
+		});
+		
+		
+		 $("#membershipData").kendoGrid({                
+	            columns: [
+					{ field: "field0", title: "" },
+	                { field: "field1", title: "ID" },
+	                { field: "field2", title: "Product Name" },
+	                { field: "field3", title: "Product Description" },                
+	                { field: "field6", title: "Product Price" }
+	            ]
+	        });  
+	});
+</script>

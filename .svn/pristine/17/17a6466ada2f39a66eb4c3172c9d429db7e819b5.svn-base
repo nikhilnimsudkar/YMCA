@@ -1,0 +1,114 @@
+package com.serene.job.writer;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.batch.item.ItemWriter;
+
+import com.serene.job.common.BaseService;
+
+public class AbstractFusionItemWriter extends BaseService implements ItemWriter<Map<String,Object>> {
+
+	private String objectName ;
+	private Map<String,String> fieldMapping  = new LinkedHashMap<String, String>() ;
+	private String  operation ;
+	
+	@Override
+	public void write(List<? extends Map<String, Object>> items) throws Exception {
+		for (Map<String, Object> item : items) {
+			Map<String,Object> payload =  contructPayload(item);
+			if (StringUtils.equalsIgnoreCase(operation, "create")) fusionWebService.create(payload, objectName);
+			else if (StringUtils.equalsIgnoreCase(operation, "update")) fusionWebService.update(payload, objectName);
+			else fusionWebService.merge(payload, objectName);
+		}
+	}
+	public void setOperation(String operation){
+		this.operation = operation;
+	}
+
+	public void setObjectName(String objectName) {
+		this.objectName = objectName;
+	}
+
+	public void setFieldMapping(Map<String,String> fieldMapping) {
+		this.fieldMapping = fieldMapping;
+	}
+	
+	private Map<String,Object> contructPayload(Map<String,Object> item){
+		Map<String,Object> payload = getPayLoadTemplate();
+		JXPathContext dataContext = JXPathContext.newContext(item);
+		dataContext.setLenient(true);
+		
+		JXPathContext context = JXPathContext.newContext(payload);
+		context.setLenient(true);
+		
+		for(String key : fieldMapping.keySet()) {
+			String tagName = key;
+			//payload.put(tagName, dataContext.getValue(fieldMapping.get(key)));
+			context.setValue(tagName, dataContext.getValue(fieldMapping.get(key)));
+		}
+		return payload;
+	}
+	
+	protected Map<String, Object> getPayLoadTemplate() {
+		Map<String, Object> payloadTemplate = new LinkedHashMap<String, Object>();
+		for(String key : fieldMapping.keySet()) {
+			String tagName = key;
+			if (StringUtils.startsWith(tagName, "/")) tagName = tagName.substring(1);
+			if (!StringUtils.contains(tagName, "/")) {
+				payloadTemplate.put(tagName,"");
+				continue ;
+			}
+			 String[] tags = StringUtils.split(tagName,"/");			
+			 for (int j = 0 ;j < tags.length;j++) {
+				 String collectionIndex = StringUtils.substringBetween(tags[j], "[", "]");
+				 int index = 0 ;
+				 if (StringUtils.isNoneBlank(collectionIndex)) {
+					 index = Integer.parseInt(collectionIndex);
+				 }
+				 String curTag = StringUtils.substringBeforeLast(tags[j], "[");
+				 constructChildPayload(payloadTemplate,tagName,curTag, index);
+			 }
+		}
+		return payloadTemplate;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void constructChildPayload(Map<String, Object> payloadTemplate,String xpath,String currentTag, int index) {
+		List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
+		JXPathContext context = JXPathContext.newContext(payloadTemplate) ;
+		context.setLenient(true);
+		String relativePath= "" ;
+		if (StringUtils.startsWith(xpath, currentTag)) {
+			relativePath = currentTag;
+		} else {
+			relativePath = StringUtils.substring(xpath, 0,StringUtils.indexOf(xpath, currentTag)-1);
+		}
+		if (StringUtils.endsWith(xpath, currentTag)) {
+			if (!StringUtils.contains(relativePath, "[")) relativePath = relativePath +"[1]";
+			 Map<String, Object> map =  (Map<String, Object>) context.getValue(relativePath);
+			 map.put(currentTag, "");
+			 relativePath = StringUtils.substringBeforeLast(relativePath, "[");
+			 list = (List<Map<String, Object>>) context.getValue(relativePath);
+			 return ;
+		}
+		if (!StringUtils.equals(xpath, currentTag)) {
+			list = (List<Map<String, Object>>) context.getValue(relativePath);
+			if (list == null) {
+				list = new ArrayList<Map<String,Object>>();	
+			}
+		}
+		int totalIndex =  index -list.size(); 
+		if (totalIndex == 0 && list.isEmpty()) totalIndex = 1;
+		for (int k = 0 ; k < totalIndex ; k++) {
+			Map<String,Object> child = new LinkedHashMap<String, Object>();
+			list.add(child);
+		}
+		payloadTemplate.put(currentTag,list);
+		return ;
+	}
+}

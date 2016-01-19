@@ -1,0 +1,137 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Calendar;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "signup_promotion")
+@XmlRootElement
+public class SignupPromotion extends BaseObject implements Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long signupPricingRuleId;
+	
+	@OneToOne  
+	@JoinColumn(name = "promotion_id")  
+    private Promotion promotion; 
+	
+	@ManyToOne  
+	@JoinColumn(name = "signup_id")  
+	private Signup signup;
+	
+	@Column(name="DiscountPercent_c")
+	private String DiscountPercent_c ;
+	
+	@Column(name="DiscountAmount_c")
+	private String DiscountAmount_c ;
+
+	@Column(name="OverrideBy_c")
+	private String OverrideBy_c ;
+
+	@Column(name="OverrideDate_c")
+	private Calendar OverrideDate_c ;
+
+	@Column(name="OverrideReason_c")
+	private String OverrideReason_c ;
+
+	
+	public Long getSignupPricingRuleId() {
+		return signupPricingRuleId;
+	}
+
+	public void setSignupPricingRuleId(Long signupPricingRuleId) {
+		this.signupPricingRuleId = signupPricingRuleId;
+	}
+
+	public Promotion getPromotion() {
+		return promotion;
+	}
+
+	public void setPromotion(Promotion promotion) {
+		this.promotion = promotion;
+	}
+
+	public String getDiscountPercent_c() {
+		return DiscountPercent_c;
+	}
+
+	public void setDiscountPercent_c(String discountPercent_c) {
+		DiscountPercent_c = discountPercent_c;
+	}
+
+	public String getDiscountAmount_c() {
+		return DiscountAmount_c;
+	}
+
+	public void setDiscountAmount_c(String discountAmount_c) {
+		DiscountAmount_c = discountAmount_c;
+	}
+
+	public String getOverrideBy_c() {
+		return OverrideBy_c;
+	}
+
+	public void setOverrideBy_c(String overrideBy_c) {
+		OverrideBy_c = overrideBy_c;
+	}
+
+	public Calendar getOverrideDate_c() {
+		return OverrideDate_c;
+	}
+
+	public void setOverrideDate_c(Calendar overrideDate_c) {
+		OverrideDate_c = overrideDate_c;
+	}
+
+	public String getOverrideReason_c() {
+		return OverrideReason_c;
+	}
+
+	public void setOverrideReason_c(String overrideReason_c) {
+		OverrideReason_c = overrideReason_c;
+	}
+
+	public Signup getSignup() {
+		return signup;
+	}
+
+	public void setSignup(Signup signup) {
+		this.signup = signup;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

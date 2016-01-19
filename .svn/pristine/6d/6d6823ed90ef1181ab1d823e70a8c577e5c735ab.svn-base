@@ -1,0 +1,92 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "signup_associated_item_detail")
+public class SignUpAssociatedItemDetail extends BaseObject implements Serializable {
+	
+	private static final long serialVersionUID = -3202944701848397747L;
+
+	public SignUpAssociatedItemDetail(){
+    }
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long Id;
+	
+    private Long scId;
+
+	@Column(name="RecordName")
+    private String recordName;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="signup_Id")
+	private Signup signup;
+	
+	public Long getId() {
+		return Id;
+	}
+
+	public void setId(Long id) {
+		Id = id;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String recordName) {
+		recordName = recordName;
+	}
+
+	public Signup getSignup() {
+		return signup;
+	}
+
+	public void setSignup(Signup signup) {
+		this.signup = signup;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((Id == null) ? 0 : Id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SignUpAssociatedItemDetail other = (SignUpAssociatedItemDetail) obj;
+		if (Id == null) {
+			if (other.Id != null)
+				return false;
+		} else if (!Id.equals(other.Id))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "SignUpAssociatedItemDetail [Id=" + Id + ", RecordName="
+				+ recordName + "]";
+	}
+	
+}

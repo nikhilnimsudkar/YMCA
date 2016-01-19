@@ -1,0 +1,111 @@
+package com.ymca.web.controller;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.model.Account;
+import com.ymca.model.User;
+import com.ymca.web.enums.ProductTypeEnum;
+import com.ymca.web.util.Constants;
+
+@Controller
+public class CommonController extends BaseController {
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	/**
+	 * Dispatch to login pop-up
+	 */
+	@RequestMapping(value="/loginPopup", method=RequestMethod.GET)
+    public String loginPopup(final HttpServletRequest request, final HttpServletResponse response) { 
+		return "loginpop";
+	}
+	
+	/**
+	 * Quick sign up
+	 */
+	@RequestMapping(value="/quickSignIn", method=RequestMethod.POST)
+    public String quickSignIn(final HttpServletRequest request, final HttpServletResponse response) { 
+		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+		String username = request.getParameter(Constants.USERNAME_LBL);
+		String password = request.getParameter(Constants.PASSWORD_LBL);
+		String dispatchTo = request.getParameter(Constants.PARAM_DISPATCH_TO);
+		
+		User user = null;
+		if(username!=null && !"".equals(username.trim()) && password!=null && !"".equals(password)){
+			Account account = accountDao.getByEmail(username);			
+			user = getUserByAccount(account, user);
+			if(user!=null && user.getPassword() !=null && bCryptPasswordEncoder.matches(password, user.getPassword())){
+				UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, user.getPassword());
+				
+				// generate session if one doesn't exist
+		        request.getSession();
+		        token.setDetails(new WebAuthenticationDetails(request));
+		        SecurityContextHolder.getContext().setAuthentication(token);
+		        
+		        if(!"".equals(dispatchTo)){
+		        	if(dispatchTo.equalsIgnoreCase(ProductTypeEnum.Membership.toString())){
+		        		return "redirect:/addprogramtocart";
+		        	}else if(dispatchTo.equalsIgnoreCase(ProductTypeEnum.Event.toString())){
+		        		return "redirect:/addEventToCart";
+		        	}
+		        }
+			}
+		}
+		return "redirect:/login";
+	}
+	
+	/**
+	 * Get contacts as JSON
+	 */
+	@RequestMapping(value="/getContacts", method=RequestMethod.GET)
+    public @ResponseBody String getContactS(final HttpServletRequest request, final HttpServletResponse response) { 
+	 	JSONArray json = new JSONArray();
+	
+	 	Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			return json.toString();
+		}
+		
+		Account account = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+    	}
+    	
+    	if(account==null){
+    		return json.toString();
+    	}
+    	
+    	for(User u: account.getUser()){
+	    	JSONObject obj = new JSONObject();
+	    	obj.put("id", u.getPartyId());
+			obj.put("contactId", u.getPartyId());
+			obj.put("fname", u.getPersonFirstName());
+			obj.put("lname", u.getPersonLastName());
+			obj.put("isMember", u.isMember());
+			json.add(obj);
+    	}
+    	
+    	return json.toString();
+	}
+}

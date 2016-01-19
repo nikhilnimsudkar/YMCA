@@ -1,0 +1,90 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+       
+<body>
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="main">
+<div id="content" style="margin-top:30px;margin-bottom:30px;">
+		<form:form commandName="paymentMethod" class="bootstrap-frm" id="updateCardInfoForm" method="post" action="updateCardInfo" style="padding:40px;">  
+			<div>
+				  <h2><span>Billing Address Information</span></h2>
+				  <input type="text" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" value=""  style="width: 230px;"/>
+				  <input type="text" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing City" name="billingCity" id="billingCity" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing State" name="billingState" id="billingState" value="" style="width: 230px;"/><br />
+				  <h2><span>Update Card Information</span></h2>
+				  <input type="text" placeholder="Full Name on Card" name="fullName" id="fullName" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Card Number" name="cardNumber" id="cardNumber" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Expiration Month" name="expirationMonth" id="expirationMonth" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Expiration Year" name="expirationYear" id="expirationYear" value="" style="width: 230px;"/>
+				  <input type="password" placeholder="Security Code" name="securityCode" id="securityCode" value="" style="width: 230px;"/>
+				  
+				  <!-- <label><input type="text" name="paymentId" id="paymentId" value="" style="display:none;" /></label> -->
+				  <input type="text" style="display:none;" name="paymentId" value="${paymentInfo.paymentId}">
+				  <input type="text" style="display:none;" name="accountId" value="${paymentInfo.accountId}">
+				  
+				  <div id="statusBlock">
+					<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+					<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+				  </div>
+					
+				  <span id="updateCardInfoBtn" class="k-button" style="width: 150px; text-shadow: none;">Update</span>
+			</div>
+			<div id="PaymentInformationBackLnk" align="right">
+	        		<a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a>
+	        </div>
+		</form:form>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {		
+		
+		$( "#updateCardInfoBtn" ).click(function(){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait while the Card Information is Updated");			
+			$.ajax({
+				  type: "POST",
+				  url: $('#updateCardInfoForm').attr( "action"),
+				  data: $('#updateCardInfoForm').serialize(),
+				  success: function( data ) {				  	  
+				  	  if(data=='SUCCESS'){
+					  	  $("#tcErrorSpan").css("display", "none");		
+						  $("#tcErrorSpan" ).html("");	
+						  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+						  setTimeout(function(){$(".k-loading-text").html("Member was added successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+					  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+					  	  
+					  	  $("#tcSuccessSpan").css("display", "block");		
+						  $("#tcSuccessSpan" ).html("Card Information Updated successfully");
+					  	  
+					  	  //setTimeout(function(){location.reload();}, 7000);
+					  	  
+				  	  }else if(data == 'NOT_FOUND'){
+				  		  $("#tcSuccessSpan").css("display", "none");		
+						  $("#tcSuccessSpan" ).html("");	
+						  $("#tcErrorSpan").css("display", "block");		
+						  $( "#tcErrorSpan" ).html("Payment Information Not Found.");
+						  $(".k-loading-mask").hide();
+				  	  }else {
+				  		  $("#tcSuccessSpan").css("display", "none");		
+						  $("#tcSuccessSpan" ).html("");	
+						  $("#tcErrorSpan").css("display", "block");		
+						  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+						  $(".k-loading-mask").hide();
+				  	  }					  
+				  },
+				  error: function( xhr,status,error ){
+					  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcSuccessSpan" ).html("");	
+					  $("#tcErrorSpan").css("display", "block");		
+					  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+				  }
+			});
+			
+		});		   
+	});
+</script>
+
+</body>

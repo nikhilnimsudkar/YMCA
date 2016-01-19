@@ -1,0 +1,122 @@
+package com.serene.job.service;
+
+import java.util.Calendar;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.model.JobSchedulerMetadata;
+import com.serene.job.util.JobUtils;
+
+@Service
+public class CommonServiceImpl implements CommonService {
+	
+	@Resource
+	private JobUtils jobUtils;
+	
+	@Override
+	public synchronized String signupCapacityManagement(Map<String, Object> data, JobSchedulerMetadata jobSchedulerMetadata) {
+		String signupStatus = "Active";
+		Long waitListPriority = 0L;
+		Integer noofTickets = 1;
+
+		Long remainingCapacity = convertNullToZero(Long.parseLong(data.get("remaining_capacity_c").toString()));
+		//Long actualRemainingCapacity = convertNullToZero(itemDetail.getActualRemainingCapacity());
+		//Long waitListCounter = convertNullToZero(itemDetail.getWaitlistCounter());
+
+		JdbcTemplate jdbcTemplate = jobUtils
+				.getFromJdbcTemplate(jobSchedulerMetadata);
+		
+		if(data.get("no_of_tickets")!=null){
+			noofTickets = Integer.parseInt(data.get("no_of_tickets").toString());
+		}
+		
+		updateCapacity(data, jobSchedulerMetadata);
+		
+		
+		if(remainingCapacity.compareTo(0L)<=0 || remainingCapacity < noofTickets){
+			//remaining capacity is less than 0
+			signupStatus = "Waitlisted";
+			
+			String sql = "select MAX(waitlist) from Signup s where s.itemDetail=?";
+			Object sObj = jdbcTemplate.queryForObject(
+							sql,String.class,data.get("signupId").toString());
+			if(sObj!=null)
+				waitListPriority = convertNullToZero(Long.parseLong(sObj.toString()));
+			waitListPriority = waitListPriority+1;
+			//waitListCounter = waitListCounter+1;
+		}
+		
+		int i = 0;
+		Calendar cal = Calendar.getInstance();
+	    String sql = "UPDATE signup SET "
+	    		+ "status =?, WaitListPriority_c=?, lastUpdated=?"
+	    		+ "where signupId=?";
+
+		i = jdbcTemplate.update(sql, 
+				signupStatus,
+				waitListPriority,
+				cal, 
+				data.get("signupId").toString()
+				);
+		
+		return signupStatus;
+	}
+	
+	public synchronized void updateCapacity(Map<String, Object> data, JobSchedulerMetadata jobSchedulerMetadata) {
+		if(data.get("no_of_tickets")!=null){
+			Integer noOfTickets = Integer.parseInt(data.get("no_of_tickets").toString());
+			Long remainingCapacity = convertNullToZero(Long.parseLong(data.get("remaining_capacity_c").toString()));
+			Long actualRemainingCapacity = convertNullToZero(Long.parseLong(data.get("actualRemainingCapacity_c").toString()));
+			Long waitListCounter =convertNullToZero(Long.parseLong(data.get("WaitlistCounter_c").toString()));
+			
+			if(remainingCapacity.compareTo(0L)<=0 || remainingCapacity < noOfTickets){
+				//remaining capacity is less than 0
+				waitListCounter = waitListCounter+1;
+			}
+			/* allow remaining capacity to be negative number 
+			else{*/
+				// remaining capacity is greater than 0
+				remainingCapacity = remainingCapacity-noOfTickets;
+				//actualRemainingCapacity = actualRemainingCapacity-noOfTickets;
+			//}
+			if(actualRemainingCapacity.compareTo(0L)<=0 || actualRemainingCapacity < noOfTickets){
+				//remaining capacity is less than 0
+				waitListCounter = waitListCounter+1;
+			}
+			/* allow remaining capacity to be negative number 
+			else{ */
+				// remaining capacity is greater than 0
+				//remainingCapacity = remainingCapacity-noOfTickets;
+				actualRemainingCapacity = actualRemainingCapacity-noOfTickets;
+			//}
+			
+			int i = 0;
+			
+			Calendar cal = Calendar.getInstance();
+		    JdbcTemplate jdbcTemplate = jobUtils.getFromJdbcTemplate(jobSchedulerMetadata);
+		    
+		    String sql = "UPDATE item_detail SET "
+		    		+ "RemainingCapacity_c =?, actualRemainingCapacity_c=?, WaitlistCounter_c=?, lastUpdated=?"
+		    		+ "where Id=?";
+
+			i = jdbcTemplate.update(sql, 
+					remainingCapacity,
+					actualRemainingCapacity,
+					waitListCounter,
+					cal, 
+					data.get("Id").toString()
+					);
+		}
+	}
+	
+	public Long convertNullToZero(Long val){
+		if(val==null)
+			 val = 0L;
+		
+		return val;
+	}
+}

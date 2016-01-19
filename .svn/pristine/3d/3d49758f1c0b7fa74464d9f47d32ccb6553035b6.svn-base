@@ -1,0 +1,8 @@
+package com.ymca.dao;
+
+import com.ymca.model.Contact;
+
+public interface ContactDao extends GenericDao<Contact, Long> {
+
+	Contact getByContactName(String contactName);
+}

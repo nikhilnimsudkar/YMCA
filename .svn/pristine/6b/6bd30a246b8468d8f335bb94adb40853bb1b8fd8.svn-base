@@ -1,0 +1,40 @@
+// JavaScript Document
+$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_programregistration").attr('class','');
+		$("#top_childcare").attr('class','current');
+		
+		//$("#page_name").html("PAYMENT INFORMATION");
+		$("#location").kendoDropDownList();
+		$("#type").kendoDropDownList();
+		
+		$("#agerangeslider").kendoRangeSlider({
+            change: rangeSliderOnChange,
+            slide: rangeSliderOnSlide,
+            min: 1,
+            max: 100,
+            smallStep: 1,
+            largeStep: 2,
+            tickPlacement: "both"
+        });
+		
+		$("#childcare_list").kendoGrid({
+			dataSource: {
+            	pageSize: 10
+			},
+            pageable: true,
+            selectable: "row",
+            height: 300
+		});
+		$("#childcare_list").show();
+});
+
+function rangeSliderOnSlide(e) {
+	//kendoConsole.log("Slide :: new slide values are: " + e.value.toString().replace(",", " - "));
+}
+
+function rangeSliderOnChange(e) {
+	//kendoConsole.log("Change :: new values are: " + e.value.toString().replace(",", " - "));
+}

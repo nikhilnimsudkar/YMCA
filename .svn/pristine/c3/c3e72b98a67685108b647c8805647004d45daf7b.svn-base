@@ -1,0 +1,345 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<!-- <script src="src/main/webapp/resources/js/kendo/kendo.web.min.js" type="text/javascript"></script>  -->
+<script>
+	$(document).ready(function() {	
+		
+		$("#grid").kendoGrid({
+           	sortable:true,
+               columns: [{field: "program", title: "Program",width:"85px"},
+                         {field: "amount", title: "Amount",width:"80px"},
+                         {field: "type", title: "Type",width:"80px"},
+                         {field: "paymentDate", title: "Payment Date",width:"120px"}, 
+                         {field: "status", title: "Status"}] ,
+               dataSource: {
+            	  // pageSizes:true,
+               	pageSize: 5
+               },
+               pageable: true
+               //height: 250,
+               /* pageable:{
+   				refresh:true,
+   				pageSizes:true,
+   				pageSize: 5,
+   				buttonCount:2
+   			} */
+   			//groupable:true,
+   			//sortable:true,
+   			//scrollable:true
+   			//autoBind:true
+   			//columnResizeHandleWidth:7
+               //pageable: true
+               /* pageable:{
+               	//pageSizes:true,		
+   				refresh:true,
+   				buttonCount:5
+   			}    */
+           });
+		$("#grid").hide();
+		$(".k-grid").hide();
+		var today = kendo.date.today();
+		
+        var start = $("#start").kendoDatePicker({
+			format: "yyyy-MM-dd",
+            value: today,                
+            parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+        });
+
+        var end = $("#end").kendoDatePicker({
+            format: "yyyy-MM-dd",
+            value: today,                
+            parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+        });
+        var type = $('#type').kendoDropDownList({
+        	dataTextField: "text",
+            dataValueField: "value",
+            dataSource:
+            	[
+                 { text: "Credit", value:"Credit" },
+                 { text: "EFT", value:"EFT" }
+             ]
+        });
+        var status = $('#status').kendoDropDownList({
+        	dataTextField: "text",
+            dataValueField: "value",
+            dataSource: 
+            	[
+                 { text: "Success", value:"Success" },
+                 { text: "Failure", value:"Failure" },
+                 { text: "Pending", value:"Pending" }
+             ]
+        });
+         $('#getPaymentHistoryBtn').click(function(e){
+        	 $("#gridData").html("Processing...");
+         	 $("#grid").show();
+        	 $(".k-grid").show();
+        	//$(".k-loading-mask").show();
+        	var stDate=$("#start").val();
+        	var eDate=$("#end").val();
+        	var pType= $('#type').data('kendoDropDownList').value();
+        	var pStatus= $('#status').data('kendoDropDownList').value();
+        	var username= $('#contact').val();
+        	//var furl = 'getPaymentHistoryBySearchCriteria?pType='+pType+'&pStatus='+pStatus+'&username='+username+'&stDate='+stDate+'&eDate='+eDate;
+        	var furl;
+        	//alert('length of username:'+username.length);
+        	if(username!=null && username.length>0){
+        		//alert('with username');
+        		furl ="getPaymentHistoryBySearchCriteria?pType="+pType+"&pStatus="+pStatus+"&username="+username+"&stDate="+stDate+"&eDate="+eDate;
+        	}else{
+        		//alert('not with username');
+        		furl ="getPaymentHistoryBySearchCriteriaExcludingName?pType="+pType+"&pStatus="+pStatus+"&stDate="+stDate+"&eDate="+eDate;
+        	} 
+        	var paymentHtmlData = ''; 
+        	$.ajax({
+				  type: "GET",
+				 // url: 'getPaymentHistoryBySearchCriteria/'+pType+'/'+pStatus+'/'+username+'/'+stDate+'/'+eDate,	
+				 url:furl,
+				  success: function( data ) {
+					  
+					  if(data != null && data.length > 0){
+					      for(var i = 0; i<data.length; i++){        
+					       var dataArr = data[i];
+					       var d=new Date(dataArr[3]);
+					        var curr_date = d.getDate();
+					        var curr_month = d.getMonth();
+					        var curr_year = d.getFullYear();
+					        var pDate=curr_year+"-"+curr_month+"-"+curr_date;
+					        paymentHtmlData += '<tr>';
+					        paymentHtmlData += '<td>'+ dataArr[0] +'</td>';
+					        paymentHtmlData += '<td>$'+ Number(dataArr[1]).toFixed(2) +'</td>';
+					        paymentHtmlData += '<td>'+ dataArr[2] +'</td>';
+					        paymentHtmlData += '<td>'+pDate +'</td>';
+					        if(dataArr[5] != null){
+					        	paymentHtmlData += '<td>'+ dataArr[4] +'(<span style="color:red">'+dataArr[5]+'</span>)</td>';
+					        }else{
+					        	paymentHtmlData += '<td>'+ dataArr[4] +'</td>';
+					        }					        
+					        paymentHtmlData += '</tr>'; 
+					       /*  for(var j = 0; j<dataArr.length; j++){
+					        console.log('dataArr[j]: '+dataArr[j]);					       
+					       } */
+					      }
+					      $("#gridData").html(paymentHtmlData);
+						 } else if(data != null && data.length == 0){
+							 paymentHtmlData += '<tr>';
+						     paymentHtmlData += '<td colspan="5">No payment history found for matching criteria. </td>';
+						     paymentHtmlData += '</tr>';
+						     $("#gridData").html(paymentHtmlData);
+					  	 }
+				  },
+				  error: function( xhr,status,error ){
+					  paymentHtmlData += '<tr>';
+					  paymentHtmlData += '<td colspan="5">Error occured while fetching data from database. </td>';
+					  paymentHtmlData += '</tr>';
+					  $("#gridData").html(paymentHtmlData);
+				  }
+        	});  
+        }); 
+         
+       /*  $('#exportToExcel').click(function() {	
+        	alert("exporting payment history to location:d:/exportToExcel.xls");
+        	var furl = "export?"+'&pType='+pType+'&pStatus='+pStatus+'&username='+username+'&stDate='+stDate+'&eDate='+eDate;
+    		$.ajax({
+    			  url: furl,
+    			  context: document.body,
+    			  type:"POST",
+    		});
+    	}); */
+        
+	});
+</script>
+            
+<div id="purchaseinfoPg">
+<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+	<span class="k-loading-text">Loading... Please wait</span>
+	<div class="k-loading-image">
+		<div class="k-loading-color"></div>
+	</div>
+</div>
+<!-- <div id="tabstrip3" class="k-block" style="margin-right:0px;"> -->
+<div id="tabstrip3" class="k-block" style="margin-top: 20px; padding: 10px;">
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">PURCHASE INFORMATION</span>
+		<span class="autopaySpan" style="width: 300px;">
+			<!-- <button id="pmPrimary" class="k-button" style="margin-right: 10px; text-shadow: none;">Make Primary</button> -->
+			<!-- <button id="pmPrimary" class="k-button" style="margin-right: 10px; text-shadow: none;">Make Primary</button> -->
+			<button id="exportToExcel" class="k-button" style="margin-right: 10px">Export</button>
+			<button id="print" class="k-button" style="margin-right: 8px">Print</button>
+			<button id="addCardBankDetail" class="k-button">Add Card/Bank Info</button>
+		</span>
+		
+		<div id="purchase_info" >
+			<table>
+				<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'Credit' }">
+						<tr>
+							<c:if test="${ paymentInfo.isPrimary == '1' }">
+								<td><input type="radio" name="paymentInfoRadio" checked="checked" class="bootstrapRadio"></td>
+							</c:if>
+							<c:if test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null}">
+								<td><input type="radio" name="paymentInfoRadio" class="bootstrapRadio"></td>
+							</c:if>	
+							<td><span>Credit & Debit Cards</span></td>
+							<!-- <td><span>XXXX-XXXX-XXXX-1234</span></td> -->
+							<td><span>${paymentInfo.cardNumber }</span><span class="pmMakePrimaryPaymentId" style="display:none;">${paymentInfo.paymentId }</span></td>
+							<td></td>
+							<td>Expiration Date</td>
+							<!-- <td>07/20</td> -->
+							<td>${paymentInfo.expirationMonth }/${paymentInfo.expirationYear }</td>
+							<td><button id="editcardBtn" style="width: 100px; text-shadow: none; margin-left: 10px;" class="k-button editcardBtn">Edit card Info</button></td>
+							<!-- <td><span  class="k-button updatePaymentMethod" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit card Info</span></td> -->
+						</tr>
+					</c:if>
+				</c:forEach>
+				<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'EFT' }">
+						<tr>
+							<c:if test="${ paymentInfo.isPrimary == '1' }">
+								<td><input type="radio" name="paymentInfoRadio" checked="checked" class="bootstrapRadio"></td>
+							</c:if>
+							<c:if test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null }">
+								<td><input type="radio" name="paymentInfoRadio" class="bootstrapRadio"></td>
+							</c:if>	
+													
+							<td><span>Bank Details</span></td>
+							<!-- <td><span>XXXXX-XXXXX</span></td> -->
+							<td><span>${paymentInfo.bankRoutingNumber }</span><span class="pmMakePrimaryPaymentId" style="display:none;">${paymentInfo.paymentId }</span></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td><button id="editcartBtn" class="k-button editBankBtn" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit Bank Info</button></td>
+						<!-- 	<td><span  class="k-button updatePaymentMethod" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit Bank Info</span></td> -->
+						</tr>
+					</c:if>
+				</c:forEach>			
+			</table>
+			<div >
+				<span class="k-block k-success-colored" id="pmPrimarySuccess"></span>
+				<span class="k-block k-error-colored" id="pmPrimaryError"></span>
+			</div>
+		</div>
+	</div>
+	
+	<%-- <div class="pay_header">
+		<span class="head" style="margin-left:3px;">BILLING ADDRESS</span>
+		<div id="bill_info">
+			<span id="address1">${accInfo.addressLine1}</span>
+			<span id="address2">${accInfo.addressLine2}</span><br>
+			<span id="city">${accInfo.city}</span>
+			<span id="state">${accInfo.state}</span><br>
+			<span id="zip">${accInfo.postalCode}</span>
+			<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+				<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.isPrimary == '1' }">
+					<span id="address1">${paymentInfo.billingAddressLine1}</span>
+					<span id="address2">${paymentInfo.billingAddressLine2}</span><br>
+					<span id="city">${paymentInfo.billingCity}</span>
+					<span id="state">${paymentInfo.billingState}</span><br>					
+				</c:if>
+			</c:forEach>
+			
+			<span id="zip">${paymentInfo.postalCode}</span>
+		</div>
+	</div> --%>
+	
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">VIEW PAYMENT HISTORY</span>
+		<div id="bill_info">
+			<table>
+				<tr>
+					<td>Start Date</td>
+					<td>:</td>
+					<td><input type="text" id="start" name="startDate"></td>
+					<td>End Date</td>
+					<td>:</td>
+					<td><input type="text" id="end" name="endDate"></td>
+					<td>Type</td>
+					<td>:</td>
+					<td><input type="text" id="type" name="type" style="width:100px;"></td>
+				</tr>
+				<tr>
+					<td>Status</td>
+					<td>:</td>
+					<td><input type="text" id="status" name="status" ></td>
+					<td>Contact</td>
+					<td>:</td>
+					<td><input type="text" id="contact" name="contact" placeholder="Enter username" style="width: 95%;"></td>
+					<td></td>
+					<td></td>
+					<td><span id="getPaymentHistoryBtn" class="k-button"  style="width: 70px; text-shadow: none;">Go</span></td>
+				</tr>
+			</table>
+			<!-- <div>
+				<span>Start Date : <input type="text" id="start" name="startDate"></span>
+				<span style="margin-left: 5px;">End Date : <input type="text" id="end" name="endDate"></span>
+				<span>Type : <input type="text" id="type" name="type"></span>
+				<span>Status : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="status" name="status" ></span>&nbsp;
+				<span>Contact :&nbsp;&nbsp;&nbsp;<input type="text" id="contact" name="contact" placeholder="Enter username" style="width: 20%;"></span>
+				<span id="getPaymentHistoryBtn" class="k-button" style="width: 70px; text-shadow: none; margin-left: 95px;">Go</span>
+			</div>	 -->
+			<br/>
+			<br/>
+			<!-- <div id="grid"  style="margin-top:12px;margin-bottom:10px;" ></div> -->
+			<span >
+				<table id="grid">
+				<thead>
+					<tr>
+						<th>Program</th>
+                    	<th>Amount</th>
+                   		<th>Type</th>                 		
+                   		<th>Payment Date</th>   
+                   		<th>Status</th>             		
+               		</tr>
+               	</thead>
+               	<tbody id="gridData">
+					<%-- <c:forEach var="paymentList" items="${paymentList}">				
+					<tr>
+						<td>${paymentList.category}</td>
+                   		<td><fmt:formatNumber type="number" minFractionDigits="2" maxFractionDigits="2" value="${paymentList.amount}"/></td>
+                   		<td>${paymentList.type}</td>
+                   		<td><fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${paymentList.paymentDate}"/></td>
+                   		<td>
+                   			<c:choose>
+    							<c:when test="${paymentList.status=='Success'}">
+        							${paymentList.status}
+    							</c:when>
+    							<c:otherwise>
+        							${paymentList.status}(<span style="color:red">${paymentList.reason})</span>
+    							</c:otherwise>
+							</c:choose>
+                   		</td> 
+                   		<td>${paymentList.status}</td> 
+               		</tr>
+					</c:forEach> --%>
+				</tbody>
+				</table>
+			</span>			
+			
+			<!-- <span >
+				<table style="margin-top: 10px;">
+					<tr>
+						<td><span>Swim Class</span></td>
+						<td width="25%"></td>
+						<td><span>$100</span></td>
+						<td></td>
+						<td><span>11/06/2014</span></td>
+					</tr>
+					<tr>
+						<td><span>Dancing Class</span></td>
+						<td></td>
+						<td><span>$75</span></td>
+						<td></td>
+						<td><span>11/06/2014</span></td>
+					</tr>
+					<tr>
+						<td><span>Donation</span></td>
+						<td></td>
+						<td><span>$50</span></td>
+						<td></td>
+						<td><span>11/06/2014</span></td>
+					</tr>
+				</table>
+			</span> -->
+		</div>
+	</div>
+	
+</div>
+</div>

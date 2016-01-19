@@ -1,0 +1,372 @@
+.body {
+
+	background-color: #FFFFFF;
+
+}
+
+.pagetitle {
+
+	font-family: "Trebuchet MS", Tahoma, Arial;
+
+	font-size: 18px;
+
+	color: #666666;
+
+	font-weight: bold;
+
+}
+
+.pic {
+
+	background-image:  url("images/bg2.jpg");
+
+}
+
+.text1 {
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 10px;
+
+	color: #000000;
+
+	text-decoration: none;
+
+}
+
+.border1 {
+
+	border: 1px solid #9DABB5;
+
+	background-color: #E2E6E9;
+
+}
+
+/* .pic2 {
+
+	background-color: #FFFFFF;
+
+	border-top-width: 5px;
+
+	border-right-width: 5px;
+
+	border-bottom-width: 5px;
+
+	border-left-width: 5px;
+
+	border-right-style: solid;
+
+	border-left-style: solid;
+
+	border-top-color: #4A4A4A;
+
+	border-right-color: #4A4A4A;
+
+	border-bottom-color: #4A4A4A;
+
+	border-left-color: #4A4A4A;
+
+	border-bottom-style: solid;
+
+} */
+
+.mainlink {
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 12px;
+
+	font-weight: bold;
+
+	color: #FFFFFF;
+
+	background-color: #FF9900;
+
+	text-decoration: none;
+
+	padding: 10px;
+
+	height: 30px;
+
+}
+
+.mainlink:hover {
+
+	background-color: #B1BCC5;
+
+}
+
+.sectiontitle {
+
+	font-family: "Trebuchet MS", Tahoma, Arial;
+
+	font-size: 14px;
+
+	color: #586A74;
+
+	font-weight: bold;
+
+}
+
+.text2 {
+
+
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 12px;
+
+	color: #000000;
+
+	text-decoration: none;
+
+}
+
+.smallsectiontitle {
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 12px;
+
+	color: #008DD4;
+
+	text-decoration: none;
+
+	font-weight: bold;
+
+	border-bottom-width: 1px;
+
+	border-bottom-style: solid;
+
+	border-bottom-color: #9DABB5;
+
+	padding-top: 7px;
+
+	padding-bottom: 4px;
+
+}
+
+.text1link {
+
+
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 10px;
+
+	color: #000000;
+
+	text-decoration: underline;
+
+}
+
+.fieldname {
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 11px;
+
+	color: #FFFFFF;
+
+	text-decoration: none;
+
+	border-bottom-width: 1px;
+
+	border-bottom-style: solid;
+
+	border-bottom-color: #C1CAD0;
+
+	padding: 6px;
+
+	background-color: #A81F91;
+
+	font-weight: bold;
+
+}
+
+.modify {
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 11px;
+
+	color: #FFFFFF;
+
+	text-decoration: none;
+
+	background-color: #A91F8F;
+
+	font-weight: bold;
+
+	padding: 4px;
+
+}
+
+.available {
+
+	background-color: #ABFEC4;
+
+}
+
+.notavailable {
+
+	background-color: #BAC4B0;
+
+}
+
+.text3 {
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 10px;
+
+	color: #999999;
+
+	text-decoration: none;
+
+	background-color: #F0F0F0;
+
+}
+
+.bgcolor1 {
+
+	background-color: #E2E6E9;
+
+}
+
+.fieldelement {
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 10px;
+
+	color: #333333;
+
+	text-decoration: none;
+
+}
+
+.fieldnamesmall {
+
+
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 10px;
+
+	color: #FFFFFF;
+
+	text-decoration: none;
+
+	border-bottom-width: 1px;
+
+	border-bottom-style: solid;
+
+	border-bottom-color: #C1CAD0;
+
+	padding: 6px;
+
+	background-color: #EB8120;
+
+	font-weight: normal;
+
+}
+
+.pic_membershiptier {
+	background-image:  url(images/member_tier.jpg);
+	background-repeat: no-repeat;
+}
+.memtier_body {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	background-color: #444A48;
+	color: #CCCCCC;
+	border-bottom: 1px solid #666666;
+}
+.memtier_body1 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	background-color: #E2E2E2;
+	color: #000000;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-color: #999999;
+}
+.memtier_body2 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	background-color: #444A48;
+	color: #CCCCCC;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-color: #666666;
+}
+.memtier_body3 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	background-color: #E2E2E2;
+	color: #000000;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-color: #999999;
+}
+.member_tier_columntitle {
+
+
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+
+	font-size: 11px;
+
+	color: #000000;
+
+	text-decoration: none;
+
+	border-bottom-width: 3px;
+
+	border-bottom-style: solid;
+
+	border-bottom-color: #FF0000;
+
+	padding: 6px;
+
+	background-color: #FFFFFF;
+
+	font-weight: bold;
+}
+.member_tier_group {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #FFCC00;
+	text-decoration: none;
+	padding: 6px;
+	background-color: #000000;
+	font-weight: bold;
+}
+.cal_noevent {
+	background-color: #FFFFFF;
+	color: #999999;
+}
+.cal_event {
+	background-color: #FF9900;
+	font-weight: bold;
+	color: #000000;
+}
+.cal_event2 {
+	background-color: #00CC33;
+	font-weight: bold;
+	color: #000000;
+}
+.loyaltypoints {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 23px;
+	font-weight: bold;
+	color: #996600;
+}
+.bottomborder {
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-color: #666666;
+}
+.loginpageborder {
+	border: 2px solid #333333;
+}

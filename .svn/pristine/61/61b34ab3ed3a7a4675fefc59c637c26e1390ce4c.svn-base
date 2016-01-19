@@ -1,0 +1,111 @@
+package com.ymca.test;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.ymca.CoreConfig;
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.PaymentDao;
+import com.ymca.dao.ProductDao;
+import com.ymca.dao.ProgramDao;
+import com.ymca.dao.SystemPropertyDao;
+import com.ymca.dao.WaiversAndTCDao;
+
+import com.ymca.dao.UserDao;
+import com.ymca.model.ItemDetails;
+import com.ymca.model.Payment;
+import com.ymca.model.SystemProperty;
+import com.ymca.model.User;
+import com.ymca.model.WaiversAndTC;
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = CoreConfig.class)
+public class ApplicationTests {
+
+
+	@Resource
+	UserDao userDao ;
+	
+	@Resource
+	PaymentDao paymentDao;
+	
+	@Resource
+	ProductDao productDao;
+
+	@Resource
+	WaiversAndTCDao waiversAndTCDao;
+	
+	@Resource
+	SystemPropertyDao systemPropertyDao;
+	
+	@Test
+	public void getAll() {
+		//userDao.findAll();
+		//List<Payment> paymentLst = paymentDao.findAll();
+		//System.out.println(paymentLst);
+		//2014-08-18 00:00:00
+		Date startDate = new Date();		
+		Calendar cal =  Calendar.getInstance();
+		cal.setTime(startDate);
+		cal.add(Calendar.DAY_OF_YEAR, -3);
+		Date formattedStartDate = cal.getTime();
+		System.out.println(formattedStartDate);
+		
+		Date endDate = new Date();
+		Calendar cal1 =  Calendar.getInstance();
+		cal1.setTime(endDate);
+		cal1.add(Calendar.DAY_OF_YEAR, 3);
+		
+		Date formattedEndDate = cal1.getTime();
+		System.out.println(formattedEndDate);
+		//2014-08-18 00:00:00.0
+		//customer
+		
+		/*List<Object> paymentLst = paymentDao.getPaymentHistory("","th", 20L, formattedStartDate,formattedEndDate);
+		for(Object payment : paymentLst){
+			Object objArr1[] = (Object[]) payment;			
+			for(Object obj : objArr1){
+				System.out.println(obj);
+			}	
+		}*/
+		
+	} 
+	
+	@Test
+	public void getUserByEmail() {
+		List<ItemDetails> itemDetailsLst = productDao.getMembershipProgramByLocation(1L);
+		System.out.println(itemDetailsLst);
+		/*User user =  userDao.getByEmail("nnimsudkar@serenecorp.com1");
+		System.out.println(user);*/
+	} 
+	
+	@Test
+	public void getPicklistValuesByPicklistName() {
+		//List<SystemProperty> systemPropLst = systemPropertyDao.getByFieldStatus(true);
+		List<SystemProperty> systemPropLst = systemPropertyDao.getByPicklistName("PAYMENT_METHOD");
+		System.out.println(systemPropLst);
+	}
+	
+	@Test
+	public void getAllPicklistValues() {		
+		List<SystemProperty> systemPropLst = systemPropertyDao.getAllPicklistValues();
+		System.out.println(systemPropLst);
+	}
+
+	@Test
+	public void getPropertyValueByKeyName() {		
+		List<SystemProperty> systemPropLst = systemPropertyDao.getPropertyByKeyName("ADD_BANK_INFO");
+		System.out.println(systemPropLst);
+	}
+	
+	
+}

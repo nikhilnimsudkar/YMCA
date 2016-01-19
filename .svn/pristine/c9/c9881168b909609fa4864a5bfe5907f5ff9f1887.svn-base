@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+  <definition name="donationHome" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/donationHome.jsp" />
+  </definition>
+  
+  <definition name="donationForm" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/donationInformation.jsp" />
+  </definition>
+  
+  <definition name="viewPaymentForm" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/processPayment.jsp" />
+  </definition>
+  
+  <definition name="redirectSuccess" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/Success.jsp" />
+  </definition>
+  
+  <definition name="redirectFailure" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/failure.jsp" />
+  </definition>
+  
+  <definition name="donationSuccess" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/donationSuccess.jsp" />
+  </definition>
+  
+  <definition name="donationError" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/donationFailure.jsp" />
+  </definition>
+  
+  <definition name="annualDonationForm" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/annualDonationInformation.jsp" />
+  </definition>
+  
+  <definition name="annualDonationSuccess" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/annualDonationSuccess.jsp" />
+  </definition>
+  
+  <definition name="annualDonationError" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/annualDonationFailure.jsp" />
+  </definition>
+  <definition name="donationEmployerMatch" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/donationEmployerMatchInfo.jsp" />
+  </definition>
+  
+</tiles-definitions>

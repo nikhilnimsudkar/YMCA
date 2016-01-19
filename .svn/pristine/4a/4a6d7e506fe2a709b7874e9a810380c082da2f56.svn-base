@@ -1,0 +1,26 @@
+package com.ymca.test;
+
+import javax.annotation.Resource;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.ymca.CoreConfig;
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.UserDao;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = CoreConfig.class)
+public class ApplicationTests {
+
+
+	@Resource
+	UserDao userDao ;
+	
+	@Test
+	public void getAll() {
+		userDao.findAll();
+	} 
+}

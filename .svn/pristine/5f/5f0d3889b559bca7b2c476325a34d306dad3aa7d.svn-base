@@ -1,0 +1,338 @@
+
+/* Common functions */
+
+function convertJsonDate(dtObj){
+	var dtStr = "";
+	var sday = dtObj.date;
+	var smonth = parseInt(dtObj.month) + 1;
+	var syear = dtObj.year;
+	var strYear = syear.toString();
+	if(strYear.length==3)
+		strYear = "20"+strYear.substring(1,strYear.length);
+	else
+		strYear = syear;
+	dtStr = sday + "/" + smonth + "/" + strYear;
+	return dtStr;
+}
+
+function currencyFormat (num) {
+    return "$" + num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+}
+
+function formatTime(date) {
+	  var hours = date.getHours();
+	  var minutes = date.getMinutes();
+	  var ampm = hours >= 12 ? 'pm' : 'am';
+	  hours = hours % 12;
+	  hours = hours ? hours : 12; // the hour '0' should be '12'
+	  minutes = minutes < 10 ? '0'+minutes : minutes;
+	  var strTime = hours + ':' + minutes + ' ' + ampm;
+	  return strTime;
+}
+
+function formatDate(inputFormat) {
+	  function pad(s) { return (s < 10) ? '0' + s : s; }
+	  var d = new Date(inputFormat);
+	  return [pad(d.getMonth()+1), pad(d.getDate()), pad(d.getFullYear ())].join('/');
+}
+
+function isNumber(val){
+   if (isNaN(val) || val == 'undefined' || val == null) 
+	   return 0;
+   else
+	   return val;
+}
+
+function backtoregistration(){
+	
+	$(".k-loading-mask").show();
+    
+    $("#tcSuccessSpan").css("display", "none");		
+	$("#tcSuccessSpan" ).html("");	
+	$("#tcErrorSpan").css("display", "none");		
+	$( "#tcErrorSpan" ).html("");
+	$("#purchase").fadeOut();
+	
+	$("#familymembers").fadeOut(200);
+	
+	var cartType = $.sessionStorage.getItem("CartType");
+	
+	if(cartType){
+		if(cartType == 'Program'){
+			$("#program").fadeIn(100);
+			getProgramSession();
+		}else if(cartType == 'Event'){
+			$("#event").fadeIn(100);
+			getEventSession();
+		}
+	}
+}
+
+function ArrNoDupe(a) {
+    var temp = {};
+    for (var i = 0; i < a.length; i++)
+        temp[a[i]] = true;
+    var r = [];
+    for (var k in temp)
+        r.push(k);
+    return r;
+}
+
+function validateCheckout() {
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	
+	var contactData = [];
+	$('#allmembers').find('input[class="usercheck"]').each(function(){
+		if($("#user_"+this.value).is(':checked')){
+			contactData.push(this.value);
+		}
+	});
+	if(contactData==""){
+		  $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan" ).html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $( "#tcErrorSpan" ).html("Please select atleast one Member");
+		  return false;
+	}
+	
+	$.sessionStorage.setItem('contact_ids', contactData.join(','));
+	var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+
+	location.href = '#/product/'+itemDetailsId+'/'+contactData.join(',');
+	return true;
+}
+
+function getFamilymembers(){
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getContacts",
+		  dataType: "json",
+		  success: function( data ) {
+			  if(data.length>0){
+				  var allContacts = "";
+				 
+				  $.each(data, function(i,member) {
+					  allContacts = allContacts + "<div style='margin: 10px;'>";
+					  allContacts = allContacts + "<span><input type='checkbox' name='user_"+member.contactId+"' id='user_"+member.contactId+"' value='"+member.contactId+"' class='usercheck'></span>";
+					  allContacts = allContacts + "&nbsp;&nbsp;<span class='name'>"+member.fname + " " +member.lname+"</span>";
+					  allContacts = allContacts + "</div>";
+				  });
+				  
+				  $("#familymembers").slideDown();
+				  $("#allmembers").html(allContacts);
+				  $("input[type='checkbox']").uniform();
+				 
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+}
+
+function addfamilyMember(){
+	$.ajax({
+		  type: "GET",
+		  url:"addMember",
+		  async:false,
+		  success: function( data ) {
+			  $("#popup_add").html(data);
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+}
+
+function closeAllwindow(){
+
+	 $("div.k-window1").each(function(index, element){
+		var window = $(this);
+		if (!window.data("kendoWindow")) {
+			window.kendoWindow({
+				width: "1050px"
+			});
+		}
+		window.data("kendoWindow").close();
+	});
+}
+
+function fnApplyPromo(){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 
+	 //alert();
+	 var promocode = $( "#c_promocode" ).val();
+	 
+	 if(promocode==''){
+		  $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan" ).html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $( "#tcErrorSpan" ).html("Please enter Valid Promco code");
+		  return;
+	 }
+	 
+	 var cartObj = this.cart;
+	 var found = false;
+	 $.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getPromodetails?promocode="+promocode,
+		  dataType: "json",
+		  success: function( data ) {
+			  console.log(data);
+			  if(data.length==1){
+				  $.each(data, function(i,promo) {
+					  if(promo.itemDetails.length>0){
+						  
+						  for (var c = 0; c < cartObj.contents.length; c ++) {
+							  
+								  $.each(promo.itemDetails, function(j,itemInfo) {
+									  
+										  if(cartObj.contents[c].item.itemDetailsId == itemInfo.itemDetailsId){
+											  var p_price = parseFloat(0);
+											  if(cartObj.contents[c].contact.isMember)
+												p_price = cartObj.contents[c].item.memberprice;
+											  else
+												p_price = cartObj.contents[c].item.nonmemberprice;
+														
+											  var discount = parseFloat(0);
+											  var discount_type = promo.discounttype;
+											  if(discount_type=='AMOUNT')
+												  discount = promo.discountValue;
+											  else if(discount_type=='PERCENTAGE'){
+												  discount = parseFloat(promo.discountPercentage) * parseFloat(p_price);
+												  discount = discount/100;
+											  }
+											  
+											  $( ".custom_promo" ).show();
+											  cartPreviewModel.updateCart(cartObj.contents[c],parseFloat(discount),promocode);
+											  //break;
+											  found = true;
+										  }
+										  
+								  });
+								  
+							}
+					  }
+				  });
+			  }
+			  else{
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+				  return;
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+	 
+	 if (!found) {
+		 $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan" ).html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+	  }
+}
+
+function fnUpdatePromo(){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 //alert();
+	console.log(this);
+}
+
+function fnCheckout(){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 
+	 if(cartPreviewModel.totalPrice()=='$0.00'){
+		 $("#tcErrorSpan").css("display", "block");		
+		 $( "#tcErrorSpan" ).html("Please add atleast 1 program to signup");
+		 return;
+	 }
+	// validation start
+
+	$(".k-loading-mask").show();
+	$("#payment_cart").show();
+	$("#details-checkout").fadeOut("fast");
+	$("#purchase").fadeIn("slow", function(){
+			$(".k-loading-mask").show();
+			$("#pmPrimary").hide();
+			$("#autopayBtn").hide();
+			
+			var trrow = "";
+			if(cart.contents.length>0){
+				$.each(cart.contents, function(i,itemDetailsSession) {
+					var stdt = convertJsonDate(itemDetailsSession.item.start_date);
+					var enddt = convertJsonDate(itemDetailsSession.item.end_date);
+					var stTime = new Date(itemDetailsSession.item.start_time.time);
+					var endTime = new Date(itemDetailsSession.item.end_time.time);
+					var discount = 0;
+					var itemprice = 0;
+					if(itemDetailsSession.contact.isMember)
+						discount = parseFloat(itemDetailsSession.item.memberdiscount) + parseFloat(itemDetailsSession.discount1);
+					else
+						discount = parseFloat(itemDetailsSession.item.nonmemberdiscount) + parseFloat(itemDetailsSession.discount1);
+					
+					if(itemDetailsSession.contact.isMember)
+						itemprice = (parseFloat(itemDetailsSession.item.memberprice) - parseFloat(itemDetailsSession.item.memberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+					else
+						itemprice = (parseFloat(itemDetailsSession.item.nonmemberprice) - parseFloat(itemDetailsSession.item.nonmemberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+					
+					trrow = trrow + "<table width='100%'><tr>";
+					trrow = trrow + "<td><span><strong>" + itemDetailsSession.contact.fname + " " + itemDetailsSession.contact.lname + "<br>"  + itemDetailsSession.item.name + " [Category: " + itemDetailsSession.item.category + "]</strong></span></td>";
+					trrow = trrow + "<td><span>" + itemDetailsSession.item.dayId + "</span></td>";
+					trrow = trrow + "<td><span>" + stdt + " - " + enddt + "</span></td>";
+					trrow = trrow + "<td><span>" + formatTime(stTime)  + " - " +  formatTime(endTime) + "</span></td>";
+					trrow = trrow + "</tr>";
+					
+					trrow = trrow + "<tr height='10px;'>";
+					trrow = trrow + "<td colspan='3' align='right'>Sub Total</td>";
+					if(itemDetailsSession.contact.isMember)
+						trrow = trrow + "<td align='center'><span>" + currencyFormat(itemDetailsSession.item.memberprice) + "</span></td>";
+					else
+						trrow = trrow + "<td align='center'><span>" + currencyFormat(itemDetailsSession.item.nonmemberprice) + "</span></td>";
+					trrow = trrow + "</tr>";
+					
+					trrow = trrow + "<tr height='10px;'>";
+					trrow = trrow + "<td colspan='3' align='right'>Discount</td>";
+					trrow = trrow + "<td align='center'><span class='discountpricelbl'>-" + currencyFormat(discount) + "</span></td>";
+					trrow = trrow + "</tr>";
+					
+					trrow = trrow + "<tr height='10px;'>";
+					trrow = trrow + "<td colspan='3' align='right'>Final amount</td>";
+					trrow = trrow + "<td align='center'><span>" + currencyFormat(itemprice) + "</span></td>";
+					trrow = trrow + "</tr>";
+					
+					trrow = trrow + "<tr height='10px;'>";
+					trrow = trrow + "<td></td>";
+					trrow = trrow + "</tr></table>";
+				});
+			}
+			$("#cartitem").html(trrow);
+			$("#ordertotal").text(cartPreviewModel.totalPrice());
+			
+			$(".k-loading-mask").hide();
+	});
+}
+

@@ -1,0 +1,9 @@
+package com.ymca.web.enums;
+
+public enum ProductTypeEnum {
+	Event,
+	Program,
+	Memberships,
+	Membership,
+	ChildCare
+}

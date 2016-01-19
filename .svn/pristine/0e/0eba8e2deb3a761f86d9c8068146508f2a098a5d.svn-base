@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:batch="http://www.springframework.org/schema/batch"
+    xmlns:task="http://www.springframework.org/schema/task" 
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <!-- 	
+  <bean id="dbToScAccountScheduler" class="com.serene.job.scheduler.GenericJobScheduler">
+  	<property name="jobName" value="dbToScAccount"/>
+  </bean>
+
+  <task:scheduled-tasks>
+	<task:scheduled ref="dbToScAccountScheduler"  method="run" cron="*/1 * * * * *" />
+  </task:scheduled-tasks>
+  --> 
+<bean id="scToDbLocationJobScheduler" class="com.serene.job.scheduler.GenericSCToDbJobScheduler">
+   <property name="jobName" value="scToDbAccountJob"/>
+ <property name="fql" value="Select Id,AddressLine1_c,AddressLine2_c,RecordName,City_c,State_c,Telephone_c,Zip_c from Location_c where LastUpdateDate AFTER #lastUpdateDate"></property>   
+ <property name="sql">
+     <value>
+             <![CDATA[
+    INSERT INTO locations (location_id,address1,address2,branch_name,city,state,phone_number,zip_code) VALUES (:Id,:AddressLine1_c,:AddressLine2_c,:RecordName,:City_c,:State_c,:Telephone_c,:Zip_c) ON DUPLICATE KEY 
+    UPDATE location_id = :Id,address1 = :AddressLine1_c,address2 = :AddressLine2_c, branch_name = :RecordName,city = :City_c,state = :State_c,phone_number = :Telephone_c,zip_code = :Zip_c ]]>
+    </value>
+ </property>
+ <property name="dataSource" ref="portal_db"/>
+ <property name="scObjectName" value="Location_c"/>
+ <property name="scObjectIdField" value="Id"/>
+ <property name="fieldMapping">
+  <map>
+   <entry key="location_id" value="Id" />
+  <entry key="branch_name" value="RecordName" /> 
+  </map>
+ </property>      
+  </bean>  
+
+  <bean id="scToDbAccountJobScheduler" class="com.serene.job.scheduler.GenericSCToDbJobScheduler">
+  	<property name="jobName" value="scToDbAccountJob"/>
+	<property name="fql" value="Select PartyId,PersonProfile.PersonFirstName,PersonProfile.PersonLastName,PersonProfile.PersonProfileId,Relationship.ObjectId,Email.EmailAddress from Person where PartyType = PERSON"></property>  	
+	<property name="sql">
+		  <value>
+	            <![CDATA[
+				INSERT INTO PARTNER (PartyId1,PersonProfileId,PersonFirstName,PersonLastName,EmailAddress) VALUES (:PartyId,:PersonProfileId,:PersonFirstName,:PersonLastName,:EmailAddress) ON DUPLICATE KEY 
+				UPDATE PersonFirstName = :PersonFirstName,PersonLastName = :PersonLastName,EmailAddress = :EmailAddress	            ]]>
+		  </value>
+	</property>
+	<property name="dataSource" ref="portal_db"/>
+	<property name="scObjectName" value="Person"/>
+	<property name="scObjectIdField" value="PartyId"/>
+	<property name="fieldMapping">
+		<map>
+				<entry key="Name" value="Name" />
+				<entry key="PersonFirstName" value="PersonProfile/PersonFirstName" />
+				<entry key="PersonLastName" value="PersonProfile/PersonLastName" />
+				<entry key="PersonProfileId" value="PersonProfile/PersonProfileId" />
+				<entry key="EmailAddress" value="Email/EmailAddress" />
+				<entry key="LastUpdateDate" value="PersonProfile/LastUpdateDate"  />
+		</map>
+	</property>			  	
+  </bean>
+    
+  <bean id="dbToScAccountJobScheduler" class="com.serene.job.scheduler.GenericDbToSCJobScheduler">
+  	<property name="jobName" value="dbToScAccountJob"/>
+	<property name="sql" value="SELECT PartyId,PersonProfileId,PersonFirstName,PersonLastName,EmailAddress FROM PARTNER /* where lastUpdatedDate = '#lastUpdatedDate'*/"/>
+	<property name="dataSource" ref="portal_db"/>
+	<property name="scObjectName" value="Person"/>
+	<property name="scObjectIdField" value="PartyId"/>
+	<property name="fieldMapping">
+		<map>
+			<entry key="PartyId" value="PartyId" />
+			<entry key="PersonProfile/PersonFirstName" value="PersonFirstName"  />
+			<entry key="PersonProfile/PersonLastName" value="PersonLastName"  />
+		</map>
+	</property>			  	
+  </bean>
+  
+<!--   <task:scheduled-tasks> -->
+<!--   	<task:scheduled ref="scToDbAccountJobScheduler"  method="run" cron="0/10 * * * * ?" /> -->
+<!-- 	 <task:scheduled ref="dbToScAccountJobScheduler"  method="run" cron="0/10 * * * * ?" /> -->
+<!--   </task:scheduled-tasks> -->
+</beans>

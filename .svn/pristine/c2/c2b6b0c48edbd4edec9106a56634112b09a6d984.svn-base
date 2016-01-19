@@ -1,0 +1,231 @@
+<div id="main">	
+	<span style="text-shadow: none; float: right; width: 90px; margin-right: 20px;" class="k-button" id="newMemberSpan">Register</span>
+	<div id="content">
+		<div id="content">
+		<form class="bootstrap-frm cmxform" id="loginForm" method="post" action="memberAuth" style="border:none; padding : 0px;">			
+			
+        	<div id="formBlock" align="center" style="width: 550px;"> 
+        	<div id="statusBlock" style="display:none;">
+				<span class="k-block k-success-colored" id="tcloginSuccessSpan" style="display:none"></span>
+				<span class="k-block k-error-colored" id="tcloginErrorSpan" style="display:none"></span>				
+			</div>   
+    			
+					<table border="0" style="border: 1px solid rgb(221, 221, 221); border-radius: 5px; padding: 33px;">
+						<tr>
+							<td><div align="left">
+									<h2>Sign in to YMCA</h2>
+								</div></td>
+						</tr>
+						<tr>
+							<td><input class="form-control bootstrap-Inputcss" name="username" id="username" maxlength="50"	placeholder="Email" style="width: 230px;" /></td>
+							<td>&nbsp;</td>
+						</tr>
+						<tr>
+							<td><input type="password" class="form-control bootstrap-Inputcss" name="password" id="userPassword" maxlength="50"	placeholder="Password" style="width: 230px;height: 15px;" /></td>
+							<td>&nbsp;</td>
+							<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+						</tr>
+						<tr>
+							<td><span id="loginbuttonSpan" class="k-button">Sign in</span></td>
+							<td>&nbsp;</td>
+						</tr>
+						<tr>
+							<td>&nbsp;</td>
+							<td style="text-align:right;">
+								<span id="forgotPW"> 
+									<a href="recovery/resetpassword" style="margin-left: 10px;">Forgot Email Address or Password</a>
+								</span>
+							</td>
+						</tr>
+						
+						
+					</table>
+				 
+				<!-- <input type="text" placeholder="Email" name="username" id="username"></label>
+				<label><input type="password" placeholder="Password" name="password" id="userPassword"></label> -->	
+				
+			</div>
+			
+			<!-- <div id="recoveryblock">				
+				<span id="forgotPW">
+					<a href="recovery/resetpassword" style="margin-left: 10px;">Forgot Email Address or Password</a>
+				</span>
+				<span id="notMember"><a href="#" style="margin-left: 10px;">Not a Member?</a></span>
+			</div> -->			
+		</form>
+		</div>		
+	</div>		
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	//$.sessionStorage.clear();
+	//cart.clear();	
+	
+  //var token = $("meta[name='_csrf']").attr("content");
+  //var header = $("meta[name='_csrf_header']").attr("content");
+	 $('body').on( "change", "#paymentInfoRadio", function() {			
+		if($("#paymentInfoRadio").val()=='New'){
+			$('#addBank').hide();	
+			$('#addcard').show();			
+			$(".stepContainer").height($(".stepContainer").find("div:not(:hidden)").height());
+			/* $("#wizard"). smartWizard("fixHeight");			
+			$('.stepContainer').css("height", "240px");
+			$('#step-5').css("height", "225px");  */			
+		}else if($("#paymentInfoRadio").val()=='NewBank'){
+			$('#addcard').hide();
+			$('#addBank').show();			
+			$(".stepContainer").height($(".stepContainer").find("div:not(:hidden)").height());
+		} else{
+			$('#addcard').hide();
+			$('#addBank').hide();	
+			$(".stepContainer").height($(".stepContainer").find("div:not(:hidden)").height());
+			$("#paymentTokenIdSpan").html($("#paymentInfoRadio").val());
+			$("#paymentMethodIdHidInput").attr("value", $("#paymentInfoRadio").val()); 
+			/* $("#wizard"). smartWizard("fixHeight");			
+			$('.stepContainer').css("height", "240px");
+			$('#step-5').css("height", "225px");  */
+		}
+	});
+	
+	$( "#SaveCard" ).click(function(){
+		if($('#SaveCard').is(":checked")){
+			$("#nickname").show();
+			$("div#savecardcheckbox").css("padding-top","21px");
+		}
+		else{
+			$("#nickname").hide();
+			//$("div#savecardcheckbox").css("padding-top","5px");
+		}
+	});
+	$( "#loginbuttonSpan" ).click(function(  ) {
+		var userName = $("#username").val();
+		var userPassword = $("#userPassword").val();
+		if(!$("#loginForm").valid()) {
+			$('#wizard').smartWizard('setError',{stepnum:2,iserror:true});		
+			return false;
+		}else {
+			 $("#statusBlock").css("display", "none");	
+			 $("#tcloginErrorSpan").css("display", "none");	
+			 $( "#tcloginErrorSpan" ).html("");
+			 $(".k-loading-mask").show();
+				$(".k-loading-text").html("Please wait");			
+				$.ajax({
+					  type: "POST",
+					  url: $('#loginForm').attr( "action"),
+					  data: { username: userName, password: userPassword },
+					  
+					  success: function( dat ) {				  	  
+					  	  if(dat=='Success'){
+					  		isLoggedIn = "true";
+					  		$("#tcloginErrorSpan").css("display", "none");	
+							$( "#tcloginErrorSpan" ).html("");	
+							$(".k-loading-mask").hide();							
+							$("#email").attr("value", userName);
+						  	//window.location.href = "http://localhost:8080/ymca-web/view_membership";
+						  	$.ajax({
+								  type: "GET",
+								  url: "viewPaymentInformationByLoggedInUser",	
+								  
+								  success: function( data ) {				  	  
+									  if(data != null && data.length > 0){
+										  $.ajax({
+											  type: "POST",
+											  url: "getAccountDetailsByEmail",	
+											  data: { emailId: userName},
+											 
+											  success: function( accData ) {
+												  var paymentMethodHtml = '';
+												  if(accData != null && accData.length > 0){
+													  for(var i = 0; i<data.length; i++){        
+													       var dataArr = data[i];
+													       //p.portalStatus, p.paymentType, p.isPrimary, p.paymentId, p.nickName, p.cardNumber, p.expirationMonth, p.expirationYear										       
+													       //paymentInfoRadio
+													       
+													       if(dataArr[2]){
+													    	   paymentMethodHtml += '<option selected value="'+ dataArr[8] +'">'+ dataArr[4] +' '+dataArr[5] +' '+dataArr[6] +'/'+dataArr[7]+'</option>';
+													    	   $("#paymentTokenIdSpan").html(dataArr[8]);
+													       }else{
+													    	   paymentMethodHtml += '<option value="'+ dataArr[8] +'">'+ dataArr[4] +' '+dataArr[5] +' '+dataArr[6] +'/'+dataArr[7]+'</option>';
+													       }													       
+												      }
+												      
+												      for(var i = 0; i<accData.length; i++){        
+													       var dataArr = accData[i];													      
+													        $('#firstNameTd').html(dataArr[5]);
+											    			$('#lastNameTd').html(dataArr[6]);
+											    			$('#dobTd').html(dataArr[7]);
+											    			$('#phoneNumberTd').html(dataArr[8]);
+											    			$('#emailTd').html(dataArr[9]);
+											    			
+											    			$('#addressLine1Td').html(dataArr[0]);
+											    			$('#addressLine2Td').html(dataArr[1]);
+											    			$('#cityTd').html(dataArr[2]);
+											    			$('#stateTd').html(dataArr[3]);
+											    			$('#postalCodeTd').html(dataArr[4]);	
+											    			
+											    			$('#firstName').attr("value", dataArr[5]);
+											    			$('#lastName').attr("value", dataArr[6]);										    			
+											    			$('#phoneNumber').attr("value", dataArr[8]);
+											    			$('#email').attr("value", dataArr[9]);
+											    			
+											    			$('#addressLine1').attr("value", dataArr[0]);
+											    			$('#addressLine2').attr("value", dataArr[1]);
+											    			$('#city').attr("value", dataArr[2]);
+											    			$('#state').attr("value", dataArr[3]);
+											    			$('#postalCode').attr("value", dataArr[4]);
+												      }
+												      paymentMethodHtml += '<option value="New">Add New Card</option>';
+												      paymentMethodHtml += '<option value="NewBank">Add New Bank Info</option>';
+												      $("#paymentInfoRadio").html(paymentMethodHtml);
+												      $("#paymentInfoRadio").kendoDropDownList();
+												      $("#paymentTokenIdSpan").html($("#paymentInfoRadio").val());
+												      $("#paymentMethodIdHidInput").attr("value", $("#paymentInfoRadio").val());
+												      $('#wizard').smartWizard('goToStep',3);	
+												      //signInSelected = "false";
+												      //$('#loginDiv').css("display","none");
+												      //$('#registerDiv').css("display","inline");
+												  }
+											  },
+											  error: function( xhr,status,error ){
+												  $("#statusBlock").css("display", "block");	
+												  $("#tcloginErrorSpan").css("display", "block");	
+												  $( "#tcloginErrorSpan" ).html("There was some error. Please try again later");	
+												  $(".k-loading-mask").hide();								  		 
+											  }
+										});									      	
+									  }
+								  },
+								  error: function( xhr,status,error ){
+									  $("#statusBlock").css("display", "block");	
+									  $("#tcloginErrorSpan").css("display", "block");	
+									  $( "#tcloginErrorSpan" ).html("There was some error. Please try again later");	
+									  $(".k-loading-mask").hide();								  		 
+								  }
+							});
+						  	
+					  	  }else if(dat == 'Failure'){
+					  		$("#statusBlock").css("display", "block");	
+					  		$("#tcloginErrorSpan").css("display", "block");	
+							$( "#tcloginErrorSpan" ).html("User name or Password did not match. Please try again.");	
+							$(".k-loading-mask").hide();
+					  	  }else {
+					  		$("#statusBlock").css("display", "block");	
+					  		$("#tcloginErrorSpan").css("display", "block");	
+							$( "#tcloginErrorSpan" ).html("There was some error. Please try again later");	
+							$(".k-loading-mask").hide();					  		 
+					  	  }					  
+					  },
+					  error: function( xhr,status,error ){
+						  $("#statusBlock").css("display", "block");	
+						  $("#tcloginErrorSpan").css("display", "block");	
+							$( "#tcloginErrorSpan" ).html("There was some error. Please try again later");	
+							$(".k-loading-mask").hide();
+					  		 
+					  }
+				});
+		 }		  
+	});	
+	
+});
+</script>

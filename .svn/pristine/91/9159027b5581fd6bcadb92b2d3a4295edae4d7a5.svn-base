@@ -1,0 +1,8 @@
+package com.ymca.dao;
+
+import com.ymca.model.Opportunity;
+
+public interface OpportunityDao extends GenericDao<Opportunity,Long>{
+	
+	
+}

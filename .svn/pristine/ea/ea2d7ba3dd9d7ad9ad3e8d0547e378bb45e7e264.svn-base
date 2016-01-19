@@ -1,0 +1,37 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+
+	
+	<div id="tabstrip4" class="k-block" style=" background-color:#FFFFFF;">
+		<span class="head" width="100%">MY RECENT
+					DONATIONS</span>
+	
+	
+		<div>
+			<div>
+
+				<table class="border1" bgcolor="#ffffff" border="0" cellpadding="0"
+					cellspacing="4" width="100%">
+					<tbody>
+					
+
+						<c:forEach var="donation" items="${donationList}">
+
+							<tr style="outline:thin solid ">
+								<td class="fieldnamesmall" width="70"><fmt:formatDate
+										type="date" pattern="MM/dd/yyyy"
+										value="${donation.donationDate}" /></td>
+								<td>$${donation.donationAmount}0</td>
+							</tr>
+						</c:forEach>
+
+						
+					</tbody>
+				</table>
+</div>
+
+			</div>
+		
+		
+
+	

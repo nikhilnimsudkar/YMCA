@@ -1,0 +1,106 @@
+package com.serene.job.service;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.common.Constants;
+import com.serene.job.model.JobSchedulerMetadata;
+import com.ymca.model.Payment;
+import com.serene.job.util.JobUtils;
+import com.serene.job.util.PaymentTypeEnum;
+
+@Service
+public class PaymentJobServiceImpl implements PaymentJobService {
+	
+	@Resource
+	private JobUtils jobUtils;
+	
+	@Override
+	public Double computePaymentAmount(Map<String, Object> invoice,
+			JobSchedulerMetadata jobSchedulerMetadata) {
+		// TODO Auto-generated method stub
+		Double openBalanceOnInvoice = 0D, trueInvoiceValue = 0D, sumOfDebitPayment = 0D, sumOfCreditMemoFAWaiver = 0D, sumOfCreditMemoWaiver = 0D, sumOfPayment = 0D;
+		Double sumOfCreditMemoWriteOff = 0D, sumOfCreditMemoRefund = 0D, sumOfNSF = 0D, sumOfChargeBack = 0D,sumOfCreditMemoADJ = 0D;
+		
+		JdbcTemplate jdbcTemplate = jobUtils
+				.getFromJdbcTemplate(jobSchedulerMetadata);
+		
+		String sql = "select p.amount, p.type from Payment p inner join invoice i on p.InvoiceId = i.InvoiceId where i.InvoiceId=? AND p.status='Success'";
+		List<Map<String,Object>> objs = jdbcTemplate.queryForList(sql,invoice.get("InvoiceId").toString());
+		for (Map obj : objs) {
+			
+			switch (PaymentTypeEnum.getEnumByString(obj.get("type").toString())) {
+				
+				case CreditMemoFAWaiver:
+					sumOfCreditMemoFAWaiver += Double.parseDouble(obj.get("amount").toString());
+					break;
+				case CreditMemoWaiver:
+					sumOfCreditMemoWaiver += Double.parseDouble(obj.get("amount").toString());
+					break;
+				case CreditMemoRefund:
+					sumOfCreditMemoRefund += Double.parseDouble(obj.get("amount").toString());
+					break;
+				case CreditMemoWriteOff:
+					sumOfCreditMemoWriteOff += Double.parseDouble(obj.get("amount").toString());
+					break;
+				case Debit:
+					sumOfDebitPayment += Double.parseDouble(obj.get("amount").toString());
+					break;
+				case NSF:
+					sumOfNSF += Double.parseDouble(obj.get("amount").toString());
+					break;
+				case ChargeBack:
+					sumOfChargeBack += Double.parseDouble(obj.get("amount").toString());
+					break;
+				case CreditMemoADJ:
+				    sumOfCreditMemoADJ += Double.parseDouble(obj.get("amount").toString());
+				case Payment:
+					sumOfPayment += Double.parseDouble(obj.get("amount").toString());
+				default:
+					break;
+			} 
+		}	
+		trueInvoiceValue = (Double.parseDouble(invoice.get("amount").toString()) + sumOfCreditMemoADJ) - (sumOfCreditMemoWaiver + sumOfCreditMemoFAWaiver + sumOfCreditMemoWriteOff);		
+		//(Inv Amt + CM/FA waiver + CM/Write Off + CM / Waiver + CM / Adj) – (Payment (previously DEBIT) + NSF + Charge Back + CM / Refund)
+		openBalanceOnInvoice = (Double.parseDouble(invoice.get("amount").toString()) + sumOfCreditMemoFAWaiver + sumOfCreditMemoWriteOff + sumOfCreditMemoWaiver + sumOfCreditMemoADJ )
+								- (sumOfNSF + sumOfChargeBack + sumOfCreditMemoRefund + sumOfPayment);
+		
+		return openBalanceOnInvoice;
+	
+	}
+	
+	@Override
+	public Boolean checkDupeByInvoiceIdAndDueDateAndSource(Map<String, Object> invoice, JobSchedulerMetadata jobSchedulerMetadata) {
+		Boolean isDupe = false;
+		
+		JdbcTemplate jdbcTemplate = jobUtils
+				.getFromJdbcTemplate(jobSchedulerMetadata);
+		
+		//Calendar cal = Calendar.getInstance();
+		//cal.setTime(new Date(invoice.get("DueDate").toString()));
+		String sql = "select p.InvoiceId from Payment p where p.InvoiceId=? AND p.dueDate=? AND p.Source_c=?";
+		
+		try{
+			String value = jdbcTemplate.queryForObject(sql, String.class,
+					invoice.get("InvoiceId"),
+					invoice.get("DueDate"),
+					Constants.PAYMENT_BATCH_SOURCE);
+			System.out.println("dupe found with id-->> " + value);
+			if(value!=null)
+				isDupe = true;
+		}
+		catch(Exception e){
+			System.out.println("Exception-->> " + e);
+		}
+		
+		return isDupe;
+	}
+
+}

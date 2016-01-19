@@ -1,0 +1,40 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    
+<body>
+
+<div id="main">
+	<div id="content">
+		<div id="myprofile">
+			<%@ include file="paymentProfile.jsp" %> 
+		</div>
+		<div id="paymentDetailDiv">
+			<div id="purchase" style="margin-left:90px; width: 300px;">
+				<%@ include file="purchaseInformation.jsp" %> 
+			</div>
+			<div id="updateCardInfoDiv" style="display:none; margin-left: 425px; margin-top: -10px;">
+				<%@ include file="../../views/payment/updateCardInfo.jsp" %> 
+			</div> 
+			<div id="updateBankInfoDiv" style="display:none; margin-left: 425px;  margin-top: -10px;">
+				<%@ include file="../../views/payment/updateBankDetailInfo.jsp" %> 
+			</div>
+			<div id="addBankCardInfoDiv" style="display:none; ">
+				<%@ include file="../../views/payment/AddBank_CardInfo.jsp" %> 
+			</div>			 
+		</div>
+	</div>
+</div>
+</body>
+
+<script>
+	$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','current');
+		
+		$("#page_name").html("PAYMENT INFORMATION");
+	});
+</script>

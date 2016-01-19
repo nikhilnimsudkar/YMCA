@@ -1,0 +1,65 @@
+package com.serene.job.scheduler;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.common.Constants;
+import com.serene.job.common.CustomJobBuilderFactory;
+import com.serene.job.reader.FusionItemReader;
+
+@Service
+@Lazy(true)
+@Scope("prototype")
+public class GenericSCToDbJobScheduler extends AbstractJobScheduler implements InitializingBean  {
+	
+	private Logger log = LoggerFactory.getLogger(GenericSCToDbJobScheduler.class); 
+
+	@Resource
+	private FusionItemReader fusionItemReader ;  
+	
+	@Resource
+	private CustomJobBuilderFactory customJobBuilderFactory ; 
+	
+	@SuppressWarnings("rawtypes")
+	public void loadJob() throws Exception {
+		
+		job = customJobBuilderFactory.buildScToScbJob(jobSchedulerMetadata, job);
+		// load scheduler 
+		customJobBuilderFactory.loadScheduler(jobSchedulerMetadata, this);
+	}
+	
+	
+	@Override
+	public void run() {
+		try {
+			JobParametersBuilder parametersBuilder = new JobParametersBuilder();
+			parametersBuilder.addLong("time",System.currentTimeMillis());
+			parametersBuilder.addString(Constants.OBJECT_NAME,jobSchedulerMetadata.getFromObjectName());
+			parametersBuilder.addString(Constants.OBJECT_ID_FIELD,jobSchedulerMetadata.getFromObjectIdField());
+			
+			JobExecution execution = jobLauncher.run(job, parametersBuilder.toJobParameters());
+			log.info("Exit Status : " + execution.getStatus());
+		} catch (Exception e) {
+			log.error("Error while running the job " + jobSchedulerMetadata.getJobName(), e);
+		}
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		/*
+		Assert.notNull(jobName, "A job name is required");
+		Assert.notNull(sql, "A sourceSql is required");
+		Assert.notNull(toObjectName, "A scObjectName is required");
+		Assert.notNull(toObjectIdField, "A valid objectID field is required");
+		Assert.notNull(dataSource, "A datasource is required");
+		*/
+	}
+}

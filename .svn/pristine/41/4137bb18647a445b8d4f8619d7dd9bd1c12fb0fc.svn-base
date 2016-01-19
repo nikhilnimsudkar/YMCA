@@ -1,0 +1,426 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+	pageEncoding="ISO-8859-1"%>
+<body>
+	<%@ include file="../../layouts/include_taglib.jsp"%>
+	<script src="<%=contextPath %>/resources/js/payment/luhn.js"></script>
+	<script src="<%=contextPath %>/resources/js/payment/view.js"></script>
+	
+ <%
+    System.out.println( "Evaluating date now" );
+  
+%>
+			
+			<span id="pastdueamount" style="display:none"> ${pastDueAmount}</span>
+				<div 
+					style="margin-top: 10px; margin-bottom: 10px; height: 44px; float: left;">
+
+					<div id="addcard" style="height: 50px;">
+
+						<div class="addcarddiv">
+
+							<div style="height: 20px;">Name on card</div>
+
+							<div>
+								<input type="text" class="k-textbox"
+									placeholder="Full Name on Card" name="fullName" id="fullName"
+									value="" tabIndex="1">
+							</div>
+
+						</div>
+
+						<div class="addcarddiv" style="margin-right: 30px;">
+
+							<div style="height: 20px;">Card Number</div>
+
+							<form id="paymentForm" action="#">
+
+								<div>
+
+									<input type="text" class="k-textbox" placeholder="Card Number"
+										name="cardNum" id="cardNum" value="" tabIndex="2"
+										onchange="handleCCTyping(this.form, event);"
+										onkeyup="handleCCTyping(this.form, event);"> <img
+										src="resources/img/payment_credit_cards/cards/invalid.png"
+										name="cardimage" width="40" height="22" hspace="10" vspace="0"
+										align="top">
+
+								</div>
+
+							</form>
+
+						</div>
+
+
+
+						<div class="addcarddiv">
+
+							<div style="height: 20px;">Expiration date</div>
+
+							<div>
+
+								<span> <select id="expirationMonth"
+									name="expirationMonth" style="width: 50px;">
+
+										<option value="01">01</option>
+
+										<option value="02">02</option>
+
+										<option value="03">03</option>
+
+										<option value="04">04</option>
+
+										<option value="05">05</option>
+
+										<option value="06">06</option>
+
+										<option value="07">07</option>
+
+										<option value="08">08</option>
+
+										<option value="09">09</option>
+
+										<option value="10">10</option>
+
+										<option value="11">11</option>
+
+										<option value="12">12</option>
+
+								</select>
+
+								</span> <span> <select id="addCardExpirationYear"
+									name="expirationYear" style="width: 70px;">
+
+								</select>
+
+								</span>
+
+							</div>
+
+						</div>
+
+						<div class="addcarddiv">
+
+							<div style="height: 20px;">Security Code</div>
+
+							<div>
+
+								<input type="password" class="k-textbox"
+									placeholder="Security Code" style="width: 90px;"
+									name="securityCode" id="securityCode" value="" tabIndex="3"
+									title="CVV Help">
+
+							</div>
+
+						</div>
+
+						<div class="addcarddiv">
+
+							<div style="height: 20px;">&nbsp;</div>
+
+							<div>
+
+								<a href="#" class="tooltip_display"> <img
+									src="resources/img/question-mark.png" height="25px"
+									width="25px"></img>
+
+								</a>
+
+								<div id="large">
+
+									<div class="ttip">
+
+										<span><a class="note"
+											style="float: right; height: 25px; width: 25px;"><img
+												src="resources/img/close.jpg" height="20px" width="20px"></img></a></span>
+
+										<div class="contents">
+
+											<span><img src="resources/img/cv_card.gif"
+												height="130px" width="160px"></img></span> <span><img
+												src="resources/img/cv_amex_card.gif" height="130px"
+												width="160px"></img></span>
+
+										</div>
+
+										<div id="background"></div>
+
+									</div>
+
+								</div>
+
+							</div>
+
+						</div>
+
+						<div style="height: 50px;">
+
+							<div class="addcarddiv">
+
+								<div style="height: 20px;">Address Line 1</div>
+
+								<div>
+								
+									<input type="text" class="k-textbox"
+										placeholder="Billing AddressLine1" name="billingAddressLine1"
+										id="billingAddressLine1" value="" tabIndex="4">
+
+								</div>
+
+							</div>
+
+							<div class="addcarddiv">
+
+								<div style="height: 20px;">Address Line 2</div>
+
+								<div>
+									<input type="text" class="k-textbox"
+										placeholder="Billing AddressLine2" name="billingAddressLine2"
+										id="billingAddressLine2" value="" tabIndex="5">
+								</div>
+
+							</div>
+
+							<div class="addcarddiv">
+
+								<div style="height: 20px;">City</div>
+
+								<div>
+									<input type="text" class="k-textbox" placeholder="Billing City"
+										name="billingCity" id="billingCity" value="" tabIndex="6">
+								</div>
+
+							</div>
+
+							<div class="addcarddiv" style="width: 45px;">
+
+								<div style="height: 20px;">State</div>
+
+								<div>
+									<input type="text" class="k-textbox" placeholder=""
+										name="billingState" id="billingState" value=""
+										style="width: 45px;" tabIndex="7">
+								</div>
+
+							</div>
+
+							<div class="addcarddiv" style="width: 60px">
+
+								<div style="height: 20px;">Zip</div>
+
+								<div>
+									<input type="text" class="k-textbox" placeholder="Zip"
+										name="billingZip" id="billingZip" value=""
+										style="width: 60px;" tabIndex="8">
+								</div>
+
+							</div>
+
+							<div class="addcarddiv" style="display: none;">
+
+								<span id="paymentTokenIdSpan"></span> <span
+									id="paymentAmountSpan"></span>
+
+							</div>
+						</div>
+
+						<div style="height: 50px;">
+							<div id="savecardcheckbox" class="addcarddiv"
+								style="width: 124px">
+
+								<div>
+									<input type="checkbox" checked="checked"
+										name="SaveCard" id="SaveCard">&nbsp;&nbsp;Save Card
+								</div>
+
+
+
+							</div>
+
+							<div id="nickname" class="addcarddiv">
+
+								<div style="height: 20px;">Nick Name</div>
+
+								<div>
+									<input type="text" class="k-textbox" placeholder="Nick Name"
+										name="nickName" id="nickName" value="">
+								</div>
+
+							</div>
+
+							
+							<div id="jj" class="addcarddiv" >
+							<div></div>
+							<div></br>
+							<!--<span class="k-button" id="placeorderBtn"  style="margin-left:5px;display: block;">PLACE ORDER</span>-->
+							<button id="placeorderBtn" class="k-button">Make Payment</button>
+							<!--<a class="buttonFinish" href="#" style="display: block;">Place Order</a>-->
+							</div>
+							
+						</div>
+
+					</div>
+
+					<div style="float: right; width: 300px;">
+						
+					</div>
+
+				</div>
+
+				<br />
+
+				<div id="statusBlock-payment"
+					style="display: none; margin-top: 100px;">
+
+					<span class="k-block k-success-colored"
+						id="tcloginSuccessSpan-payment" style="display: none"></span> <span
+						class="k-block k-error-colored" id="tcloginErrorSpan-payment"
+						style="display: none"></span>
+
+
+				</div>
+				
+				<script type="text/javascript">
+			var paymentOrderId = Math.floor((Math.random()*1000000000000)+1);	
+
+				
+ $(document).ready(function() {	
+	 
+	 var currentYear = new Date().getFullYear();
+		
+		for(var i=0; i<30 ; i++){
+			var currentYear2digit = parseInt(currentYear.toString().substring(2, 4));
+			$('#addCardExpirationYear').append($('<option>', {value: currentYear2digit,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		
+		$("#expirationMonth").kendoDropDownList({
+			width:50
+		});
+		$("#addCardExpirationYear").kendoDropDownList();
+		
+		$("#paymentInfoRadio").kendoDropDownList();
+		
+		$("#paymentInfoRadio").change(function(){      
+			if($("#paymentInfoRadio").val()=='New'){
+				$('#addcard').slideDown();
+			}
+			else{
+				$('#addcard').slideUp();
+			}
+		});
+		
+		$( "#SaveCard" ).click(function(){
+			if($('#SaveCard').is(":checked")){
+				$("#nickname").show();
+				$("div#savecardcheckbox").css("padding-top","21px");
+			}
+			else{
+				$("#nickname").hide();
+				
+			}
+		});
+		
+	 
+	 
+	 
+	$( "#placeorderBtn" ).click(function(){
+	//alert("hi");
+			 $(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait"); 
+		
+			var merchantId = "TESTTERMINAL";  
+			var JetDirectToken	= "1234567890ABCDEFGHIJKabcdefghijk";
+			var hash = '';
+			// var paymentAmount = $("#sumFinalAmountTd").text() + ".00";
+			var paymentAmount = $("#pastdueamount").text() + "0";
+			//alert("hi-- "+paymentAmount);
+			//var paymentAmount1 ="100.00";
+			alert("Payment --  "+paymentAmount);
+			//var paymentOrderId = Math.floor((Math.random()*1000000000000)+1);
+			var jsSha = new jsSHA(merchantId+paymentAmount+JetDirectToken+paymentOrderId);
+			hash = jsSha.getHash("SHA-512", "HEX");			
+			
+			
+			var jsonData = {
+				name : $("#fullName").val(),
+				cardNum : $("#cardNum").val(),
+				cscNumber : $("#securityCode").val(),
+				AddressLine1 : $("#billingAddressLine1").val(),
+				AddressLine2 : $("#billingAddressLine2").val(),
+				City : $("#billingCity").val(),
+				state : $("#billingState").val(),
+				zipcode : $("#billingZip").val(),
+				email : "test@gmail.com",
+				amount : paymentAmount,
+				expMonth : $("#expirationMonth").val(),
+				expYr : $("#addCardExpirationYear").val(),
+				contry : "US",
+				jetPayHash : hash.toString(),
+				paymentOrderId : paymentOrderId.toString()
+			};
+			
+			
+			var win = document.getElementById("childIframeId").contentWindow;
+			
+			
+			win.postMessage(jsonData, '*'); 				
+		//alert("hi hello  hi");	
+		});	 
+		
+var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+var eventer = window[eventMethod];
+var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+eventer(messageEvent,function(e) {
+ var key = e.message ? "message" : "data";
+ var data = e[key];
+ //var jp_request_hash = hash;
+			var paymentId = 0;
+			//alert("paymentId-- "+paymentId);
+			var orderNumber = paymentOrderId;
+			//alert("orderNumber-- "+orderNumber);
+ //$("#contentFormDiv").css("display", "none");   
+ if(data.view.toString() == "Success"){
+  //success logic
+  // alert("hi Success");
+   //data += '&jp_request_hash='+jp_request_hash+'&orderNumber='+orderNumber+'&paymentId='+paymentId;
+   data += '&orderNumber='+orderNumber+'&paymentId='+paymentId;
+   $.ajax({
+			type: "POST",
+			url: "pastDuePaymentProcess",
+			//data: { "orderNumber" : paymentOrderId.toString() },
+			  data: data,
+			success: function( data ) {
+			 // console.log(" got data :: 11 ");
+			 
+			   data_s = data.split("__");
+			 //console.log(" cartType "+cartType);
+			// console.log(" data_s "+data_s);
+			 if(data_s[0]=="SUCCESS"){
+				  alert("got SUCCESS ");
+				  $.sessionStorage.clear();
+				
+				
+				   alert("addcard 1 ");
+				  $("#addcard").html("");
+				  $("#addcard").html('<div id="statusBlock" class="k-block k-success-colored" style="width: 90%;margin: 20px; padding: 10px;">Thank you for payment.<br>Your transaction Id is: '+orderNumber+'</div>');
+			  ///
+			  
+			  
+				   
+		  	  }else{
+		  		 console.log(" NOT got data ::  >> ");
+		  	  }
+	  		//  $(".k-loading-mask").hide();
+		  },
+		});	
+ }
+ if(data.view.toString() == "Failure"){
+  //failure logic
+ }
+ //$("#form_container").html("Success Redirection " + data.view);   
+},false);
+	});
+
+
+</script>
+</body>

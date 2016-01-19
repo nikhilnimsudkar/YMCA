@@ -1,0 +1,99 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<div id="programinfoPg">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+
+<div id="tabstrip3" class="k-block" style="background-color:#FFFFFF; padding:9px;margin-left:7px;">	
+<span class="head" width="100%" style="margin-left: 4px;">CURRENT MEMBERSHIP DETAILS</span></br>
+
+	<table cellpadding="0" cellspacing="0" width="97%" rules="none" style="margin-left:17px;margin-top:30px;">
+		<tr>
+			<td width="250px"><span>Membership #</span></td>
+			<td width="20px"><strong>:</strong></td>
+			<td><span>${member.membershipNumber}</span></td>
+		</tr>
+		<tr><td ><hr></td></tr>
+		<tr>
+			<td><span>Membership Type</span></td>
+			<td><strong>:</strong></td>
+			<td><span>${member.membershipType}One Adult</span></td>
+		</tr>
+		<tr><td ><hr></td></tr>
+		<tr>
+			<td><span>Membership Start Date</span></td>
+			<td><strong>:</strong></td>
+			<td><span><fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${member.membershipBeginDate}" /></span></td>
+		</tr>
+		<tr><td ><hr></td></tr>
+		<!-- 
+		<tr>
+			<td><span>MembershipEndDate</span></td>
+			<td><span><fmt:formatDate type="date" pattern="MM/dd/yyyy"
+					value="${member.membershipEndDate}" /></span></td>
+		</tr> -->
+		<tr>
+			<td><span>Membership Status</span></td>
+			<td><strong>:</strong></td>
+			<td><span>ACTIVE</span></td>
+		</tr>
+		<tr><td ><hr></td></tr>
+		<tr>
+			<td><span>Membership Fee</span></td>
+			<td><strong>:</strong></td>
+			<td><span>${member.membershipPrice}$99</span></td>
+		</tr>
+		<tr><td ><hr></td></tr>
+		<tr>
+			<td><span>Membership Fee Frequency</span></td>
+			<td><strong>:</strong></td>
+			<td><span>${member.membershipDuration}YEARLY</span></td>
+		</tr>
+		<tr><td ><hr></td></tr>
+		<tr>
+			<td><span>Membership Fee Next Billing Date</span></td>
+			<td><strong>:</strong></td>
+			<td><span>08/06/2015</span></td>
+		</tr>
+		<tr><td ><hr></td></tr>
+		<tr>
+			<td><span>Payment Method</span></td>
+			<td><strong>:</strong></td>
+			<td><span>xxxx xxxx xxxx 1234 01/15 CC</span></td>
+		</tr>
+		<tr><td ><hr></td></tr>
+		<!-- 
+		<tr>
+					<td><span>ProductId</span></td>
+				
+					<td><span>${member.productId}</span></td>
+				</tr> 
+				
+		
+		<tr>
+			<td><span>PricingRuleId</span></td>
+			<td><span>${member.pricingRuleId}</span></td>
+			</tr>
+			
+		<tr>
+			<td><span>ContactName</span></td>
+			<td><span>${member.contactName}</span></td>
+		</tr>
+		
+		<tr>
+			<td><span>ContactPartyId</span></td>
+			<td><span>${member.contactPartyId}</span></td>
+		</tr>
+		
+		<tr>
+			<td><span>CustomerPartyId</span></td>
+			<td><span>${member.customerPartyId}</span></td>
+		</tr>-->
+	</table>
+
+</div>
+
+

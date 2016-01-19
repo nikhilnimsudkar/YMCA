@@ -1,0 +1,172 @@
+#panels
+{
+	margin-left: 18px;
+	text-align: center;
+}
+
+#panels li
+{
+	margin-right: 4px;
+	margin-bottom: 10px;
+	list-style: none;
+	float: left;
+}
+.k-block-div{
+	height: 365px;
+	width : 140px;
+	background-color: white;
+	border: 2px solid black !important;
+	font-family: cursive;
+}
+.k-header-custom-orange{
+	height: 40px !important;
+	background-color: #D68227;
+	background-image : none;
+	color : white;
+	font-family: cursive;
+	border-bottom : 2px solid black !important;
+	font-size: 18px !important;
+}
+.k-header-custom-gray{
+	height: 40px !important;
+	background-color: #929292;
+	background-image : none;
+	color : white;
+	font-family: cursive;
+	border-bottom : 2px solid black !important;
+	font-size: 18px !important;
+	
+}
+.price-div{
+	font-size: x-large;
+	font-family: cursive;
+	display : inline;
+}
+.product-description-div{
+	margin-top: 5px;
+	height: 30px;
+	/* font-size: small; */
+}
+.product-location-div{
+	/* font-size: small; */
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.product-join-fee-text-div{
+	/* font-size: small; */
+	margin-top: 5px;
+}
+.product-join-fee-text-val-div{
+	/* font-size: small; */
+	margin-top: 5px;
+	margin-bottom: 5px;
+	display : inline;
+}
+.border-bottom-line{
+	border-bottom: 2px black solid;
+	margin-right: 10px;
+	margin-left: 10px;    	
+}
+
+a.add-child-lnk span {
+font-size: 20px;
+font-weight: normal;
+border-radius: 3px;
+background: #fff;
+border: 1px solid #009ddc;
+padding: 0px 3px;
+vertical-align: middle;
+}
+
+
+.add-child-lnk {
+float: right;
+font-size: 11px;
+color: #009ddc;
+cursor: pointer;
+}
+
+a.remove-child-lnk span {
+font-size: 20px;
+font-weight: normal;
+border-radius: 3px;
+background: #fff;
+border: 1px solid #009ddc;
+padding: 0px 6px 0px 6px;
+vertical-align: middle;
+}
+
+
+.remove-child-lnk {
+float: right;
+font-size: 11px;
+color: #009ddc;
+cursor: pointer;
+}
+
+#productPriceTable tr td {
+    padding-right: 0px !important;
+}
+
+.ttip {
+    position: absolute;
+    width: 355px;
+    height: 120px;
+    color: #fff;
+    padding: 20px;
+    -webkit-box-shadow: 1px 1px 1px 2px #CCC;
+    -moz-box-shadow: 1px 1px 1px 2px #CCC;
+    box-shadow: 1px 1px 1px 2px #CCC;
+    border-radius: 8px 8px 8px 8px;
+    -moz-border-radius: 8px 8px 8px 8px;
+    -webkit-border-radius: 8px 8px 8px 8px;
+    -o-border-radius: 8px 8px 8px 8px;    
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#F45000', endColorstr='#FF8000', GradientType=0);
+    background-color:#fff;
+    display: none
+}
+.contents {
+    font-size: 15px;
+    font-weight:bold
+}
+.note {
+    font-size: 13px;
+    text-align:center;
+    display:block;
+    width: 100%
+}
+#background{
+    display: none;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background: #000000;
+    z-index: 1;
+}
+#large {
+    display: none;
+    position: absolute;
+    background: #FFFFFF;
+    padding: 0px;
+    z-index: 10;
+    min-height: 0px;
+    min-width: 0px;
+    color: #336699;
+}
+
+span.closeBtn{
+	height : 50px !important;
+	width : 50px !important;
+}
+
+table#selectFamilyMemberTable th, table#selectKidsInfoTable th{
+	background-color: #fcaf17;
+	color : white
+}
+
+table#selectFamilyMemberTable, table#selectKidsInfoTable {
+	border: 2px outset grey
+}
+

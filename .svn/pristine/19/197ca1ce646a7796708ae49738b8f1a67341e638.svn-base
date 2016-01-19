@@ -1,0 +1,36 @@
+package com.ymca.web.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.ymca.dao.ItemDetailDao;
+import com.ymca.model.ItemDetailAssociatedItemDetail;
+
+@Controller
+public class CampController extends BaseController {
+
+	@Resource
+	private ItemDetailDao itemDetailDao ; 
+	
+/*	@RequestMapping(value="/getActivityAndTransportService",method = RequestMethod.GET)
+	public @ResponseBody List<ItemDetailAssociatedItemDetail> getCampActivities(String itemDetailId) throws Exception {
+	
+		List<Long> ids = new ArrayList<Long>();
+		String[] itemDetailIds = itemDetailId.split(",");
+		for (String i : itemDetailIds) {
+			ids.add(Long.parseLong(i));
+		}
+		List<String> types = new ArrayList<String>();
+		types.add("Activity");
+		types.add("Transportation");
+		List<ItemDetailAssociatedItemDetail> objs = itemDetailDao.findAssociatedItemDetailTypeAndItemDetailId(types,ids);
+		return objs ;
+	}*/
+}

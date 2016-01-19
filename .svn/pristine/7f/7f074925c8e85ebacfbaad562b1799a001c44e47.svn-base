@@ -1,0 +1,18 @@
+package com.ymca.dao;
+
+
+import java.util.List;
+
+import com.ymca.model.Account;
+import com.ymca.model.Signup;
+
+public interface SignupDao extends GenericDao<Signup, Long>  {
+	
+	List<Signup> getByCustomer(Account customer);
+	
+	List<Signup> findByContactNameAndTypeNotLike(String name,String type );
+	
+	Signup findByContactNameAndStatusAndTypeLike(String name,String status,String type);
+	
+}
+ 

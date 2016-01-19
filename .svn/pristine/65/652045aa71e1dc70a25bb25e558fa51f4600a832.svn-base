@@ -1,0 +1,39 @@
+package com.ymca.web.service;
+
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.ymca.dao.AccountContactDao;
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.UserDao;
+import com.ymca.model.Account;
+import com.ymca.model.AccountContact;
+import com.ymca.model.User;
+
+@Service
+public class AccountContactService {
+	@Resource
+	private AccountDao accountDao;
+	
+	@Resource
+	private UserDao userDao;
+	
+	@Resource
+	private AccountContactDao accountContactDao;
+
+	public AccountContact saveAccountContact(Account customer, User contact){
+		AccountContact accountContact = new AccountContact();			
+		accountContact.setCustomer(customer);
+		accountContact.setContact(contact);	
+		//accountContact.setCreationDate(new Date());
+		accountContact.setStartDate(new Date());	
+		accountContact.setLastUpdated(Calendar.getInstance());
+		AccountContact accContactSave = accountContactDao.save(accountContact);
+		
+		return accContactSave;
+	}
+}

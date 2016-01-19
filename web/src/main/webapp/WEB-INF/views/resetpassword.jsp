@@ -1,0 +1,61 @@
+<%@ include file="../layouts/include_taglib.jsp" %>
+<div id="main">	
+	<div id="content">		
+		<div id="content">
+		<form class="bootstrap-frm" id="loginForm" method="post" action="resetpassword">		
+        	<div id="statusBlock">
+				<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+				<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+			</div>   
+			<div class="contentBlock">   
+				<h2>
+					Password Assistance
+				</h2>  	
+	        	<div id="formBlock">
+		        	<span>Enter the e-mail address associated with your account, then click Continue. We'll email you a link to a page where you can easily create a new password.</span><br><br>
+		        	<label><input type="text" placeholder="Email" name="email" id="email" value="${param['email']}"></label>
+		        	<button id="loginbutton" class="k-button">Continue</button>
+	        	</div>
+	        	
+	        	<div id="recoveryblock">
+		        	<span id="forgotPW">
+		        		<a href="resetusername">Forgot Email Address?</a>
+		        	</span>
+		        </div>
+	        </div>
+		</form>
+		</div>		
+	</div>		
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$( "#loginForm" ).submit(function( event ) {
+		var email = $("#email").val();
+		
+		if(email == null || email == ''){
+			 $("#tcErrorSpan").css("display", "block");	
+			 $( "#tcErrorSpan" ).html("Please enter the Email");
+			 event.preventDefault();
+			 return false;
+		 }
+		 if(!validateUserName(email)){
+			$("#tcErrorSpan").css("display", "block");	
+		 	$( "#tcErrorSpan" ).html("Please enter the correct Email");
+		 	event.preventDefault();
+		 	return false;
+		 }		  
+	});
+	
+	if('${errMsg }'!=""){
+		$(".contentBlock").css("display", "block");
+		$("#tcErrorSpan").css("display", "block");	
+		$( "#tcErrorSpan" ).html('${errMsg }');
+	}
+	if('${successMsg }'!=""){		
+		$(".contentBlock").css("display", "none");
+		$("#tcSuccessSpan").css("display", "block");	
+		$( "#tcSuccessSpan" ).html('${successMsg }');
+	}
+});
+</script>

@@ -1,0 +1,64 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<div style="padding:0px 0px 20px 0px;">
+	<span class="head">Activity Priority</span><br>
+	<div style="">
+		<c:choose>
+			<c:when test = "${empty activitiesSignUps}">
+				<div class="k-block k-error-colored"> No Activity selected</div>
+			</c:when>
+			<c:otherwise>
+				<table style="width:100%;" >
+					<thead>	
+						<tr class="k-block"><td>Name</td><td>Priority</td></tr>
+					</thead>
+					<tbody>
+					<c:forEach var="act" items="${activitiesSignUps}" varStatus="counter">	
+						<tr>
+							<td>${act.itemDetail.recordName}</td>
+							<td>${act.activityPriority}</td>
+						</tr>
+					</c:forEach>
+					</tbody>
+				</table>
+			</c:otherwise>
+		</c:choose>	
+	</div>
+</div>
+<div style="padding:0px 0px 20px 0px;s">
+	<span class="head">Transport SignUp</span><br>
+	<div>
+		<c:choose>
+			<c:when test = "${empty transportSignUps}">
+				<span class="k-button" id="addTransport"> Add Transport Service</span>
+			</c:when>
+			<c:otherwise>
+				<table cellpadding="3" width="100%">
+					<thead>	
+						<tr class="k-block"><td>Name</td><td>Location</td><td>Direction</td><td>Action</td></tr>
+					</thead>
+					<tbody>
+						<c:forEach var="trans" items="${transportSignUps}" varStatus="counter">	
+							<tr>
+								<td>${trans.signUpName}</td>
+								<td>${trans.itemDetail.location.recordName}</td>
+								<td>${trans.itemDetail.direction}</td>
+								<td nowrap="nowrap"><a href="viewProgramDetails?sId=${trans.signupId}">View</a> | <a href="cancelProgram?sId=${trans.signupId}">Cancel</a></td>
+							</tr>
+						</c:forEach>
+					</tbody>
+				</table>
+			</c:otherwise>
+		</c:choose>
+	</div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$( "#addTransport" ).click(function(){
+		 $("#tcSuccessSpan").css("display", "none");
+		 $("#tcErrorSpan").css("display", "none");
+		 $(".k-loading-mask").show();
+		 window.location.href = "signup/addTransportService?sId=${param.sId}";  
+	});
+});
+</script>

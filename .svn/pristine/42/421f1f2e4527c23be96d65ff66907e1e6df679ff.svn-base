@@ -1,0 +1,103 @@
+package com.ymca.web.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.ParameterExpression;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.springframework.stereotype.Service;
+
+import com.ymca.dao.ContactDao;
+import com.ymca.model.Contact;
+
+@Service 
+public class ContactService {
+	
+	@Resource
+	private ContactDao contactDao;
+	
+	@PersistenceContext
+	public EntityManager em;
+	
+	public List<Object[]> getAccountDetails(String firstName, String lastName, String emailAddress, String phone, String gender, String membershipId) {
+		
+		List<Object[]> customerList = null;
+		/*if (contact != null) {
+			customerList = contactDao.getContactDetails(contact.getPersonFirstName(), contact.getPersonLastName(), contact.getEmail(), contact.getPhone(), 
+					contact.getDateOfBirth(), contact.getGender(), contact.getFacilityAccessNumber());
+		}*/
+		//customerList = contactDao.getContactDetails(firstName, lastName, emailAddress, phone, gender, membershipId);
+		customerList = this.createQuery(firstName, lastName, emailAddress, phone, gender, membershipId);
+		return customerList;
+	}
+	
+	public List<Object[]> createQuery(String fName, String lName, String email, String phn, String gen, String mid) {
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = builder.createQuery(Object[].class);		
+		Root<Contact> i = query.from(Contact.class);
+
+		ParameterExpression<String> firstName = builder.parameter(String.class);
+		ParameterExpression<String> lastName = builder.parameter(String.class);
+		ParameterExpression<String> emailAddress = builder.parameter(String.class);
+		ParameterExpression<String> phone = builder.parameter(String.class);
+		ParameterExpression<String> gender = builder.parameter(String.class);
+		ParameterExpression<String> membershipId = builder.parameter(String.class);
+		
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		
+		
+		if(!"".equals(fName)){
+			predicates.add(builder.and(builder.like(i.<String>get("personFirstName"), firstName)));
+		}
+		if(!"".equals(lName)){
+			predicates.add(builder.and(builder.like(i.<String>get("personLastName"), lastName)));
+		}
+		if(!"".equals(email)){
+			predicates.add(builder.and(builder.like(i.<String>get("email"), emailAddress)));
+		}
+		if(!"".equals(phn)){
+			predicates.add(builder.and(builder.like(i.<String>get("phone"), phone)));
+		}
+		if(!"".equals(gen)){
+			predicates.add(builder.and(builder.like(i.<String>get("gender"), gender)));
+		}
+		if(!"".equals(mid)){
+			predicates.add(builder.and(builder.like(i.<String>get("familyAccountNumber"), membershipId)));
+		}
+		
+		query.multiselect(i);		
+		query.where(predicates.toArray(new Predicate[]{}));
+
+		TypedQuery<Object[]> typequery = em.createQuery(query);
+		if(!"".equals(fName.trim())){
+			typequery.setParameter(firstName, fName);
+		}
+		if(!"".equals(lName.trim())){
+			typequery.setParameter(lastName, lName);
+		}
+		if(!"".equals(email.trim())){
+			typequery.setParameter(emailAddress, email);
+		}
+		if(!"".equals(phn.trim())){
+			typequery.setParameter(phone, phn);
+		}
+		if(!"".equals(gen.trim())){
+			typequery.setParameter(gender, gen);
+		}
+		if(!"".equals(mid.trim())){
+			typequery.setParameter(membershipId, mid);
+		}
+				
+		List<Object[]> lstObj = typequery.getResultList();
+		return lstObj;
+	}
+	
+}

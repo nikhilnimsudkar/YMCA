@@ -1,0 +1,28 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.ymca.model.PaymentMethod;
+
+
+public interface PaymentMethodDao extends GenericDao<PaymentMethod, Long> {
+    
+	public final static String FIND_PAYMENT_METHOD_BY_PAYMENT_ID = "SELECT p.fullName, p.cardNumber, p.paymentId, c.accountId  FROM PaymentMethod p inner join p.customer c WHERE p.paymentId = :paymentId";
+	
+	@Query("SELECT p from PaymentMethod p inner join p.customer c where c.accountId=?1")
+ 	List<PaymentMethod> getPaymentByAccountId(Long accountId);
+	//LEFT JOIN Account a ON p.accountId=a.accountId 
+	PaymentMethod getByFullName(String name);
+	
+	//@Query(FIND_PAYMENT_METHOD_BY_PAYMENT_ID)
+	//SELECT p.fullName, p.cardNumber, p.paymentId, c.accountId  from PaymentMethod p inner join p.customer c where p.paymentId=?1")
+	@Query("SELECT p  from PaymentMethod p inner join p.customer c where p.paymentId=?1")
+	List<PaymentMethod> getPaymentMethodByPaymentId(Long paymentId);
+	
+	@Query("SELECT p.portalStatus, p.paymentType, p.isPrimary, p.paymentId, p.nickName, p.cardNumber, p.expirationMonth, p.expirationYear, p.transId from PaymentMethod p inner join p.customer c where c.accountId=?1 and p.portalStatus = 'Active' and p.paymentType = 'Credit' ")
+ 	List<PaymentMethod> getCreditCardInfoByAccountId(Long accountId);
+
+}

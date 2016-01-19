@@ -1,0 +1,60 @@
+<div id="selectInServiceDaysHead" style="width: 890px;; padding: 12px;">
+	
+	<div>
+		<span class="head" style="float:left;">Select Individual Days for In-service:</span>&nbsp;&nbsp;
+		<span>(Numeric value after each day indicates remaining capacity for that day )</span>&nbsp;&nbsp;
+		<span id="pkgPriceInfo">(Package price <span id="memberpackagePrice">$00.00</span>/ <span id="nonmemberpackagePrice">$00.00</span> is applicable if there is capacity on all the days and all the days are selected)</span>
+		<br><br><span class="alertNotice">In-Service Sign up price will be divided by # of child-care months.</span>
+	</div>
+	<div style="clear: both;"></div> 
+	<div id="selectInServiceDays" style="margin: 20px 20px 30px;  min-height: 220px;">
+		<div>
+			<span style="font-size: 14px; font-weight:bold;"><span class="tortoise">Select</span>&nbsp;&nbsp;/&nbsp;&nbsp;<span class="tortoise">Unselect</span></span>
+		</div>
+		<div id="allinservicedays"></div>
+		
+	</div>
+	
+	<div id="cartbtns" align="right">
+		<span id="gotocontactscreen" class="k-button">Next >></span>
+		<!-- &nbsp;&nbsp;&nbsp;&nbsp;
+		<button id="continueshop" class="k-button">ADD TO CART & CONTINUE SHOPPING</button> -->
+		
+	</div>
+</div>
+
+<script>
+$(document).ready(function(){
+	$( "#gotocontactscreen" ).click(function(){
+		//getFamilymembers('CHILD CARE');
+		setSignupPriceForInservice();
+		//showContactHealthHistoryOrCheckOut('CHILD CARE');
+		addToCart(false);
+		$("#childcare").hide();
+		//$("#inserviceDaysselect").hide();
+		
+	});
+	
+	$( ".tortoise" ).click(function(){
+		//alert($(this).text());
+		if($(this).text()=="Select") { // check select status
+			for(dId = 1; dId <= 5; dId++){
+				//alert(dId+" - "+$("#inServiceSelectedDays_"+dId).length);
+				//alert(dId+" - "+$("#hasPastDates_"+dId).length);
+				//alert(dId+" - "+$("#hasPastDates_"+dId).val());
+				if($("#inServiceSelectedDays_"+dId).length>0 && $("#hasPastDates_"+dId).length>0 && $("#hasPastDates_"+dId).val()=='false'){
+					$("#uniform-inServiceSelectedDays_"+dId +" span").attr("class", "checked");
+					$("#inServiceSelectedDays_"+dId).attr("checked", true);
+				}
+			}
+        }else if($(this).text()=="Unselect"){
+        	for(dId = 1; dId <= 5; dId++){ //loop through each checkbox
+        		if($("#inServiceSelectedDays_"+dId).length>0 && $("#hasPastDates_"+dId).length>0 && $("#hasPastDates_"+dId).val()=='false'){
+	            	$("#uniform-inServiceSelectedDays_"+dId +" span").attr("class", "");
+	            	$("#inServiceSelectedDays_"+dId).attr("checked", false);     
+        		}
+            }         
+        }
+	});	
+});
+</script>

@@ -1,0 +1,31 @@
+<div id="selectInServiceDaysHead" style="width: 780px;; padding: 12px;">
+	
+	<div>
+		<span class="head" style="float:left;">Select Individual Days for In-service:</span>
+	</div>
+	<div style="clear: both;"></div> 
+	<div id="selectInServiceDays" style="margin: 20px 20px 30px;  min-height: 220px;">
+		<div id="allinservicedays"></div>
+		
+	</div>
+	
+	<div id="cartbtns" align="right">
+		<span id="gotocontactscreen" class="k-button">Next >></span>
+		<!-- &nbsp;&nbsp;&nbsp;&nbsp;
+		<button id="continueshop" class="k-button">ADD TO CART & CONTINUE SHOPPING</button> -->
+		
+	</div>
+</div>
+
+<script>
+$(document).ready(function(){
+	$( "#gotocontactscreen" ).click(function(){
+		//getFamilymembers('CHILD CARE');
+		setSignupPriceForInservice();
+		showContactHealthHistoryOrCheckOut('CHILD CARE');
+		$("#childcare").hide();
+		$("#inserviceDaysselect").hide();
+		
+	});
+});
+</script>

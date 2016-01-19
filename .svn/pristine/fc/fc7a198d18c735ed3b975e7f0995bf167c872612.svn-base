@@ -1,0 +1,40 @@
+package com.serene.job.processor;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.model.JobSchedulerMetadata;
+import com.serene.job.util.JobUtils;
+import com.serene.ws.service.FusionWebService;
+
+@Service
+public class GenericItemProcessor implements ItemProcessor<Object,Object> {
+
+	private static final Log log = LogFactory.getLog(GenericItemProcessor.class);
+
+	protected JobSchedulerMetadata jobSchedulerMetadata ;
+	
+	@Resource(name="fusionWebServiceImpl")
+	protected FusionWebService fusionWebService ;
+	
+	@Resource
+	public ApplicationContext applicationContext ;
+	
+	@Resource
+	protected JobUtils jobUtils ; 
+	
+	
+	public Object process(Object item) throws Exception {
+		return item;
+	}
+
+	public void setJobSchedulerMetadata(JobSchedulerMetadata jobSchedulerMetadata) {
+		this.jobSchedulerMetadata = jobSchedulerMetadata;
+	}
+
+}

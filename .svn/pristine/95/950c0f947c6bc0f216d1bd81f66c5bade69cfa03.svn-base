@@ -1,0 +1,81 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "signup_item_days") 
+@XmlRootElement
+public class SignUpDays extends BaseObject implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1815094381086631561L;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+	
+    private Long scId;
+	
+	@ManyToOne
+	@JoinColumn(name="item_detail_id")
+	private ItemDetail itemDetail;
+
+	@ManyToOne
+	@JoinColumn(name="sign_up_id")
+	private Signup signup;
+	
+	
+	private String sessionName;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long Id) {
+		this.id = Id;
+	}
+
+	public ItemDetail getItemDetails() {
+		return itemDetail;
+	}
+
+	public void setItemDetails(ItemDetail itemDetails) {
+		this.itemDetail = itemDetails;
+	}
+
+	public String getSessionName() {
+		return sessionName;
+	}
+
+	public void setSessionName(String sessionName) {
+		this.sessionName = sessionName;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+}

@@ -1,0 +1,2345 @@
+package com.ymca.web.controller;
+
+import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.ParameterExpression;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.ActivityDao;
+import com.ymca.dao.HealthHistoryDao;
+import com.ymca.dao.ItemDetailDao;
+import com.ymca.dao.ItemDetailDaysDao;
+import com.ymca.dao.ItemDetailPricingRuleDao;
+import com.ymca.dao.JetPayPaymentDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.dao.PayerDao;
+import com.ymca.dao.PaymentDao;
+import com.ymca.dao.PaymentMethodDao;
+import com.ymca.dao.PromotionDao;
+import com.ymca.dao.SetpUpFeeDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.dao.SystemPropertyDao;
+import com.ymca.dao.TandCDao;
+import com.ymca.dao.UserDao;
+import com.ymca.dao.WaiversAndTCDao;
+import com.ymca.model.Account;
+import com.ymca.model.Activity;
+import com.ymca.model.HealthHistory;
+import com.ymca.model.Invoice;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.ItemDetailDays;
+import com.ymca.model.ItemDetailPricingRule;
+import com.ymca.model.JetPayPayment;
+import com.ymca.model.Location;
+import com.ymca.model.Payer;
+import com.ymca.model.Payment;
+import com.ymca.model.PaymentMethod;
+import com.ymca.model.SetpUpFee;
+import com.ymca.model.Signup;
+import com.ymca.model.TandC;
+import com.ymca.model.User;
+import com.ymca.model.WaiversAndTC;
+import com.ymca.web.enums.InteractionActivityTypeEnum;
+import com.ymca.web.enums.PaymentMethodTypeEnum;
+import com.ymca.web.enums.PortalStatusEnum;
+import com.ymca.web.enums.ProductTypeEnum;
+import com.ymca.web.service.FinancialAssistanceService;
+import com.ymca.web.service.PaymentService;
+import com.ymca.web.util.Constants;
+import com.ymca.web.util.StringUtil;
+
+@Controller
+public class ProgramController extends BaseController {
+	
+	@Resource
+    private UserDetailsService userService;
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	@Resource
+	private LocationDao locationDao;
+	
+	@Resource
+	private SignupDao signupDao;
+	
+	@Resource
+	private PaymentMethodDao paymentMethodDao;
+	
+	@Resource
+	private PromotionDao promocodeDao;
+	
+	@Resource
+	private UserDao userDao;
+	
+	@Resource
+	private SystemPropertyDao systemPropertyDao;
+	
+	@Resource
+	private ItemDetailPricingRuleDao itemDetailPricingRuleDao;
+	
+	@Resource
+	private JetPayPaymentDao jetPayPaymentDao;
+	
+	@Resource
+	private PaymentDao paymentDao;
+	
+	@Resource
+	private ItemDetailDao itemDetailsDao;
+	
+	@Resource
+	private ItemDetailDaysDao itemDaysDao;
+	
+	@Resource
+	private ActivityDao interactionDao;
+	
+	@Resource
+	private TandCDao tandCDao;
+	
+	@Autowired
+    protected AuthenticationManager authenticationManager;
+	
+	@Resource
+	private PaymentService paymentService;
+	
+	@Resource
+	private FinancialAssistanceService financialAssistanceService;
+	
+	@Resource
+	private SetpUpFeeDao setpUpFeeDao;
+	
+	@Resource
+	private PayerDao payerDao;
+	
+	@Resource
+	private HealthHistoryDao healthHistoryDao;
+	
+	@Resource
+	private WaiversAndTCDao waiversAndTCDao;
+	
+	@RequestMapping(value="/addprogramtocart", method=RequestMethod.GET)
+    public ModelAndView addprogramtocart(final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		
+		/*
+		HashMap programsLbl = new HashMap<String, String>();
+		for(SystemProperty sysprop : systemPropertyDao.getPropertyByPageName(Constants.PROGRAM_PAGENAME_LABEL)){
+			programsLbl.put(sysprop.getKeyName(), sysprop.getKeyValue());
+		}*/
+		
+		model.addAttribute("productcategories", itemDetailsDao.getDistinctTypeForSubType(ProductTypeEnum.PROGRAM.toString()));
+		//model.addAttribute("programlabels", programsLbl);
+        model.addAttribute("locations", locationDao.findAll());
+        
+        // check if user is logged in
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			//model.addAttribute("errMsg", "Your session is expired");
+			//return new ModelAndView("login", model.asMap());
+			////System.out.println(e);
+		}
+		
+		Account account = null;
+    	User user =  null;	
+    	List<PaymentMethod> paymentMethodList = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			user = getUserByAccount(account, user);
+			paymentMethodList = paymentMethodDao.getPaymentMethodListForAccountID(account.getAccountId());
+    	}
+    	
+    	if(account != null){	    		    	    	
+	        model.addAttribute("accInfo", account);
+	        model.addAttribute("usInfo", user);	
+	        
+	        int userCount = account.getUser().size();
+	        List<User> userS = new ArrayList<User>();
+	        int countmembers = 0;
+	        if(userCount>1){
+		        for(User u: account.getUser()){
+		        	if(user.getPartyId() != u.getPartyId() && u.isActive()){
+		        		countmembers = countmembers + 1;
+		        		userS.add(u);
+		        	}
+		        }
+			}
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("userS", userS);
+	        model.addAttribute("AlluserS", account.getUser());
+	        
+	        model.addAttribute("paymentInfoLst" , paymentMethodList);	     
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("gottocontact", "true");
+	        
+	        model.addAttribute("selectedLocation", user.getScLocation());
+    	}
+    	else {
+			//model.addAttribute("errMsg", "Please Login");
+			//return new ModelAndView("login", model.asMap());
+    		return new ModelAndView("loginpop", model.asMap());
+    		
+		}	
+		return new ModelAndView("programRegistration", model.asMap());
+	}
+	
+	@RequestMapping(value="/programRegistration", method=RequestMethod.GET)
+    public ModelAndView programRegistration(final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		
+		model.addAttribute("productcategories", itemDetailsDao.getDistinctTypeForSubType(ProductTypeEnum.PROGRAM.toString()));
+        model.addAttribute("locations", locationDao.findAll());
+        
+        // check if user is logged in
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			//model.addAttribute("errMsg", "Your session is expired");
+			//return new ModelAndView("login", model.asMap());
+		}
+		
+		Account account = null;
+    	User user =  null;	
+    	List<PaymentMethod> paymentMethodList = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			user = getUserByAccount(account, user);
+			//paymentList = account.getPaymentMethod();
+			paymentMethodList = paymentMethodDao.getPaymentMethodListForAccountID(account.getAccountId());
+    	}
+    	
+    	if(account != null){	    		    	    	
+	        model.addAttribute("accInfo", account);
+	        model.addAttribute("usInfo", user);	
+	        
+	        int userCount = account.getUser().size();
+	        List<User> userS = new ArrayList<User>();
+	        int countmembers = 0;
+	        if(userCount>1){
+		        for(User u: account.getUser()){
+		        	if(user.getPartyId() != u.getPartyId() && u.isActive()){
+		        		countmembers = countmembers + 1;
+		        		userS.add(u);
+		        	}
+		        }
+			}
+	        
+	        JSONArray resultList = new JSONArray();
+	        HealthHistory hh = user.getHealthHistory();
+	        JSONObject jsonObj = null;
+	        List<User> accountContactList = userDao.getByCustomer(account);
+	        if(accountContactList != null && !accountContactList.isEmpty()){
+	        	for (User tempUser : accountContactList) {
+	        		hh = tempUser.getHealthHistory();
+	        		jsonObj = new JSONObject();
+	        		jsonObj.put("firstName", tempUser.getFirstName());
+            		jsonObj.put("lastName", tempUser.getLastName());
+            		jsonObj.put("contactId", tempUser.getContactId());
+	            	if(hh != null){
+	            		jsonObj.put("healthHistoryId", hh.getId());
+	            		jsonObj.put("insuranceCompany", hh.getInsuranceCompany_c());
+	            		jsonObj.put("instructions", hh.getInstructions_c());
+	            		jsonObj.put("listCurrentMedications", hh.getListCurrentMedications_c());
+	            		jsonObj.put("currentMedicationPurpose", hh.getCurrentMedicationPurpose_c());
+	            	}else{
+	            		jsonObj.put("healthHistoryId", "0");
+	            	}
+	            	resultList.add(jsonObj);
+				}
+	        }
+			
+        	model.addAttribute("contactHealthHistoryList", resultList);
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("userS", userS);
+	        model.addAttribute("AlluserS", account.getUser());
+	        model.addAttribute("paymentInfoLst" , paymentMethodList);	     
+	        model.addAttribute("gottocontact", "false");
+	        model.addAttribute("selectedLocation", user.getScLocation());
+	        
+    	}/*
+    	else {
+			model.addAttribute("errMsg", "Please Login");
+			return new ModelAndView("login", model.asMap());
+			
+		}	*/
+    	
+    	    	
+    	//FA option2 Start
+    	/*String lstCartItem = request.getParameter("cartItems");
+    	if (lstCartItem != null) {
+    		List<String> lstStrCartItem = Arrays.asList(lstCartItem.split(","));
+        	List<AccountFinancialAid> customerFaList = null;
+        	if (lstStrCartItem != null) {
+        		if(lstStrCartItem.size()>0){
+            		for(String lstcartItems: lstStrCartItem){
+            			List<String> cartItems = Arrays.asList(lstcartItems.split("__")); 
+            			String itemDetailId = cartItems.get(0);
+            			if (itemDetailId != null) {
+            				ItemDetails itemDetails = itemDetailsDao.getById(Long.parseLong(itemDetailId));;
+                			if (itemDetails != null) {
+            					customerFaList = financialAssistanceService.computeFA(itemDetails,account.getAccountId());
+            				}
+            			}            			
+            		}
+            	}
+        	}    		
+    	}		*/
+    	//FA option2 End
+    	//FA data stub Start
+    	/*AccountFinancialAid accountFinancialAid = new AccountFinancialAid();
+    	accountFinancialAid.setAccount_c("test");
+    	model.addAttribute("accountFinancialAid", accountFinancialAid);*/
+    	/*//System.out.println("FA service start.");
+    	Calendar cal = Calendar.getInstance();
+    	cal.set(2015, Calendar.DECEMBER, 21); //Year, month and day of month
+    	Date date = cal.getTime();
+    	Long customerId = new Long("2");
+    	ItemDetail itemDetails = new ItemDetail();
+    	itemDetails.setFAEligible("Yes");
+    	itemDetails.setStartDate(date);
+    	itemDetails.setType("CHILD CARE");
+    	List<AccountFinancialAid> customerFaList = financialAssistanceService.computeFA(itemDetails,customerId);
+    	//System.out.println("customerFaList size:" + customerFaList.size());
+    	////System.out.println("accountFinancialAid1:" + customerFaList.get(0).toString());
+    	//model.addAttribute("accountFinancialAid1", customerFaList.get(0));    	
+    	if(customerFaList!=null && customerFaList.size()>0 && customerFaList.get(0)!=null)
+    		model.addAttribute("accountFinancialAid", customerFaList.get(0));
+    	else
+    		model.addAttribute("accountFinancialAid", new AccountFinancialAid());
+    	//FA data stub End
+*/		return new ModelAndView("programRegistration", model.asMap());
+    }
+	
+	// Not in use
+	/*
+	@RequestMapping(value="/getItemSessionDetails", method=RequestMethod.GET)
+    public @ResponseBody List<ItemDetailsSession>  getItemSessionDetails(@RequestParam String location, @RequestParam String category, @RequestParam String productname, final HttpServletRequest request, final HttpServletResponse response) { 	
+		
+		List<ItemDetailsSession> nullitems = new ArrayList<ItemDetailsSession>();
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");  
+		DateFormat inputsdf = new SimpleDateFormat("M/d/yyyy");  
+		DateFormat inputmonthsdf = new SimpleDateFormat("MMM yyyy");  
+		//String locationId = request.getParameter("location");
+		//String category = request.getParameter("category");
+		//String productname = request.getParameter("productname");
+		String dayview = request.getParameter("dayview");
+		String dateormonth = request.getParameter("dateormonth");
+		
+		Locations locations = new Locations();
+		Long locId = Long.parseLong(location);
+		locations.setLocationId(locId);
+		
+		Date startDate;
+        Date endDate;
+        
+		if(dayview.equalsIgnoreCase("MONTH")){
+			Calendar c = Calendar.getInstance();
+			try {
+				c.setTime(inputmonthsdf.parse(dateormonth));
+				
+			} catch (ParseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				return nullitems;
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				return nullitems;
+			}
+			
+			   // this takes current date
+			
+		    c.set(Calendar.DAY_OF_MONTH, 1);
+		    Date firstDateofMonth = c.getTime(); 
+		    
+		    //Date today = new Date();  
+	        //Calendar calendar = Calendar.getInstance();  
+	        //calendar.setTime(today);  
+	
+	        c.add(Calendar.MONTH, 1);  
+	        //c.set(Calendar.DAY_OF_MONTH, 1);  
+	        c.add(Calendar.DATE, -1);  
+	        Date lastDateOfMonth = c.getTime(); 
+        
+			try {
+				startDate = sdf.parse(sdf.format(firstDateofMonth));
+				endDate = sdf.parse(sdf.format(lastDateOfMonth));
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return nullitems;
+			}
+		}
+		else{
+			try {
+				if("".equals(dateormonth.trim())){
+					dateormonth = inputsdf.format(new Date());
+				}
+				startDate = sdf.parse(sdf.format(inputsdf.parse(dateormonth)));
+				
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(inputsdf.parse(dateormonth));
+				cal.add(Calendar.MONTH, 1);  
+		        cal.set(Calendar.DAY_OF_MONTH, 1);  
+		        cal.add(Calendar.DATE, -1);  
+		        Date lastDateOfMonth = cal.getTime(); 
+		        
+		        endDate = sdf.parse(sdf.format(lastDateOfMonth));
+				//endDate = sdf.parse(sdf.format(inputsdf.parse(dateormonth)));
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return nullitems;
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				return nullitems;
+			}
+			
+		}
+		
+		try {
+			List<ItemDetailsSession> itemDetailsSession = null;
+			if("".equals(productname.trim())){
+				itemDetailsSession = productDao.getMembershipProgramSession(startDate,endDate,category,locations);
+			} else {
+				itemDetailsSession = productDao.getMembershipProgramSession(startDate,endDate,category,productname,locations);
+			}
+			////System.out.println(itemDetailsSession.size());
+			if(itemDetailsSession.size()==0){
+				return nullitems;
+			}
+			return itemDetailsSession;
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+			return nullitems;
+		}
+		
+	}
+	*/
+	
+	@PersistenceContext
+	public EntityManager em; 
+	
+	@RequestMapping(value="/getProgramDetails", method=RequestMethod.GET)
+    public @ResponseBody String  getProgramDetails(@RequestParam String strLocation, @RequestParam String category, @RequestParam String productname, final HttpServletRequest request, final HttpServletResponse response) { 	
+		
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");  
+		DateFormat inputsdf = new SimpleDateFormat("M/d/yyyy");  
+		DateFormat inputmonthsdf = new SimpleDateFormat("MMM yyyy");  
+
+		String datestart = request.getParameter("datestart");
+		String dateend = request.getParameter("dateend");
+		
+		Location loc= new Location();
+		Long locId = Long.parseLong(strLocation.toString());
+		loc.setId(locId);
+		
+		Date startDate;
+        Date endDate;
+        
+		
+		try {
+			startDate = sdf.parse(sdf.format(inputsdf.parse(datestart)));
+	        endDate = sdf.parse(sdf.format(inputsdf.parse(dateend)));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return null;
+		}
+		try {
+			/*
+			List<Object[]> itemDetailsSession = null;
+			if("".equals(productname.trim())){
+				itemDetailsSession = productDao.getMembershipProgramSession(startDate,endDate,category,locations);
+			} else {
+				itemDetailsSession = productDao.getMembershipProgramSession(startDate,endDate,category,productname,locations);
+			}*/
+			
+			List<Object[]> itemDetailsObj = getMembershipProgramSession(category,productname, loc, startDate, endDate);
+			
+			if(itemDetailsObj.size()==0){
+				return null;
+			}
+
+			JSONArray json = new JSONArray();
+			for(Object obj: itemDetailsObj){
+				ItemDetail i = (ItemDetail) obj;	
+				
+				//double membertierPrice = 0D;
+				//double nonmembertierPrice = 0D;
+				  
+				List<ItemDetailPricingRule> pricingRuleLst =  itemDetailPricingRuleDao.findByItemDetailId(i.getId());
+				JSONArray priceArr = new JSONArray();
+				
+				for(ItemDetailPricingRule pricingRule: pricingRuleLst) {
+					if(pricingRule!=null && pricingRule.getPricingRule()!=null){
+						JSONObject priceObj = new JSONObject();
+						
+						priceObj.put("type",pricingRule.getPricingRule().getType());
+						priceObj.put("priceoption",pricingRule.getPricingRule().getPriceOption());
+						
+						if(StringUtils.isBlank(pricingRule.getPricingRule().getTierPrice()))
+							priceObj.put("memberPrice",0);
+						else
+							priceObj.put("memberPrice",Double.parseDouble(pricingRule.getPricingRule().getTierPrice()));
+							
+						if(StringUtils.isBlank(pricingRule.getPricingRule().getNonmemberTierPrice()))
+							priceObj.put("nonmemberPrice",0);
+						
+						else
+							priceObj.put("nonmemberPrice",Double.parseDouble(pricingRule.getPricingRule().getNonmemberTierPrice()));
+						
+						/*
+						if(Constants.SIGNUP.equalsIgnoreCase(pricingRule.getPricingRule().getType())){
+							
+						}
+						else if(Constants.REGISTRATION.equalsIgnoreCase(pricingRule.getPricingRule().getType())){
+							
+						}
+						else if(Constants.DEPOSIT.equalsIgnoreCase(pricingRule.getPricingRule().getType())){
+							
+						}
+						else if(Constants.SETUPFEE.equalsIgnoreCase(pricingRule.getPricingRule().getType())){
+							
+						}*/
+						priceArr.add(priceObj);
+					}
+				}
+				
+				
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("id", i.getId());
+				jsonObj.put("productId", i.getId());
+				jsonObj.put("startDate", i.getStartDate());
+				jsonObj.put("endDate", i.getEndDate());
+				jsonObj.put("startTime", i.getStartTime());
+				jsonObj.put("endTime", i.getEndTime());
+				jsonObj.put("capacity", i.getWebCapacity());
+				jsonObj.put("remainingCapacity", convertNullToZero(i.getRemainingCapacity()));
+				jsonObj.put("gender", i.getGender());
+				//jsonObj.put("memberprice", membertierPrice);
+				//jsonObj.put("nonmembertierPrice", nonmembertierPrice);
+				jsonObj.put("priceArr", priceArr);
+				jsonObj.put("productName", i.getRecordName());
+				jsonObj.put("productDesc", i.getDescription());
+				jsonObj.put("productCategory", i.getType());
+				jsonObj.put("productType", i.getSubType());
+				jsonObj.put("branchName", i.getLocation().getBranch());
+				jsonObj.put("tier", i.getLocation().getTier());
+				
+				String sessionName = "";
+			    String instructorName = "";
+			    String sessionDays = "";
+			    for(ItemDetailDays idys : i.getItemDays()){
+			    	sessionName = idys.getSessionName();
+			    	instructorName = idys.getInstructorName();
+			    	sessionDays = sessionDays + "," + idys.getId();
+			    }
+			    
+				jsonObj.put("sessionName", sessionName);
+				jsonObj.put("instructorName", instructorName);
+				jsonObj.put("dayId", sessionDays);
+				
+				json.add(jsonObj);
+			}
+			
+			return json.toString();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+			return null;
+		}
+		
+	}
+
+	private List<Object[]> getMembershipProgramSession(String category,
+			String productname, Location location, Date startDate,
+			Date endDate) {
+		
+		List<Location> bayareaLocations = new ArrayList<Location>();
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = builder.createQuery(Object[].class);
+		//Root<ItemDays> ids = query.from(ItemDays.class);
+		//Join<ItemDays, ItemDetails> i = ids.join("itemDetails",JoinType.INNER);
+		Root<ItemDetail> i = query.from(ItemDetail.class);
+		Join<ItemDetail, Location> l = i.join("location",JoinType.INNER);
+
+		ParameterExpression<String> prodType = builder.parameter(String.class);
+		ParameterExpression<Date> sd = builder.parameter(Date.class);
+		ParameterExpression<Date> ed = builder.parameter(Date.class);
+		ParameterExpression<String> cat = builder.parameter(String.class);
+		ParameterExpression<String> prodName = builder.parameter(String.class);
+		ParameterExpression<String> prodDescription = builder.parameter(String.class);
+		ParameterExpression<Location> loc = builder.parameter(Location.class);
+		
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		predicates.add(
+				builder.and(
+					builder.equal(i.get("subType"), prodType),
+					builder.greaterThanOrEqualTo(i.<Date>get("startDate"), sd),
+					builder.lessThanOrEqualTo(i.<Date>get("startDate"), ed),
+					builder.equal(i.get("type"), cat)
+				)
+		);
+		
+		
+		if(!"".equals(productname.trim())){
+			predicates.add(builder.or(
+					builder.like(i.<String>get("recordName"), prodName),
+					builder.like(i.<String>get("description"), prodDescription)
+				));
+		}
+		
+		if(location.getId()==1){}
+		else if(location.getId()==2){
+			 bayareaLocations = locationDao.getLocationsByArea(Constants.LOCATION_BAYAREA);
+			 Collection<Location> lstlocations = bayareaLocations;
+			 //Expression<Collection<Locations>> lstLocations = lstlocations;
+			 Expression<Location> lstloc = i.get("location");
+			 predicates.add(lstloc.in(lstlocations));
+			 
+			 
+		}
+		else {
+			predicates.add(builder.and(builder.equal(i.<Location>get("location"), loc)));
+		}
+		query.multiselect(i);
+		/*
+		query.multiselect("instructorName","sessionName",i.get("starttime"),i.get("endtime"),"itemDaysId",i.get("capacity"),"capacity"
+				,i.get("price"),i.get("price"),i.get("startdate"),i.get("enddate")
+				,p.get("productId"),p.get("productName"),p.get("description")
+				,l.get("branchName"),l.get("tier"),i.get("id")); */
+		query.where(predicates.toArray(new Predicate[]{}));
+
+		TypedQuery<Object[]> typequery = em.createQuery(query);
+		typequery.setParameter(prodType, ProductTypeEnum.PROGRAM.toString().toUpperCase());
+		typequery.setParameter(sd, startDate);
+		typequery.setParameter(ed, endDate);
+		typequery.setParameter(cat, category);
+		if(!"".equals(productname.trim())){
+			typequery.setParameter(prodName, "%"+productname.trim()+"%");
+			typequery.setParameter(prodDescription, "%"+productname.trim()+"%");
+		}
+		if(location.getId()==1){}
+		else if(location.getId()==2){
+			/*String locat = "3,4";
+			typequery.setParameter(lstloc, locat);*/
+		}
+		else {
+			typequery.setParameter(loc, location);
+		}
+		
+		List<Object[]> lstObj = typequery.getResultList();
+		return lstObj;
+	}
+	
+	@RequestMapping(value="/signupProgram", method=RequestMethod.POST)
+    public @ResponseBody String  signupProgram(final HttpServletRequest request, final HttpServletResponse response) { 	
+		
+		String tansId = "";
+		String paymentId = request.getParameter("paymentId");
+		String jp_request_hash = request.getParameter("jp_request_hash");
+		String orderNumber = request.getParameter("orderNumber");
+		String paymentMode = request.getParameter("paymentMode");
+		
+		String lstCartItem = request.getParameter("cartItems");
+		List<String> lstStrCartItem = Arrays.asList(lstCartItem.split(","));
+		
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			return "FAIL";
+		}
+    	
+    	try{
+    		Account customer = null;
+        	if(userId != null && !"".equals(userId)){
+        		customer = accountDao.getByEmail(userId);			
+        	}
+    		
+	    	if(lstStrCartItem.size()>0){
+	    		for(String lstcartItems: lstStrCartItem){
+	    			List<String> cartItems = Arrays.asList(lstcartItems.split("__"));
+	    			
+	    			if(cartItems!=null && cartItems.size()==18){
+		    			//ItemDetailsSession ids = itemDetailsSessionDao.getByItemDetailsSessionId(Long.parseLong(cartItems.get(0)));
+		    			String itemDetailId = cartItems.get(0);
+		    			ItemDetail itemDetail = itemDetailsDao.findOne(Long.parseLong(itemDetailId));
+		    			
+		    			//ItemDays ids = itemDaysDao.getByItemDaysIdAndItemDetails(Long.parseLong(itemDaysMapId.get(0)), itemDetails);
+		    			User u =  userDao.getOne(Long.parseLong(cartItems.get(1)));
+		    			
+		    			Signup signupprogram = paymentService.savesignup(paymentId, customer, cartItems, itemDetail, u, ProductTypeEnum.valueOf(itemDetail.getSubType()));
+		    			Payer payer = paymentService.savepayer(paymentId, customer, cartItems, itemDetail, signupprogram, paymentMode);
+		    			
+		    			// capacity management block
+		    			if(Boolean.valueOf(cartItems.get(14))) // call only if program is waitlisted
+		    					signupCapacityManagement(itemDetail, signupprogram, false);
+		    			saveActivity(customer, u, signupprogram);
+		    			
+		    			Date currDate = new Date();
+		    			if(!Boolean.valueOf(cartItems.get(14)) && (payer.getEnddate()==null || "".equals(payer.getEnddate()) || currDate.getTime()<=payer.getEnddate().getTime())){
+		    				
+			    			Invoice invoice = paymentService.saveinvoice(customer, cartItems, u, signupprogram, payer);
+			    			JetPayPayment jetpay = paymentService.savepayment(paymentId, jp_request_hash, orderNumber, customer, u, signupprogram, payer, invoice, paymentMode);
+			    			
+			    			Double setupAmount = Double.parseDouble(cartItems.get(7));
+			    			//System.out.println("Set up amount: "+setupAmount);
+			    			if(setupAmount.doubleValue()>0)
+			    				saveSetupFee(setupAmount, u);
+			    			
+			    			/*if(jetpay!=null)
+			    				tansId = jetpay.getTransId();*/
+		    			}
+		    		}
+	    		}
+	    		
+	    		if(!"".equals(orderNumber)){
+	    			JetPayPayment jetPayPayment = jetPayPaymentDao.getByOrderNumber(orderNumber);
+	    			if(jetPayPayment.getActCode() != null && Constants.PAYMENT_ACTION_CODE_SUCCESS.equals(jetPayPayment.getActCode())){
+	    				tansId = jetPayPayment.getOrderNumber();
+	    			}else{
+	    				return "FAIL";
+	    			}
+	    		}
+	    	}else{
+	    		return "FAIL";
+	    	}
+    	}
+    	catch(Exception e){
+    		e.printStackTrace();
+    		////System.out.println(e);
+    		return "FAIL";
+    	}
+		
+		return "SUCCESS__"+tansId;
+	}
+
+	private synchronized void signupCapacityManagement(ItemDetail itemDetail, Signup signup, boolean update) {
+		String signupStatus = Constants.CONFIRMED;
+		Long waitListPriority = 0L;
+		Integer noofTickets = 1;
+		
+		if(itemDetail!=null){
+			Long remainingCapacity = convertNullToZero(itemDetail.getRemainingCapacity());
+			//Long actualRemainingCapacity = convertNullToZero(itemDetail.getActualRemainingCapacity());
+			//Long waitListCounter = convertNullToZero(itemDetail.getWaitlistCounter());
+			
+			if(signup.getNoOfTickets()!=null){
+				noofTickets = signup.getNoOfTickets();
+			}
+			
+			if(update)
+				updateCapacity(itemDetail,noofTickets);
+			
+			if(remainingCapacity.compareTo(0L)<=0 || remainingCapacity < noofTickets){
+				//remaining capacity is less than 0
+				signupStatus = Constants.WAITLISTED;
+				Object sObj = signupDao.getMaxWaitlistPriorityByItemDetail(itemDetail);
+				if(sObj!=null)
+					waitListPriority = convertNullToZero(Long.parseLong(sObj.toString()));
+				waitListPriority = waitListPriority+1;
+				//waitListCounter = waitListCounter+1;
+			}/*
+			else{
+				// remaining capacity is greater than 0
+				remainingCapacity = remainingCapacity-noofTickets;
+				actualRemainingCapacity = actualRemainingCapacity-noofTickets;
+			}
+			
+			itemDetail.setRemainingCapacity(remainingCapacity);
+			itemDetail.setActualRemainingCapacity(actualRemainingCapacity);
+			itemDetail.setWaitlistCounter(waitListCounter);
+			
+			populateAndSaveItemDetail(itemDetail);*/
+		}
+		
+		if(update)
+			signup.setStatus(signupStatus);
+		signup.setWaitlist(waitListPriority);
+		Calendar cal = Calendar.getInstance();
+		signup.setLastUpdated(cal);
+		signupDao.save(signup);
+	}
+	
+	private void saveActivity(Account customer, User u, Signup signupprogram) {
+		if(signupprogram!=null){
+			// create interaction record
+			Activity activity = new Activity();
+			activity.setCustomer(customer);
+			activity.setContact(u);
+			activity.setCreatedDate(new Date());
+			if(Constants.CONFIRMED.equalsIgnoreCase(signupprogram.getStatus()))
+				activity.setType(Constants.PROGRAM_SIGNUP);
+			else
+				activity.setType(Constants.PROGRAM_WAITLIST);
+			
+			Calendar cal = Calendar.getInstance();
+			activity.setLastUpdated(cal);
+			interactionDao.save(activity);
+		}
+	}
+
+	private void saveSetupFee(Double amount, User u) {
+		SetpUpFee s = new SetpUpFee();
+		s.setContact(u);
+		s.setSetUpFee(amount);
+		s.setSetUpFeeStartDate(new Date());
+		
+		Calendar cal = Calendar.getInstance();    		
+		cal.add(Calendar.YEAR, 1); // to get previous year add -1
+		Date nextYear = cal.getTime();
+		s.setSetUpFeeEndDate(nextYear);
+		s.setLastUpdated(cal);
+		setpUpFeeDao.save(s);
+	}
+	
+	@RequestMapping(value="/pastDuePaymentProcess", method=RequestMethod.POST)
+    public @ResponseBody String  pastDuePaymentProcess(final HttpServletRequest request, final HttpServletResponse response) { 	
+		//System.out.println("pastDuePaymentProcess --> ");
+		String tansId = "";
+		String paymentId = request.getParameter("paymentId");
+		String jp_request_hash = request.getParameter("jp_request_hash");
+		String orderNumber = request.getParameter("orderNumber");
+		String paymentMode = request.getParameter("paymentMode");
+		String tag=request.getParameter("tag");
+	//	//System.out.println("pastDuePaymentProcess --> "+paymentId+ "orderNumber "+orderNumber);
+		//String lstCartItem = request.getParameter("cartItems");
+		//List<String> lstStrCartItem = Arrays.asList(lstCartItem.split(","));
+		
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		User contact=null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			return "FAIL";
+		}
+    	
+    	try{
+    		Account customer = null;
+        	if(userId != null && !"".equals(userId)){
+        		customer = accountDao.getByEmail(userId);			
+        	}
+    		
+        	if(customer != null){	    		    	    	
+    	      //  model.addAttribute("accInfo", account);
+    	        //model.addAttribute("usInfo", user);	
+    	        
+    	      //  int userCount = customer.getUser().size();
+    	        //List<User> userS = new ArrayList<User>();
+    	        //int countmembers = 0;
+    	      //  if(userCount>1){
+    		        for(User u: customer.getUser()){
+    		        	if(u.isPrimary()){
+    		        		contact=u;
+    		        		break;
+    		        	}
+    		        }
+    			}
+	    	    	
+        	//}
+			////System.out.println("before  requiredPastInvoiceList payNow");
+ 			Object requiredPastInvoiceList1=request.getSession().getAttribute("requiredPastInvoiceList");
+ 			 List<Invoice> requiredPastInvoiceList=(List<Invoice> )requiredPastInvoiceList1;
+ 			 
+ 			Object requiredInvoiceList1=request.getSession().getAttribute("requiredInvoiceList");
+			 List<Invoice> requiredInvoiceList=(List<Invoice> )requiredInvoiceList1;
+				if (Long.parseLong(paymentId) == 0) {
+					PaymentMethod paymentMethod  =  populatePaymentMethodData(customer, orderNumber);
+					paymentMethod.setLastUpdated(Calendar.getInstance());
+		            paymentMethod = paymentMethodDao.save(paymentMethod);
+		            paymentId=paymentMethod.getPaymentId().toString();
+						}
+    
+        	//System.out.println("pastDuePaymentProcess --.....> "+paymentId+ "orderNumber "+orderNumber);
+        	JetPayPayment jetpay=null;
+        	if(tag.equals("CURRENTPASTDUE"))
+        	jetpay = paymentService.savePastDuePayment(paymentId.toString(), jp_request_hash, orderNumber, customer,contact, paymentMode,requiredPastInvoiceList,requiredInvoiceList);
+        	else	
+        	 jetpay = paymentService.savePastDuePayment(paymentId.toString(), jp_request_hash, orderNumber, customer,contact, paymentMode,requiredPastInvoiceList);
+	    			if(jetpay!=null)
+	    				tansId = jetpay.getTransId();
+	    		//}
+	    	//}
+    	}
+    	catch(Exception e){
+    		
+    		return "FAIL";
+    	}
+		
+		return "SUCCESS__"+tansId;
+	}
+	
+	/*
+	 // Moved to PaymentService
+	 private JetPayPayment savepayment(String paymentId, String jp_request_hash,
+			Account customer, List<String> cartItems, User u,
+			Signup signupprogram) {
+		
+		JetPayPayment jetPayPayment = null;
+		if(!"".equals(jp_request_hash)){
+			jetPayPayment = jetPayPaymentDao.getByJpReturnHash(jp_request_hash);
+		}
+		if(jetPayPayment!=null){
+			Payment payment = new Payment();
+			payment.setTransactionId(Long.parseLong(jetPayPayment.getTransId()));
+			payment.setStatus(Constants.SUCCESS);
+			payment.setPaymentNumber(jetPayPayment.getPaymentId().toString());
+			payment.setAmount(Double.parseDouble(cartItems.get(2)));
+			payment.setCustomer(customer);
+			payment.setSignup(signupprogram);
+			payment.setContact(u);
+			payment.setType(Constants.PROGRAM_TYPE);
+			if(Long.parseLong(paymentId)>0){
+				List<PaymentMethod> lstPaymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(Long.parseLong(paymentId));
+				PaymentMethod paymentMethod = lstPaymentMethod.get(0);
+				payment.setPaymentMethod(paymentMethod.getPaymentId().toString());
+			}
+			payment.setPaymentDate(new Date());
+			paymentDao.save(payment);
+		}
+		
+		return jetPayPayment;
+	}
+
+	private Signup savesignup(String paymentId, Account customer,
+			List<String> cartItems, ItemDetailsSession ids, User u) {
+		Signup signup = new Signup();
+		signup.setCustomer(customer);
+		signup.setItemDetailsSession(ids);
+		signup.setItem(ids.getItem());
+		signup.setProgramStartDate(ids.getItemDetails().getStartdate());
+		signup.setProgramEndDate(ids.getItemDetails().getEnddate());
+		signup.setFinalAmount(cartItems.get(2));
+		
+		Long  loc_id = ids.getItemDetails().getLocations().getLocationId();
+		signup.setLocation(locationDao.getLocationsByLocationId(loc_id));
+		
+		signup.setContact(u);
+		signup.setContactName(u.getFullName());
+		signup.setStatus(Constants.ACTIVE);
+		signup.setType("MEMBERSHIP");
+		
+		if(Long.parseLong(paymentId)>0){
+			List<PaymentMethod> lstPaymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(Long.parseLong(paymentId));
+			PaymentMethod paymentMethod = lstPaymentMethod.get(0);
+			signup.setPaymentMethod(paymentMethod);
+		}
+		
+		Signup signupprogram = new Signup();
+		signupprogram = signupDao.save(signup);
+		return signupprogram;
+	}*/
+	
+	// Not in use
+	/*
+	@RequestMapping(value="/getcartItems", method=RequestMethod.POST)
+    public @ResponseBody List<ItemDetailsSession>  getcartItems(ItemDetailsSession itemDetailsSession, final HttpServletRequest request, final HttpServletResponse response) { 	
+		
+		String lstSessionId = request.getParameter("selectedItemSession");
+		List<String> lstStrSessionId = Arrays.asList(lstSessionId.split(","));
+		List<ItemDetailsSession> lstidsOut = new ArrayList<ItemDetailsSession>();
+		
+		for(String sId: lstStrSessionId){
+			ItemDetails itemDetails = new ItemDetails();
+			ItemDetailsSession idsOut = new ItemDetailsSession();
+			ItemDetailsSession ids =  itemDetailsSessionDao.getByItemDetailsSessionId(Long.parseLong(sId));
+			
+			Authentication a = SecurityContextHolder.getContext().getAuthentication();
+			String userId = null;
+			try{
+				userId = ((UserDetails) a.getPrincipal()).getUsername();
+			}catch(Exception e){
+				return null;
+			}
+			
+			Account customer = null;
+	    	if(userId != null && !"".equals(userId)){
+	    		customer = accountDao.getByEmail(userId);			
+	    	}
+	    	
+	    	
+	    	if(customer!=null){
+	    		idsOut.setSessionName(ids.getSessionName());
+	    		idsOut.setDays(ids.getDays());
+	    		idsOut.setStarttime(ids.getStarttime());
+	    		idsOut.setEndtime(ids.getEndtime());
+	    		
+	    		itemDetails.setStartdate(ids.getItemDetails().getStartdate());
+	    		itemDetails.setEnddate(ids.getItemDetails().getEnddate());
+	    		itemDetails.setPrice(ids.getItemDetails().getPrice());
+	    		idsOut.setItemDetails(itemDetails);
+	    		
+	    		lstidsOut.add(idsOut);
+	    	}
+		}
+		
+		return lstidsOut;
+	}
+	*/
+	@RequestMapping(value="/getProductsbyCategory", method=RequestMethod.GET)
+    public @ResponseBody List<ItemDetail>  getProductsbyCategory(final HttpServletRequest request, final HttpServletResponse response) { 		
+    	try{
+    		String strCategory = request.getParameter("category");
+    		List<ItemDetail> productLst =  itemDetailsDao.findDistinctItemDetailByType(strCategory);
+    		return productLst; 
+    		
+    	}catch(Exception e){    		
+    		      		
+    	}
+		return null;    	
+    }
+	
+	/*
+	@RequestMapping(value="/getItems", method=RequestMethod.GET)
+    public @ResponseBody String getItemS(final HttpServletRequest request, final HttpServletResponse response) { 	
+		  DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");  
+		  Date todayDate;
+		  String today;
+		 // Date today = new Date();  
+	      Calendar calendar = Calendar.getInstance();  
+	      //calendar.setTime(today);  
+	      
+		  List<Promocode> promo = new ArrayList<Promocode>();
+		  List<Product> productLst =  productDao.findAll();
+		  
+		  try {
+			  todayDate = sdf.parse(sdf.format(calendar.getTime()));
+			  today = sdf.format(calendar.getTime());
+
+			  promo = promocodeDao.getACPromoDiscountByItemDetailsId();
+		  } catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+		  }
+		  
+		  
+		  JSONArray json = new JSONArray();
+		  
+		  for(Product p: productLst){
+		      if(p.getItemDetails()!=null){
+		    	  List<ItemDetailsSession> itemSession = p.getItemDetails().getItemDetailsSession();
+		    	  if(itemSession.size()>0){
+		    		  for(ItemDetailsSession ids : itemSession){
+							
+						  double membertierPrice = 0D;
+						  double nonmembertierPrice = 0D;
+						  
+						  List<PricingRule> pricingRuleLst =  pricingRuleDao.findByitemDetailsIdAndTier(ids.getItemDetails().getId(), ids.getItemDetails().getLocations().getTier().toString());
+						  for(PricingRule pricingRule: pricingRuleLst) {
+							  membertierPrice += Double.parseDouble(pricingRule.getTierPrice());
+							  nonmembertierPrice += Double.parseDouble(pricingRule.getNonmemberTierPrice());
+						  }
+		    			  
+				    	  JSONObject obj = new JSONObject();
+				    	  obj.put("id", ids.getItemDetailsSessionId());
+						  obj.put("prodId", ids.getItemDetailsSessionId());
+					      obj.put("name", p.getProductName());
+				    	  obj.put("memberprice", membertierPrice);
+				    	  obj.put("nonmemberprice", nonmembertierPrice);
+				    	  obj.put("description", p.getDescription());
+					      obj.put("category", p.getCategory());
+					      obj.put("sessionName", ids.getSessionName());
+					      obj.put("instructor", ids.getInstructorName());
+					      obj.put("start_time", ids.getStarttime());
+					      obj.put("end_time", ids.getEndtime());
+					      obj.put("start_date", ids.getItemDetails().getStartdate());
+					      obj.put("end_date", ids.getItemDetails().getEnddate());
+					      obj.put("itemDetailsId", ids.getItemDetails().getId());
+					      obj.put("itemDetailsSessionId", ids.getItemDetailsSessionId());
+					      obj.put("days", ids.getDays());
+					      
+					      Double memberdiscount = new Double(0);
+					      Double nonmemberdiscount = new Double(0);
+					      
+					      String lblPromoCode = "";
+					      if(promo.size()>0){
+					    	  for(Promocode pc: promo){
+					    		  for(ItemPromoDetails ipd: pc.getItemPromoDetails()){
+					    			  if(ipd.getItemDetails().getId().equals(ids.getItemDetails().getId())){
+					    				  lblPromoCode = pc.getPromoCode();
+					    				  if(pc.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_VALUE)){
+					    					  memberdiscount = pc.getDiscountvalue();
+					    					  nonmemberdiscount = pc.getDiscountvalue();
+					    				  }
+					    				  else if(pc.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_PERCENTAGE)){
+					    					  BigDecimal memberdiscountAmount = pc.getDiscountpercentage().multiply(BigDecimal.valueOf(membertierPrice));
+					    					  memberdiscountAmount = memberdiscountAmount.divide(new BigDecimal(100));
+					    					  memberdiscount = memberdiscountAmount.doubleValue();
+					    					  
+					    					  BigDecimal nonmemberdiscountAmount = pc.getDiscountpercentage().multiply(BigDecimal.valueOf(nonmembertierPrice));
+					    					  nonmemberdiscountAmount = nonmemberdiscountAmount.divide(new BigDecimal(100));
+					    					  nonmemberdiscount = nonmemberdiscountAmount.doubleValue();
+					    				  }
+					    			  }
+					    		  }
+					    		  
+					    	  }
+					    	  
+					      }
+					      ////System.out.println(discount);
+					      ////System.out.println(lblPromoCode);
+					      obj.put("memberdiscount", memberdiscount);
+					      obj.put("nonmemberdiscount", nonmemberdiscount);
+					      obj.put("discountcode", lblPromoCode);
+					      
+					      
+//					      Double amt = p.getItemDetails().getPrice() - discount;
+					      obj.put("finalamount", new Double(0));
+					      json.add(obj);
+		    		  }
+		    	  }
+		      }
+		        
+		  }
+	      
+	      //System.out.print(json);
+	      return json.toString();
+	}*/
+	
+	/*
+	// Added getSignupByType in CommonController
+	
+	@RequestMapping(value="/getSignup", method=RequestMethod.GET)
+    public @ResponseBody String getSignup(final HttpServletRequest request, final HttpServletResponse response) { 
+		 	JSONArray json = new JSONArray();
+		
+		 	Authentication a = SecurityContextHolder.getContext().getAuthentication();
+			String userId = null;
+			try{
+				userId = ((UserDetails) a.getPrincipal()).getUsername();
+			}catch(Exception e){
+				return json.toString();
+			}
+	    	
+			Account account = null;
+	    	if(userId != null && !"".equals(userId)){
+		    	account = accountDao.getByEmail(userId);
+	    	}
+	    	
+	    	if(account==null){
+	    		return json.toString();
+	    	}
+	    	
+	    	List<Signup> signups = signupDao.getByCustomer(account);
+	    	
+	    	for(Signup s: signups){
+	    		if(s.getType().equalsIgnoreCase("MEMBERSHIP") && s.getItemDetailsSession()!=null){
+			    	JSONObject obj = new JSONObject();
+			    	obj.put("id", s.getSignupId());
+					obj.put("signupId", s.getSignupId());
+					obj.put("customerId", s.getCustomer().getAccountId());
+					obj.put("itemId", s.getItemDetailsSession().getItemDetailsSessionId());
+					obj.put("contactId", s.getContact().getPartyId());
+					obj.put("locationId", s.getLocation().getLocationId());
+					json.add(obj);
+	    		}
+	    	}
+	    	
+	    	//System.out.print(json);
+	    	return json.toString();
+	}
+	
+	// Moved to CommonController
+	@RequestMapping(value="/getPromodetails", method=RequestMethod.GET)
+    public @ResponseBody String getPromodetails(final HttpServletRequest request, final HttpServletResponse response) { 
+		JSONArray json = new JSONArray();
+		
+		String promocode = request.getParameter("promocode");
+		
+		if(!"".equals(promocode)){
+			Promocode promodetails = promocodeDao.getPromoDiscountByPromocode(promocode);
+			if(promodetails!=null){
+				  JSONObject obj = new JSONObject();
+				
+				  Double discount = new Double(0);
+				  if(promodetails.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_VALUE)){
+					  discount = promodetails.getDiscountvalue();
+				  }
+				  
+				  obj.put("valid", "true");
+				  obj.put("promid", promodetails.getPromoId());
+				  obj.put("promname", promodetails.getPromoName());
+				  obj.put("discounttype", promodetails.getDiscounttype());
+				  obj.put("discountValue", discount);
+				  obj.put("discountPercentage", promodetails.getDiscountpercentage());
+				  obj.put("promcode", promocode);
+				  
+				  JSONArray json1 = new JSONArray();
+				  for(ItemPromoDetails ipd: promodetails.getItemPromoDetails()){
+					  JSONObject obj1 = new JSONObject();
+					  obj1.put("itemPromoDetailsId", ipd.getItemPromoDetailsId());
+					  obj1.put("itemDetailsId", ipd.getItemDetails().getId());
+					  json1.add(obj1);
+	    		  }
+				  
+				  obj.put("itemDetails", json1.toString());
+				  json.add(obj);
+			}
+		}
+		
+		return json.toString();
+	}*/
+	
+	@RequestMapping(value="/viewAllPrograms", method=RequestMethod.GET)
+    public ModelAndView viewAllPrograms(final HttpServletRequest request, final HttpServletResponse response) {
+		Model model = new ExtendedModelMap();
+		try{
+			String itemType = request.getParameter("itemType");
+			String contactName = request.getParameter("contactName");
+			String programStDt = request.getParameter("programStDt");
+			String programEndDt = request.getParameter("programEndDt");
+				
+			// check if user is logged in
+			Authentication a = SecurityContextHolder.getContext().getAuthentication();
+			String userId = null;
+			
+			try{
+				userId = ((UserDetails) a.getPrincipal()).getUsername();
+			}catch(Exception e){
+				//model.addAttribute("errMsg", "Your session is expired");
+				//return new ModelAndView("login", model.asMap());
+				////System.out.println(e);
+			}
+			
+			Account account = null;
+			User user =  null;	
+	
+			if(userId != null && !"".equals(userId)){
+		    	account = accountDao.getByEmail(userId);
+				request.setAttribute("userId", userId);				
+				user = getUserByAccount(account, user);
+			}
+			
+			if(account != null){	    		    	    	
+		        model.addAttribute("accInfo", account);
+		        model.addAttribute("usInfo", user);	
+		        
+		        int userCount = account.getUser().size();
+		        List<User> userS = new ArrayList<User>();
+		        int countmembers = 0;
+		        if(userCount>1){
+			        for(User u: account.getUser()){
+			        	if(user.getPartyId() != u.getPartyId() && u.isActive()){
+			        		countmembers = countmembers + 1;
+			        		userS.add(u);
+			        	}
+			        }
+				}
+		        model.addAttribute("userCount", countmembers);
+		        model.addAttribute("userS", userS);
+		        model.addAttribute("AlluserS", account.getUser());
+	     
+		        model.addAttribute("userCount", countmembers);
+	
+		        JSONArray currentConfirmedProgramsArr = new JSONArray();
+		        JSONArray upcomingConfirmedProgramsArr = new JSONArray();
+		        JSONArray upcomingWaitlistedProgramsArr = new JSONArray();
+		        JSONArray cancelledProgramsArr = new JSONArray();
+		        JSONArray pastConfirmedProgramsArr = new JSONArray();
+		        
+		        //List<Object[]> lstCurrentConfirmedProgramsObj = productDao.getCurrentActiveSignupProgram(Constants.CONFIRMED);
+		        List<Object[]> lstCurrentConfirmedProgramsObj = getSignupPrograms(account, Constants.CURRENT, Constants.ACTIVE, Constants.CONFIRMED, itemType, contactName, programStDt, programEndDt);
+		        
+		        for(Object currentConfirmedProgramsObj: lstCurrentConfirmedProgramsObj){
+		        	
+		        	Object currentConfirmedPrograms[] = (Object[]) currentConfirmedProgramsObj;
+		        	
+		        	Signup signup = (Signup) currentConfirmedPrograms[0];
+		        	ItemDetail program = (ItemDetail) currentConfirmedPrograms[1];
+		        	
+		        	JSONObject jsonObj = new JSONObject();
+		        	jsonObj.put("programId", program.getId());
+		        	jsonObj.put("signupId", signup.getSignupId());
+		        	jsonObj.put("itemType", program.getSubType());
+		        	jsonObj.put("itemTypeTxt", StringUtil.toCamelCase(program.getSubType()));
+		        	jsonObj.put("contactName", signup.getContactName());
+					jsonObj.put("programName", program.getRecordName());
+					jsonObj.put("programDescription", program.getDescription());
+					jsonObj.put("programStartDate", program.getStartDate());
+					jsonObj.put("programEndDate", program.getEndDate());
+					jsonObj.put("programStartTime", program.getStartTime());
+					jsonObj.put("programEndTime", program.getEndTime());
+					jsonObj.put("programStatus", program.getStatus());
+					jsonObj.put("programEnrollmentStatus", signup.getStatus());
+					
+					currentConfirmedProgramsArr.add(jsonObj);
+		        }
+				model.addAttribute("currentConfirmedProgramsArr", currentConfirmedProgramsArr);
+				
+				//List<Object[]> lstupcomingConfirmedProgramsObj = productDao.getUpcomingActiveSignupProgram(Constants.CONFIRMED);
+				List<Object[]> lstupcomingConfirmedProgramsObj = getSignupPrograms(account, Constants.UPCOMING, Constants.ACTIVE, Constants.CONFIRMED, itemType, contactName, programStDt, programEndDt);
+		        for(Object upcomingConfirmedProgramsObj: lstupcomingConfirmedProgramsObj){
+		        	
+		        	Object upcomingConfirmedPrograms[] = (Object[]) upcomingConfirmedProgramsObj;
+		        	
+		        	Signup signup = (Signup) upcomingConfirmedPrograms[0];
+		        	ItemDetail program = (ItemDetail) upcomingConfirmedPrograms[1];
+		        	
+		        	JSONObject jsonObj = new JSONObject();
+		        	jsonObj.put("programId", program.getId());
+		        	jsonObj.put("signupId", signup.getSignupId());
+		        	jsonObj.put("itemType", program.getSubType());
+		        	jsonObj.put("itemTypeTxt", StringUtil.toCamelCase(program.getSubType()));
+		        	jsonObj.put("contactName", signup.getContactName());
+					jsonObj.put("programName", program.getRecordName());
+					jsonObj.put("programDescription", program.getDescription());
+					jsonObj.put("programStartDate", program.getStartDate());
+					jsonObj.put("programEndDate", program.getEndDate());
+					jsonObj.put("programStartTime", program.getStartTime());
+					jsonObj.put("programEndTime", program.getEndTime());
+					jsonObj.put("programStatus", program.getStatus());
+					jsonObj.put("programEnrollmentStatus", signup.getStatus());
+					
+					upcomingConfirmedProgramsArr.add(jsonObj);
+		        }
+				model.addAttribute("upcomingConfirmedProgramsArr", upcomingConfirmedProgramsArr);
+				
+				//List<Object[]> lstupcomingWaitlistedProgramsObj = productDao.getUpcomingActiveSignupProgram(Constants.WAITLISTED);
+				List<Object[]> lstupcomingWaitlistedProgramsObj = getSignupPrograms(account, Constants.UPCOMING, Constants.ACTIVE, Constants.WAITLISTED, itemType, contactName, programStDt, programEndDt);
+		        for(Object upcomingWaitlistedProgramsObj: lstupcomingWaitlistedProgramsObj){
+		        	
+		        	Object upcomingWaitlistedPrograms[] = (Object[]) upcomingWaitlistedProgramsObj;
+		        	
+		        	Signup signup = (Signup) upcomingWaitlistedPrograms[0];
+		        	ItemDetail program = (ItemDetail) upcomingWaitlistedPrograms[1];
+		        	
+		        	JSONObject jsonObj = new JSONObject();
+		        	jsonObj.put("programId", program.getId());
+		        	jsonObj.put("signupId", signup.getSignupId());
+		        	jsonObj.put("itemType", program.getSubType());
+		        	jsonObj.put("itemTypeTxt", StringUtil.toCamelCase(program.getSubType()));
+		        	jsonObj.put("contactName", signup.getContactName());
+					jsonObj.put("programName", program.getRecordName());
+					jsonObj.put("programDescription", program.getDescription());
+					jsonObj.put("programStartDate", program.getStartDate());
+					jsonObj.put("programEndDate", program.getEndDate());
+					jsonObj.put("programStartTime", program.getStartTime());
+					jsonObj.put("programEndTime", program.getEndTime());
+					jsonObj.put("programStatus", program.getStatus());
+					jsonObj.put("programEnrollmentStatus", signup.getStatus());
+					
+					upcomingWaitlistedProgramsArr.add(jsonObj);
+		        }
+				model.addAttribute("upcomingWaitlistedProgramsArr", upcomingWaitlistedProgramsArr);
+				
+				//List<Object[]> lstCancelledProgramsObj = productDao.getCancelledSignupProgram(Constants.CANCELLED);
+				List<Object[]> lstCancelledProgramsObj = getSignupPrograms(account, Constants.CANCELLED, "", Constants.CANCELLED, itemType, contactName, programStDt, programEndDt);
+		        for(Object cancelledProgramsObj: lstCancelledProgramsObj){
+		        	
+		        	Object cancelledPrograms[] = (Object[]) cancelledProgramsObj;
+		        	
+		        	Signup signup = (Signup) cancelledPrograms[0];
+		        	ItemDetail program = (ItemDetail) cancelledPrograms[1];
+		        	
+		        	JSONObject jsonObj = new JSONObject();
+		        	jsonObj.put("programId", program.getId());
+		        	jsonObj.put("signupId", signup.getSignupId());
+		        	jsonObj.put("itemType", program.getSubType());
+		        	jsonObj.put("itemTypeTxt", StringUtil.toCamelCase(program.getSubType()));
+		        	jsonObj.put("contactName", signup.getContactName());
+					jsonObj.put("programName", program.getRecordName());
+					jsonObj.put("programDescription", program.getDescription());
+					jsonObj.put("programStartDate", program.getStartDate());
+					jsonObj.put("programEndDate", program.getEndDate());
+					jsonObj.put("programStartTime", program.getStartTime());
+					jsonObj.put("programEndTime", program.getEndTime());
+					jsonObj.put("programStatus", program.getStatus());
+					jsonObj.put("programEnrollmentStatus", signup.getStatus());
+					
+					cancelledProgramsArr.add(jsonObj);
+		        }
+				model.addAttribute("cancelledProgramsArr", cancelledProgramsArr);
+				
+				//List<Object[]> lstPastConfirmedProgramsObj = productDao.getPastActiveSignupProgram(Constants.CONFIRMED);
+				List<Object[]> lstPastConfirmedProgramsObj = getSignupPrograms(account, Constants.PAST, Constants.ACTIVE, Constants.CONFIRMED, itemType, contactName, programStDt, programEndDt);
+		        for(Object pastConfirmedProgramsObj: lstPastConfirmedProgramsObj){
+		        	
+		        	Object pastConfirmedPrograms[] = (Object[]) pastConfirmedProgramsObj;
+		        	
+		        	Signup signup = (Signup) pastConfirmedPrograms[0];
+		        	ItemDetail program = (ItemDetail) pastConfirmedPrograms[1];
+		        	
+		        	JSONObject jsonObj = new JSONObject();
+		        	jsonObj.put("programId", program.getId());
+		        	jsonObj.put("signupId", signup.getSignupId());
+		        	jsonObj.put("itemType", program.getSubType());
+		        	jsonObj.put("itemTypeTxt", StringUtil.toCamelCase(program.getSubType()));
+		        	jsonObj.put("contactName", signup.getContactName());
+					jsonObj.put("programName", program.getRecordName());
+					jsonObj.put("programDescription", program.getDescription());
+					jsonObj.put("programStartDate", program.getStartDate());
+					jsonObj.put("programEndDate", program.getEndDate());
+					jsonObj.put("programStartTime", program.getStartTime());
+					jsonObj.put("programEndTime", program.getEndTime());
+					jsonObj.put("programStatus", program.getStatus());
+					jsonObj.put("programEnrollmentStatus", signup.getStatus());
+					
+					pastConfirmedProgramsArr.add(jsonObj);
+		        }
+				model.addAttribute("pastConfirmedProgramsArr", pastConfirmedProgramsArr);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	    return new ModelAndView("viewAllPrograms", model.asMap());
+	}
+	
+	@RequestMapping(value="/viewProgramDetails", method=RequestMethod.GET)
+    public ModelAndView viewProgramDetails(final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		try{
+			JSONArray enrolledProgramDetailsArr = new JSONArray(); 
+			JSONArray paymentDetailsArr = new JSONArray(); 
+			JSONArray interactionsBySignupArr = new JSONArray(); 
+			
+			String signupId = request.getParameter("sId");
+			
+			if(!"".equals(signupId)){
+				
+				// get signup details and item details associated with sign up
+				Object programObj[] = (Object[]) signupDao.getSignupProgramById(Long.parseLong(signupId));
+		    	Signup signup = (Signup) programObj[0];
+		    	ItemDetail program = (ItemDetail) programObj[1];
+		    	
+		    	JSONObject jsonObj = new JSONObject();
+		    	jsonObj.put("programId", program.getId());
+		    	jsonObj.put("programType", program.getType());
+		    	jsonObj.put("signupId", signup.getSignupId());
+				jsonObj.put("programName", program.getRecordName());
+				jsonObj.put("programDescription", program.getDescription());
+				jsonObj.put("programStartDate", program.getStartDate());
+				jsonObj.put("programEndDate", program.getEndDate());
+				jsonObj.put("programStartTime", program.getStartTime());
+				jsonObj.put("programEndTime", program.getEndTime());
+				jsonObj.put("programStatus", program.getStatus());
+				if(program.getSubType() != null && program.getSubType().equalsIgnoreCase("EVENT")){
+					jsonObj.put("noOfTickets", signup.getNoOfTickets());	
+				}else{
+					jsonObj.put("noOfTickets", "0");
+				}
+				
+				jsonObj.put("programEnrollmentStatus", signup.getStatus());
+				jsonObj.put("programEnrollmentDate", signup.getSignupDate());
+				jsonObj.put("discountAmount", signup.getDiscountAmount());
+				jsonObj.put("finalAmount", signup.getFinalAmount());
+				
+				enrolledProgramDetailsArr.add(jsonObj);			
+				
+				// get payment details associated with sign up
+				List<Payment> lstPaymentDetails = paymentDao.findBySignupAndType(signup,Constants.DEBIT);
+				if(lstPaymentDetails.size()>0){
+					
+					String ccNum = "";
+	/*				List<Payer> lstPayer = payerDao.findBySignupAndType(signup,Constants.SELF);
+					if(lstPayer!=null && lstPayer.size()>0 && lstPayer.get(0).getPaymentMethod().getPaymentId()!=null){
+						List<PaymentMethod> lstPaymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(lstPayer.get(0).getPaymentMethod().getPaymentId());
+						if(lstPaymentMethod.size()>0){
+							PaymentMethod paymentMethod = lstPaymentMethod.get(0);
+							ccNum = paymentMethod.getCardNumber();
+						}
+					}*/
+					for(Payment payment: lstPaymentDetails){
+						JSONObject payObj = new JSONObject();
+						payObj.put("transactionId", payment.getTransactionId());
+						if (payment.getPayer() != null && payment.getPayer().getPaymentMethod() != null) {
+							payObj.put("ccnumber", payment.getPayer().getPaymentMethod().getCardNumber());
+						}
+						payObj.put("amount", payment.getAmount());
+						payObj.put("paymentDate", payment.getPaymentDate().toString());
+						
+						paymentDetailsArr.add(payObj);
+					}
+					
+				}
+				
+				// get interactions associated with sign up
+				List<Activity> activities = interactionDao.findBySignupAndType(signup, Constants.ATTENDANCE);
+				for(Activity interaction: activities){
+					JSONObject intObj = new JSONObject();
+			    	intObj.put("checkinDateTime", interaction.getCheckinDatetime());
+			    	intObj.put("checkoutDateTime", interaction.getCheckoutDatetime());
+					
+					interactionsBySignupArr.add(intObj);
+				}
+				
+			}
+			
+			model.addAttribute("enrolledProgramDetailsArr", enrolledProgramDetailsArr);
+			model.addAttribute("paymentDetailsArr", paymentDetailsArr);
+			model.addAttribute("interactionsBySignupArr", interactionsBySignupArr);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return new ModelAndView("viewProgramDetails", model.asMap());
+	}
+	
+	
+	@RequestMapping(value="/cancelProgram", method=RequestMethod.GET)
+    public ModelAndView cancelProgramWizard(final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		JSONArray enrolledProgramDetailsArr = new JSONArray(); 
+		
+		String signupId = request.getParameter("sId");
+		
+		if(!"".equals(signupId)){
+			Object programObj[] = (Object[]) signupDao.getSignupProgramById(Long.parseLong(signupId));
+			Signup signup = (Signup) programObj[0];
+	    	ItemDetail program = (ItemDetail) programObj[1];
+	    	
+	    	
+	    	Date programStartDate = program.getStartDate();
+	    	java.util.Date currDate= new java.util.Date();
+	    	
+	    	long diff = programStartDate.getTime() - currDate.getTime();
+	    	long diffDays = diff / (24 * 60 * 60 * 1000);
+	    	
+	    	//System.out.println(diff);
+	    	//System.out.println(diffDays);
+	    	int cancellationCutOffDays = program.getCancellationCutOffPeriod();
+	    	
+	    	if(diffDays >= cancellationCutOffDays){
+	    		try {
+					JSONObject jsonObj = new JSONObject();
+					jsonObj.put("programId", program.getId());
+					jsonObj.put("signupId", signup.getSignupId());
+					jsonObj.put("contactName", signup.getContactName());
+					jsonObj.put("programName", program.getRecordName());
+					jsonObj.put("programDescription", program.getDescription());
+					jsonObj.put("programStartDate", program.getStartDate());
+					jsonObj.put("programEndDate", program.getEndDate());
+					jsonObj.put("programStartTime", program.getStartTime());
+					jsonObj.put("programEndTime", program.getEndTime());
+					jsonObj.put("programStatus", program.getStatus());
+					if(program.getSubType() != null && program.getSubType().equalsIgnoreCase("EVENT")){
+						jsonObj.put("noOfTickets", signup.getNoOfTickets());	
+					}else{
+						jsonObj.put("noOfTickets", "0");
+					}
+					jsonObj.put("programEnrollmentStatus", signup.getStatus());
+					jsonObj.put("programEnrollmentDate", signup.getSignupDate());
+					
+					List<ItemDetailPricingRule> lstCancellationPR = itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Type(signup.getItemDetail().getId(), Constants.CANCEL);
+					double cancellationPrice = 0D;
+					if(lstCancellationPR.size()>0){
+						for(ItemDetailPricingRule cancellationPR: lstCancellationPR){
+							cancellationPrice += Double.parseDouble(cancellationPR.getPricingRule().getTierPrice());
+						}
+					}
+					jsonObj.put("cancellationPrice", cancellationPrice);
+					
+					double reimbursedAmount = 0D;
+					reimbursedAmount = evaluateRefundExpressionAndReturnReimbursedAmount(signup, cancellationPrice);
+					if(reimbursedAmount>0){
+						Double debitPayment = 0D;
+						Double nsfOrCBorRefundPayment = 0D;
+						List<Payment> lstAllPaymentsBySignup = paymentDao.findBySignupOrderByAmountDesc(signup);
+						for(Payment payment: lstAllPaymentsBySignup){
+							if(Constants.DEBIT.equalsIgnoreCase(payment.getType())){
+								debitPayment += payment.getAmount();
+							}
+							else if(Constants.NSF.equalsIgnoreCase(payment.getType()) || Constants.CHARGEBACK.equalsIgnoreCase(payment.getType()) || Constants.CREDITMEMOREFUND.equalsIgnoreCase(payment.getType())){
+								nsfOrCBorRefundPayment += payment.getAmount();
+							}
+						}
+						
+						if((debitPayment-nsfOrCBorRefundPayment)-reimbursedAmount < 0){
+							reimbursedAmount = 0D;
+						}
+					}
+					jsonObj.put("reimbursedAmount", reimbursedAmount);
+					
+					enrolledProgramDetailsArr.add(jsonObj);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}			
+	    	}
+	    	
+		}
+		model.addAttribute("enrolledProgramDetailsArr", enrolledProgramDetailsArr);
+		
+		//TandC terms = tandCDao.findByType(Constants.CANCELLATION);
+		List<WaiversAndTC> terms = waiversAndTCDao.getTcByTypeAndDate(Constants.WAIVERS_TC_TYPE_COMMON);
+		if(terms != null && !terms.isEmpty()){
+        	model.addAttribute("terms", terms.get(0).getTcDescription());
+        }
+		
+		return new ModelAndView("cancelProgram", model.asMap());
+	}
+	
+	@RequestMapping(value="/cancelsignup", method=RequestMethod.GET)
+    public @ResponseBody String  cancelSignup(@RequestParam String sId, final HttpServletRequest request, final HttpServletResponse response) { 	
+		
+		if(!"".equals(sId)){
+			double reimbursedAmount = 0D;
+			
+			try{
+				Object programObj[] = (Object[]) signupDao.getSignupProgramById(Long.parseLong(sId));
+				Signup signup = (Signup) programObj[0];
+		    	ItemDetail program = (ItemDetail) programObj[1];
+
+		    	signup.setStatus(Constants.CANCELLED);
+		    	signup.setCancelDate(new Date());
+		    	Calendar cal = Calendar.getInstance();
+		    	signup.setLastUpdated(cal);
+		    	signupDao.save(signup);
+		    	
+		    	// capacity management block
+		    	cancelCapacityManagement(program,signup);
+		    	
+		    	automaticWaitListProcessing(program);
+		    	if(program.getSubType() != null && !program.getSubType().equals(ProductTypeEnum.EVENT.toString())){
+					double cancellationPrice = 0D;
+					List<ItemDetailPricingRule> lstCancellationPR = itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Type(signup.getItemDetail().getId(), Constants.CANCEL);
+					if(lstCancellationPR.size()>0){
+						for(ItemDetailPricingRule cancellationPR: lstCancellationPR){
+							cancellationPrice += Double.parseDouble(cancellationPR.getPricingRule().getTierPrice());
+						}
+					}
+					reimbursedAmount = evaluateRefundExpressionAndReturnReimbursedAmount(signup, cancellationPrice);
+					
+			    	if(reimbursedAmount > 0){
+			    		Double debitPayment = 0D;
+			    		Double nsfOrCBorRefundPayment = 0D;
+			    		boolean isRefund = false;
+			    		List<String> cashOrChequePaymentIds = new ArrayList<String>();
+			    		List<String> creditcardPaymentIds = new ArrayList<String>();
+			    		List<String> achPaymentIds = new ArrayList<String>();
+			    		
+			    		List<Payment> lstAllPaymentsBySignup = paymentDao.findBySignupOrderByAmountDesc(signup);
+			    		for(Payment payment: lstAllPaymentsBySignup){
+			    			if(Constants.DEBIT.equalsIgnoreCase(payment.getType())){
+			    				debitPayment += payment.getAmount();
+			    				
+			    				if(Constants.CASH.equalsIgnoreCase(payment.getPaymentMode()) || Constants.CHEQUE.equalsIgnoreCase(payment.getPaymentMode())){
+				    				cashOrChequePaymentIds.add(payment.getPaymentId().toString());
+				    			}
+				    			else if(Constants.CREDITCARD.equalsIgnoreCase(payment.getPaymentMode())){
+				    				creditcardPaymentIds.add(payment.getPaymentId().toString());
+				    			}
+				    			else if(Constants.ACH.equalsIgnoreCase(payment.getPaymentMode())){
+				    				achPaymentIds.add(payment.getPaymentId().toString());
+				    			}
+			    			}
+			    			else if(Constants.NSF.equalsIgnoreCase(payment.getType()) || Constants.CHARGEBACK.equalsIgnoreCase(payment.getType()) || Constants.CREDITMEMOREFUND.equalsIgnoreCase(payment.getType())){
+			    				nsfOrCBorRefundPayment += payment.getAmount();
+			    			}
+			    		}
+			    		
+			    		if(debitPayment>0){
+			    			if((debitPayment-nsfOrCBorRefundPayment)-reimbursedAmount >= 0){ // check if total paid payment is more than the refund amount
+			    				if(cashOrChequePaymentIds.size()>0 && creditcardPaymentIds.size()==0 && achPaymentIds.size()==0){
+			    					// all cash/ cheque payment
+			    					isRefund = true;
+			    					Long paymentId = Long.parseLong(cashOrChequePaymentIds.get(0));
+			    					Payment p = paymentDao.findByPaymentId(paymentId);
+	
+			    					savePayment(reimbursedAmount, p);
+			    				}
+			    				else if(cashOrChequePaymentIds.size()==0){
+			    					// no cash/ cheque payment
+			    					isRefund = true;
+			    					Double balanceAmount = reimbursedAmount;
+			    					Double refundAmount = 0D;
+			    					
+			    					for(Payment p: lstAllPaymentsBySignup){ 
+			    						if(Constants.DEBIT.equalsIgnoreCase(p.getType())){ // list all payment with type = 'Debit'
+				    						if(balanceAmount>0){
+					    						if(p.getAmount()>=balanceAmount){
+					    							refundAmount = balanceAmount;
+					    							balanceAmount = 0D;
+					    						}
+					    						else{
+					    							balanceAmount = reimbursedAmount - p.getAmount();
+					    							refundAmount = p.getAmount();
+					    						}
+					    						
+					    						savePayment(refundAmount, p);
+				    						}
+			    						}
+			    					}
+			    				}
+			    			}
+			    			else{ // total paid payment is less than the refund amount, charge them cancellation charges
+			    				if(cashOrChequePaymentIds.size()>0 && creditcardPaymentIds.size()==0 && achPaymentIds.size()==0){ // all cash/ cheque payment
+			    					// create activity as the payment was done through cash/ cheque
+			    					Activity activity = new Activity();
+			    					activity.setSignup(signup);
+			    					activity.setCustomer(signup.getCustomer());
+			    					activity.setType(Constants.CANCELLATIONCHARGE);
+			    					activity.setContact(signup.getContact());
+			    					activity.setCreatedDate(new Date());
+			    					activity.setDescription(program.getProgramDirector());
+			    					activity.setLastUpdated(cal);
+			    					//cancellationPrice
+			    					interactionDao.save(activity);
+			    				}
+			    				else if(cashOrChequePaymentIds.size()==0){ // only CC or ACH payment
+			    					// charge only cancellation charges as there is not much payment 
+			    					Double balanceAmount = cancellationPrice;
+			    					Double refundAmount = 0D;
+			    					
+			    					for(Payment p: lstAllPaymentsBySignup){ 
+			    						if(Constants.DEBIT.equalsIgnoreCase(p.getType())){ // list all payment with type = 'Debit'
+				    						if(balanceAmount>0){
+					    						if(p.getAmount()>=balanceAmount){
+					    							refundAmount = balanceAmount;
+					    							balanceAmount = 0D;
+					    						}
+					    						else{
+					    							balanceAmount = reimbursedAmount - p.getAmount();
+					    							refundAmount = p.getAmount();
+					    						}
+					    						
+					    						savePayment(refundAmount, p);
+				    						}
+			    						}
+			    					}
+			    				}
+			    			}
+			    		}
+			    	}
+		    	}else if(program.getSubType() != null && program.getSubType().equals(ProductTypeEnum.EVENT.toString())){
+		    		Activity activity = new Activity();
+					activity.setSignup(signup);
+					activity.setCustomer(signup.getCustomer());
+					if(program.getStatus().equalsIgnoreCase("Active"))
+						activity.setType(InteractionActivityTypeEnum.CancelEnrollment.toString());
+					else
+						activity.setType(InteractionActivityTypeEnum.EventCancelled.toString());
+					activity.setContact(signup.getContact());
+					activity.setCreatedDate(new Date());
+					activity.setDescription(program.getProgramDirector());
+					activity.setLastUpdated(cal);
+					
+					interactionDao.save(activity);
+		    	}
+			}
+			catch(Exception e){
+				return null;
+			}
+		}
+		return Constants.SUCCESS;
+	}
+
+	private void cancelCapacityManagement(ItemDetail program, Signup signup) {
+		Long webCapacity = convertNullToZero(program.getWebCapacity());
+		Long actualCapacity = convertNullToZero(program.getActualCapacity());
+		Long remainingCapacity = convertNullToZero(program.getRemainingCapacity());
+		Long actualRemainingCapacity = convertNullToZero(program.getActualRemainingCapacity());
+		//Long waitListCounter = 0L;
+		Long totalConfirmedSignup = 0L;
+		
+		List<Signup> lstConfirmedSignup = signupDao.getByItemDetailAndStatus(program,Constants.CONFIRMED);
+		
+		if(lstConfirmedSignup!=null && lstConfirmedSignup.size()>0){
+			totalConfirmedSignup = (long) lstConfirmedSignup.size();
+		}
+		
+		if(ProductTypeEnum.PROGRAM.toString().equalsIgnoreCase(program.getSubType())){
+			remainingCapacity = webCapacity - totalConfirmedSignup;
+			actualRemainingCapacity = actualCapacity - totalConfirmedSignup;
+		} 
+		else if(ProductTypeEnum.EVENT.toString().equalsIgnoreCase(program.getSubType())){
+			remainingCapacity = remainingCapacity + signup.getNoOfTickets();
+			actualRemainingCapacity = actualRemainingCapacity + signup.getNoOfTickets();
+		}
+		
+		program.setRemainingCapacity(remainingCapacity);
+		program.setActualRemainingCapacity(actualRemainingCapacity);
+		//program.setWaitlistCounter(waitListCounter);
+		populateAndSaveItemDetail(program);
+	}
+	
+	private void automaticWaitListProcessing(ItemDetail itemDetail) {
+		if(itemDetail!=null){
+			List<Signup> lstWLSignup = signupDao.getByItemDetailAndStatusOrderByWaitlistAsc(itemDetail,Constants.WAITLISTED); // get WL signup associated to program
+			if(lstWLSignup!=null && lstWLSignup.size()>0){
+				Long remainingCapacity = convertNullToZero(itemDetail.getRemainingCapacity());
+
+				if(itemDetail.getAutomatedWaitlist() && remainingCapacity>0){ // automated waitlist is true and remaining capacity is > 0
+					for(Signup WLsignp : lstWLSignup){
+						if((WLsignp.getNoOfTickets() !=null && WLsignp.getNoOfTickets() < remainingCapacity) || WLsignp.getNoOfTickets()==null){
+							List<Payer> lstPayer = payerDao.findBySignupAndType(WLsignp,Constants.SELF);
+							
+							// process payment block
+							if(lstPayer!=null && lstPayer.size()>0){
+								Payer payer = lstPayer.get(0);
+								if(payer!=null){
+									String paymentMode = payer.getPaymentMode();
+									PaymentMethod paymentMethod = payer.getPaymentMethod();
+									if(paymentMethod!=null && paymentMode!=null && !"".equals(paymentMode)){
+										String payAmount = WLsignp.getFinalAmount();
+										JetPayPayment jp = null;
+										
+										// comment this line
+										//payAmount = "10";
+										if(Double.parseDouble(payAmount)>0){
+											if(Constants.ACH.equalsIgnoreCase(paymentMode)){
+												// process ACH payment
+												jp = processACHjetPayTransaction(paymentMethod.getTokenNumber(),payAmount,paymentMethod.getCheckNumber(),paymentMethod.getFullName());
+											}
+											else if(Constants.CREDIT.equalsIgnoreCase(paymentMode)){
+												// process CC payment
+												jp = processCCjetPayTransaction(paymentMethod.getTokenNumber(),payAmount);
+											}
+										}
+										
+										if(jp==null){
+											Signup s = new Signup();
+											s.setStatus(Constants.REJECTED);
+											Calendar cal = Calendar.getInstance();
+											s.setLastUpdated(cal);
+											s.setSignupId(WLsignp.getSignupId());
+											signupDao.save(s);
+										} else {
+											signupCapacityManagement(itemDetail,WLsignp, true);
+											Invoice invoice = paymentService.saveinvoice(WLsignp.getCustomer(), WLsignp.getFAamount().toString(), WLsignp.getContact(), WLsignp, payer);
+							    			JetPayPayment jetpay = paymentService.savepayment(paymentMethod.getPaymentId().toString(), jp.getJpReturnHash(), jp.getOrderNumber(), WLsignp.getCustomer(), WLsignp.getContact(), WLsignp, payer, invoice, paymentMode);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	@RequestMapping(value="/cancelEvent", method=RequestMethod.GET)
+    public ModelAndView cancelEventWizard(final HttpServletRequest request, final HttpServletResponse response) {
+		Model model = new ExtendedModelMap();
+		try{
+			JSONArray enrolledProgramDetailsArr = new JSONArray(); 
+			
+			String signupId = request.getParameter("sId");
+			
+			if(!"".equals(signupId)){
+				Object programObj[] = (Object[]) signupDao.getSignupProgramById(Long.parseLong(signupId));
+				Signup signup = (Signup) programObj[0];
+		    	ItemDetail program = (ItemDetail) programObj[1];
+		    	
+		    	
+		    	Date programStartDate = program.getStartDate();
+		    	java.util.Date currDate= new java.util.Date();
+		    	
+		    	long diff = programStartDate.getTime() - currDate.getTime();
+		    	long diffDays = diff / (24 * 60 * 60 * 1000);
+		    	
+		    	//System.out.println(diff);
+		    	//System.out.println(diffDays);
+		    	int cancellationCutOffDays = program.getCancellationCutOffPeriod();
+		    	
+		    	if(diffDays >= cancellationCutOffDays){
+		    		JSONObject jsonObj = new JSONObject();
+		    		jsonObj.put("programId", program.getId());
+			    	jsonObj.put("signupId", signup.getSignupId());
+			    	jsonObj.put("contactName", signup.getContactName());
+					jsonObj.put("programName", program.getRecordName());
+					jsonObj.put("programDescription", program.getDescription());
+					jsonObj.put("programStartDate", program.getStartDate());
+					jsonObj.put("programEndDate", program.getEndDate());
+					jsonObj.put("programStartTime", program.getStartTime());
+					jsonObj.put("programEndTime", program.getEndTime());
+					jsonObj.put("programStatus", program.getStatus());
+					if(program.getSubType() != null && program.getSubType().equalsIgnoreCase("EVENT")){
+						jsonObj.put("noOfTickets", signup.getNoOfTickets());	
+					}else{
+						jsonObj.put("noOfTickets", "0");
+					}
+					jsonObj.put("programEnrollmentStatus", signup.getStatus());
+					jsonObj.put("programEnrollmentDate", signup.getSignupDate());
+					
+					
+					List<ItemDetailPricingRule> lstCancellationPR = itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Type(signup.getItemDetail().getId(), Constants.CANCEL);
+					double cancellationPrice = 0D;
+					if(lstCancellationPR.size()>0){
+						for(ItemDetailPricingRule cancellationPR: lstCancellationPR){
+							cancellationPrice += Double.parseDouble(cancellationPR.getPricingRule().getTierPrice());
+						}
+					}
+					jsonObj.put("cancellationPrice", cancellationPrice);
+						
+					/*if(program.getSubType() != null && !program.getSubType().equals(ProductTypeEnum.EVENT.toString())){
+						double reimbursedAmount = 0D;
+						reimbursedAmount = evaluateRefundExpressionAndReturnReimbursedAmount(signup, cancellationPrice);
+						if(reimbursedAmount>0){
+							Double debitPayment = 0D;
+							Double nsfOrCBorRefundPayment = 0D;
+							List<Payment> lstAllPaymentsBySignup = paymentDao.findBySignupOrderByAmountDesc(signup);
+							for(Payment payment: lstAllPaymentsBySignup){
+				    			if(Constants.DEBIT.equalsIgnoreCase(payment.getType())){
+				    				debitPayment += payment.getAmount();
+				    			}
+				    			else if(Constants.NSF.equalsIgnoreCase(payment.getType()) || Constants.CHARGEBACK.equalsIgnoreCase(payment.getType()) || Constants.CREDITMEMOREFUND.equalsIgnoreCase(payment.getType())){
+				    				nsfOrCBorRefundPayment += payment.getAmount();
+				    			}
+							}
+							
+							if((debitPayment-nsfOrCBorRefundPayment)-reimbursedAmount < 0){
+								reimbursedAmount = 0D;
+							}
+						}
+						jsonObj.put("reimbursedAmount", reimbursedAmount);
+					}*/
+					enrolledProgramDetailsArr.add(jsonObj);			
+		    	}
+		    	
+			}
+			model.addAttribute("enrolledProgramDetailsArr", enrolledProgramDetailsArr);
+			
+			TandC terms = tandCDao.findByType(Constants.CANCELLATION);
+			if(terms!=null){
+				model.addAttribute("terms", terms.getTandc());
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return new ModelAndView("cancelProgram", model.asMap());
+	}
+	
+	@RequestMapping(value="/viewScheduledProgram", method=RequestMethod.GET)
+    public ModelAndView viewScheduledProgram(final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		
+		String itemType = request.getParameter("itemType");
+		String contactName = request.getParameter("contactName");
+		String programStDt = request.getParameter("programStDt");
+		String programEndDt = request.getParameter("programEndDt");
+			
+		// check if user is logged in
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			//model.addAttribute("errMsg", "Your session is expired");
+			//return new ModelAndView("login", model.asMap());
+			////System.out.println(e);
+		}
+		
+		Account account = null;
+		User user =  null;	
+
+		if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			user = getUserByAccount(account, user);
+		}
+		
+		if(account != null){	    		    	    	
+	        model.addAttribute("accInfo", account);
+	        model.addAttribute("usInfo", user);	
+	        
+	        int userCount = account.getUser().size();
+	        List<User> userS = new ArrayList<User>();
+	        int countmembers = 0;
+	        if(userCount>1){
+		        for(User u: account.getUser()){
+		        	if(user.getPartyId() != u.getPartyId() && u.isActive()){
+		        		countmembers = countmembers + 1;
+		        		userS.add(u);
+		        	}
+		        }
+			}
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("userS", userS);
+	        model.addAttribute("AlluserS", account.getUser());
+     
+	        model.addAttribute("userCount", countmembers);
+
+	        JSONArray schdeuledProgramsArr = new JSONArray();
+	        
+	        List<Object[]> lstSchdeuledProgramsObj = getSignupPrograms(account, Constants.SCHEDULED, Constants.ACTIVE, Constants.CONFIRMED, itemType, contactName, programStDt, programEndDt);
+	        
+	        for(Object schdeuledProgramsObj: lstSchdeuledProgramsObj){
+	        	
+	        	Object schdeuledPrograms[] = (Object[]) schdeuledProgramsObj;
+	        	
+	        	Signup signup = (Signup) schdeuledPrograms[0];
+	        	ItemDetail program = (ItemDetail) schdeuledPrograms[1];
+	        	
+	        	JSONObject jsonObj = new JSONObject();
+	        	jsonObj.put("programId", program.getId());
+	        	jsonObj.put("signupId", signup.getSignupId());
+	        	jsonObj.put("itemType", program.getSubType());
+	        	jsonObj.put("contactName", signup.getContactName());
+				jsonObj.put("programName", program.getRecordName());
+				jsonObj.put("programStartDate", program.getStartDate());
+				jsonObj.put("programEndDate", program.getEndDate());
+				jsonObj.put("programStartTime", program.getStartTime());
+				jsonObj.put("programEndTime", program.getEndTime());
+				jsonObj.put("programStatus", program.getStatus());
+				jsonObj.put("programEnrollmentStatus", signup.getStatus());
+				
+				schdeuledProgramsArr.add(jsonObj);
+	        }
+			model.addAttribute("schdeuledProgramsArr", schdeuledProgramsArr);
+			
+			
+		}
+		
+	    return new ModelAndView("viewScheduledProgram", model.asMap());
+	}
+	
+	
+	private void savePayment(Double reimbursedAmount, Payment p) {
+		Payment refundPayment = new Payment();
+		refundPayment.setPaymentMode(p.getPaymentMode());
+		refundPayment.setTransactionId(p.getTransactionId());
+		refundPayment.setContact(p.getContact());
+		refundPayment.setCustomer(p.getCustomer());
+		refundPayment.setSignup(p.getSignup());
+		refundPayment.setInvoice(p.getInvoice());
+		refundPayment.setStatus(Constants.INPROGRESS);
+		refundPayment.setType(Constants.CREDITMEMOREFUND);
+		refundPayment.setAmount(reimbursedAmount);
+		refundPayment.setPaymentDate(new Date());
+		refundPayment.setPayer(p.getPayer());
+		
+		Calendar cal = Calendar.getInstance();
+		refundPayment.setLastUpdated(cal);
+		paymentDao.save(refundPayment);
+	}
+	
+	private List<Object[]> getSignupPrograms(Account acct, String strProgramTime, String programstatus, String signupstatus, String itemType, String contactName, String programStDt, String programEndDt) {
+		Date today = new Date();
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");  
+		DateFormat inputsdf = new SimpleDateFormat("M/d/yyyy");  
+		
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = builder.createQuery(Object[].class);
+
+		Root<Signup> s = query.from(Signup.class);
+		Join<Signup, ItemDetail> i = s.join("itemDetail",JoinType.INNER);
+		
+		ParameterExpression<Account> account = builder.parameter(Account.class);
+		ParameterExpression<String> pTime = builder.parameter(String.class);
+		ParameterExpression<String> pStatus = builder.parameter(String.class);
+		ParameterExpression<String> sStatus = builder.parameter(String.class);
+		ParameterExpression<String> iType = builder.parameter(String.class);
+		ParameterExpression<String> cName = builder.parameter(String.class);
+		ParameterExpression<Date> sd = builder.parameter(Date.class);
+		ParameterExpression<Date> ed = builder.parameter(Date.class);
+		ParameterExpression<Date> currentDate = builder.parameter(Date.class);
+		
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		predicates.add(
+				builder.and(
+						builder.equal(s.get("customer"), account),
+						builder.equal(s.get("status"), sStatus)
+				)
+		);
+		
+		
+		if(!"".equals(programstatus.trim())){
+			predicates.add(builder.and(builder.equal(i.<String>get("status"), pStatus)));
+		}
+		
+		if(itemType!=null && !"".equals(itemType.trim())){
+			predicates.add(builder.and(builder.equal(i.<String>get("subType"), iType)));
+		}
+		
+		if(contactName!=null && !"".equals(contactName.trim())){
+			predicates.add(builder.and(builder.equal(s.<String>get("contactName"), cName)));
+		}
+		
+		if(programStDt!=null && !"".equals(programStDt) && programEndDt!=null && !"".equals(programEndDt)){
+			predicates.add(builder.and(builder.greaterThanOrEqualTo(i.<Date>get("startDate"), sd)));
+			predicates.add(builder.and(builder.lessThanOrEqualTo(i.<Date>get("startDate"), ed)));
+		}
+		
+		if(strProgramTime.equalsIgnoreCase(Constants.CURRENT)){
+			predicates.add(builder.and(builder.lessThanOrEqualTo(i.<Date>get("startDate"), currentDate)));
+			predicates.add(builder.and(builder.greaterThanOrEqualTo(i.<Date>get("endDate"), currentDate)));
+		}
+		else if(strProgramTime.equalsIgnoreCase(Constants.UPCOMING)){
+			predicates.add(builder.and(builder.greaterThan(i.<Date>get("startDate"), currentDate)));
+			predicates.add(builder.and(builder.greaterThan(i.<Date>get("endDate"), currentDate)));
+		}
+		else if(strProgramTime.equalsIgnoreCase(Constants.PAST)){
+			predicates.add(builder.and(builder.lessThan(i.<Date>get("startDate"), currentDate)));
+			predicates.add(builder.and(builder.lessThan(i.<Date>get("endDate"), currentDate)));
+		}
+		else if(strProgramTime.equalsIgnoreCase(Constants.SCHEDULED)){
+			predicates.add(builder.and(builder.greaterThanOrEqualTo(i.<Date>get("endDate"), currentDate)));
+		}
+		
+		query.multiselect(s,i);
+		query.where(predicates.toArray(new Predicate[]{}));
+
+		TypedQuery<Object[]> typequery = em.createQuery(query);
+		typequery.setParameter(account, acct);
+		typequery.setParameter(sStatus, signupstatus);
+		
+		if(!"".equals(programstatus.trim())){
+			typequery.setParameter(pStatus, programstatus);
+		}
+		if(itemType!=null && !"".equals(itemType.trim())){
+			typequery.setParameter(iType, itemType);
+		}
+		if(contactName!=null && !"".equals(contactName.trim())){
+			typequery.setParameter(cName, contactName);
+		}
+		
+		if(programStDt!=null && !"".equals(programStDt) && programEndDt!=null && !"".equals(programEndDt)){
+			
+			Date startDate;
+	        Date endDate;
+
+			try {
+				startDate = sdf.parse(sdf.format(inputsdf.parse(programStDt)));
+		        endDate = sdf.parse(sdf.format(inputsdf.parse(programEndDt)));
+		        
+		        typequery.setParameter(sd, startDate);
+				typequery.setParameter(ed, endDate);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				//return null;
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				//e1.printStackTrace();
+				//return null;
+			}
+		}
+		
+		
+		try {
+			typequery.setParameter(currentDate, sdf.parse(sdf.format(today)));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			//return null;
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+			//return null;
+		}
+		
+		List<Object[]> lstObj = typequery.getResultList();
+		return lstObj;
+	}
+	
+	private double evaluateRefundExpressionAndReturnReimbursedAmount(
+			Signup signup, double cancellationPrice) {
+		
+		double reimbursedAmount = 0D;
+		
+		List<ItemDetailPricingRule> refundRules = itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Type(signup.getItemDetail().getId(), Constants.REFUND);
+		if(refundRules.size()>0){
+			for(ItemDetailPricingRule pr: refundRules){
+				String refundExpression = pr.getPricingRule().getRefundExpression();
+				
+				StandardEvaluationContext signupContext = new StandardEvaluationContext(signup);  
+				ExpressionParser parser = new SpelExpressionParser(); 
+				org.springframework.expression.Expression exp = parser.parseExpression(refundExpression);
+				
+				Boolean match = exp.getValue(signupContext,Boolean.class);
+				//System.out.println(match);
+				
+				if(match){
+					BigDecimal refundPercentage = pr.getPricingRule().getRefundPercent();
+					BigDecimal refundAmount = refundPercentage.multiply(BigDecimal.valueOf(Double.parseDouble(signup.getFinalAmount())));
+					refundAmount = refundAmount.divide(new BigDecimal(100));
+					
+					reimbursedAmount = (refundAmount.subtract(BigDecimal.valueOf(cancellationPrice))).doubleValue();
+					break;
+				}
+			}
+		}
+		return reimbursedAmount;
+	}
+	
+	 private PaymentMethod populatePaymentMethodData(Account account, String orderNumber) {
+	    	JetPayPayment jetPayPayment = null;
+			if(!"".equals(orderNumber)){
+				//jetPayPayment = jetPayPaymentDao.getByJpReturnHash(jp_request_hash);
+				//jetPayPayment = jetPayPaymentDao.getByOrderNumber("254657884038");
+				jetPayPayment = jetPayPaymentDao.getByOrderNumber(orderNumber);
+			}
+	    	PaymentMethod paymentMethod = new PaymentMethod();
+	    	paymentMethod.setPaymentType(PaymentMethodTypeEnum.CREDIT.toString());
+	    	paymentMethod.setPortalStatus(PortalStatusEnum.ACTIVE.toString());
+	    	paymentMethod.setTransId(jetPayPayment.getTransId());
+	    	paymentMethod.setCardNumber(Constants.CARD_MASKED_FIRST_DIGITS+jetPayPayment.getCardNum());
+	    	paymentMethod.setCardType(jetPayPayment.getCard());    	
+	    	paymentMethod.setFullName(jetPayPayment.getName());
+	    	paymentMethod.setTokenNumber(jetPayPayment.getCcToken());
+	    	paymentMethod.setOldToken(jetPayPayment.getOldToken());
+	    	paymentMethod.setOrderNumber(jetPayPayment.getOrderNumber());
+	    	paymentMethod.setBillingAddressLine1(jetPayPayment.getBillingAddress1());
+	    	paymentMethod.setBillingAddressLine2(jetPayPayment.getBillingAddress2());
+	    	paymentMethod.setBillingCity(jetPayPayment.getBillingCity());
+	    	paymentMethod.setBillingState(jetPayPayment.getBillingState());
+	    	paymentMethod.setBillingZip(jetPayPayment.getBillingZip());
+	    	
+	    	paymentMethod.setBillingCountry(jetPayPayment.getBillingCountry());    	
+	    	paymentMethod.setExpirationMonth(account.getExpirationMonth());
+	    	paymentMethod.setExpirationYear(account.getExpirationYear());
+	    	paymentMethod.setNickName(account.getNickName());
+	    	paymentMethod.setCustomer(account);
+	    	
+			return paymentMethod;
+		}
+	 
+	/*@RequestMapping(value="/showContactHealthHistory", method=RequestMethod.GET)
+	public ModelAndView showContactHealthHistory(final HttpServletRequest request, final HttpServletResponse response) {
+		Model model = new ExtendedModelMap();
+		try{
+				
+			// check if user is logged in
+			Authentication a = SecurityContextHolder.getContext().getAuthentication();
+			String userId = null;
+			
+			try{
+				userId = ((UserDetails) a.getPrincipal()).getUsername();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			
+			Account account = null;
+			User user =  null;	
+	
+			if(userId != null && !"".equals(userId)){
+		    	account = accountDao.getByEmail(userId);
+				request.setAttribute("userId", userId);				
+				user = getUserByAccount(account, user);
+			}
+			
+			if(account != null){	    		    	    	
+		        
+				Set<Long> contacts = new HashSet<Long>();
+				String contactIds = request.getParameter("contactIds");
+		        if(contactIds != null && contactIds.equals("0")){
+		        	if(user != null && user.getContactId() >  0){
+		        		contacts.add(user.getContactId());	
+		        	}
+		        }else{
+		        	String str[] = contactIds.split(",");
+		        	for (String temp : str) {
+		        		if(temp != null && !temp.equals("")){
+		        			contacts.add(Long.parseLong(temp));
+		        		}
+					}
+		        }
+				
+				JSONArray resultList = new JSONArray();
+		        
+		        for(Long contactId: contacts){
+		        	
+		        }
+				model.addAttribute("contactHealthHistoryList", resultList);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	    return new ModelAndView("contactHealthHistory", model.asMap());
+	}*/
+	
+	@RequestMapping(value="/saveContactHistory", method=RequestMethod.POST)
+	private @ResponseBody String saveContactHistory(final HttpServletRequest request, final HttpServletResponse response) {
+		String resp = null;
+		try{
+			String[] contacts = request.getParameterValues("contactId");
+			if(contacts != null && contacts.length > 0){
+				HealthHistory healthHistory = null;
+				Long contactId = 0l, healthHistoryId = 0l;
+				for (String strContactId : contacts) {
+					contactId = Long.parseLong(strContactId);
+					healthHistoryId = Long.parseLong(request.getParameter("healthHistoryId_"+contactId));
+					if(healthHistoryId > 0){
+						healthHistory = healthHistoryDao.getOne(healthHistoryId);
+					}else{
+						healthHistory = new HealthHistory();
+					}
+					healthHistory.setInsuranceCompany_c(request.getParameter("InsuranceCompany_"+contactId));
+					healthHistory.setInstructions_c(request.getParameter("Instructions_"+contactId));
+					healthHistory.setListCurrentMedications_c(request.getParameter("listCurrentMedications_"+contactId));
+					healthHistory.setCurrentMedicationPurpose_c(request.getParameter("currentMedicationPurpose_"+contactId));
+					healthHistory.setLastUpdated(Calendar.getInstance());
+					healthHistoryDao.save(healthHistory);
+					if(healthHistoryId == 0){
+						User contact = userDao.findOne(contactId);
+						contact.setHealthHistory(healthHistory);
+						contact.setLastUpdated(Calendar.getInstance());
+						userDao.save(contact);
+					}
+				}
+			}
+			resp = "SUCCESS";
+		}catch(Exception e){
+			e.printStackTrace();
+			resp = "FAIL";
+		}
+		return resp;
+	}
+}

@@ -1,0 +1,29 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.ItemDetails;
+import com.ymca.model.Product;
+
+public interface ItemDetailsDao extends GenericDao<ItemDetails, Long>  {
+	
+	ItemDetails getById(Long id);
+	
+	@Query("select p from ItemDetails i inner join i.locations l inner join i.product p  where l.locationId =?1 and DATE(i.registrationStartDate)= DATE(?2) and p.category= ?3")
+	Product getByLocationsAndRegistrationStartDate(Long locationId,Date date,String itemCategory);
+
+	
+	@Query("select i from ItemDetails i inner join i.product p where p.productType =?1 and i.productSubtype =?2 ")
+	List<ItemDetails> getByItemAndProductSubtype(String productType,String subType);
+	
+	@Query("select i from ItemDetails i inner join i.locations l inner join i.product p where p.productType =?1 and i.productSubtype =?2 and l.locationId =?3 ")
+	List<ItemDetails> getByItemAndLocationsAndProductSubtype(String productType,String subType,Long locId);
+	
+	
+	
+	
+	
+}

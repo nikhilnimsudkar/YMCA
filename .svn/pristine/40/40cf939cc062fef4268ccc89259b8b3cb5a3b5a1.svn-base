@@ -1,0 +1,18 @@
+package com.ymca.core.service;
+
+import java.util.List;
+
+import com.ymca.model.ChildCare;
+
+public interface ChildCareService {
+
+	public ChildCare create(ChildCare childCare);
+
+	public ChildCare delete(Long id);
+
+	public List<ChildCare> findAll();
+
+	public ChildCare update(ChildCare shop);
+
+	public ChildCare findById(Long accountId);
+}

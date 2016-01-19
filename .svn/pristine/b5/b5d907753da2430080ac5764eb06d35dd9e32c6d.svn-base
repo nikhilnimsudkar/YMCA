@@ -1,0 +1,198 @@
+package com.serene.job.service;
+
+import java.io.File;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.VFS;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemOptions;
+import org.apache.commons.vfs2.Selectors;
+import org.apache.commons.vfs2.impl.StandardFileSystemManager;
+import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
+import com.serene.job.common.Constants;
+import com.serene.job.util.JobUtils;
+
+@Service
+public class FTPUploadServiceImpl implements FTPUploadService {
+	private static final Log log = LogFactory.getLog(FTPUploadServiceImpl.class);
+	
+	@Resource
+	private JobUtils jobUtils;
+	
+	@Autowired
+	private SystemPropertyService systemPropertyService;
+	
+	public void uploadToFTPServer(String uploadFilePath) {
+		//String hostName = "ftp.serenecorp.com";
+       // String username = "Hrb";
+        //String password = "SereneHRB";
+		/*String hostName = "166.78.104.119";
+        String username = "serene";
+        String password = "$3r3n3";*/
+		
+		String hostName = systemPropertyService.getPropertyByKeyName(Constants.FTP_HOSTNAME);
+	    String username = systemPropertyService.getPropertyByKeyName(Constants.FTP_USERNAME);
+	    String password = systemPropertyService.getPropertyByKeyName(Constants.FTP_PASSWORD);
+		
+        File file = new File(uploadFilePath);
+        String remoteFilePath = "/QA-batch/"+file.getName();
+        
+        upload(hostName, username, password, file, remoteFilePath);
+        //uploadSFTP(hostName, username, password, localFilePath, remoteFilePath);
+       // putFile(username,hostName, password, remoteFilePath,localFilePath);
+	}
+	
+	public static void upload(String hostName, String username,
+            String password, File file, String remoteFilePath) {
+
+	    if (!file.exists())
+	            throw new RuntimeException("Error. Local file not found "+file.getPath());
+	
+	    //StandardFileSystemManager manager = new StandardFileSystemManager();
+	    
+	    try {
+	    		FileSystemManager manager = VFS.getManager();
+	            //manager.init();
+	
+	            // Create local file object
+	            FileObject localFile = manager.resolveFile(file.getAbsolutePath());
+	
+	            // Create remote file object
+	            FileObject remoteFile = manager.resolveFile(
+	            			createFTPConnectionString(hostName, username, password,
+	                                    remoteFilePath), createDefaultFTPOptions());
+	           
+	            // Copy local file to ftp server
+	            remoteFile.copyFrom(localFile, Selectors.SELECT_SELF);
+	
+	            log.info("File upload success");
+	    } catch (Exception e) {
+	            throw new RuntimeException(e);
+	    } finally {
+	          //manager.close();
+	    }
+	}
+	
+	// Establishing FTP connection
+    public static String createFTPConnectionString(String hostName,
+	    String username, String password, String remoteFilePath) {
+	    return "ftp://" + username + ":" + password + "@" + hostName + "/" + remoteFilePath;
+    }
+	
+    //  Method to setup default FTP config:
+    public static FileSystemOptions createDefaultFTPOptions()
+                    throws FileSystemException {
+            // Create FTP options
+            FileSystemOptions opts = new FileSystemOptions();
+
+            // set passive mode
+            FtpFileSystemConfigBuilder.getInstance().setPassiveMode(opts, true);
+
+            // Root directory set to user home
+            FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(opts, true);
+
+            // Timeout is count by Milliseconds
+            FtpFileSystemConfigBuilder.getInstance().setDataTimeout(opts, 10000);
+
+            return opts;
+    }
+    
+    public static void uploadSFTP(String hostName, String username,
+            String password, String localFilePath, String remoteFilePath) {
+
+	    File file = new File(localFilePath);
+	    if (!file.exists())
+	            throw new RuntimeException("Error. Local file not found");
+	
+	    StandardFileSystemManager manager = new StandardFileSystemManager();
+	    
+	    try {
+	            manager.init();
+	
+	            // Create local file object
+	            FileObject localFile = manager.resolveFile(file.getAbsolutePath());
+	
+	            // Create remote file object
+	            FileObject remoteFile = manager.resolveFile(
+	            			createConnectionString(hostName, username, password,
+	                                    remoteFilePath), createDefaultOptions());
+	            
+	            // Copy local file to ftp server
+	            remoteFile.copyFrom(localFile, Selectors.SELECT_SELF);
+	            //remoteFile.createFile();
+	            
+	
+	            log.info("File upload success");
+	    } catch (Exception e) {
+	            throw new RuntimeException(e);
+	    } finally {
+	          //  manager.close();
+	    }
+	}
+    
+	// Establishing connection
+    public static String createConnectionString(String hostName,
+	    String username, String password, String remoteFilePath) {
+	    return "sftp://" + username + ":" + password + "@" + hostName + "/" + remoteFilePath;
+    }
+    
+    //  Method to setup default SFTP config:
+    public static FileSystemOptions createDefaultOptions()
+                    throws FileSystemException {
+            // Create SFTP options
+            FileSystemOptions opts = new FileSystemOptions();
+
+            // SSH Key checking
+            SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(
+                            opts, "no");
+
+            // Root directory set to user home
+            SftpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(opts, true);
+
+            // Timeout is count by Milliseconds
+            SftpFileSystemConfigBuilder.getInstance().setTimeout(opts, 10000);
+
+            return opts;
+    }
+    
+    public static void putFile(String username, String host, String password, String remotefile,     String localfile){
+        JSch jsch = new JSch();
+        Session session = null;
+        try {
+              session = jsch.getSession(username, host, 22);
+              //session.setConfig("PassiveMode", "true");
+              session.setConfig("StrictHostKeyChecking", "no");
+              session.setPassword(password);
+              session.connect();
+
+              Channel channel = session.openChannel("sftp");
+              channel.connect();
+              ChannelSftp sftpChannel = (ChannelSftp) channel;
+              sftpChannel.put(localfile, remotefile);
+              sftpChannel.exit();
+              session.disconnect();
+         } catch (JSchException e) {
+              e.printStackTrace();  
+         } catch (SftpException e) {
+              e.printStackTrace();
+         }
+    }
+    
+    
+    
+}

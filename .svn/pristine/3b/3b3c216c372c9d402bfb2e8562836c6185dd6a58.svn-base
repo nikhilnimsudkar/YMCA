@@ -1,0 +1,81 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.ItemDetail;
+import com.ymca.model.ItemDetailAssociatedItemDetail;
+import com.ymca.model.User;
+
+public interface ItemDetailDao extends GenericDao<ItemDetail, Long>  {
+	
+	ItemDetail getById(Long id);
+	
+	@Query("select i from ItemDetail i inner join i.location l where l.id =?1 and DATE(i.registrationStartDate)= DATE(?2) and i.type= ?3")
+	ItemDetail getByLocationsAndRegistrationStartDate(Long locationId,Date date,String type);
+	
+	//@Query("select i from ItemDetail i where i.itemType =?1 and i.itemSubtype =?2 ")
+	List<ItemDetail> findByType_AndCategory_(String itemType,String category);
+	
+	@Query("select i from ItemDetail i inner join i.location l where i.type =?1 and i.category =?2 and l.id =?3 ")
+	List<ItemDetail> findByType_AndCategory_AndlocationId(String itemType,String category,Long locId);
+	
+	List<ItemDetail> findByTypeAndCategoryAndLocation(String itemType,String category,Long locId);
+	
+	@Query("select distinct UPPER(i.category) from ItemDetail i where i.type =?1 and category NOT IN ('Transportation','Residence Camp Activity')")
+	@Cacheable("ymca-core")
+	List<Object[]> getDistinctCategoryByType(String type);
+	
+	
+	//@Query("select distinct type from ItemDetail")
+	//List<ItemDetail> findDistinct();
+	
+	//@Query("select distinct RecordName from ItemDetail where type = ?1")
+	List<ItemDetail> findDistinctItemDetailByType(String type);
+	
+	//@Query("select distinct recordName from ItemDetails where itemType = ?1")
+	List<ItemDetail> findDistinctItemDetailByCategory(String category);
+	
+	@Query("select distinct i.type from ItemDetail i where i.category =?1")
+	List<String> getDistinctTypeForCategory(String category);
+	
+	//@Query("select i from ItemDetail i where i.type='MEMBERSHIP' and i.startDate >=?1 and i.endDate <=?2 and i.type=?3 and i.recordName=?4 and i.location=?5")
+	//List<ItemDetail> getMembershipProgram(Date startDate, Date endDate, String category, String recordName, Location location);
+	
+	@Query("select  i.id, i.recordName, i.description, i.type, i.duration, i.waiversAndTC.tcDescription, l.tier, i.id, i.billDate, i.billDateOffset, i.dueDate, i.dueDateOffset from ItemDetail i inner join i.location l where l.id =?1 and i.type='MEMBERSHIP' and i.status='ACTIVE'")	
+	List<Object[]> getMembershipProgramByLocation(Long locationId);
+	
+	@Query("select  i.id, i.recordName, i.description, i.type, i.duration, i.waiversAndTC.tcDescription, l.tier, i.id from ItemDetail i inner join i.location l where l.id =?1 and i.type='Trial Pass' and i.category='Trial Pass'")	
+	List<Object[]> getTrialPassProgramByLocation(Long locationId);
+	
+	List<ItemDetail> findByCategory(String category);
+	
+	List<ItemDetail> findByStatus(String status);
+	
+	List<ItemDetail> findByIdIn(List<Long> id);
+	
+	@Query("select a from ItemDetailAssociatedItemDetail a where a.type in ?1 and a.itemDetailId in ?2 and a.status = 'ACTIVE' order by type asc")
+	List<ItemDetailAssociatedItemDetail> findAssociatedItemDetailTypeAndItemDetailId(List<String> types,List<Long> itemDetailIds);
+	
+	@Query("select i from ItemDetail i where i.type =?1 and i.needTC_c =?2")
+	List<ItemDetail> getByTypeAndNeedTC_c(String type, String tc);
+	
+	List<ItemDetail> findByType(String itemType);
+	
+	// inner join cp.contact c 
+	@Query("select i from ItemDetail i inner join i.itemDetailPromotion ip inner join i.contactPromotion cp where ip.itemDetail = ?1 and i.status = 'Active' and ip.status = 'Active' and cp.contact = ?2 and cp.status = 'Active' ")
+	List<ItemDetail> getPromotions(ItemDetail itemDetail, User contact);
+	
+	@Query("select i from ItemDetail i inner join i.itemDetailPromotion ip where ip.itemDetail = ?1 and i.status = 'Active' and ip.status = 'Active' ")
+	List<ItemDetail> getAllPromotions(ItemDetail itemDetail);
+	
+	List<ItemDetail> findBySubCategory(String subCategory);
+	
+	//@Query("select  i from ItemDetail i inner join i.location l where DATE(i.startDate) >= DATE(?1) and DATE(i.endDate) <= DATE(?2) and l.status = 'Active' and i.type like 'Donation' and i.category like 'Annual Campaign' order by l.recordName asc ")
+	@Query("select  i from ItemDetail i inner join i.location l where DATE(i.startDate) >= DATE(?1) and DATE(i.endDate) <= DATE(?2) and l.status = 'Active' order by l.recordName asc ") 
+	List<ItemDetail> findByItemDetailAndStatusOrderByRecordNameAsc(Date startDate, Date endDate);
+	
+}

@@ -1,0 +1,460 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<!-- <script src="src/main/webapp/resources/js/kendo/kendo.web.min.js" type="text/javascript"></script>  -->
+<script>
+	$(document).ready(function() {	
+		/* $("#grid").kendoGrid({
+           	sortable:true,
+               columns: [{field: "program", title: "Program",width:"85px"},
+                         {field: "amount", title: "Amount",width:"80px"},
+                         {field: "type", title: "Type",width:"80px"},
+                         {field: "paymentDate", title: "Payment Date",width:"120px"}, 
+                         {field: "status", title: "Status"}] ,
+               dataSource: {
+               	pageSize: 5
+               },
+               pageable: true
+           });
+		$("#grid").hide();
+		$(".k-grid").hide(); */
+		var today = kendo.date.today();
+        var start = $("#start").kendoDatePicker({
+			format: "yyyy-MM-dd",
+            value: today,                
+            parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+        });
+        var end = $("#end").kendoDatePicker({
+            format: "yyyy-MM-dd",
+            value: today,                
+            parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+        });
+        var type = $('#type').kendoDropDownList({
+        	dataTextField: "text",
+            dataValueField: "value",
+            dataSource:
+            	[
+                 { text: "Credit", value:"Credit" },
+                 { text: "EFT", value:"EFT" }
+             ]
+        });
+        var status = $('#status').kendoDropDownList({
+        	dataTextField: "text",
+            dataValueField: "value",
+            dataSource: 
+            	[
+                 { text: "Success", value:"Success" },
+                 { text: "Failure", value:"Failure" },
+                 { text: "Pending", value:"Pending" }
+             ]
+        });
+       /*   $('#getPaymentHistoryBtn').click(function(e){
+        	 $("#gridData").html("Processing...");
+         	 $("#grid").show();
+        	 $(".k-grid").show();
+        	//$(".k-loading-mask").show();
+        	var stDate=$("#start").val();
+        	var eDate=$("#end").val();
+        	var pType= $('#type').data('kendoDropDownList').value();
+        	var pStatus= $('#status').data('kendoDropDownList').value();
+        	var username= $('#contact').val();
+        	//var furl = 'getPaymentHistoryBySearchCriteria?pType='+pType+'&pStatus='+pStatus+'&username='+username+'&stDate='+stDate+'&eDate='+eDate;
+        	var furl;
+			if(username!=null && username.length>0){
+        		furl ="getPaymentHistoryBySearchCriteria?pType="+pType+"&pStatus="+pStatus+"&username="+username+"&stDate="+stDate+"&eDate="+eDate;
+        	}else{
+        		furl ="getPaymentHistoryBySearchCriteriaExcludingName?pType="+pType+"&pStatus="+pStatus+"&stDate="+stDate+"&eDate="+eDate;
+        	} 
+        	var paymentHtmlData = ''; 
+        	$.ajax({
+				  type: "GET",
+				 // url: 'getPaymentHistoryBySearchCriteria/'+pType+'/'+pStatus+'/'+username+'/'+stDate+'/'+eDate,	
+				 url:furl,
+				  success: function( data ) {					  
+					  if(data != null && data.length > 0){
+					      for(var i = 0; i<data.length; i++){        
+					       var dataArr = data[i];
+					       var d=new Date(dataArr[3]);
+					        var curr_date = d.getDate();
+					        var curr_month = d.getMonth();
+					        var curr_year = d.getFullYear();
+					        var pDate=curr_year+"-"+curr_month+"-"+curr_date;
+					        paymentHtmlData += '<tr>';
+					        paymentHtmlData += '<td>'+ dataArr[0] +'</td>';
+					        paymentHtmlData += '<td>$'+ Number(dataArr[1]).toFixed(2) +'</td>';
+					        paymentHtmlData += '<td>'+ dataArr[2] +'</td>';
+					        paymentHtmlData += '<td>'+pDate +'</td>';
+					        if(dataArr[5] != null){
+					        	paymentHtmlData += '<td>'+ dataArr[4] +'(<span style="color:red">'+dataArr[5]+'</span>)</td>';
+					        }else{
+					        	paymentHtmlData += '<td>'+ dataArr[4] +'</td>';
+					        }					        
+					        paymentHtmlData += '</tr>'; 
+					      }
+					      $("#gridData").html(paymentHtmlData);
+						 } else if(data != null && data.length == 0){
+							 paymentHtmlData += '<tr>';
+						     paymentHtmlData += '<td colspan="5">No payment history found for matching criteria. </td>';
+						     paymentHtmlData += '</tr>';
+						     $("#gridData").html(paymentHtmlData);
+					  	 }
+				  },
+				  error: function( xhr,status,error ){
+					  paymentHtmlData += '<tr>';
+					  paymentHtmlData += '<td colspan="5">Error occured while fetching data from database. </td>';
+					  paymentHtmlData += '</tr>';
+					  $("#gridData").html(paymentHtmlData);
+				  }
+        	});  
+        });  */ 
+        
+     	$("#kgrid").kendoGrid({
+     		  dataSource: GetRemoteData($("#start").val(),$("#end").val(),$('#type').data('kendoDropDownList').value(),
+     				  $('#status').data('kendoDropDownList').value(),$('#contact').val()),    		  
+     		 //dataSource: {pageSize: 5},
+     		        height: 200,
+     		        filterable: false,
+     		        sortable: true,
+     		        pageable: true,
+     		       resizable: true,
+     		       // dataBound: resizeGrid,
+     		        columns: 
+     					[{field: "program", title: "Program",width:"85px"},
+        				 {field: "amount", title: "Amount",width:"80px"},
+        				 {field: "type", title: "Type",width:"80px"},
+       					 {field: "paymentDate", title: "Payment Date",width:"120px"}, 
+        				 {field: "status", title: "Status"}]
+     	});
+     	function GetRemoteData(stDate,eDate,pType,pStatus,username) { 
+     	   var  source = new kendo.data.DataSource({
+     	        autoSync: true,
+     	        transport: {
+     	            read: {
+     	                type: "GET",
+     	                url: "getPaymentHistoryBySearchCriteria",
+     	                data: {"stDate" : $("#start").val(),"eDate" : $("#end").val(),"pType" : $('#type').data('kendoDropDownList').value(),
+     	                	"pStatus" : $('#status').data('kendoDropDownList').value(),"username":$('#contact').val()},
+     	                dataType: "json",                
+     	                cache: false,
+     	            }    	            
+     	        },
+     	        pageSize: 5
+     	    });
+     	    source.fetch(function () {
+     	        var data = this.data();
+     	    });
+     	    return source;
+     	}
+     	function resizeGrid(d) {
+     	     var gridElement = $("#kgrid");
+     	     var dataArea = gridElement.find(".k-grid-content");
+     	     var newHeight = gridElement.parent().innerHeight() - 2;
+     	     var diff = gridElement.innerHeight() - dataArea.innerHeight();
+     	     gridElement.height(newHeight);
+     	     dataArea.height(newHeight - diff);
+     	     return d;
+     	 }
+     	$("#kgrid").hide();
+     	
+     	$('#getPaymentHistoryBtn').click(function(e){
+     		$("#kgrid").show();
+     		var stDate=$("#start").val();
+         	var eDate=$("#end").val();
+         	var pType= $('#type').data('kendoDropDownList').value();
+         	var pStatus= $('#status').data('kendoDropDownList').value();
+         	var username= $('#contact').val();
+     		//alert('stDate : '+stDate+' eDate : '+eDate+' pType : '+pType+' pStatus : '+pStatus+' username : '+username);
+     		var furl;
+			if(username!=null && username.length>0){
+        		furl ="getPaymentHistoryBySearchCriteria?pType="+pType+"&pStatus="+pStatus+"&username="+username+"&stDate="+stDate+"&eDate="+eDate;
+        	}else{
+        		furl ="getPaymentHistoryBySearchCriteriaExcludingName?pType="+pType+"&pStatus="+pStatus+"&stDate="+stDate+"&eDate="+eDate;
+        	}
+     		$('#kgrid').data('kendoGrid').dataSource.read({"stDate" : $("#start").val(),"eDate" : $("#end").val(),
+     		"pType" : $('#type').data('kendoDropDownList').value(),"pStatus" : $('#status').data('kendoDropDownList').value(),"username":$('#contact').val()});
+     		$.ajax({
+				  type: "GET",
+				  url:furl,
+				  success: function( data ) {	
+					  //alert('in success : ');
+					  /* $('#kgrid').data('kendoGrid').dataSource.read({"stDate" : $("#start").val(),"eDate" : $("#end").val(),
+				      "pType" : $('#type').data('kendoDropDownList').value(),"pStatus" : $('#status').data('kendoDropDownList').value(),"username":$('#contact').val()}); */
+					  if(data != null && data.length > 0){
+						  //console.log('data : '+ data);
+					  }else{
+						 // $("#kgrid").html('No payment history found for matching criteria.');
+						 // alert('No payment history found for matching criteria.');
+					  }
+				  },
+				  error: function( xhr,status,error ){
+					  /* $("#kgrid").html('No payment history found for matching criteria.');
+					  alert('No payment history found for matching criteria.'); */
+				  }
+     		});
+       }); 
+       /*  $('#exportToExcel').click(function() {	
+        	alert("exporting payment history to location:d:/exportToExcel.xls");
+        	var furl = "export?"+'&pType='+pType+'&pStatus='+pStatus+'&username='+username+'&stDate='+stDate+'&eDate='+eDate;
+    		$.ajax({
+    			  url: furl,
+    			  context: document.body,
+    			  type:"POST",
+    		});
+    	}); */        
+	});
+</script>
+            
+<div id="purchaseinfoPg">
+<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+	<span class="k-loading-text">Loading... Please wait</span>
+	<div class="k-loading-image">
+		<div class="k-loading-color"></div>
+	</div>
+</div>
+<!-- <div id="tabstrip3" class="k-block" style="margin-right:0px;"> -->
+<div id="tabstrip3" class="k-block" style="margin-top: 20px; padding: 10px;">
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">PURCHASE INFORMATION</span>
+		<span class="autopaySpan" style="width: 300px;">
+			<!-- <button id="pmPrimary" class="k-button" style="margin-right: 10px; text-shadow: none;">Make Primary</button> -->
+			<!-- <button id="pmPrimary" class="k-button" style="margin-right: 10px; text-shadow: none;">Make Primary</button> -->
+			<button id="exportToExcel" class="k-button" style="margin-right: 10px">Export</button>
+			<button id="print" class="k-button" style="margin-right: 8px">Print</button>
+			<button id="addCardBankDetail" class="k-button">Add Card/Bank Info</button>
+		</span>
+		
+		<div id="purchase_info" >
+			<table>
+				<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'Credit' }">
+						<tr>
+							<c:if test="${ paymentInfo.isPrimary == '1' }">
+								<td><input type="radio" name="paymentInfoRadio" checked="checked" class="bootstrapRadio"></td>
+							</c:if>
+							<c:if test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null}">
+								<td><input type="radio" name="paymentInfoRadio" class="bootstrapRadio"></td>
+							</c:if>	
+							<td><span>Credit & Debit Cards</span></td>
+							<!-- <td><span>XXXX-XXXX-XXXX-1234</span></td> -->
+							<td><span>${paymentInfo.cardNumber }</span><span class="pmMakePrimaryPaymentId" style="display:none;">${paymentInfo.paymentId }</span></td>
+							<td></td>
+							<td>Expiration Date</td>
+							<!-- <td>07/20</td> -->
+							<td>${paymentInfo.expirationMonth }/${paymentInfo.expirationYear }</td>
+							<td><button id="editcardBtn" style="width: 100px; text-shadow: none; margin-left: 10px;" class="k-button editcardBtn">Edit card Info</button></td>
+							<!-- <td><span  class="k-button updatePaymentMethod" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit card Info</span></td> -->
+						</tr>
+					</c:if>
+				</c:forEach>
+				<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'EFT' }">
+						<tr>
+							<c:if test="${ paymentInfo.isPrimary == '1' }">
+								<td><input type="radio" name="paymentInfoRadio" checked="checked" class="bootstrapRadio"></td>
+							</c:if>
+							<c:if test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null }">
+								<td><input type="radio" name="paymentInfoRadio" class="bootstrapRadio"></td>
+							</c:if>	
+													
+							<td><span>Bank Details</span></td>
+							<!-- <td><span>XXXXX-XXXXX</span></td> -->
+							<td><span>${paymentInfo.bankRoutingNumber }</span><span class="pmMakePrimaryPaymentId" style="display:none;">${paymentInfo.paymentId }</span></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td><button id="editcartBtn" class="k-button editBankBtn" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit Bank Info</button></td>
+						<!-- 	<td><span  class="k-button updatePaymentMethod" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit Bank Info</span></td> -->
+						</tr>
+					</c:if>
+				</c:forEach>			
+			</table>
+			<div >
+				<span class="k-block k-success-colored" id="pmPrimarySuccess"></span>
+				<span class="k-block k-error-colored" id="pmPrimaryError"></span>
+			</div>
+		</div>
+	</div>
+	
+	<%-- <div class="pay_header">
+		<span class="head" style="margin-left:3px;">BILLING ADDRESS</span>
+		<div id="bill_info">
+			<span id="address1">${accInfo.addressLine1}</span>
+			<span id="address2">${accInfo.addressLine2}</span><br>
+			<span id="city">${accInfo.city}</span>
+			<span id="state">${accInfo.state}</span><br>
+			<span id="zip">${accInfo.postalCode}</span>
+			<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+				<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.isPrimary == '1' }">
+					<span id="address1">${paymentInfo.billingAddressLine1}</span>
+					<span id="address2">${paymentInfo.billingAddressLine2}</span><br>
+					<span id="city">${paymentInfo.billingCity}</span>
+					<span id="state">${paymentInfo.billingState}</span><br>					
+				</c:if>
+			</c:forEach>
+			
+			<span id="zip">${paymentInfo.postalCode}</span>
+		</div>
+	</div> --%>
+	
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">VIEW PAYMENT HISTORY</span>
+		<div id="bill_info">
+			<table>
+				<tr>
+					<td>Start Date</td>
+					<td>:</td>
+					<td><input type="text" id="start" name="startDate"></td>
+					<td>End Date</td>
+					<td>:</td>
+					<td><input type="text" id="end" name="endDate"></td>
+					<td>Type</td>
+					<td>:</td>
+					<td><input type="text" id="type" name="type" style="width:100px;"></td>
+				</tr>
+				<tr>
+					<td>Status</td>
+					<td>:</td>
+					<td><input type="text" id="status" name="status" ></td>
+					<td>Contact</td>
+					<td>:</td>
+					<td><input type="text" id="contact" name="contact" placeholder="Enter username" style="width: 95%;"></td>
+					<td></td>
+					<td></td>
+					<td><span id="getPaymentHistoryBtn" class="k-button"  style="width: 70px; text-shadow: none;">Go</span></td>
+				</tr>
+			</table>
+			<br/>
+			<br/>
+			<!-- <div id="kgrid"  style="margin-top:12px;margin-bottom:10px;" ></div> -->
+			<div id="kgrid"></div>
+			<!-- <span >
+				<table id="grid">
+               		<tbody id="gridData"></tbody>
+				</table>
+			</span> -->			
+		</div>
+	</div>
+	
+	<!-- test -->
+	<!-- <button data-bind="click:saveGridCsv">Download to CSV</button>
+	<div id="test-grid" data-role="grid"  data-bind="source: remoteSource" 
+         data-columns='[
+                { 
+					field: "user.screen_name",
+					title: "User"
+				} , 
+				{ 
+					field: "text", 
+					title: "Text"
+				}
+            ]'></div>
+    <script>
+        (function () {
+    var log = (function (el) {
+        return function (text) {
+            el.html(el.html() + '<br/>' + text);
+        };
+    })($('#log'));
+
+    var viewModel = kendo.observable({
+        
+    saveGridCsv: function () {
+        viewModel.exportCsv('test-grid', 'testdata.csv');
+        },
+
+    // the remote datasource    
+    remoteSource: new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        dataType: "jsonp",
+                        url:"http://demos.kendoui.com/service/Twitter/Search?q=kendoui",
+                        data: function (response) {
+                            return [response];
+                        }
+                    }
+                },
+                schema: { 
+					data: function(data) { 
+						return data.statuses || [];
+					},			
+				},
+            }),
+        
+        exportCsv: function (gridId, fileName) {
+             var grid = $("#" + gridId).data("kendoGrid");
+                var originalPageSize = grid.dataSource.pageSize();
+                var csv = '';
+                fileName = fileName || 'download.csv';
+
+                // Increase page size to cover all the data and get a reference to that data
+                grid.dataSource.pageSize(grid.dataSource.view().length);
+                var data = grid.dataSource.view();
+
+                //add the header row
+                for (var i = 0; i < grid.columns.length; i++) {
+                    var field = grid.columns[i].field;
+                    var title = grid.columns[i].title || field;
+
+                    //NO DATA
+                    if (!field) continue;
+
+                    title = title.replace(/"/g, '""');
+                    csv += '"' + title + '"';
+                    if (i < grid.columns.length - 1) {
+                        csv += ',';
+                    }
+                }
+                csv += '\n';
+
+                //add each row of data
+                for (var row in data) {
+                    for (var i = 0; i < grid.columns.length; i++) {
+                        var fieldName = grid.columns[i].field;
+                        var template = grid.columns[i].template;
+                        var exportFormat = grid.columns[i].exportFormat;
+
+                        //VALIDATE COLUMN
+                        if (!fieldName) continue;
+                        var value = '';
+                        if (fieldName.indexOf('.') >= 0)
+                        {
+                        var properties = fieldName.split('.');
+                        var value = data[row] || '';
+                        for (var j = 0; j < properties.length; j++) {
+                            var prop = properties[j];
+                            value = value[prop] || '';
+                        }
+                        }
+                        else{
+                            
+                       value = data[row][fieldName] || '';
+                        }
+                        if (value && template && exportFormat !== false) {
+                            value = _.isFunction(template)
+                                ? template(data[row])
+                                : kendo.template(template)(data[row]);
+                        }
+
+                        value = value.toString().replace(/"/g, '""');
+                        csv += '"' + value + '"';
+                        if (i < grid.columns.length - 1) {
+                            csv += ',';
+                        }
+                    }
+                    csv += '\n';
+                }
+
+                // Reset datasource
+                grid.dataSource.pageSize(originalPageSize);
+
+                //EXPORT TO BROWSER
+                var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' }); //Blob.js
+                saveAs(blob, fileName); //FileSaver.js
+        }
+    })
+    // Kendo MVVM binding    
+    kendo.bind('body', viewModel);
+
+})() -->
+
+    </script>
+</div>
+</div>

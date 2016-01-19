@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+  <definition name="donationForm" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/donationInformation.jsp" />
+  </definition>
+  
+  <definition name="viewPaymentForm" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/processPayment.jsp" />
+  </definition>
+  
+  <definition name="redirectSuccess" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/Success.jsp" />
+  </definition>
+  
+  <definition name="redirectFailure" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/donation/failure.jsp" />
+  </definition>
+  
+</tiles-definitions>

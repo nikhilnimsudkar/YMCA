@@ -1,0 +1,273 @@
+<script src="<%=contextPath %>/resources/js/sha512.js"></script>
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.13.0/jquery.validate.min.js"></script>
+<div id="purchaseinfoPg" style="margin:0">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+	<div id="tabstrip3" style="width:800px;margin:0">
+		<div id="payment_cart">
+			<form:form commandName="paymentMethod" id="addCardInfoForm" method="post" action="#">
+			<div class="pay_header">
+				
+				<span class="head" style="margin-left:3px;">PURCHASE INFORMATION</span>
+				<span class="autopaySpan">
+					<button id="pmPrimary" class="k-button" style="margin-right: 10px; text-shadow: none;">Make Primary</button>
+					<button id="autopayBtn" class="k-button">AUTOPAY</button>
+				</span>
+				
+				<div id="purchase_info" >
+					<div>
+						<select id="paymentInfoRadio" name="paymentInfoRadio" style="width:440px;">
+							
+							<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+								<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'Credit' }">
+									<c:choose>
+										<c:when test="${ paymentInfo.isPrimary == '1' }">
+											<option selected value="${paymentInfo.paymentId }">${paymentInfo.nickName } ${paymentInfo.cardNumber } ${paymentInfo.expirationMonth }/${paymentInfo.expirationYear }</option>
+										</c:when>
+										<c:when test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null}">
+											<option value="${paymentInfo.paymentId }">${paymentInfo.nickName } ${paymentInfo.cardNumber } ${paymentInfo.expirationMonth }/${paymentInfo.expirationYear }</option>
+										</c:when>
+									</c:choose>	
+								</c:if>
+							</c:forEach>
+							<option value="New">Add New Card</option>
+						</select>
+					</div>
+						
+					<div id="addcard" style="margin-top:10px; margin-bottom:10px; height:44px; display:none;">
+						  
+							
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Name on card</div>
+									<div><input type="text" class="k-textbox" placeholder="Full Name on Card" name="fullName" id="fullName" value="" tabIndex="1" maxlength="50" ></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Card Number</div>
+									<div><input autocomplete="off" type="text" class="k-textbox" placeholder="Card Number" name="cardNumber" id="cardNumber" value="" tabIndex="2" maxlength="16"></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Expiration date</div>
+									<div>
+										<span>
+											<select id="expirationMonth" name="expirationMonth" style="width:50px;">
+							                      <option value="01">01</option>
+							                      <option value="02">02</option>
+							                      <option value="03">03</option>
+							                      <option value="04">04</option>
+							                      <option value="05">05</option>
+							                      <option value="06">06</option>
+							                      <option value="07">07</option>
+							                      <option value="08">08</option>
+							                      <option value="09">09</option>
+							                      <option value="10">10</option>
+							                      <option value="11">11</option>
+							                      <option value="12">12</option>
+											</select>
+										</span>
+										<span>
+											<select id="addCardExpirationYear" name="expirationYear" style="width:70px;">
+											</select>
+										</span>
+									</div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Security Code</div>
+									<div><input  autocomplete="off" type="password" class="k-textbox" placeholder="Security Code" name="securityCode" id="securityCode" value="" tabIndex="3" maxlength="4"></div>
+								</div>
+							</div>
+							
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Address Line 1</div>
+									<div><!-- <textarea placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" class="k-textbox" style="width: 279px; height: 46px;"></textarea> -->
+										<input type="text" class="k-textbox" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" value="" tabIndex="4">
+									</div> 
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Address Line 2</div>
+									<div><input type="text" class="k-textbox" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2" value="" tabIndex="5"></div> 
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">City</div>
+									<div><input type="text" class="k-textbox" placeholder="Billing City" name="billingCity" id="billingCity" value="" tabIndex="6"></div> 
+								</div>
+								<div class="addcarddiv" style="width:45px;">
+									<div style="height:20px;">State</div>
+									<div><input type="text" class="k-textbox" placeholder="" name="billingState" id="billingState" value="" style="width:45px;" tabIndex="7"></div> 
+								</div>
+								<div class="addcarddiv" style="width:60px">
+									<div style="height:20px;">Zip</div>
+									<div><input type="text" class="k-textbox" placeholder="Zip" name="billingZip" id="billingZip" value="" style="width:60px;" tabIndex="8"></div> 
+								</div>
+								
+							</div>
+							
+							<div style="height:50px;">
+								
+								<div id="savecardcheckbox" class="addcarddiv" style="width:124px">
+									<div><input type="checkbox" name="SaveCard" id="SaveCard">&nbsp;&nbsp;Save Card</div>
+								</div>
+								<div id="nickname" class="addcarddiv" style="display:none;">
+									<div style="height:20px;">Nick Name</div>
+									<div><input type="text" class="k-textbox" placeholder="Nick Name" name="nickName" id="nickName" value=""></div> 
+								</div>
+							</div>
+						
+					</div>
+				</div>
+			</div>
+			<div style="clear: both;"></div> 
+			<div class="pay_header">
+				<span class="head" style="margin-left:3px;">CART ITEMS</span>
+				<div id="cart_info">
+					<table width="100%">
+						<tr>
+							<td id="cartitem" colspan="4">
+							
+							</td>
+						</tr>
+						<tr height="40px"><td></td></tr>
+						<tr>
+							<td colspan="3" align="right" width="75%"><strong>Order Total</strong></td>
+							<td align="center"><span><strong><span id="ordertotal"></span></strong></span></td>
+						</tr>
+						<tr height="40px">
+							<td></td>
+						</tr>
+						<tr>
+							<td colspan="4" align="right" style="padding-right:10px;">
+								<div id="cartbtns" style="font-size:13px">
+									<span id="backtoprogram" class="k-button" onclick="backtoprogram()" style="font-weight:bold">Continue shopping</span>
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<button id="placeorderBtn" class="k-button">PLACE ORDER</button>
+								</div>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			
+			</form:form>
+			<iframe src="<%=contextPath %>/viewPaymentForm" height="1px" width="1px" id="childIframeId" style=" position:absolute; bottom:-10px; left:-10px;"></iframe>
+		</div>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {
+		
+		var currentYear = new Date().getFullYear();
+		var currentYear2digit = parseInt(currentYear.toString().substring(2, 4));
+		for(var i=0; i<30 ; i++){
+			$('#addCardExpirationYear').append($('<option>', {value: currentYear2digit,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		
+		$("#expirationMonth").kendoDropDownList({
+			width:50
+		});
+		$("#addCardExpirationYear").kendoDropDownList();
+		
+		$("#paymentInfoRadio").kendoDropDownList();
+		
+		$("#paymentInfoRadio").change(function(){      
+			if($("#paymentInfoRadio").val()=='New'){
+				$('#addcard').slideDown();
+			}
+			else{
+				$('#addcard').slideUp();
+			}
+		});
+		
+		$( "#SaveCard" ).click(function(){
+			if($('#SaveCard').is(":checked")){
+				$("#nickname").show();
+				$("div#savecardcheckbox").css("padding-top","21px");
+			}
+			else{
+				$("#nickname").hide();
+				//$("div#savecardcheckbox").css("padding-top","5px");
+			}
+		});
+		
+		// place order event
+		$( "#placeorderBtn" ).click(function(){
+			var proceed = false;
+			
+			$("#tcSuccessSpan").css("display", "none");		
+			$("#tcSuccessSpan" ).html("");	
+			$("#tcErrorSpan").css("display", "none");		
+			$( "#tcErrorSpan" ).html("");
+			
+			$("#addCardInfoForm").validate({
+				rules: {
+					fullName:"required",
+					cardNumber: {
+						required: true,
+						creditcard: true
+					},
+					securityCode: {
+						required: true,
+						digits: true,
+						minlength: 3,
+						maxlength: 4
+					},
+					billingAddressLine1:"required",
+					billingCity:"required",
+					billingState:"required",
+					billingZip:"required"
+				},
+				messages: {
+					fullName: "Please provide your full name",
+					cardNumber: {
+						required: "Please provide Card Number",
+						creditcard: "Please provide Valid Card Number"
+					},
+					securityCode: {
+						required: "Please provide Security code",
+						digits: "Please enter only Numeric value",
+						minlength: "Security code must be at least {0} digits",
+						maxlength: "Security code must be at most {0} digits"
+					},
+					billingAddressLine1:"Please provide Billing Address",
+					billingCity:"Please provide Billing City",
+					billingState:"Please provide Billing State",
+					billingZip:"Please provide Billing Zip"
+				},
+				errorPlacement: function(error, element){
+					//alert();
+					//console.log(element);
+					//console.log(error);
+					for(j=1; j<=8; j++){
+						if(element[0].tabIndex==j){
+							//alert(j);
+							//alert($( "#tcErrorSpan" ).html());
+							 if($( "#tcErrorSpan" ).html()==""){
+								 $("#tcErrorSpan").css("display", "block");		
+								 $( "#tcErrorSpan" ).html(error);
+								 element[0].focus();
+							 }
+							 break;
+						}
+					}
+					
+				},
+				submitHandler: function(form) {
+					submitform();
+				}
+			});
+				
+			
+		});
+		
+		
+
+	});
+	
+</script>

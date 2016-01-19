@@ -1,0 +1,81 @@
+/**
+ * @author gpatwa
+ */
+package com.serene.job.scheduler;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections.map.HashedMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+
+import com.serene.job.dao.JobSchedulerMetadataDao;
+import com.serene.job.model.JobSchedulerMetadata;
+
+
+@Component
+@Lazy(false)
+@DependsOn({"modularBatchContext"})
+public class InitializeJobFromDbMetadata  {
+
+	private static Logger log = LoggerFactory.getLogger(InitializeJobFromDbMetadata.class);
+	
+	@Resource
+	private JobSchedulerMetadataDao jobSchedulerMetadataDao; 
+	
+	@Resource
+	private SpringJobScheduler springJobScheduler ;
+	
+	@Resource
+	protected ApplicationContext applicationContext;
+	
+	public static  Map<String,Class> interfaceTypes = new HashedMap();
+	
+	@PostConstruct
+	public void init() throws Exception{
+		interfaceTypes.put("DB_TO_SC", GenericDbToSCJobScheduler.class);
+		interfaceTypes.put("SC_TO_DB", GenericSCToDbJobScheduler.class);
+		interfaceTypes.put("DB_TO_DB", GenericDbToDbJobScheduler.class);
+		postProcessBeanDefinitionRegistry(null);
+	}
+	
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+		// Not needed
+	}
+
+
+	@Transactional
+	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry reg) throws Exception {
+		List<JobSchedulerMetadata> jobs =   jobSchedulerMetadataDao.findByOrderByJobGroupAscDependsOnAsc();
+
+		for(JobSchedulerMetadata j : jobs) {
+			log.info("Intilizing Job " + j);
+			
+		   //if (!j.getActive()) continue ; 
+			
+		  AbstractJobScheduler jobScheduler =  (AbstractJobScheduler) applicationContext.getBean(interfaceTypes.get(j.getInterfaceType()));
+
+	      // set job properties
+		  jobScheduler.setJobSchedulerMetadata(j);
+		  
+	      
+	      jobScheduler.loadJob();
+	      Thread.sleep(2050);
+	      
+		}		
+	}
+	
+}
+

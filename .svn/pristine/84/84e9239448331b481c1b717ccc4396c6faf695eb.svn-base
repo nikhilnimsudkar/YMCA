@@ -1,0 +1,211 @@
+package com.ymca.web.service;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.ymca.dao.InvoiceDao;
+import com.ymca.dao.JetPayPaymentDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.dao.PayerDao;
+import com.ymca.dao.PaymentDao;
+import com.ymca.dao.PaymentMethodDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.model.Account;
+import com.ymca.model.Invoice;
+import com.ymca.model.ItemDays;
+import com.ymca.model.ItemDetails;
+import com.ymca.model.ItemDetailsSession;
+import com.ymca.model.JetPayPayment;
+import com.ymca.model.Payer;
+import com.ymca.model.Payment;
+import com.ymca.model.PaymentMethod;
+import com.ymca.model.Signup;
+import com.ymca.model.User;
+import com.ymca.web.enums.ProductTypeEnum;
+import com.ymca.web.util.Constants;
+
+@Service 
+public class PaymentService {
+	
+	@Resource
+	private PaymentMethodDao paymentMethodDao;
+	
+	@Resource
+	private SignupDao signupDao;
+	
+	@Resource
+	private JetPayPaymentDao jetPayPaymentDao;
+	
+	@Resource
+	private PaymentDao paymentDao;
+	
+	@Resource
+	private PayerDao payerDao;
+	
+	@Resource
+	private InvoiceDao invoiceDao;
+	
+	@Resource
+	private LocationDao locationDao;
+	
+	public Signup savesignup(String paymentId, Account customer, List<String> cartItems, ItemDetails ids, User u, ProductTypeEnum signupType) {
+		Signup signup = new Signup();
+		signup.setCustomer(customer);
+		//signup.setItemDaysMapId(ids.getItemDaysId()+"_"+ids.getItemDetails().getId());
+		//signup.setItem(ids.getProduct());
+		signup.setItemDetails(ids);
+		signup.setProgramStartDate(ids.getStartdate());
+		signup.setProgramEndDate(ids.getEnddate());
+		signup.setFinalAmount(cartItems.get(2));
+		
+		Long  loc_id = ids.getLocations().getLocationId();
+		signup.setLocation(locationDao.getLocationsByLocationId(loc_id));
+		
+		signup.setContact(u);
+		signup.setContactName(u.getFullName());
+		signup.setStatus(Constants.CONFIRMED);
+		signup.setSignupDate(new Date());
+		signup.setType(signupType.toString().toUpperCase());
+		
+		if(Long.parseLong(paymentId)>0){
+			List<PaymentMethod> lstPaymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(Long.parseLong(paymentId));
+			PaymentMethod paymentMethod = lstPaymentMethod.get(0);
+			signup.setPaymentMethod(paymentMethod);
+		}
+		
+		Signup signupprogram = new Signup();
+		signupprogram = signupDao.save(signup);
+		return signupprogram;
+	}
+	
+	public Payer savepayer(String paymentId, Account customer, List<String> cartItems, ItemDetails ids, Signup signup) {
+		Payer payer = new Payer();
+		payer.setCustomer(customer);
+		payer.setStartdate(ids.getStartdate());
+		payer.setEnddate(ids.getEnddate());
+		payer.setAmount(Double.parseDouble(cartItems.get(2)));
+		payer.setType(Constants.SELF);
+		payer.setSignup(signup);
+		
+		if(Long.parseLong(paymentId)>0){
+			List<PaymentMethod> lstPaymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(Long.parseLong(paymentId));
+			PaymentMethod paymentMethod = lstPaymentMethod.get(0);
+			payer.setPaymentMethod(paymentMethod);
+		}
+		
+		Payer p = new Payer();
+		p = payerDao.save(payer);
+		return p;
+	}
+	
+	public Invoice saveinvoice(Account customer, List<String> cartItems, User u, Signup signup) {
+		Invoice invoice = new Invoice();
+		invoice.setCustomer(customer);
+		invoice.setContact(u);
+		//invoice.setOrderDate(new Date());
+		invoice.setDueDate(new Date());
+		invoice.setAmount(Double.parseDouble(cartItems.get(2)));	
+		invoice.setSignup(signup);
+		
+		Invoice i = new Invoice();
+		i = invoiceDao.save(invoice);
+		return i;
+	}
+	
+	public JetPayPayment savepayment(String paymentId, String jp_request_hash, String orderNumber,
+			Account customer, List<String> cartItems, User u, Signup signupprogram, ProductTypeEnum signupType, Payer payer, Invoice invoice) {
+		
+		JetPayPayment jetPayPayment = null;
+		if(!"".equals(orderNumber)){
+			//jetPayPayment = jetPayPaymentDao.getByJpReturnHash(jp_request_hash);
+			//jetPayPayment = jetPayPaymentDao.getByOrderNumber("254657884038");
+			jetPayPayment = jetPayPaymentDao.getByOrderNumber(orderNumber);			
+		}
+		if(jetPayPayment!=null){
+			Payment payment = new Payment();
+			payment.setTransactionId(Long.parseLong(jetPayPayment.getOrderNumber()));
+			if(jetPayPayment.getActCode() != null && Constants.PAYMENT_ACTION_CODE_SUCCESS.equals(jetPayPayment.getActCode())){
+				payment.setStatus(Constants.SUCCESS);
+			}else{
+				payment.setStatus(Constants.FAILURE);
+			}
+			payment.setPaymentNumber(jetPayPayment.getPaymentId().toString());
+			if(cartItems != null && cartItems.get(2) != null && !"".equals(cartItems.get(2).trim())){
+        		jetPayPayment.setAmount(Double.parseDouble(cartItems.get(2)));
+        	}else{
+        		jetPayPayment.setAmount(0D);
+        	}
+			payment.setCustomer(customer);
+			payment.setSignup(signupprogram);
+			payment.setContact(u);
+			payment.setType(signupType.toString().toUpperCase());
+			if(Long.parseLong(paymentId)>0){
+				List<PaymentMethod> lstPaymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(Long.parseLong(paymentId));
+				PaymentMethod paymentMethod = lstPaymentMethod.get(0);
+				payment.setPaymentMethod(paymentMethod.getPaymentId().toString());
+			}
+			payment.setDescription(jetPayPayment.getResponseText());
+			payment.setPaymentDate(new Date());
+			payment.setPayer(payer);
+			payment.setInvoice(invoice);
+			paymentDao.save(payment);
+		}
+		
+		return jetPayPayment;
+	}
+	
+	public JetPayPayment savePastDuePayment(String paymentId, String jp_request_hash, String orderNumber,
+			Account customer, ProductTypeEnum signupType) {
+		System.out.println("savePastDuePayment -->> "+paymentId +"orderNumber -->> "+orderNumber);
+		JetPayPayment jetPayPayment = null;
+		if(!"".equals(orderNumber)){
+			//jetPayPayment = jetPayPaymentDao.getByJpReturnHash(jp_request_hash);
+			System.out.println("inside if savePastDuePayment");
+			jetPayPayment = jetPayPaymentDao.getByOrderNumber(orderNumber);
+		}
+		if(jetPayPayment!=null){
+			System.out.println("jetPayPayment !=null  savePastDuePayment getOrderNumber  "+jetPayPayment.getOrderNumber());
+			Payment payment = new Payment();
+			//payment.setTransactionId(Long.parseLong(jetPayPayment.getTransId()));
+			payment.setTransactionId(Long.parseLong(jetPayPayment.getOrderNumber()));
+			
+			System.out.println("jetPayPayment !=null  savePastDuePayment jetPayPayment.getActCode()  "+jetPayPayment.getActCode());
+			if(jetPayPayment.getActCode() != null && Constants.PAYMENT_ACTION_CODE_SUCCESS.equals(jetPayPayment.getActCode())){
+				payment.setStatus(Constants.SUCCESS);
+			}else{
+				payment.setStatus(Constants.FAILURE);
+			}
+			System.out.println(" before payment.setPaymentNumber savePastDuePayment");
+			payment.setPaymentNumber(jetPayPayment.getPaymentId().toString());
+			System.out.println(" after payment.setPaymentNumber savePastDuePayment");
+        		jetPayPayment.setAmount(0D);
+        		System.out.println(" before payment.setCustomer(customer); savePastDuePayment");
+			payment.setCustomer(customer);
+			System.out.println(" after  payment.setCustomer(customer); savePastDuePayment");
+			//payment.setSignup(signupprogram);
+			//payment.setContact(u);
+			payment.setType(signupType.toString().toUpperCase());
+			if(Long.parseLong(paymentId)>0){
+				
+				System.out.println(" if   Long.parseLong(paymentId)>0 savePastDuePayment");
+				List<PaymentMethod> lstPaymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(Long.parseLong(paymentId));
+				PaymentMethod paymentMethod = lstPaymentMethod.get(0);
+				payment.setPaymentMethod(paymentMethod.getPaymentId().toString());
+				System.out.println(" last in if   Long.parseLong(paymentId)>0 savePastDuePayment");
+			}
+			payment.setDescription(jetPayPayment.getResponseText());
+			System.out.println(" here 1 savePastDuePayment");
+			payment.setPaymentDate(new Date());
+			System.out.println(" here 2 savePastDuePayment");
+			paymentDao.save(payment);
+			
+			System.out.println(" here 3 savePastDuePayment");
+		}
+		
+		return jetPayPayment;
+	}
+}

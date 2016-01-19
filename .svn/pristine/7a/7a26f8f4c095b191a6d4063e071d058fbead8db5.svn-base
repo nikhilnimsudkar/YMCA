@@ -1,0 +1,21 @@
+# Specify database connection property
+#spring.datasource.url=jdbc:mysql://localhost/ymca
+#spring.datasource.username=root
+#spring.datasource.password=serene
+spring.datasource.url=jdbc:mysql://166.78.104.119/ymca
+spring.datasource.username=root
+spring.datasource.password=ilikerandompasswords
+spring.datasource.driverClassName=com.mysql.jdbc.Driver
+
+spring.jpa.generate-ddl=true
+spring.jpa.hibernate.ddl-auto=update
+
+#spring.jpa.hibernate.naming_strategy=org.hibernate.cfg.ImprovedNamingStrategy
+spring.jpa.database: MYSQL
+spring.jpa.show-sql=true
+#spring.jpa.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+
+
+spring.thymeleaf.prefix: /WEB-INF/templates/
+spring.thymeleaf.cache: false
+#tomcat.version=8.0.9

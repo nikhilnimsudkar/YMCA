@@ -1,0 +1,94 @@
+package com.serene.job.scheduler;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.ItemWriteListener;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.step.builder.FaultTolerantStepBuilder;
+import org.springframework.batch.core.step.builder.SimpleStepBuilder;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.skip.AlwaysSkipItemSkipPolicy;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
+
+import com.serene.job.reader.FusionItemReader;
+import com.serene.job.writer.CustomJdbcItemWriter;
+
+public class GenericSCToDbJobScheduler extends AbstractJobScheduler implements InitializingBean  {
+	
+	private Logger log = LoggerFactory.getLogger(GenericSCToDbJobScheduler.class); 
+	
+	@Resource
+	private CustomJdbcItemWriter customJdbcItemWriter ;
+	
+	@PostConstruct
+	public void loadJob() {
+		if (StringUtils.contains(fql, "#lastUpdateDate")) {
+			String startTime = jobDao.getStartTime(jobName);
+			if (StringUtils.isNoneBlank(startTime)) {
+				
+			} 
+		//	startTime = "2000-01-31 00:00:00";  
+		
+			fql = fql.replaceAll("#lastUpdateDate", startTime);
+		}
+		
+		FusionItemReader reader =  (FusionItemReader) applicationContext.getBean("fusionItemReader",fql);
+		customJdbcItemWriter.setSql(sql);
+		customJdbcItemWriter.setDataSource(dataSource);
+		customJdbcItemWriter.setFieldMapping(fieldMapping);
+		
+		
+		StepBuilder stepbuilder = stepBuilderFactory.get(jobName+"Step");
+		SimpleStepBuilder simpleStepBuilder = new SimpleStepBuilder(stepbuilder);
+		
+		Step step = stepbuilder.chunk(commitSize)
+		.reader(reader)
+		.writer((ItemWriter)customJdbcItemWriter)
+		.faultTolerant()
+		.skipPolicy(new AlwaysSkipItemSkipPolicy())
+		.listener((StepExecutionListener)itemListener)
+		.listener((ItemWriteListener)itemListener)
+		.allowStartIfComplete(true)
+		.build();
+		
+		
+		job = jobBuilderFactory.get(jobName)
+        .incrementer(new RunIdIncrementer())
+        .flow(step)
+        .end()
+        .build();
+	}
+	
+	public void run() {
+		try {
+			JobParametersBuilder parametersBuilder = new JobParametersBuilder();
+			parametersBuilder.addLong("time",System.currentTimeMillis());
+			parametersBuilder.addString("objectName",scObjectName);
+			parametersBuilder.addString("objectIdField",scObjectIdField);
+			
+			JobExecution execution = jobLauncher.run(job, parametersBuilder.toJobParameters());
+			System.out.println("Exit Status : " + execution.getStatus());
+		} catch (Exception e) {
+			log.error("Error while running the job " + jobName, e);
+		}
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		Assert.notNull(jobName, "A job name is required");
+		Assert.notNull(sql, "A sourceSql is required");
+		Assert.notNull(scObjectName, "A scObjectName is required");
+		Assert.notNull(scObjectIdField, "A valid objectID field is required");
+		Assert.notNull(dataSource, "A datasource is required");
+	}
+}

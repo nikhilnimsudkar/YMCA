@@ -1,0 +1,72 @@
+package com.ymca.web.service;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.ymca.dao.CustomerFADao;
+import com.ymca.model.CustomerFA;
+import com.ymca.model.ItemDetails;
+import com.ymca.web.util.Constants;
+
+@Service 
+public class FinancialAssistanceService {
+	
+	@Resource
+	private CustomerFADao customerFADao;
+	
+	public List<CustomerFA> computeFA(ItemDetails itemDetails, Long customerId, String finalAmount) {
+		
+		List<CustomerFA> customerFAList = new ArrayList<CustomerFA>();
+		String category = itemDetails.getCategory();
+		Date programStartDate = itemDetails.getStartdate();
+		String faEligible = itemDetails.getFaEligible();
+		Date sysDate = new Date();
+		
+		//Check the FA eligibility flag
+		if (Constants.YES.equalsIgnoreCase(faEligible)) {
+			//For the category and customer ID get records from Customer FA table.
+			List<CustomerFA> customerFAResponse = customerFADao.getBySalesAccountIdAndProductCategory(customerId, category);
+			if (customerFAResponse != null) {
+				for (int i=0; i<customerFAResponse.size(); i++) {
+					CustomerFA customerFA = customerFAResponse.get(i);
+					if (customerFA != null) {
+						Date faStartDate = customerFA.getFaStartdate();
+						Date faEndDate = customerFA.getFaEndDate();
+						boolean isFA = false;
+						//FOr PC=Membership Sign up date should be between FA start and end date
+						if (Constants.PRODUCT_CATEGORY_MEMBERSHIP.equalsIgnoreCase(category)) {
+							if (sysDate.after(faStartDate) && sysDate.before(faEndDate)) {
+								isFA = true;
+							}
+							
+						} else if (Constants.PRODUCT_CATEGORY_CHILD_CARE.equalsIgnoreCase(category) ||
+								Constants.PRODUCT_CATEGORY_AFTER_SCHOOL.equalsIgnoreCase(category) ||
+								Constants.PRODUCT_CATEGORY_DAY_CAMP.equalsIgnoreCase(category) ||
+								Constants.PRODUCT_CATEGORY_RESIDENT_CAMP.equalsIgnoreCase(category) ||
+								Constants.PRODUCT_CATEGORY_PROGRAM.equalsIgnoreCase(category)
+								) {
+							/* For PC =Child Care/After School/Day Camp/Resident Camp/Program the 
+							   program start date on the sign up is within the FA eligible start and end date
+							    	*/
+							if (programStartDate.after(faStartDate) && programStartDate.before(faEndDate)) {
+								isFA = true;
+							}
+							
+						}
+						if (isFA) {
+							customerFAList.add(customerFA);
+						}
+					}
+				}
+			}
+		}		
+		
+		return customerFAList;
+	}
+	
+}

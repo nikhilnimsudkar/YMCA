@@ -1,0 +1,16 @@
+package com.ymca;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan("com.ymca.dao")
+@EnableAutoConfiguration
+public class CoreConfig {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CoreConfig.class, args);
+    }
+}

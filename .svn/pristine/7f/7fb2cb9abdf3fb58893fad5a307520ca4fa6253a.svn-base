@@ -1,0 +1,16 @@
+package com.serene.job.dao;
+
+import java.io.Serializable;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.NoRepositoryBean;
+
+
+@NoRepositoryBean
+public interface GenericDao <T, ID extends Serializable> extends JpaRepository<T, ID> {    
+
+	@Query(value = "SElECT START_TIME FROM batch_job_execution where JOB_INSTANCE_ID  IN (SElECT max(JOB_INSTANCE_ID) FROM batch_job_instance where JOB_NAME = ?1)", nativeQuery = true)
+	public String getStartTime(String jobName);
+	
+}

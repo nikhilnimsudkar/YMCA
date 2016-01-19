@@ -1,0 +1,83 @@
+package com.ymca.web.service;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.ws.BindingProvider;
+
+import com.ymca.web.util.Constants;
+import com.ymca.ws.stubs.interaction.Interaction;
+import com.ymca.ws.stubs.interaction.InteractionService;
+import com.ymca.ws.stubs.interaction.InteractionService_Service;
+import com.ymca.ws.stubs.interaction.ObjectFactory;
+import com.ymca.ws.stubs.interaction.ServiceException;
+
+public class CreateInteraction {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		CreateInteraction interaction  = new CreateInteraction();
+		try {
+			//interaction.createInteraction();
+			System.out.println("Test");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	public static void createInteraction(String interactionType, String interactionDesctiption, Long customerId, Long contactId, Date sDate) throws DatatypeConfigurationException{
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(sDate);		
+		XMLGregorianCalendar startDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);	
+		cal.add(Calendar.DAY_OF_MONTH, 1);
+		XMLGregorianCalendar endDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);	
+		
+		ObjectFactory objFactoryInteraction = new ObjectFactory();		
+		Interaction fcrmInteraction =  new Interaction();
+		fcrmInteraction.setInteractionDescription(objFactoryInteraction.createInteractionInteractionDescription(interactionDesctiption));
+		fcrmInteraction.setInteractionStartDate(startDate);		
+		fcrmInteraction.setInteractionEndDate(objFactoryInteraction.createInteractionInteractionEndDate(endDate));
+		fcrmInteraction.setCustomerId(customerId);
+		fcrmInteraction.setInteractionTypeCode(interactionType);
+		//fcrmInteraction.setCustomerId(300000002351031L);
+		
+		com.ymca.ws.stubs.interaction.CreateInteraction createInteraction =  new com.ymca.ws.stubs.interaction.CreateInteraction();
+		createInteraction.setInteraction(fcrmInteraction);
+		InteractionService_Service  service =  new InteractionService_Service();		
+		InteractionService publicService = service.getInteractionServiceSoapHttpPort();
+		setWSBindingProvider(publicService, Constants.Interaction_URL);
+		Interaction fcrmInteractionResponse = null;
+		try {
+			fcrmInteractionResponse = publicService.createInteraction(fcrmInteraction);
+		} catch (ServiceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Interaction Created in FCRM");
+	}
+	
+	public static void setWSBindingProvider(Object publicService, String endPointAddress) {
+		 BindingProvider wsbp = (BindingProvider)publicService;
+	     Map<String, Object> reqContext = ((BindingProvider) wsbp).getRequestContext();
+	     reqContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPointAddress);
+	     reqContext.put(BindingProvider.USERNAME_PROPERTY, Constants.Fcrm_Username);
+	     reqContext.put(BindingProvider.PASSWORD_PROPERTY, Constants.Fcrm_Password);
+	    	    
+	     List handlerList = wsbp.getBinding().getHandlerChain();
+		 if (handlerList == null)
+			handlerList = new ArrayList();			
+			wsbp.getBinding().setHandlerChain(handlerList);
+	}
+
+}

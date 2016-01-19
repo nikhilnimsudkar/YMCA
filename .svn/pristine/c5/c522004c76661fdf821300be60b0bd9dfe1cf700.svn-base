@@ -1,0 +1,88 @@
+package com.ymca.test.controller;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPConstants;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPFactory;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.ws.client.support.interceptor.ClientInterceptor;
+import org.springframework.ws.soap.security.wss4j.Wss4jSecurityInterceptor;
+
+import com.serene.bootstrap.WebServiceBootStrap;
+import com.serene.ws.binding.CustomSoapParser;
+import com.serene.ws.exception.WebServiceException;
+import com.serene.ws.service.impl.GenericWebServiceImpl;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = WebServiceBootStrap.class)
+public class HallPassIntegrationTest {
+	
+	@Resource(name="genericWebServiceImpl")
+	GenericWebServiceImpl genericWebService;
+	
+	@Resource
+	private CustomSoapParser customSoapParser ;  
+
+	@Test
+	public void IsSOR() {
+		//GenericWebServiceImpl g = new GenericWebServiceImpl();
+		try {
+			 String strXML = new String(""
+			      +"<IsSOR xmlns=\"http://HallPassId.com/SORData/\">"
+			         +"<FirstName>Govind</FirstName>"
+			         +"<LastName>Patwa</LastName>"
+			         +"<DOB>1978-12-11</DOB>"
+			      +"</IsSOR>"
+			   );
+			
+			 ClientInterceptor[] interceptors = new ClientInterceptor[1];
+			 Wss4jSecurityInterceptor wsSecurityInterceptor = new Wss4jSecurityInterceptor();
+			 wsSecurityInterceptor.setSecurementUsername("YmCaSV");
+			 wsSecurityInterceptor.setSecurementPassword("yMCa6445");
+			 wsSecurityInterceptor.setSecurementActions("UsernameToken");
+			 //wsSecurityInterceptor.setSecurementPasswordType(WSConstants.PASSWORD_TEXT);
+			 interceptors[0] = wsSecurityInterceptor;
+			 genericWebService.setInterceptors(interceptors);
+			 genericWebService.invoke(strXML, "http://secure.hallpassid.com/SORServices/SORSearch.asmx?WSDL", "http://HallPassId.com/SORData/IsSOR");
+			//System.out.println(k);
+		} catch (WebServiceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void IsSORBySpringWs() {
+		//GenericWebServiceImpl g = new GenericWebServiceImpl();
+		try {
+		 	Map<String, Object> payLoad = new HashMap<String,Object>();
+		 	Map<String,String> data = new HashMap<String,String>();
+		 	data.put("FirstName", "Govind");
+		 	data.put("LastName", "Patwa");
+		 	data.put("DOB", "1978-12-11");
+			payLoad.put("IsSOR", data);
+	        
+			QName userCred = new QName("http://HallPassId.com/SORData/", "UserCredential","sor");
+			SOAPElement usernameToken = SOAPFactory.newInstance(SOAPConstants.DEFAULT_SOAP_PROTOCOL).createElement(userCred);
+			SOAPElement username = usernameToken.addChildElement("UserName","sor","http://HallPassId.com/SORData/");
+	        SOAPElement password = usernameToken.addChildElement("Password","sor","http://HallPassId.com/SORData/");
+	        username.setTextContent("YmCaSV");
+	        password.setTextContent("yMCa6445");
+	        
+	        Map out = genericWebService.invoke(payLoad,"http://secure.hallpassid.com/SORServices/SORSearch.asmx?WSDL", "http://HallPassId.com/SORData/IsSOR",usernameToken);
+	        System.out.println(out);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+}

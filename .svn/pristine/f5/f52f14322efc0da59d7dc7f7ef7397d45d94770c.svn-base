@@ -1,0 +1,143 @@
+package com.ymca.model;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="system_property")
+public class SystemProperty extends BaseObject implements GenericModel {
+	private static final long serialVersionUID = 2170838067182799183L;
+
+	@Id
+	private String keyName ;
+
+	@Column
+	private String picklistName;
+
+	@Column
+	private String keyValue;
+	
+	@Column
+	private String description ;
+	
+	@Column
+	private boolean fieldStatus = true;
+
+	@Column
+	private int fieldOrder = 0;
+	
+
+	public String getPicklistName() {
+		return picklistName;
+	}
+
+	public void setPicklistName(String picklistName) {
+		this.picklistName = picklistName;
+	}
+
+	public String getKeyName() {
+		return keyName;
+	}
+
+	public void setKeyName(String keyName) {
+		this.keyName = keyName;
+	}
+
+	public String getKeyValue() {
+		return keyValue;
+	}
+
+	public void setKeyValue(String keyValue) {
+		this.keyValue = keyValue;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public boolean isFieldStatus() {
+		return fieldStatus;
+	}
+
+	public void setFieldStatus(boolean fieldStatus) {
+		this.fieldStatus = fieldStatus;
+	}
+
+	public int getFieldOrder() {
+		return fieldOrder;
+	}
+
+	public void setFieldOrder(int fieldOrder) {
+		this.fieldOrder = fieldOrder;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + fieldOrder;
+		result = prime * result + (fieldStatus ? 1231 : 1237);
+		result = prime * result + ((keyName == null) ? 0 : keyName.hashCode());
+		result = prime * result
+				+ ((keyValue == null) ? 0 : keyValue.hashCode());
+		result = prime * result
+				+ ((picklistName == null) ? 0 : picklistName.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SystemProperty other = (SystemProperty) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (fieldOrder != other.fieldOrder)
+			return false;
+		if (fieldStatus != other.fieldStatus)
+			return false;
+		if (keyName == null) {
+			if (other.keyName != null)
+				return false;
+		} else if (!keyName.equals(other.keyName))
+			return false;
+		if (keyValue == null) {
+			if (other.keyValue != null)
+				return false;
+		} else if (!keyValue.equals(other.keyValue))
+			return false;
+		if (picklistName == null) {
+			if (other.picklistName != null)
+				return false;
+		} else if (!picklistName.equals(other.picklistName))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "SystemProperty [keyName=" + keyName + ", picklistName="
+				+ picklistName + ", keyValue=" + keyValue + ", description="
+				+ description + ", fieldStatus=" + fieldStatus
+				+ ", fieldOrder=" + fieldOrder + "]";
+	}
+
+
+	
+}
+

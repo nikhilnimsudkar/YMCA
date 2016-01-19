@@ -1,0 +1,86 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    
+<body>
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="main">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+	<div id="content" style="margin-top:30px;margin-bottom:30px;">
+		<form:form commandName="account" class="bootstrap-frm" id="addMembershipForm" method="post" action="addMember" style="padding:40px;">  
+			<div>
+				  <h2><span>ADD MEMBER</span></h2>
+				  <label><input type="text" placeholder="First Name" name="firstName" id="firstName" value="" /></label>
+				  <label><input type="text" placeholder="Last Name" name="lastName" id="lastName" value="" /></label>
+				  <label><input type="text" placeholder="Work Number" name="workNumber" id="workNumber" value="" /></label>
+				  <label><input type="text" placeholder="Cell Number" name="phoneNumber" id="phoneNumber" value="" /></label>
+				  <label><input type="text" placeholder="Home Number" name="homeNumber" id="homeNumber" value="" /></label>
+				  <label><input type="text" placeholder="Email" name="Email" id="Email" value="" /></label>
+				  
+				  <div id="statusBlock">
+					<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+					<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+				  </div>
+					
+				  <span id="addmemberBtn" class="k-button">Add</span>
+			</div>
+		</form:form>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {
+		$( "#addmemberBtn" ).click(function(){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait while the member is added");
+			//alert($('#addMembershipForm').serialize());
+			$.ajax({
+				  type: "POST",
+				  url: $('#addMembershipForm').attr( "action"),
+				  data: $('#addMembershipForm').serialize(),
+				  success: function( data ) {
+				  	  //alert(data);
+				  	 
+				  	  if(data=='SUCCESS'){
+					  	  $("#tcErrorSpan").css("display", "none");		
+						  $("#tcErrorSpan" ).html("");	
+						// $("#tcSuccessSpan").css("display", "block");		
+						  //$("#tcSuccessSpan" ).html("Profile Information Updated successfully.");
+						  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+						  setTimeout(function(){$(".k-loading-text").html("Member was added successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+					  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+					  	  //setTimeout(function(){location.href='view_membership';}, 7000);
+					  	  setTimeout(function(){location.reload();}, 7000);
+					  	  
+				  	  }else{
+				  		  $("#tcSuccessSpan").css("display", "none");		
+						  $("#tcSuccessSpan" ).html("");	
+						  $("#tcErrorSpan").css("display", "block");		
+						  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+						  $(".k-loading-mask").hide();
+				  	  }
+					  //$(".k-loading-mask").hide();
+				  },
+				  error: function( xhr,status,error ){
+					  //alert("1" +status);
+					  console.log(xhr);
+					  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcSuccessSpan" ).html("");	
+					  $("#tcErrorSpan").css("display", "block");		
+					  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+				  }
+			});
+			
+		});		   
+	});
+</script>
+
+</body>

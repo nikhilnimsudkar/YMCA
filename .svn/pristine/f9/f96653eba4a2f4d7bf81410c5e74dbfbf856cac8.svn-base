@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:batch="http://www.springframework.org/schema/batch"
+    xmlns:task="http://www.springframework.org/schema/task" 
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+<!-- PaymentMethod (PaymentMethod_c) Object  -->
+ 
+<!--  <bean id="scToDbPaymentMethodJobScheduler" class="com.serene.job.scheduler.GenericSCToDbJobScheduler">
+   <property name="jobName" value="scToDbPaymentMethodJob"/>
+ <property name="fql" value="Select Id,TypeofPaymentMethod_c from PaymentMethod_c  where LastUpdateDate AFTER #lastUpdateDate"></property>   
+ <property name="sql">
+     <value>
+             <![CDATA[
+    INSERT INTO payment_method (Id,TypeofPaymentMethod_c) 
+    VALUES (:Id,:TypeofPaymentMethod_c) ON DUPLICATE KEY 
+    UPDATE Id= :Id,TypeofPaymentMethod_c=:TypeofPaymentMethod_c]]>
+    </value>
+ </property>
+ <property name="dataSource" ref="portal_db"/>
+ <property name="scObjectName" value="PaymentMethod_c"/>
+ <property name="scObjectIdField" value="Id"/>
+ <property name="fieldMapping">
+  <map>
+   <entry key="Id" value="Id" />
+   <entry key="TypeofPaymentMethod_c" value="TypeofPaymentMethod_c" />
+  </map>
+ </property> 
+   </bean>  
+
+  <bean id="dbToScPaymentMethodJobScheduler" class="com.serene.job.scheduler.GenericDbToSCJobScheduler">
+  	<property name="jobName" value="dbToScPaymentMethodJob"/>
+	<property name="sql" value="SELECT Id,TypeofPaymentMethod_c FROM payment_method"/>
+	<property name="dataSource" ref="portal_db"/>
+	<property name="scObjectName" value="PaymentMethod_c"/>
+	<property name="scObjectIdField" value="Id"/>
+	<property name="fieldMapping">
+		<map>
+			<entry key="object/Id" value="Id" />
+			<entry key="object/TypeofPaymentMethod_c" value="TypeofPaymentMethod_c" />
+		</map>
+	</property>			  	
+  </bean> -->
+
+
+
+
+ <!--  Payment(Payment_c) Object -->
+ 
+<!--  <bean id="scToDbPaymentJobScheduler" class="com.serene.job.scheduler.GenericSCToDbJobScheduler">
+   <property name="jobName" value="scToDbPaymentJob"/>
+ <property name="fql" value="Select Id,Amount_c from Payment_c  where LastUpdateDate AFTER #lastUpdateDate"></property>   
+ <property name="sql">
+     <value>
+             <![CDATA[
+    INSERT INTO payment (Id,Amount_c) 
+    VALUES (:Id,:Amount_c) ON DUPLICATE KEY 
+    UPDATE Id= :Id,Amount_c=:Amount_c]]>
+    </value>
+ </property>
+ <property name="dataSource" ref="portal_db"/>
+ <property name="scObjectName" value="Payment_c"/>
+ <property name="scObjectIdField" value="Id"/>
+ <property name="fieldMapping">
+  <map>
+   <entry key="Id" value="Id" />
+   <entry key="Amount_c" value="Amount_c" />
+  </map>
+ </property> 
+   </bean>  
+
+
+  <bean id="dbToScPaymentJobScheduler" class="com.serene.job.scheduler.GenericDbToSCJobScheduler">
+  	<property name="jobName" value="dbToScPaymentJob"/>
+	<property name="sql" value="SELECT Id,Amount_c FROM payment"/>
+	<property name="dataSource" ref="portal_db"/>
+	<property name="scObjectName" value="Payment_c"/>
+	<property name="scObjectIdField" value="Id"/>
+	<property name="fieldMapping">
+		<map>
+			<entry key="object/Id" value="Id" />
+			<entry key="object/Amount_c" value="Amount_c" />
+		</map>
+	</property>			  	
+  </bean> -->
+
+
+<!-- SignUp(Membership_c) Object  -->
+<!--  <bean id="scToDbSignUpJobScheduler" class="com.serene.job.scheduler.GenericSCToDbJobScheduler">
+   <property name="jobName" value="scToDbSignUpJob"/>
+ <property name="fql" value="Select Id,PrimaryContact_Id_c,Customer_Id_c,PrimaryContact_c,FinalAmount_c,Location_c,StartDate_c,EndDate_c,Status_c,Type_c from Membership_c  where LastUpdateDate AFTER #lastUpdateDate"></property>   
+ <property name="sql">
+     <value>
+             <![CDATA[
+    INSERT INTO signup (Id,contact_name,final_amount,location,program_start_date,program_end_date,status,type) 
+    VALUES (:Id,:PrimaryContact_c,:FinalAmount_c,:Location_c,:StartDate_c,:EndDate_c,:Status_c,:Type_c) ON DUPLICATE KEY 
+    UPDATE Id = :Id,contact_name=:PrimaryContact_c,final_amount=:FinalAmount_c,location=:Location_c,program_start_date=:StartDate_c,program_end_date=:EndDate_c,status=:Status_c,type=:Type_c]]>
+    </value>
+ </property>
+ <property name="dataSource" ref="portal_db"/>
+ <property name="scObjectName" value="Membership_c"/>
+ <property name="scObjectIdField" value="Id"/>
+ <property name="fieldMapping">
+  <map>
+   <entry key="Id" value="Id" />
+  </map>
+ </property> 
+   </bean>  
+
+
+  <bean id="dbToScSignUpJobScheduler" class="com.serene.job.scheduler.GenericDbToSCJobScheduler" >
+  	<property name="jobName" value="dbToScSignUpJob"/>
+	<property name="sql" value="SELECT Id,PrimaryContact_c FROM signup"/>
+	<property name="dataSource" ref="portal_db"/>
+	<property name="scObjectName" value="Membership_c"/>
+	<property name="scObjectIdField" value="Id"/>
+	<property name="fieldMapping">
+		<map>
+			<entry key="object/Id" value="Id" />
+			<entry key="object/PrimaryContact_c" value="PrimaryContact_c"  />
+			
+		</map>
+	</property>			  	
+  </bean> -->
+
+
+<!--  ITEM Object -->
+<!--  <bean id="scToDbItemJobScheduler" class="com.serene.job.scheduler.GenericSCToDbJobScheduler">
+   <property name="jobName" value="scToDbItemJob"/>
+ <property name="fql" value="Select ItemId,ItemCategory.CategoryName from Item  where LastUpdateDate AFTER #lastUpdateDate"></property>   
+ <property name="sql">
+     <value>
+             <![CDATA[
+    INSERT INTO items (product_id,CategoryName) VALUES (:ItemId,:CategoryName) ON DUPLICATE KEY 
+    UPDATE product_id = :ItemId,CategoryName = :CategoryName]]>
+    </value>
+ </property>
+ <property name="dataSource" ref="portal_db"/>
+ <property name="scObjectName" value="Item"/>
+ <property name="scObjectIdField" value="ItemId"/>
+ <property name="fieldMapping">
+  <map>
+
+   <entry key="product_id" value="ItemId" />
+   <entry key="CategoryName" value="ItemCategory/CategoryName" />
+    </map>
+ </property> 
+ 
+ 	             
+  </bean>  --> 
+
+<!--  ITEM_DETAILS(ProductDetails_c) Object -->
+<!--  <bean id="scToDbItemDetailsJobScheduler" class="com.serene.job.scheduler.GenericSCToDbJobScheduler">
+   <property name="jobName" value="scToDbItemDetailsJob"/>
+ <property name="fql" value="Select Id from ProductDetails_c where LastUpdateDate AFTER #lastUpdateDate"></property>   
+ <property name="sql">
+     <value>
+             <![CDATA[
+    INSERT INTO item_details (id) VALUES (:Id) ON DUPLICATE KEY 
+    UPDATE id = :Id]]>
+    </value>
+ </property>
+ <property name="dataSource" ref="portal_db"/>
+ <property name="scObjectName" value="ProductDetails_c"/>
+ <property name="scObjectIdField" value="Id"/>
+ <property name="fieldMapping">
+  <map>
+   <entry key="id" value="Id" />
+ 
+  </map>
+ </property>      
+  </bean>   -->
+  
+  
+<!--  LOCATION Object -->
+<!-- <bean id="scToDbLocationJobScheduler" class="com.serene.job.scheduler.GenericSCToDbJobScheduler">
+   <property name="jobName" value="scToDbLocationJob"/>
+ <property name="fql" value="Select Id,AddressLine1_c,AddressLine2_c,RecordName,City_c,State_c,Telephone_c,Zip_c, from Location_c where LastUpdateDate AFTER #lastUpdateDate"></property>   
+ <property name="sql">
+     <value>
+             <![CDATA[
+    INSERT INTO locations (location_id,address1,address2,branch_name,city,state,phone_number,zip_code) VALUES (:Id,:AddressLine1_c,:AddressLine2_c,:RecordName,:City_c,:State_c,:Telephone_c,:Zip_c) ON DUPLICATE KEY 
+    UPDATE location_id = :Id,address1 = :AddressLine1_c,address2 = :AddressLine2_c, branch_name = :RecordName,city = :City_c,state = :State_c,phone_number = :Telephone_c,zip_code = :Zip_c ]]>
+    </value>
+ </property>
+ <property name="dataSource" ref="portal_db"/>
+ <property name="scObjectName" value="Location_c"/>
+ <property name="scObjectIdField" value="Id"/>
+ <property name="fieldMapping">
+  <map>
+   <entry key="location_id" value="Id" />
+  <entry key="branch_name" value="RecordName" /> 
+  </map>
+ </property>      
+  </bean>   -->
+
+
+<!--  CONTACT (PERSON Object) -->
+
+<!-- <bean id="scToDbAccountJobScheduler" class="com.serene.job.scheduler.GenericSCToDbJobScheduler">
+  	<property name="jobName" value="scToDbAccountJob"/>
+	<property name="fql" value="Select PartyId,PersonProfile.PersonFirstName,PersonProfile.PersonLastName,PersonProfile.PersonProfileId,Relationship.ObjectId,Email.EmailAddress from Person where PartyType = PERSON"></property>  	
+	<property name="sql">
+		  <value>
+	            <![CDATA[
+				INSERT INTO contact (id,PersonProfileId,PersonFirstName,PersonLastName,EmailAddress) VALUES (:PartyId,:PersonProfileId,:PersonFirstName,:PersonLastName,:EmailAddress) ON DUPLICATE KEY 
+				UPDATE PersonFirstName = :PersonFirstName,PersonLastName = :PersonLastName,EmailAddress = :EmailAddress	            ]]>
+		  </value>
+	</property>
+	<property name="dataSource" ref="portal_db"/>
+	<property name="scObjectName" value="Person"/>
+	<property name="scObjectIdField" value="PartyId"/>
+	<property name="fieldMapping">
+		<map>
+				<entry key="Name" value="Name" />
+				<entry key="PersonFirstName" value="PersonProfile/PersonFirstName" />
+				<entry key="PersonLastName" value="PersonProfile/PersonLastName" />
+				<entry key="PersonProfileId" value="PersonProfile/PersonProfileId" />
+				<entry key="EmailAddress" value="Email/EmailAddress" />
+				<entry key="LastUpdateDate" value="PersonProfile/LastUpdateDate"  />
+		</map>
+	</property>			  	
+  </bean>       -->
+
+<!--  <bean id="scToDbAccountJobScheduler" class="com.serene.job.scheduler.GenericSCToDbJobScheduler">
+  	<property name="jobName" value="scToDbAccountJob"/>
+	<property name="fql" value="Select PartyId,PersonProfile.PersonFirstName,PersonProfile.PersonLastName,Relationship.ObjectId,PersonProfile.PrimaryEmailAddress from Person where PartyType = PERSON"></property>  	
+	<property name="sql">
+		  <value>
+	            <![CDATA[
+				INSERT INTO contact (PartyId,PersonFirstName,PersonLastName,PrimaryEmailAddress) VALUES (:PartyId,:PersonFirstName,:PersonLastName,:PrimaryEmailAddress) ON DUPLICATE KEY 
+				UPDATE PersonFirstName = :PersonFirstName,PersonLastName = :PersonLastName,PrimaryEmailAddress = :PrimaryEmailAddress	            ]]>
+		  </value>
+	</property>
+	<property name="dataSource" ref="portal_db"/>
+	<property name="scObjectName" value="Person"/>
+	<property name="scObjectIdField" value="PartyId"/>
+	<property name="fieldMapping">
+		<map>
+				<entry key="Name" value="Name" />
+				<entry key="PersonFirstName" value="PersonProfile/PersonFirstName" />
+				<entry key="PersonLastName" value="PersonProfile/PersonLastName" />
+				
+				<entry key="PrimaryEmailAddress" value="PersonProfile/PrimaryEmailAddress" />
+				<entry key="LastUpdateDate" value="PersonProfile/LastUpdateDate"  />
+		</map>
+	</property>			  	
+  </bean> -->
+    
+ 
+<!--   <bean id="dbToScAccountJobScheduler" class="com.serene.job.scheduler.GenericDbToSCJobScheduler">
+  	<property name="jobName" value="dbToScAccountJob"/>
+	<property name="sql" value="SELECT PartyId,PersonFirstName,PersonLastName FROM contact"/>
+	<property name="dataSource" ref="portal_db"/>
+	<property name="scObjectName" value="Person"/>
+	<property name="scObjectIdField" value="PartyId"/>
+	<property name="fieldMapping">
+		<map>
+			<entry key="PersonProfile/PersonProfileId" value="PartyId" />
+			<entry key="PersonProfile/PersonProfileId" value="PartyId" />
+			<entry key="PersonProfile/PersonFirstName" value="PersonFirstName"  />
+			<entry key="PersonProfile/PersonLastName" value="PersonLastName"  />
+		</map>
+	</property>
+  </bean> -->
+
+<!--    <task:scheduled-tasks>  -->
+<!--    	<task:scheduled ref="dbToScAccountJobScheduler"  method="run" cron="0 0/1 * * * ?" />  -->
+<!--    	<task:scheduled ref="scToDbAccountJobScheduler"  method="run" cron="0 15 14,8 ? * MON-FRI" />  -->
+<!--    </task:scheduled-tasks> -->
+<!-- 	<task:scheduler id="scheduler" pool-size="10"/> -->
+</beans>

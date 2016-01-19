@@ -1,0 +1,48 @@
+package com.ymca.dao;
+
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.Account;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.Signup;
+import com.ymca.model.User;
+
+public interface SignupDao extends GenericDao<Signup, Long>  {
+	
+	List<Signup> getByCustomer(Account customer);
+	
+	List<Signup> getByCustomerAndType(Account customer, String type);
+	
+	List<Signup> findByContactNameAndTypeNotLike(String name,String type );
+	
+	Signup findByContactNameAndStatusAndTypeLike(String name,String status,String type);
+	
+	@Query("select s from Signup s where s.customer = ?1 and s.signupId=?2")
+	Signup findByCustomerAndSignupId(Account customer, Long signupid);
+	
+	@Query("select s from Signup s inner join s.contact c inner join s.itemDetail i where c.partyId =?1 and i.id= ?2")
+	List<Signup> getByContactAndItemDetails(Long contactId,Long itemDetailsId);
+	
+	List<Signup> getByCustomerAndContactAndStatusAndType(Account customer, User contact, String status,String type);
+	
+	@Query("select s, i from Signup s inner join s.itemDetail i where s.signupId=?1")
+	Object getSignupProgramById(Long signupId);
+	
+	@Query("SELECT s FROM Signup s INNER JOIN s.paymentMethod pm WHERE s.customer = ?1 AND s.status = 'Confirmed' AND pm.paymentId = ?2")
+	List<Signup> getByCustomerAndPaymentMethod(Account account, Long paymentId);
+	
+	List<Signup> findByContactAndTypeAndStatus(User contact, String type, String status);
+	
+	@Query("select MAX(waitlist) from Signup s where s.itemDetail=?1")
+	Object getMaxWaitlistPriorityByItemDetail(ItemDetail itemDetail);
+	
+	List<Signup> getByItemDetailAndStatus(ItemDetail itemDetail, String status);
+	List<Signup> getByItemDetailAndStatusOrderByWaitlistAsc(ItemDetail itemDetail, String status);
+	
+	//@Query("select s from Signup s where s.scId=?1")
+	Signup getByScId(String scId);
+}
+ 

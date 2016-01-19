@@ -1,0 +1,68 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+<div  class="k-block" style="background-color: rgb(255, 255, 255);">
+	<table cellpadding="0" cellspacing="0" width="99%"  rules="none" style="padding-left:4px;padding-top:4px;">
+		<tr ><span class="head" width="100%" style="margin-left:4px;SERACH">SERACH CUSTOMER </span></tr>
+		 <tr>&nbsp;</tr>
+		<tr>
+		  <td style="padding-bottom:3px;padding-left:4px;"><input type="text" placeholder="Enter First Name" id="fname" name="fname"></td>
+		  <td style="padding-bottom:3px;"><input type="text" placeholder="Enter Last Name" id="lname" name="lname"></td>
+		 <td style="padding-bottom:3px;padding-left:4px;"><input type="text" placeholder="Enter Email" id="email" name="email"></td>
+		 </tr> 
+		 <tr>
+		  <td style="padding-bottom:3px;padding-left:4px;"></td>
+		  <td style="padding-bottom:3px;" align="center"><span id="serchUser" class="k-button" onclick="searchUser()" style="width: 70px; text-shadow: none;">SEARCH</span></td>
+		  <td style="padding-bottom:3px;"></td>
+		 </tr> 
+	</table>
+</div>
+<div id="kgrid" ></div>
+<script type="text/javascript">
+function initGrid(){
+	 $("#kgrid").kendoGrid ( {
+		 dataSource: getRemoteData(),    	
+			height: 300,
+	        filterable: false,
+	        sortable: true,
+	        pageable: true,
+	        resizable: true,
+	        columns: 
+				[ {field: "customerId", title: "CustomerId " ,template: '<a href="YAgentConsoleContactSearch?customerId=211" target="_blank">#=customerId# </a>'},
+				  {field: "PersonFirstName", title: "First Name"},
+				 {field: "PersonLastName", title: "Last  Name"},
+ 				 {field: "PrimaryEmailAddress", title: "Email id "},
+				 {field: "FormattedPhoneNumber", title: "Phone No "},					 
+				 {field: "DateOfBirth", title: "DOB"} 				 
+ 				]
+	 });
+}
+		 
+function getRemoteData(fName,lName,eMail) { 
+	var fName = $("#fname").val();
+	var lName = $("#lname").val();
+	var eMail = $("#email").val();
+	var source = new kendo.data.DataSource({
+        autoSync: false,
+        transport: {
+            read: {
+                type: "GET",
+                url: "getUsersBySearchCriteria",
+                data: {"fName" : fName,"lName" : lName,"eMail" : eMail},
+                dataType: "json",                
+                cache: false
+            }    	            
+        },
+        pageSize: 5
+    });
+    source.fetch(function () {
+        var data = this.data();
+    });
+    return source;
+}
+		 
+function searchUser(){
+	initGrid();
+	$("#kgrid").show();
+	return true;
+}
+</script>

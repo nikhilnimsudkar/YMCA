@@ -1,0 +1,59 @@
+package com.ymca.web.controller;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.ItemDetailDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.Location;
+
+@Controller
+public class FacilityBooking {
+
+	@Resource
+	private ItemDetailDao itemDetailsDao; 
+	
+	@Resource
+	private LocationDao locationDao;
+
+	
+	
+    @RequestMapping(value="/facilityBooking", method=RequestMethod.GET)
+    public ModelAndView facilityBooking() {
+    	
+    	Model model = new ExtendedModelMap();
+    	
+    	List<ItemDetail> itemList =  itemDetailsDao.findByCategory("facility");
+    	JSONArray resultList = new JSONArray();
+    	for(Object object : itemList){
+    		ItemDetail itemDetail = (ItemDetail) object;
+    		JSONObject obj = new JSONObject();
+    		obj.put("Item", itemDetail.getDescription());
+    		if (itemDetail.getLocationId() != null) {
+    			Location location = locationDao.getLocationsByLocationId(itemDetail.getLocationId());
+    			if (location != null) {
+    				obj.put("location",location.getAddressLine1_c() + "," + location.getCity_c() + "," +  location.getState_c()); 
+    			}
+    		}
+    		   		
+    		resultList.add(obj);
+    	}
+    	
+    	model.addAttribute("facilityList", resultList);
+    	return new ModelAndView("facilityBooking", model.asMap());
+    }
+    
+    
+}

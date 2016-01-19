@@ -1,0 +1,1932 @@
+
+package com.ymca.ws.stubs.interaction;
+
+import java.math.BigDecimal;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlElementDecl;
+import javax.xml.bind.annotation.XmlRegistry;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
+
+
+/**
+ * This object contains factory methods for each 
+ * Java content interface and Java element interface 
+ * generated in the com.ymca.ws.stubs.interaction package. 
+ * <p>An ObjectFactory allows you to programatically 
+ * construct new instances of the Java representation 
+ * for XML content. The Java representation of XML 
+ * content can consist of schema derived interfaces 
+ * and classes representing the binding of schema 
+ * type definitions, element declarations and model 
+ * groups.  Factory methods for each of these are 
+ * provided in this class.
+ * 
+ */
+@XmlRegistry
+public class ObjectFactory {
+
+    private final static QName _InteractionCurrencyCode_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "CurrencyCode");
+    private final static QName _InteractionCorpCurrencyCode_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "CorpCurrencyCode");
+    private final static QName _InteractionCurcyConvRateType_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "CurcyConvRateType");
+    private final static QName _InteractionSalesAccountId_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "SalesAccountId");
+    private final static QName _InteractionInteractionEndDate_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "InteractionEndDate");
+    private final static QName _InteractionLastUpdateLogin_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "LastUpdateLogin");
+    private final static QName _InteractionMediaTypeCode_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "MediaTypeCode");
+    private final static QName _InteractionOutcomeCode_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "OutcomeCode");
+    private final static QName _InteractionInteractionDescription_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "InteractionDescription");
+    private final static QName _InteractionInteractionSubject_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "InteractionSubject");
+    private final static QName _InteractionSwitchCallId_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "SwitchCallId");
+    private final static QName _InteractionOtherPartyPhoneNumber_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "OtherPartyPhoneNumber");
+    private final static QName _InteractionParticipantConflictId_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "ConflictId");
+    private final static QName _InteractionParticipantRelationshipId_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "RelationshipId");
+    private final static QName _InteractionParticipantResourceOrgId_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "ResourceOrgId");
+    private final static QName _InteractionParticipantUserGUID_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "UserGUID");
+    private final static QName _Fault_QNAME = new QName("http://xmlns.oracle.com/oracleas/schema/oracle-fault-11_0", "Fault");
+    private final static QName _InteractionParticipant_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "interactionParticipant");
+    private final static QName _Types_QNAME = new QName("commonj.sdo", "types");
+    private final static QName _DataObject_QNAME = new QName("commonj.sdo", "dataObject");
+    private final static QName _CommonAttachments_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "commonAttachments");
+    private final static QName _ServiceErrorMessage_QNAME = new QName("http://xmlns.oracle.com/adf/svc/errors/", "ServiceErrorMessage");
+    private final static QName _Datagraph_QNAME = new QName("commonj.sdo", "datagraph");
+    private final static QName _InteractionAssociation_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "interactionAssociation");
+    private final static QName _FindCriteria_QNAME = new QName("http://xmlns.oracle.com/adf/svc/types/", "findCriteria");
+    private final static QName _Interaction_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "interaction");
+    private final static QName _Type_QNAME = new QName("commonj.sdo", "type");
+    private final static QName _FindControl_QNAME = new QName("http://xmlns.oracle.com/adf/svc/types/", "findControl");
+    private final static QName _ProcessControl_QNAME = new QName("http://xmlns.oracle.com/adf/svc/types/", "processControl");
+    private final static QName _InteractionAssociationAssociationSequenceNumber_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", "AssociationSequenceNumber");
+    private final static QName _CommonAttachmentsUploadedFile_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "UploadedFile");
+    private final static QName _CommonAttachmentsDmVersionNumber_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "DmVersionNumber");
+    private final static QName _CommonAttachmentsFileName_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "FileName");
+    private final static QName _CommonAttachmentsDocumentEntityId_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "DocumentEntityId");
+    private final static QName _CommonAttachmentsTableName_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "TableName");
+    private final static QName _CommonAttachmentsDownloadStatus_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "DownloadStatus");
+    private final static QName _CommonAttachmentsAttachedDocumentId_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "AttachedDocumentId");
+    private final static QName _CommonAttachmentsCategoryName_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "CategoryName");
+    private final static QName _CommonAttachmentsUploadedFileName_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "UploadedFileName");
+    private final static QName _CommonAttachmentsDescription_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "Description");
+    private final static QName _CommonAttachmentsDmFolderPath_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "DmFolderPath");
+    private final static QName _CommonAttachmentsDmNode_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "DmNode");
+    private final static QName _CommonAttachmentsDmRepository_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "DmRepository");
+    private final static QName _CommonAttachmentsPk4Value_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "Pk4Value");
+    private final static QName _CommonAttachmentsUsageType_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "UsageType");
+    private final static QName _CommonAttachmentsTitle_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "Title");
+    private final static QName _CommonAttachmentsDocumentAttributes_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "DocumentAttributes");
+    private final static QName _CommonAttachmentsPk2Value_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "Pk2Value");
+    private final static QName _CommonAttachmentsPk5Value_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "Pk5Value");
+    private final static QName _CommonAttachmentsUploadedFileContentType_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "UploadedFileContentType");
+    private final static QName _CommonAttachmentsEntityAttributes_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "EntityAttributes");
+    private final static QName _CommonAttachmentsDatatypeCode_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "DatatypeCode");
+    private final static QName _CommonAttachmentsDmType_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "DmType");
+    private final static QName _CommonAttachmentsURL_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "URL");
+    private final static QName _CommonAttachmentsVersionControlIcon_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "VersionControlIcon");
+    private final static QName _CommonAttachmentsFileURL_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "FileURL");
+    private final static QName _CommonAttachmentsAttachment_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "Attachment");
+    private final static QName _CommonAttachmentsPk1Value_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "Pk1Value");
+    private final static QName _CommonAttachmentsPk3Value_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "Pk3Value");
+    private final static QName _CommonAttachmentsEntityName_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "EntityName");
+    private final static QName _CommonAttachmentsUploadedFileLength_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "UploadedFileLength");
+    private final static QName _CommonAttachmentsUploadedText_QNAME = new QName("http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", "UploadedText");
+
+    /**
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: com.ymca.ws.stubs.interaction
+     * 
+     */
+    public ObjectFactory() {
+    }
+
+    /**
+     * Create an instance of {@link FaultType }
+     * 
+     */
+    public FaultType createFaultType() {
+        return new FaultType();
+    }
+
+    /**
+     * Create an instance of {@link Detail }
+     * 
+     */
+    public Detail createDetail() {
+        return new Detail();
+    }
+
+    /**
+     * Create an instance of {@link CopyInteractionAttachment }
+     * 
+     */
+    public CopyInteractionAttachment createCopyInteractionAttachment() {
+        return new CopyInteractionAttachment();
+    }
+
+    /**
+     * Create an instance of {@link CommonAttachments }
+     * 
+     */
+    public CommonAttachments createCommonAttachments() {
+        return new CommonAttachments();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionAssociationAsync }
+     * 
+     */
+    public UpdateInteractionAssociationAsync createUpdateInteractionAssociationAsync() {
+        return new UpdateInteractionAssociationAsync();
+    }
+
+    /**
+     * Create an instance of {@link InteractionAssociation }
+     * 
+     */
+    public InteractionAssociation createInteractionAssociation() {
+        return new InteractionAssociation();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionResponse }
+     * 
+     */
+    public DeleteInteractionResponse createDeleteInteractionResponse() {
+        return new DeleteInteractionResponse();
+    }
+
+    /**
+     * Create an instance of {@link MergeInteractionResponse }
+     * 
+     */
+    public MergeInteractionResponse createMergeInteractionResponse() {
+        return new MergeInteractionResponse();
+    }
+
+    /**
+     * Create an instance of {@link Interaction }
+     * 
+     */
+    public Interaction createInteraction() {
+        return new Interaction();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionParticipantAsyncResponse }
+     * 
+     */
+    public CreateInteractionParticipantAsyncResponse createCreateInteractionParticipantAsyncResponse() {
+        return new CreateInteractionParticipantAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link InteractionParticipant }
+     * 
+     */
+    public InteractionParticipant createInteractionParticipant() {
+        return new InteractionParticipant();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionParticipant }
+     * 
+     */
+    public DeleteInteractionParticipant createDeleteInteractionParticipant() {
+        return new DeleteInteractionParticipant();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionAssociationResponse }
+     * 
+     */
+    public GetInteractionAssociationResponse createGetInteractionAssociationResponse() {
+        return new GetInteractionAssociationResponse();
+    }
+
+    /**
+     * Create an instance of {@link CopyInteractionAttachmentAsync }
+     * 
+     */
+    public CopyInteractionAttachmentAsync createCopyInteractionAttachmentAsync() {
+        return new CopyInteractionAttachmentAsync();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionParticipantAsyncResponse }
+     * 
+     */
+    public GetInteractionParticipantAsyncResponse createGetInteractionParticipantAsyncResponse() {
+        return new GetInteractionParticipantAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionAssociation }
+     * 
+     */
+    public GetInteractionAssociation createGetInteractionAssociation() {
+        return new GetInteractionAssociation();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionParticipantResponse }
+     * 
+     */
+    public DeleteInteractionParticipantResponse createDeleteInteractionParticipantResponse() {
+        return new DeleteInteractionParticipantResponse();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionParticipantResponse }
+     * 
+     */
+    public ProcessInteractionParticipantResponse createProcessInteractionParticipantResponse() {
+        return new ProcessInteractionParticipantResponse();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionParticipantAsyncResponse }
+     * 
+     */
+    public DeleteInteractionParticipantAsyncResponse createDeleteInteractionParticipantAsyncResponse() {
+        return new DeleteInteractionParticipantAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionAssociationAsync }
+     * 
+     */
+    public GetInteractionAssociationAsync createGetInteractionAssociationAsync() {
+        return new GetInteractionAssociationAsync();
+    }
+
+    /**
+     * Create an instance of {@link MergeInteraction }
+     * 
+     */
+    public MergeInteraction createMergeInteraction() {
+        return new MergeInteraction();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionAttachmentAsyncResponse }
+     * 
+     */
+    public GetInteractionAttachmentAsyncResponse createGetInteractionAttachmentAsyncResponse() {
+        return new GetInteractionAttachmentAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionParticipantResponse }
+     * 
+     */
+    public CreateInteractionParticipantResponse createCreateInteractionParticipantResponse() {
+        return new CreateInteractionParticipantResponse();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteraction }
+     * 
+     */
+    public DeleteInteraction createDeleteInteraction() {
+        return new DeleteInteraction();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionAttachmentResponse }
+     * 
+     */
+    public CreateInteractionAttachmentResponse createCreateInteractionAttachmentResponse() {
+        return new CreateInteractionAttachmentResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetServiceLastUpdateTimeAsync }
+     * 
+     */
+    public GetServiceLastUpdateTimeAsync createGetServiceLastUpdateTimeAsync() {
+        return new GetServiceLastUpdateTimeAsync();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionParticipant }
+     * 
+     */
+    public CreateInteractionParticipant createCreateInteractionParticipant() {
+        return new CreateInteractionParticipant();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteraction }
+     * 
+     */
+    public UpdateInteraction createUpdateInteraction() {
+        return new UpdateInteraction();
+    }
+
+    /**
+     * Create an instance of {@link CopyInteractionAttachmentResponse }
+     * 
+     */
+    public CopyInteractionAttachmentResponse createCopyInteractionAttachmentResponse() {
+        return new CopyInteractionAttachmentResponse();
+    }
+
+    /**
+     * Create an instance of {@link CopyInteractionAttachmentAsyncResponse }
+     * 
+     */
+    public CopyInteractionAttachmentAsyncResponse createCopyInteractionAttachmentAsyncResponse() {
+        return new CopyInteractionAttachmentAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link FindInteraction }
+     * 
+     */
+    public FindInteraction createFindInteraction() {
+        return new FindInteraction();
+    }
+
+    /**
+     * Create an instance of {@link FindCriteria }
+     * 
+     */
+    public FindCriteria createFindCriteria() {
+        return new FindCriteria();
+    }
+
+    /**
+     * Create an instance of {@link FindControl }
+     * 
+     */
+    public FindControl createFindControl() {
+        return new FindControl();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionParticipant }
+     * 
+     */
+    public FindInteractionParticipant createFindInteractionParticipant() {
+        return new FindInteractionParticipant();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionAsyncResponse }
+     * 
+     */
+    public ProcessInteractionAsyncResponse createProcessInteractionAsyncResponse() {
+        return new ProcessInteractionAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionAttachmentAsync }
+     * 
+     */
+    public GetInteractionAttachmentAsync createGetInteractionAttachmentAsync() {
+        return new GetInteractionAttachmentAsync();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionAssociationAsync }
+     * 
+     */
+    public CreateInteractionAssociationAsync createCreateInteractionAssociationAsync() {
+        return new CreateInteractionAssociationAsync();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionAssociationAsyncResponse }
+     * 
+     */
+    public UpdateInteractionAssociationAsyncResponse createUpdateInteractionAssociationAsyncResponse() {
+        return new UpdateInteractionAssociationAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionParticipantAsyncResponse }
+     * 
+     */
+    public FindInteractionParticipantAsyncResponse createFindInteractionParticipantAsyncResponse() {
+        return new FindInteractionParticipantAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionAsync }
+     * 
+     */
+    public DeleteInteractionAsync createDeleteInteractionAsync() {
+        return new DeleteInteractionAsync();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionAssociation }
+     * 
+     */
+    public FindInteractionAssociation createFindInteractionAssociation() {
+        return new FindInteractionAssociation();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionParticipantAsyncResponse }
+     * 
+     */
+    public ProcessInteractionParticipantAsyncResponse createProcessInteractionParticipantAsyncResponse() {
+        return new ProcessInteractionParticipantAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionAssociationAsyncResponse }
+     * 
+     */
+    public ProcessInteractionAssociationAsyncResponse createProcessInteractionAssociationAsyncResponse() {
+        return new ProcessInteractionAssociationAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionAsync }
+     * 
+     */
+    public UpdateInteractionAsync createUpdateInteractionAsync() {
+        return new UpdateInteractionAsync();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionAsync }
+     * 
+     */
+    public CreateInteractionAsync createCreateInteractionAsync() {
+        return new CreateInteractionAsync();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionAssociationAsyncResponse }
+     * 
+     */
+    public GetInteractionAssociationAsyncResponse createGetInteractionAssociationAsyncResponse() {
+        return new GetInteractionAssociationAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionAttachmentAsyncResponse }
+     * 
+     */
+    public DeleteInteractionAttachmentAsyncResponse createDeleteInteractionAttachmentAsyncResponse() {
+        return new DeleteInteractionAttachmentAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionAssociationResponse }
+     * 
+     */
+    public DeleteInteractionAssociationResponse createDeleteInteractionAssociationResponse() {
+        return new DeleteInteractionAssociationResponse();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionAsyncResponse }
+     * 
+     */
+    public FindInteractionAsyncResponse createFindInteractionAsyncResponse() {
+        return new FindInteractionAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link MergeInteractionAsyncResponse }
+     * 
+     */
+    public MergeInteractionAsyncResponse createMergeInteractionAsyncResponse() {
+        return new MergeInteractionAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetEntityList }
+     * 
+     */
+    public GetEntityList createGetEntityList() {
+        return new GetEntityList();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionResponse }
+     * 
+     */
+    public UpdateInteractionResponse createUpdateInteractionResponse() {
+        return new UpdateInteractionResponse();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteraction }
+     * 
+     */
+    public CreateInteraction createCreateInteraction() {
+        return new CreateInteraction();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionAssociation }
+     * 
+     */
+    public ProcessInteractionAssociation createProcessInteractionAssociation() {
+        return new ProcessInteractionAssociation();
+    }
+
+    /**
+     * Create an instance of {@link ProcessControl }
+     * 
+     */
+    public ProcessControl createProcessControl() {
+        return new ProcessControl();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionAsyncResponse }
+     * 
+     */
+    public GetInteractionAsyncResponse createGetInteractionAsyncResponse() {
+        return new GetInteractionAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionParticipant }
+     * 
+     */
+    public UpdateInteractionParticipant createUpdateInteractionParticipant() {
+        return new UpdateInteractionParticipant();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionResponse }
+     * 
+     */
+    public CreateInteractionResponse createCreateInteractionResponse() {
+        return new CreateInteractionResponse();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionAssociation }
+     * 
+     */
+    public UpdateInteractionAssociation createUpdateInteractionAssociation() {
+        return new UpdateInteractionAssociation();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionParticipantAsync }
+     * 
+     */
+    public FindInteractionParticipantAsync createFindInteractionParticipantAsync() {
+        return new FindInteractionParticipantAsync();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionAssociationAsync }
+     * 
+     */
+    public ProcessInteractionAssociationAsync createProcessInteractionAssociationAsync() {
+        return new ProcessInteractionAssociationAsync();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionAssociation }
+     * 
+     */
+    public DeleteInteractionAssociation createDeleteInteractionAssociation() {
+        return new DeleteInteractionAssociation();
+    }
+
+    /**
+     * Create an instance of {@link GetInteraction }
+     * 
+     */
+    public GetInteraction createGetInteraction() {
+        return new GetInteraction();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionParticipantAsync }
+     * 
+     */
+    public CreateInteractionParticipantAsync createCreateInteractionParticipantAsync() {
+        return new CreateInteractionParticipantAsync();
+    }
+
+    /**
+     * Create an instance of {@link GetEntityListAsync }
+     * 
+     */
+    public GetEntityListAsync createGetEntityListAsync() {
+        return new GetEntityListAsync();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionAssociationResponse }
+     * 
+     */
+    public ProcessInteractionAssociationResponse createProcessInteractionAssociationResponse() {
+        return new ProcessInteractionAssociationResponse();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionParticipant }
+     * 
+     */
+    public ProcessInteractionParticipant createProcessInteractionParticipant() {
+        return new ProcessInteractionParticipant();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionAssociationAsyncResponse }
+     * 
+     */
+    public DeleteInteractionAssociationAsyncResponse createDeleteInteractionAssociationAsyncResponse() {
+        return new DeleteInteractionAssociationAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionAttachmentAsync }
+     * 
+     */
+    public DeleteInteractionAttachmentAsync createDeleteInteractionAttachmentAsync() {
+        return new DeleteInteractionAttachmentAsync();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteraction }
+     * 
+     */
+    public ProcessInteraction createProcessInteraction() {
+        return new ProcessInteraction();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionAsyncResponse }
+     * 
+     */
+    public CreateInteractionAsyncResponse createCreateInteractionAsyncResponse() {
+        return new CreateInteractionAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetDfltObjAttrHintsAsync }
+     * 
+     */
+    public GetDfltObjAttrHintsAsync createGetDfltObjAttrHintsAsync() {
+        return new GetDfltObjAttrHintsAsync();
+    }
+
+    /**
+     * Create an instance of {@link GetEntityListResponse }
+     * 
+     */
+    public GetEntityListResponse createGetEntityListResponse() {
+        return new GetEntityListResponse();
+    }
+
+    /**
+     * Create an instance of {@link ServiceViewInfo }
+     * 
+     */
+    public ServiceViewInfo createServiceViewInfo() {
+        return new ServiceViewInfo();
+    }
+
+    /**
+     * Create an instance of {@link GetServiceLastUpdateTimeAsyncResponse }
+     * 
+     */
+    public GetServiceLastUpdateTimeAsyncResponse createGetServiceLastUpdateTimeAsyncResponse() {
+        return new GetServiceLastUpdateTimeAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetDfltObjAttrHintsResponse }
+     * 
+     */
+    public GetDfltObjAttrHintsResponse createGetDfltObjAttrHintsResponse() {
+        return new GetDfltObjAttrHintsResponse();
+    }
+
+    /**
+     * Create an instance of {@link ObjAttrHints }
+     * 
+     */
+    public ObjAttrHints createObjAttrHints() {
+        return new ObjAttrHints();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionParticipant }
+     * 
+     */
+    public GetInteractionParticipant createGetInteractionParticipant() {
+        return new GetInteractionParticipant();
+    }
+
+    /**
+     * Create an instance of {@link MergeInteractionAsync }
+     * 
+     */
+    public MergeInteractionAsync createMergeInteractionAsync() {
+        return new MergeInteractionAsync();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionAssociationAsyncResponse }
+     * 
+     */
+    public CreateInteractionAssociationAsyncResponse createCreateInteractionAssociationAsyncResponse() {
+        return new CreateInteractionAssociationAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetServiceLastUpdateTime }
+     * 
+     */
+    public GetServiceLastUpdateTime createGetServiceLastUpdateTime() {
+        return new GetServiceLastUpdateTime();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionAssociationAsyncResponse }
+     * 
+     */
+    public FindInteractionAssociationAsyncResponse createFindInteractionAssociationAsyncResponse() {
+        return new FindInteractionAssociationAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionAsync }
+     * 
+     */
+    public ProcessInteractionAsync createProcessInteractionAsync() {
+        return new ProcessInteractionAsync();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionResponse }
+     * 
+     */
+    public GetInteractionResponse createGetInteractionResponse() {
+        return new GetInteractionResponse();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionAsync }
+     * 
+     */
+    public FindInteractionAsync createFindInteractionAsync() {
+        return new FindInteractionAsync();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionParticipantAsync }
+     * 
+     */
+    public ProcessInteractionParticipantAsync createProcessInteractionParticipantAsync() {
+        return new ProcessInteractionParticipantAsync();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionParticipantAsync }
+     * 
+     */
+    public GetInteractionParticipantAsync createGetInteractionParticipantAsync() {
+        return new GetInteractionParticipantAsync();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionAttachmentResponse }
+     * 
+     */
+    public GetInteractionAttachmentResponse createGetInteractionAttachmentResponse() {
+        return new GetInteractionAttachmentResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetEntityListAsyncResponse }
+     * 
+     */
+    public GetEntityListAsyncResponse createGetEntityListAsyncResponse() {
+        return new GetEntityListAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionAttachment }
+     * 
+     */
+    public CreateInteractionAttachment createCreateInteractionAttachment() {
+        return new CreateInteractionAttachment();
+    }
+
+    /**
+     * Create an instance of {@link GetDfltObjAttrHints }
+     * 
+     */
+    public GetDfltObjAttrHints createGetDfltObjAttrHints() {
+        return new GetDfltObjAttrHints();
+    }
+
+    /**
+     * Create an instance of {@link GetDfltObjAttrHintsAsyncResponse }
+     * 
+     */
+    public GetDfltObjAttrHintsAsyncResponse createGetDfltObjAttrHintsAsyncResponse() {
+        return new GetDfltObjAttrHintsAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionAssociationResponse }
+     * 
+     */
+    public UpdateInteractionAssociationResponse createUpdateInteractionAssociationResponse() {
+        return new UpdateInteractionAssociationResponse();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionAttachment }
+     * 
+     */
+    public DeleteInteractionAttachment createDeleteInteractionAttachment() {
+        return new DeleteInteractionAttachment();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionAsyncResponse }
+     * 
+     */
+    public UpdateInteractionAsyncResponse createUpdateInteractionAsyncResponse() {
+        return new UpdateInteractionAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionAssociationAsync }
+     * 
+     */
+    public FindInteractionAssociationAsync createFindInteractionAssociationAsync() {
+        return new FindInteractionAssociationAsync();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionAttachmentAsync }
+     * 
+     */
+    public CreateInteractionAttachmentAsync createCreateInteractionAttachmentAsync() {
+        return new CreateInteractionAttachmentAsync();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionParticipantResponse }
+     * 
+     */
+    public FindInteractionParticipantResponse createFindInteractionParticipantResponse() {
+        return new FindInteractionParticipantResponse();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionAssociationResponse }
+     * 
+     */
+    public CreateInteractionAssociationResponse createCreateInteractionAssociationResponse() {
+        return new CreateInteractionAssociationResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionParticipantResponse }
+     * 
+     */
+    public GetInteractionParticipantResponse createGetInteractionParticipantResponse() {
+        return new GetInteractionParticipantResponse();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionAssociationResponse }
+     * 
+     */
+    public FindInteractionAssociationResponse createFindInteractionAssociationResponse() {
+        return new FindInteractionAssociationResponse();
+    }
+
+    /**
+     * Create an instance of {@link ProcessInteractionResponse }
+     * 
+     */
+    public ProcessInteractionResponse createProcessInteractionResponse() {
+        return new ProcessInteractionResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionAttachment }
+     * 
+     */
+    public GetInteractionAttachment createGetInteractionAttachment() {
+        return new GetInteractionAttachment();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionAssociation }
+     * 
+     */
+    public CreateInteractionAssociation createCreateInteractionAssociation() {
+        return new CreateInteractionAssociation();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionAsyncResponse }
+     * 
+     */
+    public DeleteInteractionAsyncResponse createDeleteInteractionAsyncResponse() {
+        return new DeleteInteractionAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetInteractionAsync }
+     * 
+     */
+    public GetInteractionAsync createGetInteractionAsync() {
+        return new GetInteractionAsync();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionParticipantAsync }
+     * 
+     */
+    public DeleteInteractionParticipantAsync createDeleteInteractionParticipantAsync() {
+        return new DeleteInteractionParticipantAsync();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionAssociationAsync }
+     * 
+     */
+    public DeleteInteractionAssociationAsync createDeleteInteractionAssociationAsync() {
+        return new DeleteInteractionAssociationAsync();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionParticipantResponse }
+     * 
+     */
+    public UpdateInteractionParticipantResponse createUpdateInteractionParticipantResponse() {
+        return new UpdateInteractionParticipantResponse();
+    }
+
+    /**
+     * Create an instance of {@link DeleteInteractionAttachmentResponse }
+     * 
+     */
+    public DeleteInteractionAttachmentResponse createDeleteInteractionAttachmentResponse() {
+        return new DeleteInteractionAttachmentResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetServiceLastUpdateTimeResponse }
+     * 
+     */
+    public GetServiceLastUpdateTimeResponse createGetServiceLastUpdateTimeResponse() {
+        return new GetServiceLastUpdateTimeResponse();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionParticipantAsync }
+     * 
+     */
+    public UpdateInteractionParticipantAsync createUpdateInteractionParticipantAsync() {
+        return new UpdateInteractionParticipantAsync();
+    }
+
+    /**
+     * Create an instance of {@link FindInteractionResponse }
+     * 
+     */
+    public FindInteractionResponse createFindInteractionResponse() {
+        return new FindInteractionResponse();
+    }
+
+    /**
+     * Create an instance of {@link CreateInteractionAttachmentAsyncResponse }
+     * 
+     */
+    public CreateInteractionAttachmentAsyncResponse createCreateInteractionAttachmentAsyncResponse() {
+        return new CreateInteractionAttachmentAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link UpdateInteractionParticipantAsyncResponse }
+     * 
+     */
+    public UpdateInteractionParticipantAsyncResponse createUpdateInteractionParticipantAsyncResponse() {
+        return new UpdateInteractionParticipantAsyncResponse();
+    }
+
+    /**
+     * Create an instance of {@link ChildFindCriteria }
+     * 
+     */
+    public ChildFindCriteria createChildFindCriteria() {
+        return new ChildFindCriteria();
+    }
+
+    /**
+     * Create an instance of {@link BigDecimalResult }
+     * 
+     */
+    public BigDecimalResult createBigDecimalResult() {
+        return new BigDecimalResult();
+    }
+
+    /**
+     * Create an instance of {@link SortOrder }
+     * 
+     */
+    public SortOrder createSortOrder() {
+        return new SortOrder();
+    }
+
+    /**
+     * Create an instance of {@link SortAttribute }
+     * 
+     */
+    public SortAttribute createSortAttribute() {
+        return new SortAttribute();
+    }
+
+    /**
+     * Create an instance of {@link AmountType }
+     * 
+     */
+    public AmountType createAmountType() {
+        return new AmountType();
+    }
+
+    /**
+     * Create an instance of {@link DataObjectResult }
+     * 
+     */
+    public DataObjectResult createDataObjectResult() {
+        return new DataObjectResult();
+    }
+
+    /**
+     * Create an instance of {@link BooleanResult }
+     * 
+     */
+    public BooleanResult createBooleanResult() {
+        return new BooleanResult();
+    }
+
+    /**
+     * Create an instance of {@link MeasureType }
+     * 
+     */
+    public MeasureType createMeasureType() {
+        return new MeasureType();
+    }
+
+    /**
+     * Create an instance of {@link MethodResult }
+     * 
+     */
+    public MethodResult createMethodResult() {
+        return new MethodResult();
+    }
+
+    /**
+     * Create an instance of {@link TimeResult }
+     * 
+     */
+    public TimeResult createTimeResult() {
+        return new TimeResult();
+    }
+
+    /**
+     * Create an instance of {@link DateResult }
+     * 
+     */
+    public DateResult createDateResult() {
+        return new DateResult();
+    }
+
+    /**
+     * Create an instance of {@link ViewCriteriaRow }
+     * 
+     */
+    public ViewCriteriaRow createViewCriteriaRow() {
+        return new ViewCriteriaRow();
+    }
+
+    /**
+     * Create an instance of {@link BytesResult }
+     * 
+     */
+    public BytesResult createBytesResult() {
+        return new BytesResult();
+    }
+
+    /**
+     * Create an instance of {@link CtrlHint }
+     * 
+     */
+    public CtrlHint createCtrlHint() {
+        return new CtrlHint();
+    }
+
+    /**
+     * Create an instance of {@link DoubleResult }
+     * 
+     */
+    public DoubleResult createDoubleResult() {
+        return new DoubleResult();
+    }
+
+    /**
+     * Create an instance of {@link ViewCriteriaItem }
+     * 
+     */
+    public ViewCriteriaItem createViewCriteriaItem() {
+        return new ViewCriteriaItem();
+    }
+
+    /**
+     * Create an instance of {@link ShortResult }
+     * 
+     */
+    public ShortResult createShortResult() {
+        return new ShortResult();
+    }
+
+    /**
+     * Create an instance of {@link BigIntegerResult }
+     * 
+     */
+    public BigIntegerResult createBigIntegerResult() {
+        return new BigIntegerResult();
+    }
+
+    /**
+     * Create an instance of {@link DataHandlerResult }
+     * 
+     */
+    public DataHandlerResult createDataHandlerResult() {
+        return new DataHandlerResult();
+    }
+
+    /**
+     * Create an instance of {@link IntegerResult }
+     * 
+     */
+    public IntegerResult createIntegerResult() {
+        return new IntegerResult();
+    }
+
+    /**
+     * Create an instance of {@link FloatResult }
+     * 
+     */
+    public FloatResult createFloatResult() {
+        return new FloatResult();
+    }
+
+    /**
+     * Create an instance of {@link StringResult }
+     * 
+     */
+    public StringResult createStringResult() {
+        return new StringResult();
+    }
+
+    /**
+     * Create an instance of {@link ByteResult }
+     * 
+     */
+    public ByteResult createByteResult() {
+        return new ByteResult();
+    }
+
+    /**
+     * Create an instance of {@link LongResult }
+     * 
+     */
+    public LongResult createLongResult() {
+        return new LongResult();
+    }
+
+    /**
+     * Create an instance of {@link AttrCtrlHints }
+     * 
+     */
+    public AttrCtrlHints createAttrCtrlHints() {
+        return new AttrCtrlHints();
+    }
+
+    /**
+     * Create an instance of {@link ViewCriteria }
+     * 
+     */
+    public ViewCriteria createViewCriteria() {
+        return new ViewCriteria();
+    }
+
+    /**
+     * Create an instance of {@link TimestampResult }
+     * 
+     */
+    public TimestampResult createTimestampResult() {
+        return new TimestampResult();
+    }
+
+    /**
+     * Create an instance of {@link ServiceErrorMessage }
+     * 
+     */
+    public ServiceErrorMessage createServiceErrorMessage() {
+        return new ServiceErrorMessage();
+    }
+
+    /**
+     * Create an instance of {@link ServiceMessage }
+     * 
+     */
+    public ServiceMessage createServiceMessage() {
+        return new ServiceMessage();
+    }
+
+    /**
+     * Create an instance of {@link ServiceDMLErrorMessage }
+     * 
+     */
+    public ServiceDMLErrorMessage createServiceDMLErrorMessage() {
+        return new ServiceDMLErrorMessage();
+    }
+
+    /**
+     * Create an instance of {@link ServiceRowValErrorMessage }
+     * 
+     */
+    public ServiceRowValErrorMessage createServiceRowValErrorMessage() {
+        return new ServiceRowValErrorMessage();
+    }
+
+    /**
+     * Create an instance of {@link ServiceAttrValErrorMessage }
+     * 
+     */
+    public ServiceAttrValErrorMessage createServiceAttrValErrorMessage() {
+        return new ServiceAttrValErrorMessage();
+    }
+
+    /**
+     * Create an instance of {@link JavaInfo }
+     * 
+     */
+    public JavaInfo createJavaInfo() {
+        return new JavaInfo();
+    }
+
+    /**
+     * Create an instance of {@link DataGraphType }
+     * 
+     */
+    public DataGraphType createDataGraphType() {
+        return new DataGraphType();
+    }
+
+    /**
+     * Create an instance of {@link Type }
+     * 
+     */
+    public Type createType() {
+        return new Type();
+    }
+
+    /**
+     * Create an instance of {@link Types }
+     * 
+     */
+    public Types createTypes() {
+        return new Types();
+    }
+
+    /**
+     * Create an instance of {@link ModelsType }
+     * 
+     */
+    public ModelsType createModelsType() {
+        return new ModelsType();
+    }
+
+    /**
+     * Create an instance of {@link Property }
+     * 
+     */
+    public Property createProperty() {
+        return new Property();
+    }
+
+    /**
+     * Create an instance of {@link XSDType }
+     * 
+     */
+    public XSDType createXSDType() {
+        return new XSDType();
+    }
+
+    /**
+     * Create an instance of {@link ChangeSummaryType }
+     * 
+     */
+    public ChangeSummaryType createChangeSummaryType() {
+        return new ChangeSummaryType();
+    }
+
+    /**
+     * Create an instance of {@link XMLInfo }
+     * 
+     */
+    public XMLInfo createXMLInfo() {
+        return new XMLInfo();
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "CurrencyCode", scope = Interaction.class)
+    public JAXBElement<String> createInteractionCurrencyCode(String value) {
+        return new JAXBElement<String>(_InteractionCurrencyCode_QNAME, String.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "CorpCurrencyCode", scope = Interaction.class)
+    public JAXBElement<String> createInteractionCorpCurrencyCode(String value) {
+        return new JAXBElement<String>(_InteractionCorpCurrencyCode_QNAME, String.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "CurcyConvRateType", scope = Interaction.class)
+    public JAXBElement<String> createInteractionCurcyConvRateType(String value) {
+        return new JAXBElement<String>(_InteractionCurcyConvRateType_QNAME, String.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Long }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "SalesAccountId", scope = Interaction.class)
+    public JAXBElement<Long> createInteractionSalesAccountId(Long value) {
+        return new JAXBElement<Long>(_InteractionSalesAccountId_QNAME, Long.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link XMLGregorianCalendar }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "InteractionEndDate", scope = Interaction.class)
+    public JAXBElement<XMLGregorianCalendar> createInteractionInteractionEndDate(XMLGregorianCalendar value) {
+        return new JAXBElement<XMLGregorianCalendar>(_InteractionInteractionEndDate_QNAME, XMLGregorianCalendar.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "LastUpdateLogin", scope = Interaction.class)
+    public JAXBElement<String> createInteractionLastUpdateLogin(String value) {
+        return new JAXBElement<String>(_InteractionLastUpdateLogin_QNAME, String.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "MediaTypeCode", scope = Interaction.class)
+    public JAXBElement<String> createInteractionMediaTypeCode(String value) {
+        return new JAXBElement<String>(_InteractionMediaTypeCode_QNAME, String.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "OutcomeCode", scope = Interaction.class)
+    public JAXBElement<String> createInteractionOutcomeCode(String value) {
+        return new JAXBElement<String>(_InteractionOutcomeCode_QNAME, String.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "InteractionDescription", scope = Interaction.class)
+    public JAXBElement<String> createInteractionInteractionDescription(String value) {
+        return new JAXBElement<String>(_InteractionInteractionDescription_QNAME, String.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "InteractionSubject", scope = Interaction.class)
+    public JAXBElement<String> createInteractionInteractionSubject(String value) {
+        return new JAXBElement<String>(_InteractionInteractionSubject_QNAME, String.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "SwitchCallId", scope = Interaction.class)
+    public JAXBElement<String> createInteractionSwitchCallId(String value) {
+        return new JAXBElement<String>(_InteractionSwitchCallId_QNAME, String.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "OtherPartyPhoneNumber", scope = Interaction.class)
+    public JAXBElement<String> createInteractionOtherPartyPhoneNumber(String value) {
+        return new JAXBElement<String>(_InteractionOtherPartyPhoneNumber_QNAME, String.class, Interaction.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link BigDecimal }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "ConflictId", scope = InteractionParticipant.class)
+    public JAXBElement<BigDecimal> createInteractionParticipantConflictId(BigDecimal value) {
+        return new JAXBElement<BigDecimal>(_InteractionParticipantConflictId_QNAME, BigDecimal.class, InteractionParticipant.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Long }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "RelationshipId", scope = InteractionParticipant.class)
+    public JAXBElement<Long> createInteractionParticipantRelationshipId(Long value) {
+        return new JAXBElement<Long>(_InteractionParticipantRelationshipId_QNAME, Long.class, InteractionParticipant.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Long }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "ResourceOrgId", scope = InteractionParticipant.class)
+    public JAXBElement<Long> createInteractionParticipantResourceOrgId(Long value) {
+        return new JAXBElement<Long>(_InteractionParticipantResourceOrgId_QNAME, Long.class, InteractionParticipant.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "UserGUID", scope = InteractionParticipant.class)
+    public JAXBElement<String> createInteractionParticipantUserGUID(String value) {
+        return new JAXBElement<String>(_InteractionParticipantUserGUID_QNAME, String.class, InteractionParticipant.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "LastUpdateLogin", scope = InteractionParticipant.class)
+    public JAXBElement<String> createInteractionParticipantLastUpdateLogin(String value) {
+        return new JAXBElement<String>(_InteractionLastUpdateLogin_QNAME, String.class, InteractionParticipant.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link FaultType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/oracleas/schema/oracle-fault-11_0", name = "Fault")
+    public JAXBElement<FaultType> createFault(FaultType value) {
+        return new JAXBElement<FaultType>(_Fault_QNAME, FaultType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link InteractionParticipant }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "interactionParticipant")
+    public JAXBElement<InteractionParticipant> createInteractionParticipant(InteractionParticipant value) {
+        return new JAXBElement<InteractionParticipant>(_InteractionParticipant_QNAME, InteractionParticipant.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Types }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "commonj.sdo", name = "types")
+    public JAXBElement<Types> createTypes(Types value) {
+        return new JAXBElement<Types>(_Types_QNAME, Types.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "commonj.sdo", name = "dataObject")
+    public JAXBElement<Object> createDataObject(Object value) {
+        return new JAXBElement<Object>(_DataObject_QNAME, Object.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CommonAttachments }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "commonAttachments")
+    public JAXBElement<CommonAttachments> createCommonAttachments(CommonAttachments value) {
+        return new JAXBElement<CommonAttachments>(_CommonAttachments_QNAME, CommonAttachments.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link ServiceErrorMessage }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/adf/svc/errors/", name = "ServiceErrorMessage")
+    public JAXBElement<ServiceErrorMessage> createServiceErrorMessage(ServiceErrorMessage value) {
+        return new JAXBElement<ServiceErrorMessage>(_ServiceErrorMessage_QNAME, ServiceErrorMessage.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link DataGraphType }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "commonj.sdo", name = "datagraph")
+    public JAXBElement<DataGraphType> createDatagraph(DataGraphType value) {
+        return new JAXBElement<DataGraphType>(_Datagraph_QNAME, DataGraphType.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link InteractionAssociation }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "interactionAssociation")
+    public JAXBElement<InteractionAssociation> createInteractionAssociation(InteractionAssociation value) {
+        return new JAXBElement<InteractionAssociation>(_InteractionAssociation_QNAME, InteractionAssociation.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link FindCriteria }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/adf/svc/types/", name = "findCriteria")
+    public JAXBElement<FindCriteria> createFindCriteria(FindCriteria value) {
+        return new JAXBElement<FindCriteria>(_FindCriteria_QNAME, FindCriteria.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Interaction }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "interaction")
+    public JAXBElement<Interaction> createInteraction(Interaction value) {
+        return new JAXBElement<Interaction>(_Interaction_QNAME, Interaction.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Type }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "commonj.sdo", name = "type")
+    public JAXBElement<Type> createType(Type value) {
+        return new JAXBElement<Type>(_Type_QNAME, Type.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link FindControl }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/adf/svc/types/", name = "findControl")
+    public JAXBElement<FindControl> createFindControl(FindControl value) {
+        return new JAXBElement<FindControl>(_FindControl_QNAME, FindControl.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link ProcessControl }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/adf/svc/types/", name = "processControl")
+    public JAXBElement<ProcessControl> createProcessControl(ProcessControl value) {
+        return new JAXBElement<ProcessControl>(_ProcessControl_QNAME, ProcessControl.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link BigDecimal }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "ConflictId", scope = InteractionAssociation.class)
+    public JAXBElement<BigDecimal> createInteractionAssociationConflictId(BigDecimal value) {
+        return new JAXBElement<BigDecimal>(_InteractionParticipantConflictId_QNAME, BigDecimal.class, InteractionAssociation.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Long }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "AssociationSequenceNumber", scope = InteractionAssociation.class)
+    public JAXBElement<Long> createInteractionAssociationAssociationSequenceNumber(Long value) {
+        return new JAXBElement<Long>(_InteractionAssociationAssociationSequenceNumber_QNAME, Long.class, InteractionAssociation.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/interactions/interactionService/", name = "LastUpdateLogin", scope = InteractionAssociation.class)
+    public JAXBElement<String> createInteractionAssociationLastUpdateLogin(String value) {
+        return new JAXBElement<String>(_InteractionLastUpdateLogin_QNAME, String.class, InteractionAssociation.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "UploadedFile", scope = CommonAttachments.class)
+    public JAXBElement<byte[]> createCommonAttachmentsUploadedFile(byte[] value) {
+        return new JAXBElement<byte[]>(_CommonAttachmentsUploadedFile_QNAME, byte[].class, CommonAttachments.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "DmVersionNumber", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsDmVersionNumber(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsDmVersionNumber_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "FileName", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsFileName(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsFileName_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Long }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "DocumentEntityId", scope = CommonAttachments.class)
+    public JAXBElement<Long> createCommonAttachmentsDocumentEntityId(Long value) {
+        return new JAXBElement<Long>(_CommonAttachmentsDocumentEntityId_QNAME, Long.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "TableName", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsTableName(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsTableName_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "DownloadStatus", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsDownloadStatus(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsDownloadStatus_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Long }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "AttachedDocumentId", scope = CommonAttachments.class)
+    public JAXBElement<Long> createCommonAttachmentsAttachedDocumentId(Long value) {
+        return new JAXBElement<Long>(_CommonAttachmentsAttachedDocumentId_QNAME, Long.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "CategoryName", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsCategoryName(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsCategoryName_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "UploadedFileName", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsUploadedFileName(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsUploadedFileName_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "Description", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsDescription(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsDescription_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "DmFolderPath", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsDmFolderPath(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsDmFolderPath_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link BigDecimal }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "DmNode", scope = CommonAttachments.class)
+    public JAXBElement<BigDecimal> createCommonAttachmentsDmNode(BigDecimal value) {
+        return new JAXBElement<BigDecimal>(_CommonAttachmentsDmNode_QNAME, BigDecimal.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "DmRepository", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsDmRepository(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsDmRepository_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "Pk4Value", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsPk4Value(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsPk4Value_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "UsageType", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsUsageType(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsUsageType_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "Title", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsTitle(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsTitle_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "DocumentAttributes", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsDocumentAttributes(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsDocumentAttributes_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "Pk2Value", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsPk2Value(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsPk2Value_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "Pk5Value", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsPk5Value(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsPk5Value_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "UploadedFileContentType", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsUploadedFileContentType(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsUploadedFileContentType_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "EntityAttributes", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsEntityAttributes(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsEntityAttributes_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "DatatypeCode", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsDatatypeCode(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsDatatypeCode_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "DmType", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsDmType(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsDmType_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "URL", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsURL(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsURL_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "VersionControlIcon", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsVersionControlIcon(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsVersionControlIcon_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "FileURL", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsFileURL(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsFileURL_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "Attachment", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsAttachment(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsAttachment_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "Pk1Value", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsPk1Value(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsPk1Value_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "Pk3Value", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsPk3Value(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsPk3Value_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "EntityName", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsEntityName(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsEntityName_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Long }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "UploadedFileLength", scope = CommonAttachments.class)
+    public JAXBElement<Long> createCommonAttachmentsUploadedFileLength(Long value) {
+        return new JAXBElement<Long>(_CommonAttachmentsUploadedFileLength_QNAME, Long.class, CommonAttachments.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://xmlns.oracle.com/apps/crmCommon/objects/objectsService/", name = "UploadedText", scope = CommonAttachments.class)
+    public JAXBElement<String> createCommonAttachmentsUploadedText(String value) {
+        return new JAXBElement<String>(_CommonAttachmentsUploadedText_QNAME, String.class, CommonAttachments.class, value);
+    }
+
+}

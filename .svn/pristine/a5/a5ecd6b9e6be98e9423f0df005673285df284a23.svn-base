@@ -1,0 +1,121 @@
+package com.serene.job.reader;
+
+import java.util.Map;
+import java.util.Queue;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemOptions;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.NonTransientResourceException;
+import org.springframework.batch.item.ParseException;
+import org.springframework.batch.item.UnexpectedInputException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+import com.jcraft.jsch.Session;
+import com.serene.job.common.BaseService;
+import com.serene.job.common.BatchJobContext;
+import com.serene.job.common.Constants;
+import com.serene.job.model.JobSchedulerMetadata;
+import com.serene.job.service.FTPUploadService;
+import com.serene.job.service.SystemPropertyService;
+
+@Service
+@Lazy(true)
+@Scope("prototype")
+public class JetPayItemReader implements ItemReader<Map<String,Object>> ,StepExecutionListener {
+	
+	/*
+	 * @author: Lavy Toteza
+	 */
+	
+	private Logger log = LoggerFactory.getLogger(JetPayItemReader.class);
+	
+	private Queue<Map<String,Object>> items ;
+	
+	@Resource
+	private BatchJobContext  batchJobContext ;
+	
+	@Resource
+	private FTPUploadService ftpUploadService ;
+	
+	@Autowired
+	private SystemPropertyService systemPropertyService;
+	
+	private Session session = null;
+	
+	@Override
+	public void beforeStep(StepExecution stepExecution) {
+		// TODO Auto-generated method stub
+		// get sftp details from system prop 
+		//JobSchedulerMetadata jobSchedulerMetadata = batchJobContext.getJobSchedulerMetadata();
+		String hostName = "sftp.jetpay.com";
+	    String username = "ymca-scv";
+	    
+        try {
+        	session = ftpUploadService.createConnection(hostName,22,username,null,createDefaultOptions());
+			log.debug("SFTP Connection was successful... ");
+		} catch (FileSystemException e) {
+			// TODO Auto-generated catch block
+			log.error("Error while creating connection on uploadToSFTP:- ",e);
+		}
+	}
+
+	@Override
+	public ExitStatus afterStep(StepExecution stepExecution) {
+		// TODO Auto-generated method stub
+		// cleanup resource
+		
+		log.error("Inside afterStep method of JetPayItemReader");
+		if(session!=null){
+			ftpUploadService.DownloadFilesFromSFTP(session);
+		}
+		
+		items.clear();
+
+		return null;
+	}
+
+	@Override
+	public Map<String, Object> read() throws Exception,
+			UnexpectedInputException, ParseException,
+			NonTransientResourceException {
+		// TODO Auto-generated method stub
+		log.error("Inside read method of JetPayItemReader");
+		if (items.isEmpty()) {
+			if(session!=null){
+				ftpUploadService.DownloadFilesFromSFTP(session);
+			}
+		}
+		
+		return items.poll();
+	}
+	
+	 //  Method to setup default SFTP config:
+    public static FileSystemOptions createDefaultOptions() throws FileSystemException {
+            // Create SFTP options
+            FileSystemOptions opts = new FileSystemOptions();
+            
+            // SSH Key checking
+            SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+
+            // Root directory set to user home
+            SftpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(opts, true);
+
+            // Timeout is count by Milliseconds
+            SftpFileSystemConfigBuilder.getInstance().setTimeout(opts, 10000);
+
+            return opts;
+    }
+
+}

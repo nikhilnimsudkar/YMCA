@@ -1,0 +1,161 @@
+package com.serene.job.writer;
+
+import java.util.AbstractList;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.batch.item.database.JdbcBatchItemWriter;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.dao.ChildFieldMappingDao;
+import com.serene.job.dao.ChildObjectDao;
+import com.serene.job.dao.JobFieldMappingDao;
+import com.serene.job.dao.JobSchedulerMetadataDao;
+import com.serene.job.model.ChildFieldMapping;
+import com.serene.job.model.ChildObject;
+import com.serene.job.model.ChildObjectPrimaryKey;
+import com.serene.job.model.FieldMapping;
+import com.serene.job.model.JobSchedulerMetadata;
+
+@Service
+@Lazy(true)
+@Scope("prototype")
+public class CustomJdbcItemWriter<T> extends JdbcBatchItemWriter<T> {
+
+	private String childObject = null;
+	
+	protected JobSchedulerMetadata jobSchedulerMetadata ;
+
+	@Resource
+	private JobFieldMappingDao jobFieldMappingDao ; 
+	
+	
+	@Resource
+	private JobSchedulerMetadataDao jobSchedulerMetadataDao; 
+
+	
+	@Resource
+	private ChildObjectDao childObjectDao; 
+	
+	@Resource
+	private ChildFieldMappingDao childFieldMappingDao; 
+	
+	
+	public CustomJdbcItemWriter() {
+		
+	}
+	public CustomJdbcItemWriter(DataSource dataSource,String sql) {
+		setDataSource(dataSource);
+		setSql(sql);
+	}
+	
+	@Override
+	public void write(final List<? extends T> items) throws Exception {
+		try {
+			if (StringUtils.isNoneBlank(childObject)) writeChild(items);
+			else writeParent(items);
+		} catch (Exception e) {
+			logger.error("Error while writing in db",e);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void writeChild(final List<? extends T> items) throws Exception {
+		List<Map<String,Object>> values = new ArrayList<Map<String, Object>>();
+		List<ChildFieldMapping> fieldMappings = childFieldMappingDao.findByJobNameAndObjectNameAndStatus(jobSchedulerMetadata.getJobName(),childObject, true);
+		ChildObjectPrimaryKey key = new ChildObjectPrimaryKey();
+		key.setJobName(jobSchedulerMetadata.getJobName());
+		key.setObjectName(childObject);
+		ChildObject c = childObjectDao.findOne(key);
+		setSql(c.getSql());
+		for (int i = 0 ; i < items.size() ; i++) {
+			Map<String,Object> item = (Map<String, Object>) items.get(i);
+			JXPathContext context = JXPathContext.newContext(item);
+			context.setLenient(true);			
+
+			List childObjects = new ArrayList();
+			Object obj = context.getValue(c.getObjectName());
+			if (obj instanceof AbstractMap)  childObjects.add(obj);
+			else if (obj instanceof AbstractList) childObjects = (List) obj ;
+			
+			for (int j = 0 ; j < childObjects.size() ; j++) {
+				Map<String,Object> childItem = (Map<String, Object>) childObjects.get(i);
+				JXPathContext childContext = JXPathContext.newContext(childItem);
+				context.setLenient(true);			
+				
+				Map<String,Object> value = new HashMap<String,Object>();
+				for (ChildFieldMapping m : fieldMappings) {
+					Object fv = childContext.getValue(m.getFromField());
+					/*if (StringUtils.equalsIgnoreCase(c.getToObjectIdField(), m.getToField()) && fv != null && StringUtils.equalsIgnoreCase("",fv.toString()) ){
+						fv = null ;
+					}*/
+					if (fv != null && StringUtils.equalsIgnoreCase("",fv.toString()) ){
+						fv = null ;
+					}
+					if (fv == null && StringUtils.isNoneBlank(m.getDefaultValue())) {
+						fv = m.getDefaultValue();
+					}
+					value.put(m.getFromField(), fv);
+				}
+				values.add(value);
+			}
+		}
+		super.write((List<? extends T>) values);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void writeParent(final List<? extends T> items) throws Exception {
+		List<Map<String,Object>> values = new ArrayList<Map<String, Object>>();
+		List<FieldMapping> fieldMappings = jobFieldMappingDao.findByJobNameAndStatus(jobSchedulerMetadata.getJobName(), true);
+		jobSchedulerMetadata = jobSchedulerMetadataDao.findOne(jobSchedulerMetadata.getJobName());
+		for (int i = 0 ; i < items.size() ; i++) {
+			Map<String,Object> item = (Map<String, Object>) items.get(i);
+			
+			JXPathContext context = JXPathContext.newContext(item);
+			context.setLenient(true);			
+			
+			Map<String,Object> value = new HashMap<String,Object>();
+			for (FieldMapping m : fieldMappings) {
+				Object fv = context.getValue(m.getFromField());
+				/*if (StringUtils.equalsIgnoreCase(jobSchedulerMetadata.getToObjectIdField(), m.getToField()) && fv != null && StringUtils.equalsIgnoreCase("",fv.toString()) ){
+					fv = null ;
+				}*/
+				if (fv != null && StringUtils.equalsIgnoreCase("",fv.toString()) ){
+					fv = null ;
+				}
+				if (fv == null && StringUtils.isNoneBlank(m.getDefaultValue())) {
+					fv = m.getDefaultValue();
+				}
+				value.put(m.getFromField(), fv);
+			}
+			values.add(value);
+		}
+		super.write((List<? extends T>) values);
+	}
+
+	public void setSql(String sql) {
+		super.setSql(sql);
+	}
+	public JobSchedulerMetadata getJobSchedulerMetadata() {
+		return jobSchedulerMetadata;
+	}
+	public void setJobSchedulerMetadata(JobSchedulerMetadata jobSchedulerMetadata) {
+		this.jobSchedulerMetadata = jobSchedulerMetadata;
+	}
+	public String getChildObject() {
+		return childObject;
+	}
+	public void setChildObject(String childObject) {
+		this.childObject = childObject;
+	}
+}

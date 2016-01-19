@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Fastaff" default="wsimport" basedir="../">
+	<property name="jaxws.home" value="C:/Program Files/Java/jdk1.7.0_51" />
+	<target name="wsimport">
+		
+	<!--<exec executable="${jaxws.home}/bin/wsimport"> 
+		<arg line="-keep -s ./src/main/java -p com.fastaff.ws.stubs.address -d ./classes
+		    		https://cafi.crm.us2.oraclecloud.com/foundationParties/LocationService?WSDL"/>   
+	</exec>-->
+	
+				
+	<exec executable="${jaxws.home}/bin/wsimport">
+		<arg line="-extension -s ./java -p com.ymca.ws.stubs.interaction 
+			https://eaag-test.crm.us2.oraclecloud.com:443/appCmmnCompInteractions/InteractionService?WSDL"/>     
+	</exec> 
+	<!-- <exec executable="${jaxws.home}/bin/wsimport">
+ 		<arg line="-keep -s ./src -p com.fastaff.ws.stubs.contact -d ./classes 
+   					https://cafi.crm.us2.oraclecloud.com/foundationParties/PersonService?WSDL"/>  
+ 	</exec> -->
+		
+		<!--<exec executable="${jaxws.home}/bin/wsimport">
+	 		<arg line="-keep -s ./src -p com.fastaff.ws.stubs.union -d ./classes 
+	 			https://cafi-test.crm.us2.oraclecloud.com/crmCommonCustExtn/CustomerCenterCustomObjectService?WSDL"/>  
+	 	</exec> -->
+		
+	</target>
+</project>

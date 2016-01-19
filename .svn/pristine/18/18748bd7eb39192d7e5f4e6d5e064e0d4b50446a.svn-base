@@ -1,0 +1,18 @@
+package com.ymca.dao;
+
+
+
+//import antlr.collections.List;
+
+//import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.Account;
+import com.ymca.model.Interaction;
+
+public interface InteractionDao extends GenericDao<Interaction, Long>{
+	
+	
+	Interaction findByTypeAndCustomer(String type,Account customer);
+}

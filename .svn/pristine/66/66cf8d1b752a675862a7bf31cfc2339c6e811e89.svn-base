@@ -1,0 +1,44 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.ItemDetails;
+import com.ymca.model.Locations;
+
+public interface ItemDetailsDao extends GenericDao<ItemDetails, Long>  {
+	
+	ItemDetails getById(Long id);
+	
+	@Query("select i from ItemDetails i inner join i.locations l where l.locationId =?1 and DATE(i.registrationStartDate)= DATE(?2) and i.category= ?3")
+	ItemDetails getByLocationsAndRegistrationStartDate(Long locationId,Date date,String itemCategory);
+	
+	@Query("select i from ItemDetails i where i.itemType =?1 and i.itemSubtype =?2 ")
+	List<ItemDetails> getByItemTypeAndItemSubtype(String itemType,String subType);
+	
+	@Query("select i from ItemDetails i inner join i.locations l where i.itemType =?1 and i.itemSubtype =?2 and l.locationId =?3 ")
+	List<ItemDetails> getByItemypeAndLocationsAndItemSubtype(String itemType,String subType,Long locId);
+	
+	@Query("select distinct i.itemSubtype from ItemDetails i where i.itemType =?1")
+	List<Object[]> getDistinctItemsubtypeByType(String itemType);
+	
+	@Query("select distinct category from ItemDetails")
+	List<ItemDetails> getItemCategories();
+	
+	@Query("select distinct itemName from ItemDetails where category = ?1")
+	List<ItemDetails> getItemsbyCategories(String strCategory);
+	
+	@Query("select distinct itemName from ItemDetails where itemType = ?1")
+	List<ItemDetails> getItemsCategoriesByItemType(String strItemType);
+	
+	@Query("select i from ItemDetails i where i.itemType='MEMBERSHIP' and i.startdate >=?1 and i.enddate <=?2 and i.category=?3 and i.itemName=?4 and i.locations=?5")
+	List<ItemDetails> getMembershipProgram(Date startDate, Date endDate, String category, String itemname, Locations location);
+	
+	@Query("select  i.id, i.itemName, i.description, i.itemType, i.duration, i.waiversAndTC.tcDescription, l.tier, i.id from ItemDetails i inner join i.locations l where l.locationId =?1 and i.itemType='MEMBERSHIP'")	
+	List<Object[]> getMembershipProgramByLocation(Long locationId);
+	
+	List<ItemDetails> findByItemType(String itemType);
+	
+}

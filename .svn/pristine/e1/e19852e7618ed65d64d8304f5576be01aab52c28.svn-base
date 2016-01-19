@@ -1,0 +1,99 @@
+package com.ymca.web.service;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.ymca.dao.JetPayPaymentDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.dao.PaymentDao;
+import com.ymca.dao.PaymentMethodDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.model.Account;
+import com.ymca.model.ItemDetailsSession;
+import com.ymca.model.JetPayPayment;
+import com.ymca.model.Payment;
+import com.ymca.model.PaymentMethod;
+import com.ymca.model.Signup;
+import com.ymca.model.User;
+import com.ymca.web.enums.ProductTypeEnum;
+import com.ymca.web.util.Constants;
+
+@Service 
+public class PaymentService {
+	
+	@Resource
+	private PaymentMethodDao paymentMethodDao;
+	
+	@Resource
+	private SignupDao signupDao;
+	
+	@Resource
+	private JetPayPaymentDao jetPayPaymentDao;
+	
+	@Resource
+	private PaymentDao paymentDao;
+	
+	@Resource
+	private LocationDao locationDao;
+	
+	public Signup savesignup(String paymentId, Account customer, List<String> cartItems, ItemDetailsSession ids, User u, ProductTypeEnum signupType) {
+		Signup signup = new Signup();
+		signup.setCustomer(customer);
+		signup.setItemDetailsSession(ids);
+		signup.setItem(ids.getItem());
+		signup.setProgramStartDate(ids.getItemDetails().getStartdate());
+		signup.setProgramEndDate(ids.getItemDetails().getEnddate());
+		signup.setFinalAmount(cartItems.get(2));
+		
+		Long  loc_id = ids.getItemDetails().getLocations().getLocationId();
+		signup.setLocation(locationDao.getLocationsByLocationId(loc_id));
+		
+		signup.setContact(u);
+		signup.setContactName(u.getFullName());
+		signup.setStatus(Constants.ACTIVE);
+		signup.setType(signupType.toString().toUpperCase());
+		
+		if(Long.parseLong(paymentId)>0){
+			List<PaymentMethod> lstPaymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(Long.parseLong(paymentId));
+			PaymentMethod paymentMethod = lstPaymentMethod.get(0);
+			signup.setPaymentMethod(paymentMethod);
+		}
+		
+		Signup signupprogram = new Signup();
+		signupprogram = signupDao.save(signup);
+		return signupprogram;
+	}
+	
+	public JetPayPayment savepayment(String paymentId, String jp_request_hash,
+			Account customer, List<String> cartItems, User u, Signup signupprogram, ProductTypeEnum signupType) {
+		
+		JetPayPayment jetPayPayment = null;
+		if(!"".equals(jp_request_hash)){
+			jetPayPayment = jetPayPaymentDao.getByJpReturnHash(jp_request_hash);
+		}
+		if(jetPayPayment!=null){
+			Payment payment = new Payment();
+			payment.setTransactionId(Long.parseLong(jetPayPayment.getTransId()));
+			payment.setStatus(Constants.SUCCESS);
+			payment.setPaymentNumber(jetPayPayment.getPaymentId().toString());
+			payment.setAmount(Double.parseDouble(cartItems.get(2)));
+			payment.setCustomer(customer);
+			payment.setSignup(signupprogram);
+			payment.setContact(u);
+			payment.setType(signupType.toString().toUpperCase());
+			if(Long.parseLong(paymentId)>0){
+				List<PaymentMethod> lstPaymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(Long.parseLong(paymentId));
+				PaymentMethod paymentMethod = lstPaymentMethod.get(0);
+				payment.setPaymentMethod(paymentMethod.getPaymentId().toString());
+			}
+			payment.setPaymentDate(new Date());
+			paymentDao.save(payment);
+		}
+		
+		return jetPayPayment;
+	}
+}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:batch="http://www.springframework.org/schema/batch"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<bean id="processor" class="com.serene.job.processor.FusionItemProcessor"/>
+	
+	<bean id="customJdbcWriter" class="com.serene.job.writer.CustomJdbcItemWriter" scope="prototype" lazy-init="false">
+		<property name="sql">
+		  <value>
+	            <![CDATA[
+	            INSERT INTO PARTNER (PartyId,PersonProfileId,PersonFirstName,PersonLastName,EmailAddress) VALUES (:PartyId,:PersonProfileId,:PersonFirstName,:PersonLastName,:EmailAddress) ON DUPLICATE KEY 
+				UPDATE PersonFirstName = :PersonFirstName,PersonLastName = :PersonLastName,EmailAddress = :EmailAddress
+				 /* DUMMY SQL, This should be replaced the actual sql */        
+	            ]]>
+		  </value>
+		</property>
+		<property name="dataSource" ref="portal_db"/>
+		<property name="fieldMapping">
+			<map>
+				<entry key="Name" value="Name" />
+				<entry key="PersonFirstName" value="PersonProfile/PersonFirstName" />
+				<entry key="PersonLastName" value="PersonProfile/PersonLastName" />
+				<entry key="PersonProfileId" value="PersonProfile/PersonProfileId" />
+				<entry key="EmailAddress" value="Email/EmailAddress" />
+			</map>
+		</property>
+	</bean>
+	
+	<batch:step id="abstractStep" abstract="true">			
+		<batch:tasklet>
+			<batch:chunk processor="processor"  commit-interval="1" />
+		<batch:no-rollback-exception-classes>
+			<batch:include class="java.lang.Exception"/>
+			<batch:include class="java.lang.Throwable"/>		
+		</batch:no-rollback-exception-classes>			
+		</batch:tasklet>
+		<batch:listeners>
+			<batch:listener ref="itemListener" />
+		</batch:listeners>
+	</batch:step>
+</beans>

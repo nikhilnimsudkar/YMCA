@@ -1,0 +1,18 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.Donation;
+
+public interface DonationDao  extends GenericDao<Donation, Long> {
+    
+	@Query("SELECT d  from Donation d inner join d.customer c where c.accountId=?1")	
+ 	List<Donation> getDonationByAccountId(Long accountId) throws Exception;
+	
+	@Query("SELECT d  from Donation d inner join d.customer c where c.name=?1")
+ 	List<Donation> getByCustomerName(String customerName) throws Exception;
+
+}
+

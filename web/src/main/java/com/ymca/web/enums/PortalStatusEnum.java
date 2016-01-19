@@ -1,0 +1,9 @@
+package com.ymca.web.enums;
+
+public enum PortalStatusEnum {
+	ACTIVE,
+	INACTIVE,
+	REMOVE,
+	VP,
+	New
+}

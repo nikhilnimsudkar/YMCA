@@ -1,0 +1,28 @@
+/**
+ * @author gpatwa
+ * The base service class, contains commonly used service across the batch job
+ */
+package com.serene.job.common;
+
+import javax.annotation.Resource;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.DependsOn;
+
+import com.serene.job.ModularBatchContext;
+import com.serene.ws.service.FusionWebService;
+
+
+public class BaseService {
+
+	@Resource(name="fusionWebServiceImpl")
+	protected FusionWebService fusionWebService ;
+
+	@Resource
+	public ApplicationContext applicationContext ;
+	
+	
+	public BaseService(){
+		fusionWebService = (FusionWebService) ModularBatchContext.parentContext.getBean("fusionWebServiceImpl");
+	}
+}

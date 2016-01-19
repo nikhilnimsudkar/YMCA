@@ -1,0 +1,72 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "app_waivers_and_tc")
+public class WaiversAndTC extends BaseObject implements Serializable {
+	private static final long serialVersionUID = -7439568389541257102L;
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "waivers_and_tc_id", nullable = false)
+    private Long waiversAndTcId;					// required  PK
+    
+    @Column(name = "record_name", nullable = false)
+    private String recordName;
+    
+    @Column(name = "tc_description", nullable = false, length= 5000)
+    private String tcDescription;
+
+    public Long getWaiversAndTcId() {
+		return waiversAndTcId;
+	}
+
+	public void setWaiversAndTcId(Long waiversAndTcId) {
+		this.waiversAndTcId = waiversAndTcId;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String recordName) {
+		this.recordName = recordName;
+	}
+
+	public String getTcDescription() {
+		return tcDescription;
+	}
+
+	public void setTcDescription(String tcDescription) {
+		this.tcDescription = tcDescription;
+	}
+
+	
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

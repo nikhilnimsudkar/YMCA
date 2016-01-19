@@ -1,0 +1,751 @@
+package com.ymca.web.controller;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.ItemDetailDao;
+import com.ymca.dao.ItemDetailPricingRuleDao;
+import com.ymca.dao.PromotionDao;
+import com.ymca.dao.SetpUpFeeDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.dao.UserDao;
+import com.ymca.model.Account;
+import com.ymca.model.AccountFinancialAid;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.ItemDetailDays;
+import com.ymca.model.ItemDetailPricingRule;
+import com.ymca.model.ItemDetailPromotion;
+import com.ymca.model.Promotion;
+import com.ymca.model.SetpUpFee;
+import com.ymca.model.Signup;
+import com.ymca.model.User;
+import com.ymca.web.enums.ProductTypeEnum;
+import com.ymca.web.service.FinancialAssistanceService;
+import com.ymca.web.util.Constants;
+import com.ymca.web.util.MemberAge;
+
+@Controller
+public class CommonController extends BaseController {
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	@Resource
+	private PromotionDao promocodeDao;
+	
+	@Resource
+	private ItemDetailDao itemDetailsDao;
+	
+	@Resource
+	private SignupDao signupDao;
+	
+	@Resource
+	private UserDao userDao;
+	
+	@Resource
+	private SetpUpFeeDao setpUpFeeDao;
+	
+	@Resource
+	private ItemDetailPricingRuleDao itemDetailPricingRuleDao;
+	
+	@Resource
+	private FinancialAssistanceService financialAssistanceService;
+	/**
+	 * Dispatch to login pop-up
+	 */
+	@RequestMapping(value="/loginPopup", method=RequestMethod.GET)
+    public String loginPopup(final HttpServletRequest request, final HttpServletResponse response) { 
+		return "loginpop";
+	}
+	
+	/**
+	 * Quick sign up
+	 */
+	@RequestMapping(value="/quickSignIn", method=RequestMethod.POST)
+    public String quickSignIn(final HttpServletRequest request, final HttpServletResponse response) { 
+		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+		String username = request.getParameter(Constants.USERNAME_LBL);
+		String password = request.getParameter(Constants.PASSWORD_LBL);
+		String dispatchTo = request.getParameter(Constants.PARAM_DISPATCH_TO);
+		
+		User user = null;
+		if(username!=null && !"".equals(username.trim()) && password!=null && !"".equals(password)){
+			Account account = accountDao.getByEmail(username);			
+			user = getUserByAccount(account, user);
+			if(user!=null && user.getPassword() !=null && bCryptPasswordEncoder.matches(password, user.getPassword())){
+				UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, user.getPassword());
+				
+				// generate session if one doesn't exist
+		        request.getSession();
+		        token.setDetails(new WebAuthenticationDetails(request));
+		        SecurityContextHolder.getContext().setAuthentication(token);
+		        
+		        if(!"".equals(dispatchTo)){
+		        	if(dispatchTo.equalsIgnoreCase(ProductTypeEnum.PROGRAM.toString())){
+		        		return "redirect:/addprogramtocart";
+		        	}else if(dispatchTo.equalsIgnoreCase(ProductTypeEnum.EVENT.toString())){
+		        		return "redirect:/addEventToCart";
+		        	}
+		        }
+			}
+		}
+		return "redirect:/login";
+	}
+	
+	/**
+	 * Get contacts as JSON
+	 */
+	@RequestMapping(value="/getContacts", method=RequestMethod.GET)
+    public @ResponseBody String getContactS(final HttpServletRequest request, final HttpServletResponse response) { 
+	 	JSONArray json = new JSONArray();
+	
+	 	Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			return json.toString();
+		}
+		
+		Account account = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+    	}
+    	
+    	if(account==null){
+    		return json.toString();
+    	}
+    	
+    	List<User> users = userDao.getByCustomer(account);
+    	
+    	for(User u: users){
+	    	JSONObject obj = new JSONObject();
+	    	obj.put("id", u.getContactId());
+			obj.put("contactId", u.getContactId());
+			obj.put("fname", u.getPersonFirstName());
+			obj.put("lname", u.getPersonLastName());
+			obj.put("isMember", isMember(u.getContactId().toString()));
+			json.add(obj);
+    	}
+    	
+    	return json.toString();
+	}
+	
+	@RequestMapping(value="/getPromodetails", method=RequestMethod.GET)
+    public @ResponseBody String getPromodetails(final HttpServletRequest request, final HttpServletResponse response) { 
+		JSONArray json = new JSONArray();
+		
+		String promocode = request.getParameter("promocode");
+		
+		if(!"".equals(promocode)){
+			Promotion promodetails = promocodeDao.getPromoDiscountByPromocode(promocode);
+			if(promodetails!=null){
+				  JSONObject obj = new JSONObject();
+				
+				  Double discount = new Double(0);
+				  if(promodetails.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_VALUE)){
+					  discount = promodetails.getDiscountvalue();
+				  }
+				  
+				  obj.put("valid", "true");
+				  obj.put("promid", promodetails.getId());
+				  obj.put("promname", promodetails.getPromoName());
+				  obj.put("discounttype", promodetails.getDiscounttype());
+				  obj.put("discountValue", discount);
+				  obj.put("discountPercentage", promodetails.getDiscountpercentage());
+				  obj.put("promcode", promocode);
+				  
+				  JSONArray json1 = new JSONArray();
+				  for(ItemDetailPromotion ipd: promodetails.getItemPromoDetails()){
+					  JSONObject obj1 = new JSONObject();
+					  obj1.put("itemPromoDetailsId", ipd.getPromotionId());
+					  obj1.put("itemDetailsId", ipd.getItemDetail().getId());
+					  json1.add(obj1);
+	    		  }
+				  
+				  obj.put("itemDetails", json1.toString());
+				  json.add(obj);
+			}
+		}
+		
+		return json.toString();
+	}
+	
+	@RequestMapping(value="/getSignupByType", method=RequestMethod.GET)
+    public @ResponseBody String getSignupByType(final HttpServletRequest request, final HttpServletResponse response) { 
+		 	
+		String type = request.getParameter("type");
+		JSONArray json = new JSONArray();
+		
+	 	Authentication authenticate = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) authenticate.getPrincipal()).getUsername();
+		}catch(Exception e){
+			return json.toString();
+		}
+    	
+		Account account = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+    	}
+    	
+    	if(account==null){
+    		return json.toString();
+    	}
+    	
+    	List<Signup> signups = signupDao.getByCustomerAndType(account, type);
+    	
+    	for(Signup s: signups){
+    		
+		    	JSONObject obj = new JSONObject();
+		    	obj.put("id", s.getSignupId());
+				obj.put("signupId", s.getSignupId());
+				obj.put("customerId", s.getCustomer().getAccountId());
+				//obj.put("itemDaysMapId", s.getItemDaysMapId());
+				obj.put("prodId", s.getItemDetail().getId());
+				obj.put("itemDetailsId", s.getItemDetail().getId());
+				obj.put("contactId", s.getContact().getContactId());
+				obj.put("locationId", s.getLocation().getId());
+				json.add(obj);
+    		
+    	}
+    	
+    	System.out.print(json);
+    	return json.toString();
+	}
+	
+	@RequestMapping(value="/getallProducts", method=RequestMethod.GET)
+    public @ResponseBody String getallProducts(final HttpServletRequest request, final HttpServletResponse response) { 	
+		  List<ItemDetail> productLst =  itemDetailsDao.findAll();
+		  
+		  List<Promotion> promo = new ArrayList<Promotion>();
+		  promo = promocodeDao.getACPromoDiscountByItemDetailsId();
+		  
+		  JSONArray json = new JSONArray();
+		  for(ItemDetail p: productLst){
+		      if(p!=null){
+		    	  	  List<ItemDetailDays> itemDays = p.getItemDays();
+
+					  //double membertierPrice = 0D;
+					//  double nonmembertierPrice = 0D;
+					  
+					  List<ItemDetailPricingRule> pricingRuleLst =  itemDetailPricingRuleDao.findByItemDetailId(p.getId());
+					  JSONArray signuppriceArr = new JSONArray();
+					  JSONArray registrationpriceArr = new JSONArray();
+					  JSONArray depositpriceArr = new JSONArray();
+					  
+					  for(ItemDetailPricingRule pricingRule: pricingRuleLst) {
+						  /*
+						  membertierPrice += Double.parseDouble(pricingRule.getPricingRule().getTierPrice());
+						  if(pricingRule.getPricingRule()!=null && StringUtils.isNotBlank(pricingRule.getPricingRule().getNonmemberTierPrice()))
+								  nonmembertierPrice += Double.parseDouble(pricingRule.getPricingRule().getNonmemberTierPrice());
+								  */
+						  double membertierPrice = 0D;
+						  double nonmembertierPrice = 0D;
+						  Double memberdiscount = new Double(0);
+						  Double nonmemberdiscount = new Double(0);
+						  String lblPromoCode = "";
+						  
+						  if(pricingRule!=null && pricingRule.getPricingRule()!=null){
+								JSONObject priceObj = new JSONObject();
+								
+								priceObj.put("type",pricingRule.getPricingRule().getType());
+								priceObj.put("priceoption",pricingRule.getPricingRule().getPriceOption());
+								priceObj.put("packageSize",pricingRule.getPricingRule().getPackageSize());
+								
+								if(StringUtils.isNotBlank(pricingRule.getPricingRule().getTierPrice()))
+									membertierPrice = Double.parseDouble(pricingRule.getPricingRule().getTierPrice());
+									
+								if(StringUtils.isNotBlank(pricingRule.getPricingRule().getNonmemberTierPrice()))
+									nonmembertierPrice = Double.parseDouble(pricingRule.getPricingRule().getNonmemberTierPrice());
+									
+								priceObj.put("memberPrice",membertierPrice);
+								priceObj.put("nonmemberPrice",nonmembertierPrice);
+								
+								if(promo.size()>0){
+									for(Promotion pc: promo){
+							    		  for(ItemDetailPromotion ipd: pc.getItemPromoDetails()){
+							    			  if(ipd.getItemDetail().getId().equals(p.getId())){
+							    				  lblPromoCode = pc.getPromoCode();
+							    				  if(pc.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_VALUE)){
+							    					  memberdiscount = pc.getDiscountvalue();
+							    					  nonmemberdiscount = pc.getDiscountvalue();
+							    				  }
+							    				  else if(pc.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_PERCENTAGE)){
+							    					  BigDecimal memberdiscountAmount = pc.getDiscountpercentage().multiply(BigDecimal.valueOf(membertierPrice));
+							    					  memberdiscountAmount = memberdiscountAmount.divide(new BigDecimal(100));
+							    					  memberdiscount = memberdiscountAmount.doubleValue();
+							    					  
+							    					  BigDecimal nonmemberdiscountAmount = pc.getDiscountpercentage().multiply(BigDecimal.valueOf(nonmembertierPrice));
+							    					  nonmemberdiscountAmount = nonmemberdiscountAmount.divide(new BigDecimal(100));
+							    					  nonmemberdiscount = nonmemberdiscountAmount.doubleValue();
+							    				  }
+							    			  }
+							    		  }
+							    		  
+							    	  }
+								}
+								
+								priceObj.put("memberdiscount",memberdiscount);
+								priceObj.put("nonmemberdiscount",nonmemberdiscount);
+								priceObj.put("discountcode",lblPromoCode);
+								
+								if(Constants.SIGNUP.equalsIgnoreCase(pricingRule.getPricingRule().getType())){
+									signuppriceArr.add(priceObj);
+								}
+								else if(Constants.REGISTRATION.equalsIgnoreCase(pricingRule.getPricingRule().getType())){
+									registrationpriceArr.add(priceObj);
+								}
+								else if(Constants.DEPOSIT.equalsIgnoreCase(pricingRule.getPricingRule().getType())){
+									depositpriceArr.add(priceObj);
+								}
+							}
+					  }
+	    			  
+			    	  JSONObject obj = new JSONObject();
+			    	  obj.put("id", p.getId());
+			    	  obj.put("prodId", p.getId());
+			    	  obj.put("itemDetailsId", p.getId());
+			    	  obj.put("subType", p.getSubType());
+				      obj.put("name", p.getRecordName());
+			    	  //obj.put("memberprice", membertierPrice);
+			    	  //obj.put("nonmemberprice", nonmembertierPrice);
+				      obj.put("signuppriceArr", signuppriceArr);
+				      obj.put("registrationpriceArr", registrationpriceArr);
+				      obj.put("depositpriceArr", depositpriceArr);
+			    	  obj.put("description", p.getDescription());
+				      obj.put("category", p.getType());
+				      obj.put("capacity", convertNullToZero(p.getWebCapacity()));
+				      obj.put("remainingCapacity", convertNullToZero(p.getRemainingCapacity()));
+				      
+				      String sessionName = "";
+				      String instructorName = "";
+				      String sessionDays = "";
+				      String sessionDaysId = "";
+				      List<String> daysArr = Arrays.asList("Sun","Mon","Tues","Wed","Thurs","Fri","Sat");
+				      for(ItemDetailDays idys : itemDays){
+				    	  //obj.put("itemDaysMapId", idys.getItemDaysId()+"_"+p.getItemDetails().getId());
+					      //obj.put("item_Days", idys.getItemDaysId()+"_"+p.getItemDetails().getId());
+				    	  sessionName = idys.getSessionName();
+				    	  instructorName = idys.getInstructorName();
+				    	  sessionDaysId = sessionDaysId + "," + idys.getId();
+				    	  sessionDays = sessionDays + "," + daysArr.get(Integer.parseInt(idys.getId().toString()));
+				      }
+				      obj.put("sessionName", sessionName);
+				      obj.put("instructor", instructorName);
+				      obj.put("dayId", sessionDaysId.replaceFirst(",", ""));
+				      obj.put("days", sessionDays.replaceFirst(",", ""));
+				      
+				      obj.put("start_time", p.getStartTime());
+				      obj.put("end_time", p.getEndTime());
+				      obj.put("start_date", p.getStartDate());
+				      obj.put("end_date", p.getEndDate());
+
+//					  Double amt = p.getItemDetails().getPrice() - discount;
+				      obj.put("finalamount", new Double(0));
+				      json.add(obj);
+		      }
+		        
+		  }
+	      
+	      //System.out.print(json);
+	      return json.toString();
+	}
+	
+	@RequestMapping(value="/getPricingruleByItemDetailsIdAndTier", method=RequestMethod.POST)
+    public @ResponseBody String getPricingruleByItemDetailsIdAndTier(@RequestParam String itemDetailsId, @RequestParam String tier, final HttpServletRequest request, final HttpServletResponse response) { 	
+		JSONArray json = new JSONArray();
+			
+		if(itemDetailsId!=null && tier !=null){
+			List<ItemDetailPricingRule> lstPricingrule = itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Tier(Long.parseLong(itemDetailsId),tier);
+			
+			if(lstPricingrule!=null && lstPricingrule.size()>0){
+				for(ItemDetailPricingRule pricingrule : lstPricingrule){
+					JSONObject obj = new JSONObject();
+		  	  		obj.put("hourlyRate", pricingrule.getPricingRule().getHourlyRate());
+		  	  		obj.put("fullDayHours", pricingrule.getPricingRule().getFullDayHours());
+		  	  		obj.put("fullDayFactor", pricingrule.getPricingRule().getFullDayFactor());
+		  	  		obj.put("days5Factor", pricingrule.getPricingRule().getDays5Factor());
+		  	  		obj.put("days4Factor", pricingrule.getPricingRule().getDays4Factor());
+		  	  		obj.put("days3Factor", pricingrule.getPricingRule().getDays3Factor());
+		  	  		obj.put("days2Factor", pricingrule.getPricingRule().getDays2Factor());
+		  	  		obj.put("day1Factor", pricingrule.getPricingRule().getDay1Factor());
+		  	  		json.add(obj);
+				}
+			}
+		}
+  	  
+		return json.toString();
+	}
+	
+	@RequestMapping(value="/getLoggedInUserDetails", method=RequestMethod.GET)
+    public @ResponseBody String getLoggedInUserDetails(final HttpServletRequest request, final HttpServletResponse response) {
+		 JSONArray json = new JSONArray();
+		 Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		 String userId = ((UserDetails) a.getPrincipal()).getUsername();	
+		 User user = null;
+		 Account account = null;
+		 
+		 if(userId != null && !"".equals(userId)){
+			 JSONObject obj = new JSONObject();
+			 account = accountDao.getByEmail(userId);
+			 user = getUserByAccount(account, user);
+			 obj.put("loggedInUserName",user.getPersonFirstName());
+			 obj.put("loggedInUserContactId",user.getContactId());
+	  	  	 json.add(obj);
+		 }
+		 return json.toString();
+	}
+	
+	@RequestMapping(value="/getSetupFeeByItemDetailIdAndPartyId", method=RequestMethod.GET)
+	private @ResponseBody String getSetupFeeByItemDetailIdAndPartyId(@RequestParam String itemDetailId, @RequestParam String partyId, final HttpServletRequest request, final HttpServletResponse response) {
+		Double setupFee = 0D;
+		
+		if(itemDetailId!=null && StringUtils.isNotBlank(itemDetailId) && partyId!=null && StringUtils.isNotBlank(partyId)){
+			ItemDetail itemDetail = itemDetailsDao.getById(Long.parseLong(itemDetailId));
+			
+			if(itemDetail!=null && itemDetail.isRequiresSetUpFee()){
+				User contact = userDao.getOne(Long.parseLong(partyId));
+				if(contact!=null){
+					
+					List<Signup> signup = signupDao.findByContactAndTypeAndStatus(contact,Constants.PRODUCT_CATEGORY_MEMBERSHIP,Constants.ACTIVE);
+					//if(contact.isActive()){
+					if(signup!=null && signup.size()>0){
+						// do nothing
+					}
+					else{
+						List<SetpUpFee> setpUpFees = setpUpFeeDao.findByContactIfActiveSetupFee(contact,itemDetail.getStartDate());
+						if(setpUpFees!=null && setpUpFees.size()>0){
+							// do nothing
+						}
+						else{
+							// calculate setup fee
+							List<ItemDetailPricingRule> pricingRuleLst =  itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Type(itemDetail.getId(),Constants.SETUPFEE);
+							
+							if(pricingRuleLst!=null && pricingRuleLst.size()>0){
+								for(ItemDetailPricingRule pricingRule: pricingRuleLst) {
+									if(pricingRule!=null && pricingRule.getPricingRule()!=null){
+										
+										if(isMember(contact.getContactId().toString())){
+											if(StringUtils.isNotBlank(pricingRule.getPricingRule().getTierPrice()))
+												setupFee += Double.parseDouble(pricingRule.getPricingRule().getTierPrice());
+										} else {
+											if(StringUtils.isNotBlank(pricingRule.getPricingRule().getNonmemberTierPrice()))
+												setupFee += Double.parseDouble(pricingRule.getPricingRule().getNonmemberTierPrice());
+										}
+									}
+								}
+								SetpUpFee s = new SetpUpFee();
+								s.setContact(contact);
+								s.setSetUpFee(setupFee);
+								s.setSetUpFeeStartDate(new Date());
+								
+								Calendar cal = Calendar.getInstance();    		
+					    		cal.add(Calendar.YEAR, 1); // to get previous year add -1
+							    Date nextYear = cal.getTime();
+								s.setSetUpFeeEndDate(nextYear);
+								
+								//setpUpFeeDao.save(s);
+							}
+						}
+					}
+				}
+			}
+		}
+		return setupFee.toString();
+	}
+
+	@RequestMapping(value="/getFA", method=RequestMethod.GET)
+	private @ResponseBody String getFA(@RequestParam String itemDetailId, final HttpServletRequest request, final HttpServletResponse response) {
+		JSONArray json = new JSONArray();
+		
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			return json.toString();
+		}
+		
+		Account account = null;
+		if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+		}
+		
+		if(account==null){
+			return json.toString();
+		}
+		
+		ItemDetail i = itemDetailsDao.getById(Long.parseLong(itemDetailId));
+		
+		List<AccountFinancialAid> customerFaList = financialAssistanceService.computeFA(i,account.getAccountId());
+		
+		if(customerFaList!=null && customerFaList.size()>0){
+			AccountFinancialAid fa = customerFaList.get(0);
+			JSONObject obj = new JSONObject();
+	    	obj.put("id", fa.getId());
+			obj.put("FApercent", fa.getFaPerCent_c());
+			obj.put("FAstartDate", fa.getFaStartDate_c());
+			obj.put("FAendDate", fa.getFaEndDate_c());
+
+			json.add(obj);
+		}
+		/* for testing
+		if(json.size()==0){
+			JSONObject obj = new JSONObject();
+	    	obj.put("id", 5);
+			obj.put("FApercent", 10);
+			obj.put("FAstartDate", "");
+			obj.put("FAendDate", "");
+			
+			json.add(obj);
+		}*/
+		
+		return json.toString();
+	}
+	
+	@RequestMapping(value = "/isHealthHistoryRequired", method = RequestMethod.GET)
+	public @ResponseBody String isHealthHistoryRequired(
+			@RequestParam(value = "itemDetailId") String itemDetailId,
+			final HttpServletRequest request, final HttpServletResponse response) {
+		JSONObject json = new JSONObject();
+		try {
+			if(itemDetailId != null){
+				String[] itemDetailIds = itemDetailId.split(",");
+				for(String item : itemDetailIds){
+					ItemDetail itemDetail = itemDetailsDao.findOne(Long.parseLong(item));
+					if(itemDetail != null && itemDetail.getRequiresHealthHistory()){
+						json.put("RESULT", "YES");
+						break;
+					}else{
+						json.put("RESULT", "NO");
+					}
+				}
+			}
+		} catch (Exception se) {
+			System.out.println("Error occoured");
+			se.printStackTrace();
+			json.put("RESULT", "NO");
+		}
+		return json.toString();
+	}
+	
+	@RequestMapping(value="/checkProgramRegistrationDate", method=RequestMethod.GET)
+	private @ResponseBody boolean checkProgramRegistrationDate(@RequestParam String itemDetailId, @RequestParam String contactId, final HttpServletRequest request, final HttpServletResponse response) {
+		boolean proceed = false;
+		
+		if(StringUtils.isNotBlank(itemDetailId) && StringUtils.isNotBlank(contactId)){
+			try{
+				User c = userDao.findOne(Long.parseLong(contactId));
+				if(c!=null){
+					List<Signup> signup = signupDao.findByContactAndTypeAndStatus(c,Constants.PRODUCT_CATEGORY_MEMBERSHIP,Constants.ACTIVE);
+					ItemDetail i = itemDetailsDao.getOne(Long.parseLong(itemDetailId));
+					Date programRegStartDate;
+					Date programRegEndDate;
+					
+					if(signup!=null && signup.size()>0){ // contact is active member
+						programRegStartDate = i.getMemberRegistrationStartDate();
+						programRegEndDate = i.getMemberRegistrationEndDate();
+					}
+					else{ // contact is not active member
+						programRegStartDate = i.getNonMemberRegistrationStartDate();
+						programRegEndDate = i.getNonMemberRegistrationEndDate();
+					}
+					
+					java.util.Date currDate= new java.util.Date();
+					long startdiff = currDate.getTime() - programRegStartDate.getTime();
+					startdiff = startdiff / (24 * 60 * 60 * 1000);
+					long enddiff = currDate.getTime() - programRegEndDate.getTime();
+					enddiff = enddiff / (24 * 60 * 60 * 1000);
+					
+					//reg start date should be greater than curr date and reg end date should be less than curr date
+					// stDt <= current <= endDt
+					if(startdiff>=0 && enddiff<=0){
+						proceed = true;
+					}
+				}
+			}
+			catch(Exception e){
+				
+			}
+		}
+		return proceed;
+	}
+	
+	@RequestMapping(value="/checkAndUpdateCapacity", method=RequestMethod.GET)
+	private @ResponseBody String checkAndUpdateCapacity(@RequestParam String itemIdsConfirmedAndWaitlistedItems, final HttpServletRequest request, final HttpServletResponse response) {
+		boolean proceed = false;
+		List<String> itemIdsAndremainingCapacity = new ArrayList<String>();
+		
+		if(itemIdsConfirmedAndWaitlistedItems!=null && StringUtils.isNotBlank(itemIdsConfirmedAndWaitlistedItems)){
+			List<String> lstItemIdsConfirmedAndWaitlistedItems = Arrays.asList(itemIdsConfirmedAndWaitlistedItems.split(","));
+
+			if(lstItemIdsConfirmedAndWaitlistedItems.size()>0){
+	    		for(String itemIdConfirmedAndWaitlistedItems: lstItemIdsConfirmedAndWaitlistedItems){
+	    			
+	    			String itemDetailId = Arrays.asList(itemIdConfirmedAndWaitlistedItems.split("_")).get(0);
+	    			String confirmedItems = Arrays.asList(itemIdConfirmedAndWaitlistedItems.split("_")).get(1);
+	    			String waitlistedItems = Arrays.asList(itemIdConfirmedAndWaitlistedItems.split("_")).get(2);
+	    			
+	    			ItemDetail itemDetail = itemDetailsDao.findOne(Long.parseLong(itemDetailId));
+	    			
+	    			Long remainingCapacity = convertNullToZero(itemDetail.getRemainingCapacity());
+	    			
+	    			if(Long.parseLong(waitlistedItems)>0){
+	    				if(remainingCapacity - Long.parseLong(confirmedItems)==0)
+	    					proceed = true;
+	    				else{ // if capacity is available still program is waitlisted, stop and update user
+	    					String  itemIdAndremainingCapacity = itemDetailId + "__S__" + remainingCapacity;
+	    					itemIdsAndremainingCapacity.add(itemIdAndremainingCapacity);
+	    					proceed = false;
+	    				}
+	    			}
+	    			else if(remainingCapacity-Long.parseLong(confirmedItems)>=0)
+	    				proceed = true;
+	    			else{ // if confirmed items have been waitlisted, stop and update user
+	    				proceed = false;
+	    				String  itemIdAndremainingCapacity = itemDetailId + "__S__" + remainingCapacity;
+    					itemIdsAndremainingCapacity.add(itemIdAndremainingCapacity);
+	    			}
+	    		}
+	    		
+	    		if(proceed){
+	    			for(String itemIdConfirmedAndWaitlistedItems: lstItemIdsConfirmedAndWaitlistedItems){
+	    				
+	    				String itemDetailId = Arrays.asList(itemIdConfirmedAndWaitlistedItems.split("_")).get(0);
+		    			String confirmedItems = Arrays.asList(itemIdConfirmedAndWaitlistedItems.split("_")).get(1);
+	    				
+		    			ItemDetail itemDetail = itemDetailsDao.findOne(Long.parseLong(itemDetailId));
+		    			updateCapacity(itemDetail,Integer.parseInt(confirmedItems));
+		    		}
+	    		}
+			}
+		}
+		
+		return proceed+"^"+StringUtils.join(itemIdsAndremainingCapacity, ',');
+	}
+	
+	@RequestMapping(value="/UpdateCapacityAfterPaymentFail", method=RequestMethod.GET)
+	private @ResponseBody void UpdateCapacityAfterPaymentFail(@RequestParam String itemDetailsId, @RequestParam String confirmedItems, @RequestParam String waitlistedItems, final HttpServletRequest request, final HttpServletResponse response) {
+		if(itemDetailsId!=null && StringUtils.isNotBlank(itemDetailsId) && confirmedItems!=null && waitlistedItems!=null){
+			List<String> lstItemDetailsId = Arrays.asList(itemDetailsId.split(","));
+			if(lstItemDetailsId.size()>0){
+				for(String itemDetailId: lstItemDetailsId){
+					ItemDetail itemDetail = itemDetailsDao.findOne(Long.parseLong(itemDetailId));
+					
+					Long remainingCapacity = convertNullToZero(itemDetail.getRemainingCapacity());
+					Long actualRemainingCapacity = convertNullToZero(itemDetail.getActualRemainingCapacity());
+					
+					remainingCapacity = remainingCapacity+Long.parseLong(confirmedItems);
+					actualRemainingCapacity = actualRemainingCapacity+Long.parseLong(confirmedItems);
+					
+					itemDetail.setRemainingCapacity(remainingCapacity);
+					itemDetail.setActualRemainingCapacity(actualRemainingCapacity);
+					populateAndSaveItemDetail(itemDetail);
+				}
+			}
+		}
+	}
+	
+	@RequestMapping(value="/checkAgeRange", method=RequestMethod.GET)
+	private @ResponseBody String checkAgeRange(@RequestParam String itemDetailIds, @RequestParam String contactIds, final HttpServletRequest request, final HttpServletResponse response) {
+		Boolean validAge = false;
+		List<String> invalidItemDetailContactArr = new ArrayList<String>();
+		
+		if(itemDetailIds!=null && contactIds!=null && StringUtils.isNotBlank(itemDetailIds) && StringUtils.isNotBlank(contactIds)){
+			List<String> lstContactId = Arrays.asList(contactIds.split(","));
+			List<String> lstItemDetailsId = Arrays.asList(itemDetailIds.split(","));
+			
+			if(lstContactId.size()>0 && lstItemDetailsId.size()>0){
+				for(String contactId: lstContactId){
+					User c = userDao.findOne(Long.parseLong(contactId));
+					if(c!=null){
+						MemberAge mAge = new MemberAge();
+						Integer age = 0;
+						if(c.getDateOfBirth()!=null){ // u -> user records fetched from Contact table for the logged in Member. Refer String getContactS method on CommonController
+							age = mAge.getAge(c.getDateOfBirth()); //pass the DOB of user to the method and it returns int Age only in Years.
+							
+							for(String itemDetailId: lstItemDetailsId){
+								ItemDetail itemDetail = itemDetailsDao.findOne(Long.parseLong(itemDetailId));
+								if(itemDetail!=null){
+									Integer minAge = itemDetail.getMinAge();
+									Integer maxAge = itemDetail.getMaxAge();
+									
+									if(minAge <= age && age <= maxAge){
+										if(invalidItemDetailContactArr.size()==0)
+											validAge = true;
+									}
+									else{
+										validAge = false;
+										String err = "Contact "+c.getFirstName() +" "+ c.getLastName()+" doesn't have valid age to signup for program "+itemDetail.getRecordName();
+										invalidItemDetailContactArr.add(err);
+									}
+								} else {
+									validAge = false;
+									String err = "item Detail Id "+itemDetailId+" does not exist";
+									invalidItemDetailContactArr.add(err);
+								}
+							}
+						} else {
+							validAge = false;
+							String err = "Contact "+c.getFirstName() +" "+ c.getLastName()+" does not have valid Date of Birth";
+							invalidItemDetailContactArr.add(err);
+						}
+					} else {
+						validAge = false;
+						String err = "Contact Id "+contactId+" does not exist";
+						invalidItemDetailContactArr.add(err);
+					}
+				}
+			}
+		}
+		return validAge+"_"+StringUtils.join(invalidItemDetailContactArr,"<br>");
+	}
+	
+	@RequestMapping(value="/checkIfMember", method=RequestMethod.GET)
+	private @ResponseBody Boolean checkIfMember(@RequestParam String contactId, final HttpServletRequest request, final HttpServletResponse response) {
+		return isMember(contactId);
+	}
+
+	private Boolean isMember(String contactId) {
+		Boolean isMember = false;
+		if(contactId!=null && StringUtils.isNotBlank(contactId)){
+			User contact = userDao.findOne(Long.parseLong(contactId));
+			if(contact!=null){
+				List<Signup> signup = signupDao.findByContactAndTypeAndStatus(contact,Constants.PRODUCT_CATEGORY_MEMBERSHIP,Constants.ACTIVE);
+				if(signup!=null && signup.size()>0){
+					// contact is active member
+					isMember = true;
+				}
+			}
+		}
+		return isMember;
+	}
+}
+

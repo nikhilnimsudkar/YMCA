@@ -1,0 +1,7 @@
+<html>
+<body>
+<h1>Greetings!</h1>
+<p>Welcome ${firstName} ${lastName}.</p>
+<p>Please find below link to view sex offender details ${link}</p> 
+</body>
+</html>

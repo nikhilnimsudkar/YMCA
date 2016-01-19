@@ -1,0 +1,78 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "item_promo_details")
+public class ItemPromoDetails extends BaseObject implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long itemPromoDetailsId;
+	
+	@ManyToOne  
+	@JoinColumn(name = "promo_id")  
+	private Promocode promocode;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name="item_details_id")
+	private ItemDetails itemDetails;
+	
+	
+	public Long getItemPromoDetailsId() {
+		return itemPromoDetailsId;
+	}
+
+	public void setItemPromoDetailsId(Long itemPromoDetailsId) {
+		this.itemPromoDetailsId = itemPromoDetailsId;
+	}
+
+	public Promocode getPromocode() {
+		return promocode;
+	}
+
+	public void setPromocode(Promocode promocode) {
+		this.promocode = promocode;
+	}
+
+	public ItemDetails getItemDetails() {
+		return itemDetails;
+	}
+
+	public void setItemDetails(ItemDetails itemDetails) {
+		this.itemDetails = itemDetails;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+  <definition name="membership_signup" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/membership_signup.jsp" />
+  </definition>
+  
+  <definition name="customer_home" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/home.jsp" />
+  </definition>
+  
+  <definition name="myProfileView" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/myProfile.jsp" />
+  </definition>
+  
+  <definition name="requestcancellation" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/RequestCancellation.jsp" />
+  </definition>
+
+</tiles-definitions>

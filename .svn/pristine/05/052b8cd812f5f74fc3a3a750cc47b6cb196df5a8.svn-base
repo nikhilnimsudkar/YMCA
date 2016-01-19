@@ -1,0 +1,17 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.CustomerFA;
+
+public interface CustomerFADao extends GenericDao<CustomerFA, Long>  {
+	
+	CustomerFA getById(Long id);
+	
+	@Query("select i from CustomerFA c where c.customerId =?1 and c.category =?2 ")
+	List<CustomerFA> getBySalesAccountIdAndProductCategory(Long customerId,String category);
+	
+	
+}

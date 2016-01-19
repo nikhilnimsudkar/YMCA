@@ -1,0 +1,160 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"    pageEncoding="ISO-8859-1"%>
+<%    	String contextPath = request.getContextPath();   %>
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<div> 
+	<c:choose>
+	<c:when test="${empty signup}">
+		<div class="k-block k-error-colored" role="alert" style="height:40px;padding: 10px;">
+			Invalid membership number, Please verify membership number and try again
+		</div>
+	</c:when>
+	<c:otherwise>
+		<div id="myprofile">
+			<%@ include file="testLeft.jsp" %> 
+		</div>
+		<div id="programs">
+			<%@ include file="testRight.jsp" %> 
+		</div>
+	</c:otherwise>
+	</c:choose>
+</div>
+
+<script type="text/javascript">
+
+var memberContactId=$("#primContId").val();
+$(document).ready(function() {
+	$("#dateOfBirth").kendoDatePicker();
+	$("#dateOfBirthAdd").kendoDatePicker();
+	$("#top_profile").attr('class', 'current');
+	$("#top_login").attr('class', '');
+	
+	$("#phoneNumber").mask("(999) 999-9999");
+	//var memberContactId=$("#primContId").val();
+	var sexoffenderRed=$("#sexOffenderRed"+memberContactId).val();
+	
+	if(sexoffenderRed=='Yes'){
+		 $("#checkinMember"+memberContactId).hide();
+			// document.getElementById("tabstrip3"+memberContactId).style.backgroundColor = "red";
+			$("#tabstrip3"+memberContactId).css('background-color', 'red');
+			 $("#accDeny"+memberContactId).show();
+			//$("#sexOffResonDiv"+memberContactId).show();
+			// $("#accDenySexOff"+memberContactId).show();
+			$("#unAuthAccess"+memberContactId).show();
+			 $("#allowGuest").show();
+			 
+	}
+	
+	
+	
+		
+	
+
+	$("#tabstrip").kendoTabStrip({
+		animation : {
+			open : {
+				effects : "fadeIn"
+			}
+		}
+	});
+
+	$("#tabstrip1").kendoTabStrip({
+		animation : {
+			open : {
+				effects : "fadeIn"
+			}
+		}
+	});
+	$("#tabstrip2").kendoTabStrip({
+		animation : {
+			open : {
+				effects : "fadeIn"
+			}
+		}
+	});
+	
+	
+	
+	
+
+	/* $('.scroller').slimScroll({
+		height : '110px',
+		width : '160px',
+		alwaysVisible : true,
+		color : '#666666',
+		distance : '4px',
+		railVisible : true,
+		allowPageScroll : true
+	}).parent().css({
+		border : '1px solid #cccccc'
+	}); */
+	
+});	
+
+function add_Guest() {
+	
+	var window_add1 = $(document).find("#popup_add");
+	window_add1.clone().kendoWindow({
+		actions: [ "Refresh", "Close"],
+		title : "Add Guest Contact",
+		content : "addGuest",
+		modal : false,
+		width : "430px",
+		close : onClose,
+		deactivate : function(e) {
+			this.destroy();
+		}
+	}).data("kendoWindow").center().open();
+	$('[data-role="draggable"]').css('top', '20px');
+}
+var onClose = function() {
+	//this.destroy();   
+};
+
+function contactSystemDirector(memberContactId){
+	//alert(memberContactId);
+	var url = "contactSystemDirector?memberContactId="+memberContactId;
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:url,
+		  success: function( data ) {
+			 //alert(data);
+			 $("#unAuthAccButton"+memberContactId).html("Request Sent");
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(xhr);
+		  }
+	});
+	
+}
+  
+/* function displayReasonList(memberContactId){
+   	$("#sexOffResonList"+memberContactId).kendoDropDownList(); 
+   	var SexOffenderReasonDropdownlist = $("#sexOffResonList"+memberContactId).data("kendoDropDownList");
+   	//SexOffenderReasonDropdownlist.select(0);
+   	$("#unAuthAccess"+memberContactId).hide();
+   	$("#sexOffResonDiv"+memberContactId).show();
+   } */
+
+
+   /* function selectReason(memberContactId,ele){
+   	if(ele.value== 1){
+   	    	// $("#unAuthAccess"+memberContactId).show();
+   	    	$("#accDenySexOff"+memberContactId).hide();
+   		unAuthAccess(memberContactId);
+   	    }else if(ele.value== 0){
+   	       alert("{location change to first pos}");
+   	    	//$("#unAuthAccess"+memberContactId).hide();
+   	    	$("#accDenySexOff"+memberContactId).show();
+   	        } 
+   	}	  */   
+   
+/* $("#CloseChekinWind").click( function (e) {
+	 /* $("#popup_ChckinMember").data("kendoWindow").close();
+   }); */
+   
+
+
+
+
+</script>

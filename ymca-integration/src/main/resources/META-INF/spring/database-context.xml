@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:jdbc="http://www.springframework.org/schema/jdbc" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/jdbc 
+	http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
+	
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+	    <property name="driverClass" value="${spring.datasource.portal.driverClassName}"/>
+	    <property name="url" value="${spring.datasource.url}"/>
+	    <property name="username" value="${spring.datasource.username}"/>
+	    <property name="password" value="${spring.datasource.password}"/>
+    </bean>
+    
+    <bean id="portal_db" name="portal_db" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+	    <property name="driverClass" value="${spring.datasource.portal.driverClassName}"/>
+	    <property name="url" value="${spring.datasource.portal.url}"/>
+	    <property name="username" value="${spring.datasource.portal.username}"/>
+	    <property name="password" value="${spring.datasource.portal.password}"/>
+    </bean>
+    
+      <!-- create job-meta tables automatically -->
+<!--   <jdbc:initialize-database data-source="dataSource"> -->
+<!-- 	<jdbc:script location="org/springframework/batch/core/schema-drop-mysql.sql" /> -->
+<!-- 	<jdbc:script location="org/springframework/batch/core/schema-mysql.sql" /> -->
+<!--   </jdbc:initialize-database> -->
+</beans>
+

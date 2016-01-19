@@ -1,0 +1,342 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+
+
+
+/**
+ * This class represents the basic "Donation" object in YMCA Portal that allows for Payment process management.  
+ */
+@Entity
+@Table(name = "donation")
+public class Donation extends BaseObject implements Serializable {
+
+	private static final long serialVersionUID = -7381613385407423268L;
+	public static final Comparator<Donation> DATE_ORDER_DEC_COMPARATOR = new DateOrderComparator();
+
+	public Donation(){
+    }
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long donationId;							// required  PK
+
+    @Column(name = "account_id", nullable = false)
+	private Long accountId;								// required  PK,FK1
+
+    @Column(name = "contact_party_id", nullable = false)
+	private Long contactPartyId;						// required  PK,FK1
+    
+    @Column(name = "payment_method_id")
+   	private String paymentMethodId;                    	// required  PK,FK1
+    
+    @Column(name = "donation_number", nullable = false)
+    private Long donationNumber;
+    
+    @Column(name = "donation_amount", nullable = false)
+    private Double donationAmount;
+
+    @Column(name = "customer_name", nullable = false)
+    private String customerName;
+    
+    @Column(name = "contact_name", nullable = false)
+    private String contactName;
+    
+    @Column(name = "donation_date")
+    private Date donationDate;                
+    
+    @Column(name = "type", nullable = false)
+    private String type;
+    
+    @Column(name = "payment_method", nullable = false)
+    private String paymentMethod;
+
+	/**
+	 * @return the donationId
+	 */
+	public Long getDonationId() {
+		return donationId;
+	}
+
+	/**
+	 * @param donationId the donationId to set
+	 */
+	public void setDonationId(Long donationId) {
+		this.donationId = donationId;
+	}
+
+	/**
+	 * @return the accountId
+	 */
+	public Long getAccountId() {
+		return accountId;
+	}
+
+	/**
+	 * @param accountId the accountId to set
+	 */
+	public void setAccountId(Long accountId) {
+		this.accountId = accountId;
+	}
+
+	/**
+	 * @return the contactPartyId
+	 */
+	public Long getContactPartyId() {
+		return contactPartyId;
+	}
+
+	/**
+	 * @param contactPartyId the contactPartyId to set
+	 */
+	public void setContactPartyId(Long contactPartyId) {
+		this.contactPartyId = contactPartyId;
+	}
+
+	/**
+	 * @return the paymentMethodId
+	 */
+	public String getPaymentMethodId() {
+		return paymentMethodId;
+	}
+
+	/**
+	 * @param paymentMethodId the paymentMethodId to set
+	 */
+	public void setPaymentMethodId(String paymentMethodId) {
+		this.paymentMethodId = paymentMethodId;
+	}
+
+	/**
+	 * @return the donationNumber
+	 */
+	public Long getDonationNumber() {
+		return donationNumber;
+	}
+
+	/**
+	 * @param donationNumber the donationNumber to set
+	 */
+	public void setDonationNumber(Long donationNumber) {
+		this.donationNumber = donationNumber;
+	}
+
+	/**
+	 * @return the donationAmount
+	 */
+	public Double getDonationAmount() {
+		return donationAmount;
+	}
+
+	/**
+	 * @param donationAmount the donationAmount to set
+	 */
+	public void setDonationAmount(Double donationAmount) {
+		this.donationAmount = donationAmount;
+	}
+
+	/**
+	 * @return the customerName
+	 */
+	public String getCustomerName() {
+		return customerName;
+	}
+
+	/**
+	 * @param customerName the customerName to set
+	 */
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+
+	/**
+	 * @return the contactName
+	 */
+	public String getContactName() {
+		return contactName;
+	}
+
+	/**
+	 * @param contactName the contactName to set
+	 */
+	public void setContactName(String contactName) {
+		this.contactName = contactName;
+	}
+
+	/**
+	 * @return the donationDate
+	 */
+	public Date getDonationDate() {
+		return donationDate;
+	}
+
+	/**
+	 * @param donationDate the donationDate to set
+	 */
+	public void setDonationDate(Date donationDate) {
+		this.donationDate = donationDate;
+	}
+
+	/**
+	 * @return the type
+	 */
+	public String getType() {
+		return type;
+	}
+
+	/**
+	 * @param type the type to set
+	 */
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	/**
+	 * @return the paymentMethod
+	 */
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	/**
+	 * @param paymentMethod the paymentMethod to set
+	 */
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((accountId == null) ? 0 : accountId.hashCode());
+		result = prime * result
+				+ ((contactName == null) ? 0 : contactName.hashCode());
+		result = prime * result
+				+ ((contactPartyId == null) ? 0 : contactPartyId.hashCode());
+		result = prime * result
+				+ ((customerName == null) ? 0 : customerName.hashCode());
+		result = prime * result
+				+ ((donationAmount == null) ? 0 : donationAmount.hashCode());
+		result = prime * result
+				+ ((donationDate == null) ? 0 : donationDate.hashCode());
+		result = prime * result
+				+ ((donationId == null) ? 0 : donationId.hashCode());
+		result = prime * result
+				+ ((donationNumber == null) ? 0 : donationNumber.hashCode());
+		result = prime * result
+				+ ((paymentMethod == null) ? 0 : paymentMethod.hashCode());
+		result = prime * result
+				+ ((paymentMethodId == null) ? 0 : paymentMethodId.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Donation other = (Donation) obj;
+		if (accountId == null) {
+			if (other.accountId != null)
+				return false;
+		} else if (!accountId.equals(other.accountId))
+			return false;
+		if (contactName == null) {
+			if (other.contactName != null)
+				return false;
+		} else if (!contactName.equals(other.contactName))
+			return false;
+		if (contactPartyId == null) {
+			if (other.contactPartyId != null)
+				return false;
+		} else if (!contactPartyId.equals(other.contactPartyId))
+			return false;
+		if (customerName == null) {
+			if (other.customerName != null)
+				return false;
+		} else if (!customerName.equals(other.customerName))
+			return false;
+		if (donationAmount == null) {
+			if (other.donationAmount != null)
+				return false;
+		} else if (!donationAmount.equals(other.donationAmount))
+			return false;
+		if (donationDate == null) {
+			if (other.donationDate != null)
+				return false;
+		} else if (!donationDate.equals(other.donationDate))
+			return false;
+		if (donationId == null) {
+			if (other.donationId != null)
+				return false;
+		} else if (!donationId.equals(other.donationId))
+			return false;
+		if (donationNumber == null) {
+			if (other.donationNumber != null)
+				return false;
+		} else if (!donationNumber.equals(other.donationNumber))
+			return false;
+		if (paymentMethod == null) {
+			if (other.paymentMethod != null)
+				return false;
+		} else if (!paymentMethod.equals(other.paymentMethod))
+			return false;
+		if (paymentMethodId == null) {
+			if (other.paymentMethodId != null)
+				return false;
+		} else if (!paymentMethodId.equals(other.paymentMethodId))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		return true;
+	}
+    
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Donation [donationId=" + donationId + ", accountId="
+				+ accountId + ", contactPartyId=" + contactPartyId
+				+ ", paymentMethodId=" + paymentMethodId + ", donationNumber="
+				+ donationNumber + ", donationAmount=" + donationAmount
+				+ ", customerName=" + customerName + ", contactName="
+				+ contactName + ", donationDate=" + donationDate + ", type="
+				+ type + ", paymentMethod=" + paymentMethod + "]";
+	}
+	
+	private static final class DateOrderComparator implements Comparator<Donation> {
+		public int compare(Donation dn1, Donation dn2) {
+			if (dn1.donationDate.before(dn2.donationDate) )return 1;
+			if (dn1.donationDate == dn2.donationDate) return 0;
+			return -1;
+			
+		}
+	}
+    
+}

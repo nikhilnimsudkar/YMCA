@@ -1,0 +1,37 @@
+package com.ymca.web.controller;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.ymca.web.service.ContactService;
+
+@Controller
+public class YAgentConsoleController extends BaseController {
+	
+	@Resource
+	private ContactService contactService;
+	
+		
+	@RequestMapping(value="/YAgentConsoleContactSearch", method=RequestMethod.GET)
+    public @ResponseBody String getContacts(@RequestParam String firstName, @RequestParam String lastName,@RequestParam String emailAddress,@RequestParam String phone,
+    		@RequestParam String gender,@RequestParam String membershipId) { 
+		
+		/*DateFormat format = new SimpleDateFormat("YYYY-MM-DD", Locale.ENGLISH);
+		Date date = null;
+		try {
+			date = format.parse(dob);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		contactService.getAccountDetails(firstName, lastName, emailAddress, phone, gender, membershipId);
+		
+		return "SUCCESS__";
+    }
+
+}

@@ -1,0 +1,81 @@
+
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+
+<div>
+</br>
+					<span class="head" style="width:100px;padding-top:50px;color:#eb8120;font-weight:bold;">WELCOME ${usInfo.username}!</span>
+					
+					</div>
+	
+	<div id="tabstrip5" class="k-block">
+		
+				<span class="head" width="100%" style="margin-left:3px;">MY PROFILE</span></br>
+		
+			<div id="team">
+				
+			
+					<span class="head">PROFILE INFORMATION</span>
+					</br><span style="font-size: .7em;">Manage Contacts & Communications</span></br>
+					<span class="k-button" id="updProfile" onclick="location.href='view_membership'">VIEW/EDIT</span>	</br>	</br>				
+					
+					<span class="head" style="width:100px; padding-top:5px;">CURRENT MEMBERSHIPS</span></br>	
+					<span style="font-size: .7em;">View details of your current Memberships</span></br>	
+					<span class="k-button" id="updProfile" align="left" onclick="location.href='currentmembership'">VIEW/EDIT</span></br></br>	
+					
+					<span class="head" style="width:100px; padding-top:5px;">MY PAYMENTS</span></br>	
+					<span style="font-size: .7em;">Make payments and view payment history</span></br>	
+					<span class="k-button" id="updProfile">VIEW/EDIT</span>	
+				
+			</div>
+			
+	<span class="profilepic" style="background: url('${usInfo.profileImage}') transparent no-repeat 0 0;">&nbsp;</span>
+			<span class="head" style="width:100px; padding-top:50px; margin-left:3px;">REMINDERS</span></br>
+			<span style="font-size: .7em; margin-left:3px;">Accum faccabo rrundae
+prorro ius, quae con</br>
+comnit ut volupta
+speditatibea cus.</br>
+Ovit, solorerum que</br>
+consequat et, conet</br>
+alibust, to quibear</br>
+ciaectesedis doluptatus</br>
+uofficia doloris doluptat
+more</span>
+		</div>
+
+	<div id="tabstrip5" class="k-block"  style=" background-color:#01A490;">
+		
+			
+				<span width="100%"  style="
+    color: white;margin-left:3px;">ADD NEW PROGRAM</span><p align="right" style="
+    color: white;">></span>
+			
+	 </div>
+		 
+		 <div id="tabstrip5" class="k-block" style=" background-color:#FFFFFF;">
+		 
+				<span class="head" width="100%" style="margin-left:3px;">PROGRAMS THAT MAY INTEREST YOU</span>
+				<table class="border1" bgcolor="#ffffff" border="0" cellpadding="0"
+					cellspacing="4" width="100%">
+					<tbody>
+					
+
+						<c:forEach var="otherPrograms" items="${otherPrograms}">
+
+							<tr>
+							    <td>${otherPrograms.name}</td>
+								<td>${otherPrograms.programs}</td>
+								
+								<td><span class="k-button" id="updProfile" style="margin-left:3px;">${otherPrograms.text}</span></td>
+							</tr>
+						</c:forEach>
+
+						
+					</tbody>
+				</table>
+			
+		 </div>
+
+
+
+

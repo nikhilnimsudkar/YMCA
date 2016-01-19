@@ -1,0 +1,11 @@
+package com.ymca.web.service;
+
+import java.text.ParseException;
+
+public interface PromotionService {
+	
+	public String getPromotions(String itemContactMapStr, String isAuto);
+	
+	public String getPromoMap(String itemDetailId, String contactId, String isAuto, String isRecurring, String amountJSON, String selectedStartDate) throws ParseException;
+	
+}

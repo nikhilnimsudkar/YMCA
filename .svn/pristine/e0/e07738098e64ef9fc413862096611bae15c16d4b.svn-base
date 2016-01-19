@@ -1,0 +1,1877 @@
+package com.ymca.web.controller;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.ActivityDao;
+import com.ymca.dao.ItemDetailDao;
+import com.ymca.dao.ItemDetailPricingRuleDao;
+import com.ymca.dao.ItemDetailPromotionDao;
+import com.ymca.dao.JetPayPaymentDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.dao.PaymentMethodDao;
+import com.ymca.dao.PromotionDao;
+import com.ymca.dao.RoleDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.dao.SystemPropertyDao;
+import com.ymca.dao.UserDao;
+import com.ymca.dao.WaiversAndTCDao;
+import com.ymca.model.Account;
+import com.ymca.model.Activity;
+import com.ymca.model.Address;
+import com.ymca.model.ContactWaiversAndTC;
+import com.ymca.model.Invoice;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.ItemDetailPricingRule;
+import com.ymca.model.ItemDetailPromotion;
+import com.ymca.model.JetPayPayment;
+import com.ymca.model.Location;
+import com.ymca.model.Payer;
+import com.ymca.model.PaymentMethod;
+import com.ymca.model.Promotion;
+import com.ymca.model.Signup;
+import com.ymca.model.SystemProperty;
+import com.ymca.model.User;
+import com.ymca.model.WaiversAndTC;
+import com.ymca.web.enums.PaymentMethodTypeEnum;
+import com.ymca.web.enums.PortalStatusEnum;
+import com.ymca.web.enums.ProductTypeEnum;
+import com.ymca.web.service.PaymentService;
+import com.ymca.web.util.Constants;
+
+
+@Controller
+public class MembershipController extends BaseController {
+
+	/*
+	@Resource
+	private ProductDao productDao;
+	*/
+	@Resource
+	private RoleDao roleDao;
+	
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	@Resource
+	private UserDao userDao;
+	
+	@Resource
+	private ActivityDao interactionDao;
+	
+	@Resource
+	private SignupDao signupDao;
+	
+	@Resource
+	private WaiversAndTCDao  waiversAndTCDao;
+	
+	@Resource
+	private LocationDao locationDao;
+	
+	@Resource
+	private PaymentMethodDao paymentMethodDao;
+	
+	@Resource
+	private ItemDetailPricingRuleDao itemDetailPricingRuleDao;
+	
+	@Resource
+	private PromotionDao promocodeDao;
+	
+	@Resource
+	private ItemDetailPromotionDao itemPromoDetailsDao;
+	
+	@Resource
+	private ItemDetailDao itemDetailDao;
+	
+	@Resource
+	private PaymentService paymentService;	
+	
+	@Resource
+	private JetPayPaymentDao jetPayPaymentDao;	
+	
+	@Resource
+	private SystemPropertyDao  systemPropertyDao;
+	
+	public MembershipController(){
+		
+	}
+	
+	@ModelAttribute
+    @RequestMapping(value= "ymca/memberships/view_membership", method = RequestMethod.GET)
+    public String showMembershipInfo() {
+			
+		
+		return "home";
+		
+	}
+	
+	//ymca/memberships/signup
+	@ModelAttribute
+    @RequestMapping(value= "signup", method = RequestMethod.GET)
+    public ModelAndView showForm() {
+		
+		List<ItemDetail> products = itemDetailDao.findAll();
+		List<WaiversAndTC> waiversAndTCLst = waiversAndTCDao.getTcByType(Constants.WAIVERS_TC_TYPE_COMMON);
+    	/*ObjectMapper mapper = new ObjectMapper();
+        try {        
+    		System.out.println(mapper.writeValueAsString(products));     
+    	} catch (Exception e) {     
+    		e.printStackTrace();     
+    	}*/
+    	
+        Model model = new ExtendedModelMap();
+        try {
+            model.addAttribute("products", products);
+            if(waiversAndTCLst != null && !waiversAndTCLst.isEmpty()){
+            	model.addAttribute("waiversAndTC", waiversAndTCLst.get(0));
+            }
+            model.addAttribute("account", new Account());           
+            
+        } catch (Exception se) {
+            System.out.println("Error occoured while querying Product");
+            se.printStackTrace();
+        }
+        return new ModelAndView("membership_signup", model.asMap());
+    	/*//products = productDao.getAllProducts();
+        ModelAndView model = new ModelAndView( "membership_signup");
+		model.addObject("products",products);
+		model.addObject("account", new Account());
+		return model;*/
+    	/*Model model = new ExtendedModelMap();
+        try {
+            model.addAttribute("products", products);
+            model.addAttribute("account", new Account());
+        } catch (Exception se) {
+            System.out.println("Error occoured while querying Product");
+            se.printStackTrace();
+        }*/
+        
+        //return "membership_signup";
+        
+        /*ResponseObject responseObj = new ResponseObject();
+        responseObj.setStatus(Constants.STATUS_SUCCESS);       
+        responseObj.setMessage("Successfully created donation details");
+        responseObj.setData(products);
+        //responseObj.setData(new Account());
+        return responseObj; */
+	}
+    
+    @RequestMapping(value="register", method = RequestMethod.POST)
+    public ModelAndView onSubmit(Account account, final BindingResult errors, final HttpServletRequest request, final HttpServletResponse response)
+            throws Exception {        	
+    	User user = new User();    	
+    	user = populateUserData(account);   	
+    	populateContactAndCustomerWaiversAndTC(user, account);
+    	//populateMembershipData(account, user);
+    	
+    	account.setUser(new HashSet<User>());
+    	account.getUser().add(user);
+    	account.setEmail(user.getPrimaryEmailAddress());
+    	account.setName(user.getFullName());
+    	
+        user.setEnabled(true);
+
+        // Set the default user role on this new user
+        //user.addRole(roleDao.getRoleByName(Constants.USER_ROLE));
+        
+        // unencrypted users password to log in user automatically
+        final String password = user.getPassword();
+
+        try {
+            //this.getUserManager().saveUser(user);        	
+            Account acc = accountDao.saveAndFlush(account);
+            /*Interaction interaction = getInteractionData(account, user, Constants.NEW_MEMBERSHIP_REQUEST);
+            Interaction interactionSave = interactionDao.saveAndFlush(interaction);
+            User contact =  null;	
+			contact = getUserByAccount(acc, contact);
+            try{
+    			Long fcrmCustId = 0L;
+        		Long fcrmContactId = 0L;
+        		if(account != null && account.getFcrmCustId() != null && !"".equals(account.getFcrmCustId())){
+        			fcrmCustId = Long.valueOf(account.getFcrmCustId());
+        		}
+        		if(contact != null && contact.getFcrmContactId() != null && !"".equals(contact.getFcrmContactId())){
+        			fcrmContactId = Long.valueOf(contact.getFcrmContactId());
+        		}
+        		fcrmCustId = 300000002351031L;
+        		fcrmContactId = 300000001957013L;        		
+    			CreateInteraction.createInteraction(Constants.NEW_MEMBERSHIP_REQUEST, Constants.NEW_MEMBERSHIP_REQUEST_INTERACTION_DESCTIPTION, fcrmCustId, fcrmContactId, new Date());
+    		
+            }catch(Exception e){
+    			e.printStackTrace();
+    		}*/
+            
+            Model model = new ExtendedModelMap();
+    		if(acc != null){	    		    	    	
+    	        model.addAttribute("account", account);     
+    	        int userCount = account.getUser().size();
+    	        List<User> userS = new ArrayList<User>();
+    	        if(userCount>1){
+    		        for(User u: account.getUser()){
+    		        	if(!user.getUsername().equalsIgnoreCase(u.getUsername())){
+    		        		userS.add(u);
+    		        	}
+    		        }
+    			}    	        
+    	        model.addAttribute("userS", acc.getUserLst());
+    			
+    		}
+    		return new ModelAndView("membershipConfirmation", model.asMap());
+            /*List<GrantedAuthority> authList = new ArrayList<GrantedAuthority>(1);  	          
+ 	       // All users are granted with ROLE_USER access
+ 	 	   // Therefore this user gets a ROLE_USER by default
+ 	 	   authList.add(new GrantedAuthorityImpl("USER"));            
+           UserDetails userDetails = new org.springframework.security.core.userdetails.User(  
+            		user.getUsername().trim(), user.getPassword() , true,  
+                    true, true, true, authList);
+           Authentication token = new UsernamePasswordAuthenticationToken(user.getEmail().trim(), user.getPassword());	        
+	       SecurityContextHolder.getContext().setAuthentication(token);          
+           System.out.println(acc.getName());
+           return "redirect:view_membership";*/
+           
+            
+        } catch (Exception ade) {
+        	Model model = new ExtendedModelMap();
+        	model.addAttribute("errMsg", "Error Occured in Registration Process");
+			return new ModelAndView("login", model.asMap());
+        }
+		//return "home";
+    }
+    
+    @ModelAttribute
+    @RequestMapping(value= "becomeMember", method = RequestMethod.GET)
+    public ModelAndView becomeMemberForm() {	
+    	
+        Model model = new ExtendedModelMap();
+        try {
+        	List<SystemProperty> kidsAgeLst = new ArrayList<SystemProperty>();			
+        	kidsAgeLst = systemPropertyDao.getPropertyByKeyName(Constants.MEMBERSHIP_KIDS_AGE_VALIDATION);
+			if(kidsAgeLst != null && !kidsAgeLst.isEmpty()){
+				model.addAttribute("kidsAgeValidation", kidsAgeLst.get(0).getKeyValue());				
+			}	
+			List<SystemProperty> adultAgeLst = new ArrayList<SystemProperty>();			
+			adultAgeLst = systemPropertyDao.getPropertyByKeyName(Constants.MEMBERSHIP_ADULT_AGE_VALIDATION);
+			if(adultAgeLst != null && !adultAgeLst.isEmpty()){
+				model.addAttribute("adultAgeValidation", adultAgeLst.get(0).getKeyValue());				
+			}	
+			List<SystemProperty> youthAgeLowerLst = new ArrayList<SystemProperty>();			
+			youthAgeLowerLst = systemPropertyDao.getPropertyByKeyName(Constants.MEMBERSHIP_YOUTH_AGE_VALIDATION_LOWER_LIMIT);
+			if(youthAgeLowerLst != null && !youthAgeLowerLst.isEmpty()){
+				model.addAttribute("youthAgeValidationLowerLimit", youthAgeLowerLst.get(0).getKeyValue());				
+			}	
+			List<SystemProperty> youthAgeUpperLst = new ArrayList<SystemProperty>();			
+			youthAgeUpperLst = systemPropertyDao.getPropertyByKeyName(Constants.MEMBERSHIP_YOUTH_AGE_VALIDATION_UPPER_LIMIT);
+			if(youthAgeUpperLst != null && !youthAgeUpperLst.isEmpty()){
+				model.addAttribute("youthAgeValidationUpperLimit", youthAgeUpperLst.get(0).getKeyValue());
+			}	
+            model.addAttribute("locations", locationDao.findAll());
+            model.addAttribute("bayAreaLocations", locationDao.getLocationsByArea(Constants.LOCATION_BAYAREA));
+            model.addAttribute("account", new Account());
+        } catch (Exception se) {
+            System.out.println("Error occoured while querying Product");
+            se.printStackTrace();
+        }
+        return new ModelAndView("becomeMemberForm", model.asMap());    	
+	}
+    
+    @ModelAttribute
+    @RequestMapping(value= "trailPassReg", method = RequestMethod.GET)
+    public ModelAndView trailPassRegShowForm() {	
+    	
+        Model model = new ExtendedModelMap();
+        try {            
+            model.addAttribute("locations", locationDao.findAll());
+            model.addAttribute("bayAreaLocations", locationDao.getLocationsByArea("Bay Area"));
+            model.addAttribute("account", new Account());
+        } catch (Exception se) {
+            System.out.println("Error occoured while querying Product");
+            se.printStackTrace();
+        }
+        return new ModelAndView("trialPassReges", model.asMap());    	
+	}
+    
+  /* // @ModelAttribute
+    @RequestMapping(value= "trailPassReg", method = RequestMethod.GET)
+    public String trailPassRegShowForm() {	
+    	System.out.println("in trail pass method");
+        Model model = new ExtendedModelMap();
+        try {            
+            model.addAttribute("locations", locationDao.findAll());
+            model.addAttribute("bayAreaLocations", locationDao.getLocationsByArea("Bay Area"));
+            model.addAttribute("account", new Account());
+        } catch (Exception se) {
+            System.out.println("Error occoured while querying Product");
+            se.printStackTrace();
+        }
+        return "trialPassReges";    	
+	}*/
+    
+    @RequestMapping(value="getProductDetailsByLocation", method=RequestMethod.GET)
+    public @ResponseBody String  getProductDetailsByLocation(@RequestParam(value="locationId") Long locationId, final HttpServletRequest request, final HttpServletResponse response) { 		
+    	try{
+    		List<Location> allBranchLocationIdLst = locationDao.findByBranch(Constants.LOCATION_ALL_BRANCH);
+    		List<Location> bayAreaBranchIdLst = locationDao.findByBranch(Constants.LOCATION_BAYAREA);
+    		
+    		HashMap<String, Integer> allBranchMap =  new HashMap<String, Integer>();
+    		HashMap<String, Integer> bayAreaBranchMap =  new HashMap<String, Integer>();
+    		
+    		if(allBranchLocationIdLst != null && !allBranchLocationIdLst.isEmpty()){
+    			List<Object[]> allBranchItemDetails =  itemDetailDao.getMembershipProgramByLocation(allBranchLocationIdLst.get(0).getId());
+    			for(Object product : allBranchItemDetails){
+        			Object objArr1[] = (Object[]) product;	
+        			if(objArr1 != null && objArr1.length >0){
+    					if(objArr1[6] != null && objArr1[7] != null){    						
+    						List<ItemDetailPricingRule> pricingRuleLst =  itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Tier(Long.parseLong(objArr1[7].toString()), objArr1[6].toString());						
+    						if(pricingRuleLst != null && !pricingRuleLst.isEmpty()){
+    							allBranchMap.put(objArr1[1].toString(), Integer.parseInt(pricingRuleLst.get(0).getPricingRule().getTierPrice()));
+    						}
+    					}
+        			}
+    			}
+    		}
+    		if(bayAreaBranchIdLst != null && !bayAreaBranchIdLst.isEmpty()){
+    			List<Object[]> bayAreaBranchItemDetails =  itemDetailDao.getMembershipProgramByLocation(bayAreaBranchIdLst.get(0).getId());
+    			for(Object product : bayAreaBranchItemDetails){
+        			Object objArr1[] = (Object[]) product;	
+        			if(objArr1 != null && objArr1.length >0){
+    					if(objArr1[6] != null && objArr1[7] != null){    						
+    						List<ItemDetailPricingRule> pricingRuleLst =  itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Tier(Long.parseLong(objArr1[7].toString()), objArr1[6].toString());						
+    						if(pricingRuleLst != null && !pricingRuleLst.isEmpty()){
+    							bayAreaBranchMap.put(objArr1[1].toString(), Integer.parseInt(pricingRuleLst.get(0).getPricingRule().getTierPrice()));
+    						}
+    					}
+        			}
+    			}
+    		}   		
+    		
+    		
+    		List<Object[]> itemDetails =  itemDetailDao.getMembershipProgramByLocation(locationId);
+    		JSONArray json = new JSONArray();    		
+    		for(Object product : itemDetails){
+    			Object objArr1[] = (Object[]) product;	
+    			if(objArr1 != null && objArr1.length >0){
+    				JSONObject obj = new JSONObject();
+    				if(objArr1[0] != null){
+    					obj.put("id", objArr1[0].toString());
+    				}
+    				if(objArr1[1] != null){
+    					obj.put("productName", objArr1[1].toString());
+    				}
+					if(objArr1[2] != null){
+						obj.put("productDescription", objArr1[2].toString());			
+					}
+					if(objArr1[3] != null){
+						obj.put("productType", objArr1[3].toString());
+					}
+					if(objArr1[4] != null){
+						obj.put("productDuration", objArr1[4].toString());
+					}	
+					
+					if(objArr1[6] != null && objArr1[7] != null){
+						//Locations location = (Locations) objArr1[6];
+						List<ItemDetailPricingRule> pricingRuleLst =  itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Tier(Long.parseLong(objArr1[7].toString()), objArr1[6].toString());
+						
+						double price = 0D;			
+						double joiningPrice = 0D;
+						double tierPrice = 0D;
+						double allAreaPrice = 0D;
+						double bayPrice = 0D;
+						StringBuffer sb = new StringBuffer();
+						for(ItemDetailPricingRule pricingRule: pricingRuleLst) {
+							tierPrice += Double.parseDouble(pricingRule.getPricingRule().getTierPrice());
+							joiningPrice = Double.parseDouble(pricingRule.getPricingRule().getJoiningFee());
+							price += tierPrice + joiningPrice;
+							allAreaPrice += Double.parseDouble(pricingRule.getPricingRule().getAllBranchPrice());
+							bayPrice += Double.parseDouble(pricingRule.getPricingRule().getBayAreaPrice());
+							sb.append(pricingRule.getPricingRule().getRuleName()+":"+pricingRule.getPricingRule().getTierPrice()+";;");
+						}
+						Double discount = new Double(0);
+						if(objArr1[7] != null){							
+							try { 
+								List<ItemDetailPromotion> ipdLst =  itemPromoDetailsDao.getAutoApplyPromoDiscount(Long.parseLong(objArr1[7].toString()));
+								for(ItemDetailPromotion ipd : ipdLst){
+									Promotion promo = ipd.getPromotion();								
+									if(promo.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_VALUE)){
+										discount = promo.getDiscountvalue();
+										  
+									}
+									else if(promo.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_PERCENTAGE)){
+										BigDecimal memberdiscountAmount = promo.getDiscountpercentage().multiply(BigDecimal.valueOf(tierPrice));
+										memberdiscountAmount = memberdiscountAmount.divide(new BigDecimal(100));
+										discount = memberdiscountAmount.doubleValue();									
+									}
+								}
+							}catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						obj.put("itemDetailsId", objArr1[7].toString());
+						obj.put("productPrice", price);						
+						obj.put("pricingJsonArray", sb.toString());	
+						obj.put("joiningPrice", joiningPrice);	
+						obj.put("tierPrice", tierPrice);	
+						/*obj.put("allAreaPrice", allAreaPrice);
+						obj.put("bayAreaPrice", bayPrice);*/	
+						if(objArr1[1] != null && allBranchMap.get(objArr1[1].toString()) != null){
+							obj.put("allAreaPrice", allBranchMap.get(objArr1[1].toString()));
+						}else{
+							obj.put("allAreaPrice", null);
+						}
+						if(objArr1[1] != null && bayAreaBranchMap.get(objArr1[1].toString()) != null){
+							obj.put("bayAreaPrice", bayAreaBranchMap.get(objArr1[1].toString()));
+						}else{
+							obj.put("bayAreaPrice", null);
+						}
+						obj.put("autoPromoDiscount", discount);						
+					}
+					if(objArr1[5] != null){
+						obj.put("tandc", objArr1[5].toString());
+					}
+					json.add(obj);
+    			}  			
+    		}   		
+    		System.out.println(json.toString());
+    		return json.toString(); 	    	  					
+    	}catch(Exception e){    		
+    		System.out.println("Error occoured while querying Product");
+            e.printStackTrace();        		
+    	}
+		return null;    	
+    }
+    
+    
+    
+    @RequestMapping(value="getTrailProductDetailsByLocation", method=RequestMethod.GET)
+    public @ResponseBody String  getTrailPassProductDetailsByLocation(@RequestParam(value="locationId") Long locationId, final HttpServletRequest request, final HttpServletResponse response) { 		
+    	try{
+    		/*List<ItemDetails> productDetails =  itemDetailsDao.getByItemAndLocationsAndProductSubtype("MEMBERSHIP", "Trail Pass",locationId);
+    		
+    		JSONArray json = new JSONArray();  
+    		for(ItemDetails product : productDetails){
+    			JSONObject obj = new JSONObject();
+    			obj.put("id", product.getProduct().getProductId().toString());
+    			obj.put("productName", product.getProduct().getProductName().toString());
+    			obj.put("productDescription",  product.getProduct().getDescription().toString());
+    			obj.put("productType", product.getProduct().getProductType().toString());
+    			obj.put("productDuration", product.getProduct().getDuration().toString());
+    			
+    			List<PricingRule> pricingRuleLst =  pricingRuleDao.findByitemDetailsIdAndTier(Long.parseLong(product.getId().toString()),"2");
+				
+				double price = 0D;			
+				double joiningPrice = 0D;
+				double tierPrice = 0D;
+				double allAreaPrice = 0D;
+				double bayPrice = 0D;
+				StringBuffer sb = new StringBuffer();
+				for(PricingRule pricingRule: pricingRuleLst) {
+					tierPrice += Double.parseDouble(pricingRule.getTierPrice());
+					joiningPrice = Double.parseDouble(pricingRule.getJoiningFee());
+					price += tierPrice + joiningPrice;
+					allAreaPrice += Double.parseDouble(pricingRule.getAllBranchPrice());
+					bayPrice += Double.parseDouble(pricingRule.getBayAreaPrice());
+					sb.append(pricingRule.getRuleName()+":"+pricingRule.getTierPrice()+";;");
+				}
+				obj.put("itemDetailsId", product.getId().toString());
+				obj.put("productPrice", price);						
+				obj.put("pricingJsonArray", sb.toString());	
+				obj.put("joiningPrice", joiningPrice);	
+				obj.put("tierPrice", tierPrice);	
+				obj.put("allAreaPrice", allAreaPrice);
+				obj.put("bayAreaPrice", bayPrice);						
+				obj.put("autoPromoDiscount", "");
+				obj.put("tandc",product.getProduct().getWaiversAndTC().getTcDescription().toString());
+					json.add(obj);
+    			}
+    		System.out.println(json.toString());
+    		return json.toString(); */
+    		return "";
+    		} 
+    	
+    		
+    
+    	catch(Exception e){    		
+    		System.out.println("Error occoured while querying Product");
+            e.printStackTrace();        		
+    	}
+		return null;    	
+    }
+    
+    
+    @RequestMapping(value="becomeMemberRegister", method = RequestMethod.POST)
+    public ModelAndView becomeMemberRegister(Account account, final BindingResult errors, final HttpServletRequest request, final HttpServletResponse response)
+            throws Exception {        	
+    	String opptyId = request.getParameter("opptyId");  
+    	List<User> userLst = new ArrayList<User>();
+    	User user = new User();     	
+    	User accUser = new User();  
+    	accUser = account.getUserLst().get(0);
+    	Signup signup = new Signup();
+    	ItemDetail itemDetail  =  itemDetailDao.getById(Long.parseLong(account.getProductId())); 
+    	
+    	userLst = populateUserLstData(account); 
+		Model model = new ExtendedModelMap();
+		if(userLst != null && !userLst.isEmpty()){
+			User primaryUser = userLst.get(0);
+	    	populateContactAndCustomerWaiversAndTC(primaryUser, account);  	    	  
+	    	//userLst.add(user);
+	    	account.setUser(new HashSet<User>());
+	    	
+	    	List<User> kidsInfo = new ArrayList<User>();
+	    	for(User usr : userLst){
+	    		account.getUser().add(usr); 
+	    		if(usr.getIsAdult() != null && "true".equals(usr.getIsAdult()) && usr.getUsrSequence() != null && "1".equals(usr.getUsrSequence())){
+	    			model.addAttribute("secUser", usr);
+	    		}
+	    		if(usr.getIsAdult() != null && "true".equals(usr.getIsAdult()) && usr.getUsrSequence() != null && "2".equals(usr.getUsrSequence())){
+	    			model.addAttribute("thirdUser", usr);
+	    		}
+	    		if(usr.getIsAdult() != null && "false".equals(usr.getIsAdult())){
+	    			kidsInfo.add(usr);
+	    		}
+	    		   		
+	    	}    	    	   	
+	    	account.setEmail(primaryUser.getPrimaryEmailAddress());
+	    	account.setName(primaryUser.getFullName());  	    	
+	    	  
+	        try {              	
+	            Account acc = accountDao.saveAndFlush(account);    	              
+	            JetPayPayment jetPayPayment = new JetPayPayment();
+	            PaymentMethod paymentMethod  =  populatePaymentMethodData(acc, account.getTransId());
+	            paymentMethod = paymentMethodDao.save(paymentMethod);
+	            //signup = populateSignupData(account, primaryUser, itemDetails,signup,  opptyId, paymentMethod);
+	            List<Signup> signupList =  populateSignupDataLst(account, userLst, itemDetail,  opptyId, paymentMethod);
+	            for(Signup signupSave : signupList){
+	            	Signup signup2 = signupDao.save(signupSave);  
+	            }         
+	            
+	            User userTemp = new User();
+	            User userDb = getUserByAccount(acc, user);
+    			List<String> amountLst =  new ArrayList<String>();
+    			amountLst.add("");
+    			amountLst.add("");
+    			amountLst.add(account.getProductPrice());
+    			Invoice invoice = paymentService.saveinvoice(acc, amountLst, userDb, signupList.get(0));
+    			JetPayPayment jetpay = paymentService.savepayment(paymentMethod.getPaymentId().toString(), "", account.getTransId(), acc, amountLst, userDb, signupList.get(0),null,invoice);
+    			
+    			Payer payer = paymentService.savepayer(paymentMethod.getPaymentId().toString(), account, amountLst, itemDetail, signupList.get(0));    			
+    			//Interaction interaction = interactionDao.save(populateInteractionData(signupList.get(0), account, userDb));
+    			
+    			if(userLst.get(0).getReferrerEmail() != null){
+					List<User> referrerContactLst = userDao.getUserLstByPrimaryEmailAddress(userLst.get(0).getReferrerEmail());
+					if(referrerContactLst != null && !referrerContactLst.isEmpty()){
+						List<User> registredContactLst = userDao.getUserLstByPrimaryEmailAddress(userLst.get(0).getPrimaryEmailAddress());
+						if(registredContactLst != null && !registredContactLst.isEmpty()){
+							//registredContactLst.get(0).setReferrerContact(referrerContactLst.get(0));
+							registredContactLst.get(0).setRelationships(Constants.REFEREE);
+							//referrerContactLst.get(0).setReferrerContact(registredContactLst.get(0));
+							referrerContactLst.get(0).setRelationships(Constants.REFERRER);
+							userDao.save(referrerContactLst.get(0));
+							userDao.save(registredContactLst.get(0));
+						}						
+					}
+				}
+	    		if(acc != null){	    		    	    	
+	    	        model.addAttribute("account", account);    	            	        
+	    	        model.addAttribute("primaryUser", primaryUser);
+	    	        model.addAttribute("kidsInfo", kidsInfo);    	    	        
+	    	        model.addAttribute("signup", signupList.get(0));
+	    	        model.addAttribute("product", itemDetail);
+	    	        model.addAttribute("paymentTransId", account.getTransId());
+	    	        model.addAttribute("prodJoinFee", account.getJoiningFee());
+	    	        model.addAttribute("productPrice", account.getProductPrice());
+	    	        if(account.getJoiningFee() != null && account.getProductPrice() != null){
+	    	        	double prodJoinFee = Double.parseDouble(account.getJoiningFee());
+	    	        	double prodPrice = Double.parseDouble(account.getProductPrice());
+	    	        	double totalPrice = prodJoinFee+ prodPrice;
+	    	        	model.addAttribute("productTotalPrice", totalPrice);
+	    	        }
+	    		}
+	        
+	    		return new ModelAndView("becomeMemberconfirmation", model.asMap());
+	            
+	        } catch (Exception ade) {
+	        	ade.printStackTrace();    	        	
+	        	model.addAttribute("errMsg", "Error Occured in Registration Process");
+				return new ModelAndView("login", model.asMap());
+	        }
+		}else{
+			return new ModelAndView("login", model.asMap());
+		}
+		
+    	/*if(account != null && !account.getLoggedInUserEmailId().equals("") ){
+    			Account isAccountExist = accountDao.getByEmail(account.getLoggedInUserEmailId());    		
+	    		if(isAccountExist != null){
+	    			List<User> userLstForm = new ArrayList<User>();
+	    			User userDb = getUserByAccount(isAccountExist, user);
+	    			signup = populateSignupData(isAccountExist, userDb, itemDetails,signup,  opptyId, null);  
+	    			try {   
+	    				userLst = populateExistingSignedUpUserLstData(account, isAccountExist); 
+	    				userLstForm = populateUsrLstFromUsrSet(account);
+	        			Model model = new ExtendedModelMap();
+	        			if(userLst != null && !userLst.isEmpty()){
+	    	    			//User primaryUser = userLst.get(0);
+	    	    	    	populateContactAndCustomerWaiversAndTC(userDb, account);  	    	  
+	    	    	    	//userLst.add(user);
+	    	    	    	account.setUser(new HashSet<User>());
+	    	    	    	
+	    	    	    	List<User> kidsInfo = new ArrayList<User>();
+	    	    	    	for(User usr : userLst){
+	    	    	    		account.getUser().add(usr); 	    	    	    		   		
+	    	    	    	} 
+	    	    	    	for(User usr : userLstForm){
+	    	    	    		if(usr.getIsAdult() != null && "true".equals(usr.getIsAdult()) && usr.getUsrSequence() != null && "1".equals(usr.getUsrSequence())){
+	    	    	    			model.addAttribute("secUser", usr);
+	    	    	    		}
+	    	    	    		if(usr.getIsAdult() != null && "true".equals(usr.getIsAdult()) && usr.getUsrSequence() != null && "2".equals(usr.getUsrSequence())){
+	    	    	    			model.addAttribute("thirdUser", usr);
+	    	    	    		}
+	    	    	    		if(usr.getIsAdult() != null && "false".equals(usr.getIsAdult())){
+	    	    	    			kidsInfo.add(usr);
+	    	    	    		}
+	    	    	    	}
+	    	    	    	account.setEmail(userDb.getPrimaryEmailAddress());
+	    	    	    	account.setName(userDb.getFullName());  	    	
+	    	    	    	  
+	    	    	        try {              	
+	    	    	            Account acc = accountDao.saveAndFlush(account);    	              
+	    	    	            JetPayPayment jetPayPayment = new JetPayPayment();
+	    	    	            PaymentMethod paymentMethod  =  populatePaymentMethodData(acc, account.getTransId());
+	    	    	            paymentMethod = paymentMethodDao.save(paymentMethod);
+	    	    	            //signup = populateSignupData(account, primaryUser, itemDetails,signup,  opptyId, paymentMethod);
+	    	    	            List<Signup> signupList =  populateSignupDataLst(account, userLst, itemDetails,  opptyId, paymentMethod);
+	    	    	            for(Signup signupSave : signupList){
+	    	    	            	Signup signup2 = signupDao.save(signupSave);  
+	    	    	            }         
+	    	    	            
+	    	    	            User userTemp = new User();	    	    	            
+	    		    			List<String> amountLst =  new ArrayList<String>();
+	    		    			amountLst.add("");
+	    		    			amountLst.add("");
+	    		    			amountLst.add(account.getProductPrice());
+	    		    			JetPayPayment jetpay = paymentService.savepayment(paymentMethod.getPaymentId().toString(), "", account.getTransId(), acc, amountLst, userDb, signupList.get(0), ProductTypeEnum.Membership,null);
+	    		    			
+	    	    	            
+	    	    	    		if(acc != null){	    		    	    	
+	    	    	    	        model.addAttribute("account", account);    	            	        
+	    	    	    	        model.addAttribute("primaryUser", userDb);
+	    	    	    	        model.addAttribute("kidsInfo", kidsInfo);    	    	        
+	    	    	    	        model.addAttribute("signup", signupList.get(0));
+	    	    	    	        model.addAttribute("product", itemDetails);
+	    	    	    	        model.addAttribute("paymentTransId", account.getTransId());
+	    	    	    	        model.addAttribute("prodJoinFee", account.getJoiningFee());
+	    	    	    	        model.addAttribute("productPrice", account.getProductPrice());
+	    	    	    	        if(account.getJoiningFee() != null && account.getProductPrice() != null){
+	    	    	    	        	double prodJoinFee = Double.parseDouble(account.getJoiningFee());
+	    	    	    	        	double prodPrice = Double.parseDouble(account.getProductPrice());
+	    	    	    	        	double totalPrice = prodJoinFee+ prodPrice;
+	    	    	    	        	model.addAttribute("productTotalPrice", totalPrice);
+	    	    	    	        }
+	    	    	    		}
+	    	    	        
+	    	    	    		return new ModelAndView("becomeMemberconfirmation", model.asMap());
+	    	    	            
+	    	    	        } catch (Exception ade) {
+	    	    	        	ade.printStackTrace();    	        	
+	    	    	        	model.addAttribute("errMsg", "Error Occured in Registration Process");
+	    	    				return new ModelAndView("login", model.asMap());
+	    	    	        }
+	        			}else{
+	        				return new ModelAndView("login", model.asMap());
+	        			}
+	    	            
+	    	        } catch (Exception ade) {
+	    	        	ade.printStackTrace();
+	    	        	Model model = new ExtendedModelMap();
+	    	        	model.addAttribute("errMsg", "Error Occured in Registration Process");
+	    				return new ModelAndView("login", model.asMap());
+	    	        }
+	    		}else{
+	    			Model model = new ExtendedModelMap();
+    	        	model.addAttribute("errMsg", "Error Occured in Registration Process");
+	    			return new ModelAndView("login", model.asMap());
+	    		}
+    	}else{*/
+    			
+    		//}   	
+    }
+    
+    /*private Interaction populateInteractionData(Signup signup, Account account,	User userDb) {
+    	Interaction interaction = new Interaction();
+		interaction.setSignup(signup);
+		interaction.setCustomer(signup.getCustomer());
+		interaction.setType(Constants.NEW_MEMBERSHIP_REQUEST);
+		interaction.setContact(signup.getContact());
+		interaction.setCreatedDate(new Date());
+		interaction.setDescription(Constants.NEW_MEMBERSHIP_REQUEST);	
+		return interaction;
+	}*/
+
+	private PaymentMethod populatePaymentMethodData(Account account, String orderNumber) {
+    	JetPayPayment jetPayPayment = null;
+		if(!"".equals(orderNumber)){
+			//jetPayPayment = jetPayPaymentDao.getByJpReturnHash(jp_request_hash);
+			//jetPayPayment = jetPayPaymentDao.getByOrderNumber("254657884038");
+			jetPayPayment = jetPayPaymentDao.getByOrderNumber(orderNumber);
+		}
+    	PaymentMethod paymentMethod = new PaymentMethod();
+    	paymentMethod.setPaymentType(PaymentMethodTypeEnum.CREDIT.toString());
+    	paymentMethod.setPortalStatus(PortalStatusEnum.ACTIVE.toString());
+    	paymentMethod.setTransId(jetPayPayment.getTransId());
+    	paymentMethod.setCardNumber(Constants.CARD_MASKED_FIRST_DIGITS+jetPayPayment.getCardNum());
+    	paymentMethod.setCardType(jetPayPayment.getCard());    	
+    	paymentMethod.setFullName(jetPayPayment.getName());
+    	paymentMethod.setTokenNumber(jetPayPayment.getCcToken());
+    	paymentMethod.setOldToken(jetPayPayment.getOldToken());
+    	paymentMethod.setOrderNumber(jetPayPayment.getOrderNumber());
+    	paymentMethod.setBillingAddressLine1(jetPayPayment.getBillingAddress1());
+    	paymentMethod.setBillingAddressLine2(jetPayPayment.getBillingAddress2());
+    	paymentMethod.setBillingCity(jetPayPayment.getBillingCity());
+    	paymentMethod.setBillingState(jetPayPayment.getBillingState());
+    	paymentMethod.setBillingZip(jetPayPayment.getBillingZip());
+    	
+    	paymentMethod.setBillingCountry(jetPayPayment.getBillingCountry());    	
+    	paymentMethod.setExpirationMonth(account.getExpirationMonth());
+    	paymentMethod.setExpirationYear(account.getExpirationYear());
+    	paymentMethod.setNickName(account.getNickName());
+    	paymentMethod.setCustomer(account);
+    	
+		return paymentMethod;
+	}
+
+	@RequestMapping(value="/becomeTPMemberRegister", method = RequestMethod.POST)
+    public ModelAndView onSubmitTrialPassRegisterform(Account account, final BindingResult errors, final HttpServletRequest request, final HttpServletResponse response)
+            throws Exception {        	
+    	String opptyId = request.getParameter("opptyId"); 
+    	
+    System.out.println(account.getProductId());
+    	//System.out.println(account.getEmail()+"---- "+account.getFirstName()+"---- "+account.getAddressLine1()+"---- "+account.getProductId());
+    	List<User> userLst = new ArrayList<User>();
+    	User user = new User();     	
+    	User accUser = new User();  
+    	accUser = account.getUserLst().get(0);
+    	System.out.println(accUser.getPersonFirstName()+"---- "+accUser.getPrimaryFormattedPhoneNumber()+"---- "+accUser.getPrimaryEmailAddress());
+    	Signup signup = new Signup();
+    	ItemDetail itemDetail  =  itemDetailDao.getById(Long.parseLong(account.getProductId())); 
+    	  	
+    //	System.out.println(accUser.getPersonFirstName());
+    		Account isAccountExist = accountDao.getByEmail(accUser.getPrimaryEmailAddress());    		
+    		if(isAccountExist != null){
+    			User userDb = getUserByAccount(isAccountExist, user);
+    			signup = populateSignupData(isAccountExist, userDb, itemDetail,signup,  opptyId, null);  
+    			try {   
+    				System.out.println("ig exist try blk");
+    	            Account acc = accountDao.saveAndFlush(isAccountExist);
+    	            User user2 = userDao.saveAndFlush(userDb);
+    	            Signup signup2 = signupDao.save(signup);            
+    	            Model model = new ExtendedModelMap();
+    	    		if(acc != null){	    		    	    	
+    	    	        model.addAttribute("account", isAccountExist);    	            	        
+    	    	        model.addAttribute("user", userDb);
+    	    	       // model.addAttribute("signup", signup2);
+    	    	        model.addAttribute("product", itemDetail);
+    	    	      
+    	    	        
+    	    		}
+    	    		return new ModelAndView("trial_pass_confirmationSumary", model.asMap());
+    	            
+    	        } catch (Exception ade) {
+    	        	ade.printStackTrace();
+    	        	Model model = new ExtendedModelMap();
+    	        	model.addAttribute("errMsg", "Error Occured in Registration Process");
+    				return new ModelAndView("login", model.asMap());
+    	        }
+    		}else{
+    			userLst = populateUserLstData(account); 
+    			User primaryUser = userLst.get(0);
+    	    	populateContactAndCustomerWaiversAndTC(primaryUser, account);   	    		    	
+    	    	signup = populateSignupData(account, primaryUser, itemDetail,signup,  opptyId, null);   
+    	    	//userLst.add(user);
+    	    	account.setUser(new HashSet<User>());
+    	    	
+    	    	Model model = new ExtendedModelMap();
+    	    	List<User> kidsInfo = new ArrayList<User>();
+    	    	for(User usr : userLst){
+    	    		account.getUser().add(usr); 
+    	    		if(usr.getIsAdult() != null && "true".equals(usr.getIsAdult()) && usr.getUsrSequence() != null && "1".equals(usr.getUsrSequence())){
+    	    			model.addAttribute("secUser", usr);
+    	    		}
+    	    		if(usr.getIsAdult() != null && "true".equals(usr.getIsAdult()) && usr.getUsrSequence() != null && "2".equals(usr.getUsrSequence())){
+    	    			model.addAttribute("thirdUser", usr);
+    	    		}
+    	    		if(usr.getIsAdult() != null && "false".equals(usr.getIsAdult())){
+    	    			kidsInfo.add(usr);
+    	    		}
+    	    		   		
+    	    	}    	    	   	
+    	    	account.setEmail(primaryUser.getPrimaryEmailAddress());
+    	    	account.setName(primaryUser.getFullName());    	
+    	    	  
+    	        try {              	
+    	            Account acc = accountDao.saveAndFlush(account);
+    	            Signup signup2 = signupDao.save(signup);            
+    	            
+    	    		if(acc != null){	    		    	    	
+    	    	        model.addAttribute("account", account);    	            	        
+    	    	        model.addAttribute("primaryUser", primaryUser);
+    	    	        model.addAttribute("kidsInfo", kidsInfo);    	    	        
+    	    	        model.addAttribute("signup", signup2);
+    	    	        model.addAttribute("product", itemDetail);
+    	    	       /* model.addAttribute("paymentTransId", account.getTransId());
+    	    	        model.addAttribute("prodJoinFee", account.getJoiningFee());
+    	    	        model.addAttribute("productPrice", account.getProductPrice());
+    	    	        if(account.getJoiningFee() != null && account.getProductPrice() != null){
+    	    	        	double prodJoinFee = Double.parseDouble(account.getJoiningFee());
+    	    	        	double prodPrice = Double.parseDouble(account.getProductPrice());
+    	    	        	double totalPrice = prodJoinFee+ prodPrice;
+    	    	        	model.addAttribute("productTotalPrice", totalPrice);
+    	    	        }*/
+    	    		}
+    	    		System.out.println("user rreg");
+    	    		return new ModelAndView("trial_pass_confirmationSumary", model.asMap());
+    	            
+    	        } catch (Exception ade) {
+    	        	ade.printStackTrace();
+    	        	Model model1 = new ExtendedModelMap();
+    	        	model.addAttribute("errMsg", "Error Occured in Registration Process");
+    				return new ModelAndView("login", model1.asMap());
+    	        }
+    		}   	
+    	    	
+    }
+    
+    
+    
+    private Signup populateSignupData(Account account, User contact, ItemDetail item, Signup signup, String opptyId, PaymentMethod paymentMethod) {
+		// TODO Auto-generated method stub    	
+    	if(account.getSignup() != null && !account.getSignup().isEmpty()){
+    		signup = account.getSignup().get(0);
+    	}    	
+    	signup.setContact(contact);
+    	signup.setCustomer(account);
+    	signup.setItemDetail(item);
+    	signup.setPaymentMethod(paymentMethod);
+    	signup.setContactName(contact.getFullName());
+    	signup.setType(ProductTypeEnum.Membership.toString());
+    	signup.setStatus(PortalStatusEnum.New.toString());
+    	signup.setOpptyId(opptyId);
+    	signup.setSignUpProductType(account.getSignUpProductType());
+    	signup.setSignupDate(new Date());   
+    	if(account.getMembershipFrequency() != null && "Annual".equals(account.getMembershipFrequency() )){
+    		Calendar cal = Calendar.getInstance();    		
+    		cal.add(Calendar.YEAR, 1); // to get previous year add -1
+    		signup.setProgramEndDate(cal.getTime());
+    	}
+    	signup.setProgramStartDate(new Date());
+    	if(account.getProductPrice() != null){
+    		signup.setFinalAmount(account.getProductPrice());
+    	}else{
+    		signup.setFinalAmount("0");
+    	}
+    	if(account.getMembershipFrequency() != null && "Monthly".equals(account.getMembershipFrequency() )){
+    		Calendar cal = Calendar.getInstance();    		
+    		cal.add(Calendar.MONTH, 1); // to get previous year add -1
+    		signup.setMembersshipFeeNextBillingDate(cal.getTime());    		
+    	}
+    	
+    	
+    	return signup;		
+	}
+
+	private User populateUserData(Account account) { 
+    	User user = new User();
+    	BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();	
+    	user = account.getUserLst().get(0);
+    	user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+    	//user.setDateOfBirth(new Date());
+    	user.setEnabled(true);	
+    	user.setAccountExpired(true);
+    	user.setAccountLocked(true);
+    	user.setCredentialsExpired(true);
+    	user.setEnabled(true);
+    	user.setPrimary(true); 
+    	System.out.println("new user data populated");
+    	return user;
+	}
+	
+	private List<User> populateUserLstData(Account account) { 
+		List<User> userLst =  new ArrayList<User>();
+		userLst = account.getUserLst();
+		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+		for(User usr : userLst){
+			usr.setEnabled(true);	
+			usr.setAccountExpired(false);
+			usr.setAccountLocked(false);
+			usr.setCredentialsExpired(false);
+			usr.setEnabled(true);
+			usr.setActive(true);
+			usr.setPrimary(false); 
+			usr.setMember(true);
+			Location location = new Location();
+			if(account.getLocationId() != null && !"".equals(account.getLocationId().trim())){
+				location = locationDao.getOne(Long.parseLong(account.getLocationId()));
+			}
+			/*location.setLocationId(Long.parseLong(account.getLocationId()));*/
+			usr.setLocation(location);
+			if(usr.getGender().equals("Male")){
+				usr.setProfileImage(Constants.DEFAULT_PROFILE_IMAGE_MALE);
+			}else{
+				usr.setProfileImage(Constants.DEFAULT_PROFILE_IMAGE_FEMALE);
+			}
+	    	//user.setDateOfBirth(new Date());	
+			Address address =  new Address();
+			address.setPrimaryAddressLine1(account.getAddressLine1());
+			address.setPrimaryAddressLine2(account.getAddressLine2());
+			address.setPrimaryAddressCity(account.getCity());
+			address.setPrimaryAddressProvince(account.getState());
+			address.setPrimaryAddressPostalCode(account.getPostalCode());			
+			address.setPrimaryAddressCountry("USA");
+			usr.setAddress(address);
+		}
+		if(userLst != null && !userLst.isEmpty()){
+			if(account != null && account.getLoggedInUserEmailId().equals("") ){
+				userLst.get(0).setPassword(bCryptPasswordEncoder.encode(userLst.get(0).getPassword()));
+			}
+			userLst.get(0).setPrimary(true);
+			userLst.get(0).setMember(true);
+			
+		}
+    	return userLst;
+	}
+	
+	private List<User> populateExistingSignedUpUserLstData(Account account, Account accountFromDb) { 
+		List<User> userLst =  new ArrayList<User>();
+		List<User> userLstFiltered =  new ArrayList<User>();
+		userLst = account.getUserLst();
+		for(User usr : userLst){
+			if((usr.getIsAdult().equals("true") && usr.getPrimaryEmailAddress() != null)){				
+				List<User> userExist = userDao.getUserLstByPrimaryEmailAddress(usr.getPrimaryEmailAddress());
+				if(userExist != null && userExist.size() == 0){
+					usr.setEnabled(true);	
+					usr.setAccountExpired(false);
+					usr.setAccountLocked(false);
+					usr.setCredentialsExpired(false);
+					usr.setEnabled(true);
+					usr.setActive(true);
+					usr.setPrimary(false); 
+					usr.setMember(true);
+					Location location = new Location();
+					if(account.getLocationId() != null && !"".equals(account.getLocationId().trim())){
+						location = locationDao.getOne(Long.parseLong(account.getLocationId()));
+					}
+					/*location.setLocationId(Long.parseLong(account.getLocationId()));*/
+					usr.setLocation(location);
+			    	//user.setDateOfBirth(new Date());	
+					Address address =  new Address();
+					address.setPrimaryAddressLine1(account.getAddressLine1());
+					address.setPrimaryAddressLine2(account.getAddressLine2());
+					address.setPrimaryAddressCity(account.getCity());
+					address.setPrimaryAddressProvince(account.getState());
+					address.setPrimaryAddressPostalCode(account.getPostalCode());			
+					address.setPrimaryAddressCountry("USA");
+					usr.setAddress(address);
+					userLstFiltered.add(usr);
+				}
+			}else{
+				List<User> userExist = userDao.getByPersonFirstNameAndPersonLastName(usr.getPersonFirstName(), usr.getPersonLastName());
+				if(userExist != null  && userExist.size() == 0){
+					usr.setEnabled(true);	
+					usr.setAccountExpired(false);
+					usr.setAccountLocked(false);
+					usr.setCredentialsExpired(false);
+					usr.setEnabled(true);
+					usr.setActive(true);
+					usr.setPrimary(false); 
+					usr.setMember(true);
+					Location location = new Location();
+					if(account.getLocationId() != null && !"".equals(account.getLocationId().trim())){
+						location = locationDao.getOne(Long.parseLong(account.getLocationId()));
+					}
+					/*location.setLocationId(Long.parseLong(account.getLocationId()));*/
+					usr.setLocation(location);
+			    	//user.setDateOfBirth(new Date());	
+					Address address =  new Address();
+					address.setPrimaryAddressLine1(account.getAddressLine1());
+					address.setPrimaryAddressLine2(account.getAddressLine2());
+					address.setPrimaryAddressCity(account.getCity());
+					address.setPrimaryAddressProvince(account.getState());
+					address.setPrimaryAddressPostalCode(account.getPostalCode());			
+					address.setPrimaryAddressCountry("USA");
+					usr.setAddress(address);
+					userLstFiltered.add(usr);
+				}
+			}
+		}			
+    	return userLstFiltered;
+	}
+	
+	private List<User> populateUserLstRegister(Account account) { 
+		List<User> userLst =  new ArrayList<User>();
+		//userLst = account.getUser();
+		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+		for(User usr : account.getUser()){
+			usr.setEnabled(true);	
+			usr.setAccountExpired(false);
+			usr.setAccountLocked(false);
+			usr.setCredentialsExpired(false);
+			usr.setEnabled(true);
+			usr.setActive(true);
+			usr.setPrimary(false); 
+			usr.setMember(false);
+			Location location = new Location();
+			if(account.getLocationId() != null && !"".equals(account.getLocationId().trim())){
+				location = locationDao.getOne(Long.parseLong(account.getLocationId()));
+			}
+			/*location.setLocationId(Long.parseLong(account.getLocationId()));*/
+			usr.setLocation(location);
+	    	//user.setDateOfBirth(new Date());
+			userLst.add(usr);
+		
+		}
+		if(userLst != null && !userLst.isEmpty()){
+			userLst.get(0).setPassword(bCryptPasswordEncoder.encode(userLst.get(0).getPassword()));
+			userLst.get(0).setPrimary(true);
+			userLst.get(0).setMember(true);
+			
+		}
+    	return userLst;
+	}
+	
+	private List<User> populateUsrLstFromUsrSet(Account account) { 
+		List<User> userLst =  new ArrayList<User>();		
+		for(User usr : account.getUser()){			
+			userLst.add(usr);
+		
+		}	
+    	return userLst;
+	}
+
+	/*private void populateMembershipData(Account account, User user) {
+		Membership membership = new Membership();
+		membership = account.getMembership();
+		if(account.getUserLst() != null && !account.getUserLst().isEmpty()){
+			membership.setContactName(account.getUserLst().get(0).getFullName());
+		}
+		membership.setMembershipBeginDate(new Date());
+		membership.setMembershipEndDate(new Date());
+		account.setMembership(membership);
+	}*/
+	
+	private Activity getInteractionData(Account account, User contact, String process) {	
+		Activity activity = new Activity();
+		if(account!=null && contact!=null){				
+			if(process.equals(Constants.Request_Trial_Pass)){
+				activity.setType(com.ymca.web.util.Constants.INTERACTION_TYPE.TrialPass_Request.toString());
+				activity.setDescription(com.ymca.web.util.Constants.Request_Trial_Pass);
+			}else {
+				activity.setType(com.ymca.web.util.Constants.NEW_MEMBERSHIP_REQUEST);
+				activity.setDescription(com.ymca.web.util.Constants.NEW_MEMBERSHIP_REQUEST);
+			}
+			
+			
+			
+			
+			
+			
+			// get current time stamp
+			java.util.Date date= new java.util.Date();
+	 		activity.setCreatedDate(new Timestamp(date.getTime()));
+	 		activity.setCustomer(account);
+	 		activity.setContact(contact);
+	 		activity.setShowOnPortal(true);	  		
+    	}
+		return activity;
+	}
+
+	private void populateContactAndCustomerWaiversAndTC(User user, Account account) {
+		ContactWaiversAndTC tAncC = new ContactWaiversAndTC();
+		if(account.getUserLst() != null && !account.getUserLst().isEmpty()){
+			tAncC.setRecordName(account.getUserLst().get(0).getFullName());
+		}
+		tAncC.setTcDescription(account.getTcDescription());
+		//tAncC.setContact(user);
+		//tAncC.setCustomer(account);
+		tAncC.setContactPartyId(443L);
+		tAncC.setCustomerPartyId(665L);
+		user.setContactWaiversAndTC(new HashSet<ContactWaiversAndTC>());
+		user.getContactWaiversAndTC().add(tAncC);
+		System.out.println("TNC set nw user");
+	}
+	@RequestMapping(value= "view_membership", method = RequestMethod.GET)
+    public ModelAndView showMembershipInfo(final HttpServletRequest request, final HttpServletResponse response) {
+		//HttpSession session = request.getSession();
+		Model model = new ExtendedModelMap();
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		//Interaction interaction=null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			model.addAttribute("errMsg", "Your session is expired");
+			return new ModelAndView("login", model.asMap());
+		}
+		
+    	Account account = null;
+    	User user =  null;	
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			user = getUserByAccount(account, user);
+    	}
+		
+    	
+    	
+		if(account != null){	    		    	    	
+	        model.addAttribute("accInfo", account);
+	        model.addAttribute("usInfo", user);		
+	        
+	        int userCount = account.getUser().size();
+	        List<User> userS = new ArrayList<User>();
+	        int countmembers = 0;
+	        if(userCount>1){
+		        for(User u: account.getUser()){
+		        	if(!user.getUsername().equalsIgnoreCase(u.getUsername()) && u.isActive()){
+		        		countmembers = countmembers + 1;
+		        		userS.add(u);
+		        	}
+		        }
+			}
+	        
+	        
+	        
+	        
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("userS", userS);
+	        
+	        model.addAttribute("volunteerActivity", getVolunteerActivity());
+	        
+	       /* String cancelledMember = "false";
+	        if(account.getInteractions()!=null && account.getInteractions().size()>0){
+		        for(Interaction interaction: account.getInteractions()){
+		        	if(interaction.getType().equalsIgnoreCase(com.ymca.web.util.Constants.INTERACTION_TYPE.Request_Membership_Cancellation.toString())){
+		        		cancelledMember = "true";
+		        		break;
+		        	}
+		        }
+	        }
+	       */
+	       // model.addAttribute("cancelled_Member", cancelledMember);
+	        model.addAttribute("account", new Account());
+	        model.addAttribute("msg1", "You will recieve an Email for further instrutions.");
+	        model.addAttribute("msg2", "You have already requested for FA..");
+			return new ModelAndView("myProfileView", model.asMap());
+		}else {
+			model.addAttribute("errMsg", "Please Login");
+			return new ModelAndView("login", model.asMap());
+			
+		}		
+	
+	}
+	
+	@RequestMapping(value="update_membership", method = RequestMethod.POST)
+    public @ResponseBody String updateMembership(Account account, final BindingResult errors, final HttpServletRequest request, final HttpServletResponse response)
+            throws Exception {
+		
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();	
+    	Account accountVO = null;
+    	User user =  null;	
+    	
+    	if(account.getUsrId()==null || "".equals(account.getUsrId())){
+    		return null;
+    	}
+    	
+    	if(userId != null && !"".equals(userId)){
+    		accountVO = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			//user = getUserByAccount(accountVO, user);
+			for(User u: accountVO.getUser()){
+				 if(u.getPartyId()!=null && account.getUsrId().toString().trim().equalsIgnoreCase(u.getPartyId().toString())){
+					 user = u;
+					 break;
+				 }
+			 }
+    	}
+    	
+    	if(user==null){
+    		return null;
+    	}
+    	populateAccountUserData(account, accountVO, user);	
+    	Model model = new ExtendedModelMap();
+    	try{
+    		Account updAccount =  accountDao.save(accountVO);
+    		return "SUCCESS";
+    		
+    	}catch(Exception e){
+    		model.addAttribute("updateAccountMsg", "Error occured while updating Profile Information");
+    		return null;
+    	}		   
+    }
+	 
+	 @RequestMapping(value= "view_member", method = RequestMethod.GET)
+	 public @ResponseBody User viewMember(final HttpServletRequest request, final HttpServletResponse response) {
+		 String member_id = request.getParameter("member_id");
+		 if(member_id==null || "".equals(member_id)){
+			 return null;
+		 }
+		 
+		 Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		 String userId = ((UserDetails) a.getPrincipal()).getUsername();	
+		 User user = null;
+		 Account account = null;
+		 
+		 if(userId != null && !"".equals(userId)){
+			 account = accountDao.getByEmail(userId);	
+			 
+			 for(User u: account.getUser()){
+				 if(u.getPartyId()!=null && member_id.trim().equalsIgnoreCase(u.getPartyId().toString())){
+					 user = u;
+					 break;
+				 }
+			 }
+			 
+			 if(user!=null){
+				 return user;
+			 }
+		 }
+		 return null;
+	 }
+	 
+	 
+	@RequestMapping(value = "enrolled_programs", method = RequestMethod.GET)
+	public @ResponseBody
+	List<Signup> enrolledProgram(final HttpServletRequest request,
+			final HttpServletResponse response) {
+		String member_id = request.getParameter("member_id");
+		if (member_id == null || "".equals(member_id)) {
+			return null;
+		}
+		Authentication a = SecurityContextHolder.getContext()
+				.getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+		User user = null;
+		Account account = null;
+		List<Signup> signup = null;
+
+		if (userId != null && !"".equals(userId)) {
+			account = accountDao.getByEmail(userId);
+			for (User u : account.getUser()) {
+				if (u.getPartyId() != null
+						&& member_id.trim().equalsIgnoreCase(
+								u.getPartyId().toString())) {
+					user = u;
+					signup = signupDao.findByContactNameAndTypeNotLike(user
+							.getPartyId().toString(), "Memberships");
+
+					break;
+				}
+			}
+
+			if (signup != null) {
+
+				return signup;
+			}
+		}
+
+		return null;
+	}
+	
+	 @RequestMapping(value= "remove_member", method = RequestMethod.GET)
+	 public @ResponseBody String removeMember(final HttpServletRequest request, final HttpServletResponse response) {
+		 String member_id = request.getParameter("member_id");
+		 if(member_id==null || "".equals(member_id)){
+			 return null;
+		 }
+		 
+		 Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		 String userId = ((UserDetails) a.getPrincipal()).getUsername();	
+		 User user = null;
+		 Account account = null;
+		 
+		 if(userId != null && !"".equals(userId)){
+			 account = accountDao.getByEmail(userId);	
+			 
+			 for(User u: account.getUser()){
+				 if(u.getPartyId()!=null && member_id.trim().equalsIgnoreCase(u.getPartyId().toString())){
+					 user = u;
+					 break;
+				 }
+			 }
+			 
+			 if(user!=null){
+				 user.setActive(false);
+				 userDao.save(user);
+				 return "SUCCESS";
+			 }
+    	 }
+		 return null;
+	 }
+	 @RequestMapping(value= "requestcancellation", method = RequestMethod.GET)
+	 public String requestCancellation(final HttpServletRequest request, final HttpServletResponse response) {
+		 return "requestcancellation";
+	 }
+	 
+	 @RequestMapping(value= "requestcancellation", method = RequestMethod.POST)
+	 public ModelAndView requestCancellation1(Activity activity, final HttpServletRequest request, final HttpServletResponse response) {
+
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+		
+		Model model = new ExtendedModelMap();
+		String reasontext = request.getParameter("reason");
+		
+		Account account = null;
+    	User contact =  null;	
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);		
+	    	contact = getUserByAccount(account, contact);
+    	}
+		
+    	if(account!=null && contact!=null){
+			activity.setType(com.ymca.web.util.Constants.INTERACTION_TYPE.Request_Membership_Cancellation.toString());
+			
+			activity.setDescription(reasontext);
+			
+			// get current time stamp
+			java.util.Date date= new java.util.Date();
+	 		activity.setCreatedDate(new Timestamp(date.getTime()));
+	 		activity.setCustomer(account);
+	 		activity.setContact(contact);
+	 		activity.setShowOnPortal(true);
+	 		
+	 		interactionDao.save(activity);
+	 		model.addAttribute("successMsg", com.ymca.web.util.Constants.REQUEST_MEMBERSHIP_SUCCESS);
+    	}
+    	else{
+    		model.addAttribute("errMsg", com.ymca.web.util.Constants.INTERNAL_ERROR);
+    	}
+    	return new ModelAndView("requestcancellation", model.asMap());
+	 }
+	
+	 @RequestMapping(value= "receivecancellation", method = RequestMethod.GET)
+	 public ModelAndView receiveCancellation(final HttpServletRequest request, final HttpServletResponse response) {
+		 String success = request.getParameter("success");
+		 String err = request.getParameter("err");
+		 Model model = new ExtendedModelMap();
+		 
+		 if(success!=null && success.equals("1")){
+			 model.addAttribute("successMsg", com.ymca.web.util.Constants.REQUEST_MEMBERSHIP_SUCCESS);
+		 }
+		 if(err!=null && err.equals("1")){
+			 model.addAttribute("errMsg", com.ymca.web.util.Constants.INTERNAL_ERROR);
+		 }
+		 return new ModelAndView("receivecancellation", model.asMap());
+	 }
+	 
+	private void populateAccountUserData(Account account, Account accountVO, User user) {
+	
+		accountVO.setAddressLine1(account.getAddressLine1());
+		accountVO.setAddressLine2(account.getAddressLine2());
+		accountVO.setCity(account.getCity());
+		accountVO.setState(account.getState());
+		accountVO.setCountry(account.getCountry());
+		//accountVO.setEmail(account.getEmail());
+		
+		//user.setUsername(account.getUsername());
+    	//user.setPassword(account.getPassword());     
+    	user.setPersonFirstName(account.getFirstName());
+    	user.setPersonLastName(account.getLastName());
+    	//user.setEmail(account.getEmail());    	
+    	user.setPrimaryFormattedPhoneNumber(account.getPhoneNumber());
+    	//user.setDateOfBirth(new Date());
+    	//user.setId(account.getUsrId());
+    	user.setEnabled(true);	
+    	user.setFormattedPhoneNumber(account.getWorkNumber());
+    	user.setContactPointPurpose(account.getHomeNumber());
+    	
+    	// TODO fixed this
+    	//accountVO.getMembership().setContactName(user.getFullName());
+    	//accountVO.getMembership().setMembershipBeginDate(new Date());
+    	//accountVO.getMembership().setMembershipEndDate(new Date());
+		
+		for (Iterator<ContactWaiversAndTC> it = user.getContactWaiversAndTC().iterator(); it.hasNext(); ) {
+			ContactWaiversAndTC tAncC = it.next();
+			tAncC.setRecordName(user.getFullName());		
+	    }
+	}	 
+	
+	@RequestMapping(value= "addMember", method = RequestMethod.GET)
+	public String addMember(final HttpServletRequest request, final HttpServletResponse response) {
+		 return "addMember";
+	}
+	
+	@RequestMapping(value= "addMember", method = RequestMethod.POST)
+	public @ResponseBody String addMember1(Account account, final HttpServletRequest request, final HttpServletResponse response) {
+		
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();	
+    	Account accountVO = null;
+    	Set<User> usersLst = new HashSet<User>();
+    	
+    	if(userId != null && !"".equals(userId)){
+    		accountVO = accountDao.getByEmail(userId);
+    		usersLst = accountVO.getUser();
+    		
+    		for(User usr: usersLst){
+    			if(usr!=null){
+    				if(usr.getPrimaryEmailAddress().equals(account.getEmail())){
+    					return "DUPE";
+    				}
+    			}
+    		}
+    	}
+    
+    	try{
+    		if(accountVO!=null){
+    			User user = new User();    
+    			   	
+    			user.setDateOfBirth(new Date());
+    	    	user.setEnabled(true);	
+    	    	user.setAccountExpired(true);
+    	    	user.setAccountLocked(true);
+    	    	user.setCredentialsExpired(true);
+    			user.setActive(true);
+    			user.setPassword("password");
+    			user.setUsername(account.getEmail());
+     			user.setPersonFirstName(account.getFirstName());
+     	    	user.setPersonLastName(account.getLastName());
+     	    	user.setProfileImage("resources/img/portal_Images/defaultpic.jpg");
+     	    	user.setPrimaryEmailAddress(account.getEmail());    	
+     	    	user.setPrimaryFormattedPhoneNumber(account.getPhoneNumber());
+     	    	user.setEnabled(true);	
+     	    	user.setFormattedPhoneNumber(account.getWorkNumber());
+     	    	user.setContactPointPurpose(account.getHomeNumber());
+     	    	usersLst.add(user);
+    	    	//populateContactAndCustomerWaiversAndTC(user, accountVO);
+    	    	//populateMembershipData(accountVO, user);
+    	    	
+    	    	accountVO.setUser(usersLst);
+    	    	//accountVO.getUser().add(user);
+    	
+	    		Account updAccount =  accountDao.save(accountVO);
+	    		System.out.println(updAccount.getUser());
+	    		return "SUCCESS";
+    		}
+    		
+    	}catch(Exception e){
+    		
+    	}		
+    	return null;
+	}
+	
+	@RequestMapping(value= "holdMembership", method = RequestMethod.GET)
+	 public String holdMembership(final HttpServletRequest request, final HttpServletResponse response) {
+		 return "holdMembership";
+	 }
+	
+	@RequestMapping(value= "isEmailExists", method = RequestMethod.GET)
+	 public @ResponseBody String isEmailExists(@RequestParam("userLst[0].primaryEmailAddress") String email, final HttpServletRequest request, final HttpServletResponse response) {
+		if(email==null || "".equals(email)){
+			 return "true";
+		 }else{
+			 try{
+				 User user =  userDao.getByPrimaryEmailAddress(email);
+				 if(user != null){
+					 return "false";
+				 }else{
+					 return "true";
+				 }
+				 
+			 }catch(Exception e){
+				 return null;
+			 }			
+		 }
+			
+		 
+		 
+	 }
+	
+	@RequestMapping(value="/memberAuth", method=RequestMethod.POST)
+    public @ResponseBody String auth(final HttpServletRequest request, final HttpServletResponse response) { 
+		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+		
+		String username = request.getParameter("username");
+		String password = request.getParameter("password");
+		User user = null;
+
+		if(username!=null && !"".equals(username.trim()) && password!=null && !"".equals(password)){
+			try{
+				Account account = accountDao.getByEmail(username);			
+				user = getUserByAccount(account, user);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			if(user!=null && user.getPassword() !=null && bCryptPasswordEncoder.matches(password, user.getPassword())){			
+				UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, user.getPassword());
+				//request.getSession();
+		        token.setDetails(new WebAuthenticationDetails(request));
+		        SecurityContextHolder.getContext().setAuthentication(token);		        
+				return "Success";
+			}			
+		}		
+		return "Failure";
+		
+	}
+	
+	@RequestMapping(value="/getAccountDetailsByEmail", method=RequestMethod.POST)
+    public @ResponseBody List<Account> getAccountDetailsByEmail(@RequestParam("emailId") String email, final HttpServletRequest request, final HttpServletResponse response) { 
+		if(email != null && !"".equals(email.trim())){	
+			List<Account> acccList = new ArrayList<Account>();
+			Account accountData = new Account();			
+			Account account =  accountDao.getByEmail(email);
+			accountData.setAddressLine1(account.getAddressLine1());
+			accountData.setAddressLine2(account.getAddressLine2());
+			accountData.setCity(account.getCity());
+			accountData.setState(account.getState());
+			accountData.setPostalCode(account.getPostalCode());
+			//accountData.setUser(account.getUser());
+			List<User> userLst =  new ArrayList<User>();
+			for(User user : account.getUser()){
+				User userData =  new User();
+				userData.setPersonFirstName(user.getPersonFirstName());
+				userData.setPersonLastName(user.getPersonLastName());
+				userData.setPrimaryEmailAddress(user.getPrimaryEmailAddress());
+				userData.setPrimaryFormattedPhoneNumber(user.getPrimaryFormattedPhoneNumber());
+				userData.setDateOfBirth(user.getDateOfBirth());
+				userData.setActive(user.isActive());
+				userData.setEnabled(user.isEnabled());
+				userData.setAccountExpired(user.isAccountExpired());
+				userData.setPrimary(user.isPrimary());
+				userData.setMember(user.isMember());
+				userData.setGender(user.getGender());
+				userLst.add(userData);
+			}
+			accountData.setUserLst(userLst);			
+			acccList.add(accountData);		
+			return acccList;
+			//return accountDao.getAccountByEmail(email);
+		}		
+		return null;		
+	}	
+	
+	
+	@RequestMapping(value= "ReqforFA", method = RequestMethod.POST)
+	public @ResponseBody String requestForFA1( final HttpServletRequest request, final HttpServletResponse response)
+	{
+		
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+		//System.out.println(userId);
+    	Account account= null;
+    	//Set<User> usersLst = new HashSet<User>();
+    	Activity activity=null;
+    	account=accountDao.getByEmail(userId);
+     //  System.out.println(account.getEmail()+"---"+account.getName()+"----"+account.getAccountId());
+       	try{
+       	//	System.out.println("in try");
+    	activity=interactionDao.findByTypeAndCustomer("REQUEST FOR FA",account );
+		//System.out.println("interaction is not null");
+		System.out.println(activity.getType()+"---"+ activity.getDescription());
+    	
+    	
+    		
+    					return "DUPE";
+       	}
+    		catch(NullPointerException ex){
+    			
+    			System.out.println("in catch "+ex);
+    			Activity activity2=new Activity();
+    			Account acc=accountDao.getByEmail(account.getEmail());
+    
+    			if(activity2.getCustomer()==null)
+    			{
+    			System.out.println("in if");
+    			activity2.setCustomer(acc);
+    			activity2.setShowOnPortal(true);
+        		activity2.setType("REQUEST FOR FA");
+        		activity2.setDescription("Failure Analysis..");
+    			interactionDao.save(activity2);
+    			
+    		//	System.out.println(interaction2.getCustomer().getAccountId());
+    			}
+    			return "SUCCESS";
+    		}
+    
+	}
+	
+	@ModelAttribute
+    @RequestMapping(value= "changeMembershipShowWizard", method = RequestMethod.GET)
+    public ModelAndView changeMembershipWizard() {	
+    	
+        Model model = new ExtendedModelMap();               
+    	
+        try {            
+        	Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        	String userId = null;
+        	User contact =  null;
+        	Account account = null;
+        	List<User> userLst = null;
+        	try{
+        		userId = ((UserDetails) a.getPrincipal()).getUsername();        		
+        	}catch(Exception e){
+        		System.out.println("Your session is expired");	
+        		e.printStackTrace();
+        	}        	       	
+        	if(userId != null && !"".equals(userId)){
+        		account = accountDao.getByEmail(userId);
+        		userLst = account.getUserLst();		
+        		List<User> kidsInfo = new ArrayList<User>();
+        		for(User usr : account.getUser()){
+        			account.getUser().add(usr); 
+        			if(usr.getIsAdult() != null && "true".equals(usr.getIsAdult()) && usr.getUsrSequence() != null && "1".equals(usr.getUsrSequence())){
+        				model.addAttribute("secUser", usr);
+        			}
+        			if(usr.getIsAdult() != null && "true".equals(usr.getIsAdult()) && usr.getUsrSequence() != null && "2".equals(usr.getUsrSequence())){
+        				model.addAttribute("thirdUser", usr);
+        			}
+        			if(usr.getIsAdult() != null && "false".equals(usr.getIsAdult())){
+        				kidsInfo.add(usr);
+        			}        					
+        		}
+        		contact = getUserByAccount(account, contact);
+        		List<Signup> signupLst = signupDao.getByCustomerAndContactAndStatusAndType(account, contact, PortalStatusEnum.ACTIVE.toString(), ProductTypeEnum.Membership.toString());
+        		if(signupLst != null && !signupLst.isEmpty()){
+        			model.addAttribute("signUpProduct", signupLst.get(0));
+        		}else{
+        			List<Signup> signupLstNew = signupDao.getByCustomerAndContactAndStatusAndType(account, contact, PortalStatusEnum.New.toString(), ProductTypeEnum.Membership.toString());
+        			if(signupLstNew != null && !signupLstNew.isEmpty()){
+            			model.addAttribute("signUpProduct", signupLstNew.get(0));
+            		}else{
+            			signupLstNew = null;
+            		}        			
+        		}
+        		List<PaymentMethod> creditCardPaymentMethodLst = paymentMethodDao.getCreditCardInfoByAccountId(account.getAccountId());
+        		List<PaymentMethod> achPaymentMethodLst = paymentMethodDao.getACHInfoByAccountId(account.getAccountId());
+        		
+        		model.addAttribute("kidsInfo", kidsInfo);
+        		model.addAttribute("locations", locationDao.findAll());
+        		model.addAttribute("payMethodLstCredit", creditCardPaymentMethodLst);
+        		model.addAttribute("payMethodLstACH", achPaymentMethodLst);        		
+                model.addAttribute("bayAreaLocations", locationDao.getLocationsByArea(Constants.LOCATION_BAYAREA));
+                model.addAttribute("account", account);
+                model.addAttribute("primaryUser", contact);
+        	} 
+            
+        } catch (Exception se) {
+            System.out.println("Error occoured while querying Product");
+            se.printStackTrace();
+        }
+        return new ModelAndView("changeMembership", model.asMap());    	
+	}
+	
+	  @RequestMapping(value= "changeMembershipRegister", method = RequestMethod.POST)
+	    public ModelAndView changeMembershipRegister(Account accountForm, final BindingResult errors, final HttpServletRequest request, final HttpServletResponse response) {    	
+	        Model model = new ExtendedModelMap();	    	
+	        try {            
+	        	Authentication a = SecurityContextHolder.getContext().getAuthentication();
+	        	String userId = null;
+	        	User contact =  null;
+	        	Account account = null;
+	        	List<User> userLst = new ArrayList<User>();
+	        	try{
+	        		userId = ((UserDetails) a.getPrincipal()).getUsername();        		
+	        	}catch(Exception e){
+	        		System.out.println("Your session is expired");	
+	        		e.printStackTrace();
+	        	}        	       	
+	        	if(userId != null && !"".equals(userId)){	
+	        		account = accountDao.getByEmail(userId);
+	            	User user = new User();     	
+	            	User accUser = new User();  
+	            	accUser = getUserByAccount(account, accUser);
+	            	Signup signup = new Signup();
+	            	ItemDetail itemDetail  =  itemDetailDao.getById(Long.parseLong(accountForm.getItemDetailsId())); 
+///userLst = populateUsrLstFromUsrSet(accountForm);
+	            	userLst = populateUsrLstFromUsrSet(account);
+	            	if(userLst != null && !userLst.isEmpty()){
+	            		User primaryUser = null;
+	            		for(User usr : userLst){			
+	            			if(usr != null && usr.isPrimary()){
+	            				primaryUser = usr;
+	            				break;
+	            			}
+	            			
+	            		}
+	            		///populateContactAndCustomerWaiversAndTC(primaryUser, accountForm);
+		    			//User primaryUser = userLst.get(0);
+		    	    	populateContactAndCustomerWaiversAndTC(primaryUser, account);  	    	  
+		    	    	//userLst.add(user);
+		    	    	account.setUser(new HashSet<User>());	    	    	
+		    	    	List<User> kidsInfo = new ArrayList<User>();
+		    	    	for(User usr : userLst){
+		    	    		account.getUser().add(usr); 
+		    	    		if(usr.getIsAdult() != null && "true".equals(usr.getIsAdult()) && usr.getUsrSequence() != null && "1".equals(usr.getUsrSequence())){
+		    	    			model.addAttribute("secUser", usr);
+		    	    		}
+		    	    		if(usr.getIsAdult() != null && "true".equals(usr.getIsAdult()) && usr.getUsrSequence() != null && "2".equals(usr.getUsrSequence())){
+		    	    			model.addAttribute("thirdUser", usr);
+		    	    		}
+		    	    		if(usr.getIsAdult() != null && "false".equals(usr.getIsAdult())){
+		    	    			kidsInfo.add(usr);
+		    	    		}
+		    	    		   		
+		    	    	}    	    	   	
+		    	    	account.setEmail(primaryUser.getPrimaryEmailAddress());
+		    	    	account.setName(primaryUser.getFullName());    
+		    	        
+		    	    	
+		    	    	/*Account acc = accountDao.saveAndFlush(accountForm);  
+	    	            if(accountForm.getSavePayment() != null && accountForm.getSavePayment().equals("true")){
+	    	            	JetPayPayment jetPayPayment = new JetPayPayment();
+		    	            PaymentMethod paymentMethod  =  populatePaymentMethodData(accountForm, accountForm.getTransId());
+		    	            paymentMethod = paymentMethodDao.save(paymentMethod);
+		    	            signup = populateSignupData(accountForm, primaryUser, itemDetails,signup,  "", paymentMethod); 
+		    	            model.addAttribute("paymentTransId", paymentMethod.getTransId());
+	    	            }else{
+	    	            	signup = populateSignupData(accountForm, primaryUser, itemDetails,signup,  "", null); 
+	    	            	model.addAttribute("paymentTransId", "0");
+	    	            }
+	    	            */
+		    	    	
+	    	            Account acc = accountDao.saveAndFlush(accountForm);    	              
+	    	            JetPayPayment jetPayPayment = new JetPayPayment();
+	    	            PaymentMethod paymentMethod  =  populatePaymentMethodData(accountForm, accountForm.getTransId());
+	    	            paymentMethod = paymentMethodDao.save(paymentMethod);
+	    	            signup = populateSignupData(account, primaryUser, itemDetail,signup,  "", paymentMethod); 
+	    	            Signup signup2 = signupDao.save(signup);  
+	    	            
+	    	    		if(account != null){	    		    	    	
+	    	    	        model.addAttribute("account", account);    	            	        
+	    	    	        model.addAttribute("primaryUser", primaryUser);
+	    	    	        model.addAttribute("kidsInfo", kidsInfo);    	    	        
+	    	    	        model.addAttribute("signup", signup2);
+	    	    	        model.addAttribute("product", itemDetail);
+	    	    	        model.addAttribute("paymentTransId", paymentMethod.getTransId());
+	    	    	        model.addAttribute("prodJoinFee", accountForm.getJoiningFee());
+	    	    	        model.addAttribute("productPrice", accountForm.getProductPrice());
+	    	    	        model.addAttribute("productTotalPrice", signup2.getTotalAmount());
+	    	    	        if(account.getJoiningFee() != null && account.getProductPrice() != null){
+	    	    	        	double prodJoinFee = Double.parseDouble(account.getJoiningFee());
+	    	    	        	double prodPrice = Double.parseDouble(account.getProductPrice());
+	    	    	        	double totalPrice = prodJoinFee+ prodPrice;
+	    	    	        	model.addAttribute("productTotalPrice", totalPrice);
+	    	    	        }
+	    	    		}
+		        		
+		        		List<Signup> signupLst =  signupDao.getByCustomer(account);
+		        		List<Signup> signupLstNew = new ArrayList<Signup>();
+		        		
+		        		for(Signup sign : signupLst){
+		        			Signup signupNew = populateNewSignupData(sign);
+		        			signupLstNew.add(signupNew);
+		        			sign.setStatus(PortalStatusEnum.INACTIVE.toString());
+		        			signupDao.save(sign);
+		        		}
+		        		for(Signup sign : signupLstNew){		        			
+		        			signupDao.save(sign);
+		        		}
+		        	}
+	        	}
+	        }catch(Exception e){
+	        	e.printStackTrace();
+	        }
+	        return new ModelAndView("changeMembershipConfirmation", model.asMap());
+	        
+    	   
+	  }
+
+	private Signup populateNewSignupData(Signup signup) {
+		Signup newSignup =  new Signup();
+		newSignup.setContactName(signup.getContactName());
+		newSignup.setFinalAmount(signup.getFinalAmount());
+		newSignup.setLocation(signup.getLocation());
+		newSignup.setMembersshipFeeNextBillingDate(signup.getMembersshipFeeNextBillingDate());
+		newSignup.setProgramStartDate(signup.getProgramStartDate());
+		newSignup.setProgramEndDate(signup.getProgramEndDate());
+		newSignup.setSignupDate(signup.getSignupDate());
+		newSignup.setStatus(PortalStatusEnum.New.toString());
+		newSignup.setType(signup.getType());
+		newSignup.setContact(signup.getContact());
+		newSignup.setCustomer(signup.getCustomer());
+		newSignup.setItemDetail(signup.getItemDetail());
+		newSignup.setPaymentMethod(signup.getPaymentMethod());
+		newSignup.setSignUpProductType(signup.getSignUpProductType());
+		newSignup.setOpptyId(signup.getOpptyId());
+		newSignup.setMembersshipFeeNextBillingDate(signup.getMembersshipFeeNextBillingDate());
+    	
+    	return newSignup;
+		
+	}
+	
+	 private List<Signup> populateSignupDataLst(Account account, List<User> userLst, ItemDetail item,  String opptyId, PaymentMethod paymentMethod) {
+			// TODO Auto-generated method stub
+		 List<Signup> signupLst =  new ArrayList<Signup>();
+		 for(User user : userLst){
+			 Signup signup =  new Signup();
+	    	if(account.getSignup() != null && !account.getSignup().isEmpty()){
+	    		signup = account.getSignup().get(0);
+	    	}    	
+	    	signup.setContact(user);
+	    	signup.setCustomer(account);
+	    	signup.setItemDetail(item);
+	    	
+	    	signup.setContactName(user.getFullName());
+	    	signup.setType(ProductTypeEnum.Membership.toString());
+	    	signup.setStatus(PortalStatusEnum.ACTIVE.toString());
+	    	signup.setOpptyId(opptyId);
+	    	signup.setSignUpProductType(account.getSignUpProductType());
+	    	signup.setSignupDate(new Date());   
+	    	if(account.getMembershipFrequency() != null && "Annual".equals(account.getMembershipFrequency() )){
+	    		Calendar cal = Calendar.getInstance();    		
+	    		cal.add(Calendar.YEAR, 1); // to get previous year add -1
+	    		signup.setProgramEndDate(cal.getTime());
+	    	}
+	    	signup.setProgramStartDate(new Date());
+	    	if(account.getProductPrice() != null){
+	    		signup.setFinalAmount(account.getProductPrice());
+	    	}else{
+	    		signup.setFinalAmount("0");
+	    	}
+	    	if(account.getMembershipFrequency() != null && "Monthly".equals(account.getMembershipFrequency() )){
+	    		Calendar cal = Calendar.getInstance();    		
+	    		cal.add(Calendar.MONTH, 1); // to get previous year add -1
+	    		signup.setMembersshipFeeNextBillingDate(cal.getTime());    		
+	    	}
+	    	signup.setLocation(user.getLocation());
+	    	signupLst.add(signup);
+		 }
+    	if(userLst != null && !userLst.isEmpty() && signupLst != null && !signupLst.isEmpty()){
+    		signupLst.get(0).setPaymentMethod(paymentMethod);				
+		}	    	
+	    return signupLst;		
+	}
+}

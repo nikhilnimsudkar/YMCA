@@ -1,0 +1,355 @@
+package com.ymca.web.controller;
+
+import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.ItemDetailsDao;
+import com.ymca.dao.PricingRuleDao;
+import com.ymca.dao.PromocodeDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.model.Account;
+import com.ymca.model.ItemDays;
+import com.ymca.model.ItemDetails;
+import com.ymca.model.ItemDetailsSession;
+import com.ymca.model.ItemPromoDetails;
+import com.ymca.model.PricingRule;
+import com.ymca.model.Promocode;
+import com.ymca.model.Signup;
+import com.ymca.model.User;
+import com.ymca.web.enums.ProductTypeEnum;
+import com.ymca.web.util.Constants;
+
+@Controller
+public class CommonController extends BaseController {
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	@Resource
+	private PromocodeDao promocodeDao;
+	
+	@Resource
+	private ItemDetailsDao itemDetailsDao;
+	
+	@Resource
+	private SignupDao signupDao;
+	
+	@Resource
+	private PricingRuleDao pricingRuleDao;
+	/**
+	 * Dispatch to login pop-up
+	 */
+	@RequestMapping(value="/loginPopup", method=RequestMethod.GET)
+    public String loginPopup(final HttpServletRequest request, final HttpServletResponse response) { 
+		return "loginpop";
+	}
+	
+	/**
+	 * Quick sign up
+	 */
+	@RequestMapping(value="/quickSignIn", method=RequestMethod.POST)
+    public String quickSignIn(final HttpServletRequest request, final HttpServletResponse response) { 
+		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+		String username = request.getParameter(Constants.USERNAME_LBL);
+		String password = request.getParameter(Constants.PASSWORD_LBL);
+		String dispatchTo = request.getParameter(Constants.PARAM_DISPATCH_TO);
+		
+		User user = null;
+		if(username!=null && !"".equals(username.trim()) && password!=null && !"".equals(password)){
+			Account account = accountDao.getByEmail(username);			
+			user = getUserByAccount(account, user);
+			if(user!=null && user.getPassword() !=null && bCryptPasswordEncoder.matches(password, user.getPassword())){
+				UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, user.getPassword());
+				
+				// generate session if one doesn't exist
+		        request.getSession();
+		        token.setDetails(new WebAuthenticationDetails(request));
+		        SecurityContextHolder.getContext().setAuthentication(token);
+		        
+		        if(!"".equals(dispatchTo)){
+		        	if(dispatchTo.equalsIgnoreCase(ProductTypeEnum.Program.toString())){
+		        		return "redirect:/addprogramtocart";
+		        	}else if(dispatchTo.equalsIgnoreCase(ProductTypeEnum.Event.toString())){
+		        		return "redirect:/addEventToCart";
+		        	}
+		        }
+			}
+		}
+		return "redirect:/login";
+	}
+	
+	/**
+	 * Get contacts as JSON
+	 */
+	@RequestMapping(value="/getContacts", method=RequestMethod.GET)
+    public @ResponseBody String getContactS(final HttpServletRequest request, final HttpServletResponse response) { 
+	 	JSONArray json = new JSONArray();
+	
+	 	Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			return json.toString();
+		}
+		
+		Account account = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+    	}
+    	
+    	if(account==null){
+    		return json.toString();
+    	}
+    	
+    	for(User u: account.getUser()){
+	    	JSONObject obj = new JSONObject();
+	    	obj.put("id", u.getPartyId());
+			obj.put("contactId", u.getPartyId());
+			obj.put("fname", u.getPersonFirstName());
+			obj.put("lname", u.getPersonLastName());
+			obj.put("isMember", u.isMember());
+			json.add(obj);
+    	}
+    	
+    	return json.toString();
+	}
+	
+	@RequestMapping(value="/getPromodetails", method=RequestMethod.GET)
+    public @ResponseBody String getPromodetails(final HttpServletRequest request, final HttpServletResponse response) { 
+		JSONArray json = new JSONArray();
+		
+		String promocode = request.getParameter("promocode");
+		
+		if(!"".equals(promocode)){
+			Promocode promodetails = promocodeDao.getPromoDiscountByPromocode(promocode);
+			if(promodetails!=null){
+				  JSONObject obj = new JSONObject();
+				
+				  Double discount = new Double(0);
+				  if(promodetails.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_VALUE)){
+					  discount = promodetails.getDiscountvalue();
+				  }
+				  
+				  obj.put("valid", "true");
+				  obj.put("promid", promodetails.getPromoId());
+				  obj.put("promname", promodetails.getPromoName());
+				  obj.put("discounttype", promodetails.getDiscounttype());
+				  obj.put("discountValue", discount);
+				  obj.put("discountPercentage", promodetails.getDiscountpercentage());
+				  obj.put("promcode", promocode);
+				  
+				  JSONArray json1 = new JSONArray();
+				  for(ItemPromoDetails ipd: promodetails.getItemPromoDetails()){
+					  JSONObject obj1 = new JSONObject();
+					  obj1.put("itemPromoDetailsId", ipd.getItemPromoDetailsId());
+					  obj1.put("itemDetailsId", ipd.getItemDetails().getId());
+					  json1.add(obj1);
+	    		  }
+				  
+				  obj.put("itemDetails", json1.toString());
+				  json.add(obj);
+			}
+		}
+		
+		return json.toString();
+	}
+	
+	@RequestMapping(value="/getSignupByType", method=RequestMethod.GET)
+    public @ResponseBody String getSignupByType(final HttpServletRequest request, final HttpServletResponse response) { 
+		 	
+		String type = request.getParameter("type");
+		JSONArray json = new JSONArray();
+		
+	 	Authentication authenticate = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) authenticate.getPrincipal()).getUsername();
+		}catch(Exception e){
+			return json.toString();
+		}
+    	
+		Account account = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+    	}
+    	
+    	if(account==null){
+    		return json.toString();
+    	}
+    	
+    	List<Signup> signups = signupDao.getByCustomerAndType(account, type);
+    	
+    	for(Signup s: signups){
+    		
+		    	JSONObject obj = new JSONObject();
+		    	obj.put("id", s.getSignupId());
+				obj.put("signupId", s.getSignupId());
+				obj.put("customerId", s.getCustomer().getAccountId());
+				//obj.put("itemDaysMapId", s.getItemDaysMapId());
+				obj.put("prodId", s.getItemDetails().getId());
+				obj.put("itemDetailsId", s.getItemDetails().getId());
+				obj.put("contactId", s.getContact().getPartyId());
+				obj.put("locationId", s.getLocation().getLocationId());
+				json.add(obj);
+    		
+    	}
+    	
+    	System.out.print(json);
+    	return json.toString();
+	}
+	
+	@RequestMapping(value="/getallProducts", method=RequestMethod.GET)
+    public @ResponseBody String getallProducts(final HttpServletRequest request, final HttpServletResponse response) { 	
+		  List<ItemDetails> productLst =  itemDetailsDao.findAll();
+		  
+		  List<Promocode> promo = new ArrayList<Promocode>();
+		  promo = promocodeDao.getACPromoDiscountByItemDetailsId();
+		  
+		  JSONArray json = new JSONArray();
+		  for(ItemDetails p: productLst){
+		      if(p!=null){
+		    	  	  List<ItemDays> itemDays = p.getItemDays();
+
+					  double membertierPrice = 0D;
+					  double nonmembertierPrice = 0D;
+					  
+					  List<PricingRule> pricingRuleLst =  pricingRuleDao.findByitemDetailsIdAndTier(p.getId(), p.getLocations().getTier().toString());
+					  for(PricingRule pricingRule: pricingRuleLst) {
+						  membertierPrice += Double.parseDouble(pricingRule.getTierPrice());
+						  nonmembertierPrice += Double.parseDouble(pricingRule.getNonmemberTierPrice());
+					  }
+	    			  
+			    	  JSONObject obj = new JSONObject();
+			    	  obj.put("id", p.getId());
+			    	  obj.put("prodId", p.getId());
+			    	  obj.put("itemDetailsId", p.getId());
+				      obj.put("name", p.getItemName());
+			    	  obj.put("memberprice", membertierPrice);
+			    	  obj.put("nonmemberprice", nonmembertierPrice);
+			    	  obj.put("description", p.getDescription());
+				      obj.put("category", p.getCategory());
+				      
+				      String sessionName = "";
+				      String instructorName = "";
+				      String sessionDays = "";
+				      String sessionDaysId = "";
+				      List<String> daysArr = Arrays.asList("Sun","Mon","Tues","Wed","Thurs","Fri","Sat");
+				      for(ItemDays idys : itemDays){
+				    	  //obj.put("itemDaysMapId", idys.getItemDaysId()+"_"+p.getItemDetails().getId());
+					      //obj.put("item_Days", idys.getItemDaysId()+"_"+p.getItemDetails().getId());
+				    	  sessionName = idys.getSessionName();
+				    	  instructorName = idys.getInstructorName();
+				    	  sessionDaysId = sessionDaysId + "," + idys.getItemDaysId();
+				    	  sessionDays = sessionDays + "," + daysArr.get(Integer.parseInt(idys.getItemDaysId().toString()));
+				      }
+				      obj.put("sessionName", sessionName);
+				      obj.put("instructor", instructorName);
+				      obj.put("dayId", sessionDaysId.replaceFirst(",", ""));
+				      obj.put("days", sessionDays.replaceFirst(",", ""));
+				      
+				      obj.put("start_time", p.getStarttime());
+				      obj.put("end_time", p.getEndtime());
+				      obj.put("start_date", p.getStartdate());
+				      obj.put("end_date", p.getEnddate());
+
+				      Double memberdiscount = new Double(0);
+				      Double nonmemberdiscount = new Double(0);
+				      
+				      String lblPromoCode = "";
+				      if(promo.size()>0){
+				    	  for(Promocode pc: promo){
+				    		  for(ItemPromoDetails ipd: pc.getItemPromoDetails()){
+				    			  if(ipd.getItemDetails().getId().equals(p.getId())){
+				    				  lblPromoCode = pc.getPromoCode();
+				    				  if(pc.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_VALUE)){
+				    					  memberdiscount = pc.getDiscountvalue();
+				    					  nonmemberdiscount = pc.getDiscountvalue();
+				    				  }
+				    				  else if(pc.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_PERCENTAGE)){
+				    					  BigDecimal memberdiscountAmount = pc.getDiscountpercentage().multiply(BigDecimal.valueOf(membertierPrice));
+				    					  memberdiscountAmount = memberdiscountAmount.divide(new BigDecimal(100));
+				    					  memberdiscount = memberdiscountAmount.doubleValue();
+				    					  
+				    					  BigDecimal nonmemberdiscountAmount = pc.getDiscountpercentage().multiply(BigDecimal.valueOf(nonmembertierPrice));
+				    					  nonmemberdiscountAmount = nonmemberdiscountAmount.divide(new BigDecimal(100));
+				    					  nonmemberdiscount = nonmemberdiscountAmount.doubleValue();
+				    				  }
+				    			  }
+				    		  }
+				    		  
+				    	  }
+				    	  
+				      
+				      //System.out.println(discount);
+				      //System.out.println(lblPromoCode);
+				      obj.put("memberdiscount", memberdiscount);
+				      obj.put("nonmemberdiscount", nonmemberdiscount);
+				      obj.put("discountcode", lblPromoCode);
+				      
+				      
+//					      Double amt = p.getItemDetails().getPrice() - discount;
+				      obj.put("finalamount", new Double(0));
+				      json.add(obj);
+	    		  }
+		      }
+		        
+		  }
+	      
+	      //System.out.print(json);
+	      return json.toString();
+	}
+	
+	@RequestMapping(value="/getPricingruleByItemDetailsIdAndTier", method=RequestMethod.POST)
+    public @ResponseBody String getPricingruleByItemDetailsIdAndTier(@RequestParam String itemDetailsId, @RequestParam String tier, final HttpServletRequest request, final HttpServletResponse response) { 	
+		JSONArray json = new JSONArray();
+			
+		if(itemDetailsId!=null && tier !=null){
+			List<PricingRule> lstPricingrule = pricingRuleDao.findByitemDetailsIdAndTier(Long.parseLong(itemDetailsId),tier);
+			
+			if(lstPricingrule!=null && lstPricingrule.size()>0){
+				for(PricingRule pricingrule : lstPricingrule){
+					JSONObject obj = new JSONObject();
+		  	  		obj.put("hourlyRate", pricingrule.getHourlyRate());
+		  	  		obj.put("fullDayHours", pricingrule.getFullDayHours());
+		  	  		obj.put("fullDayFactor", pricingrule.getFullDayFactor());
+		  	  		obj.put("days5Factor", pricingrule.getDays5Factor());
+		  	  		obj.put("days4Factor", pricingrule.getDays4Factor());
+		  	  		obj.put("days3Factor", pricingrule.getDays3Factor());
+		  	  		obj.put("days2Factor", pricingrule.getDays2Factor());
+		  	  		obj.put("day1Factor", pricingrule.getDay1Factor());
+		  	  		json.add(obj);
+				}
+			}
+		}
+  	  
+		return json.toString();
+	}
+}

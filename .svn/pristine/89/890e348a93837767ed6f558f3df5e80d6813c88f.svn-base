@@ -1,0 +1,133 @@
+package com.ymca.web.controller;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.PaymentMethodDao;
+import com.ymca.dao.WaiversAndTCDao;
+import com.ymca.model.Account;
+import com.ymca.model.PaymentMethod;
+import com.ymca.model.User;
+import com.ymca.model.WaiversAndTC;
+import com.ymca.web.model.SearchGrid;
+import com.ymca.web.service.SearchItemDetailService;
+import com.ymca.web.util.Constants;
+
+@Controller
+public class SearchController extends BaseController {
+
+	@Resource
+	private SearchItemDetailService searchItemDetailService ;   
+	
+	@Resource
+	private AccountDao accountDao ; 
+	
+	@Resource
+	private PaymentMethodDao paymentMethodDao; 
+	
+	@Resource
+	private WaiversAndTCDao waiversAndTCDao;
+
+	
+	@RequestMapping(value="/facility", method=RequestMethod.GET)
+    public String  searchFacility(Model model) throws Exception {
+		setFilterFields(model, Constants.FACILITY_TYPE);
+		return "searchHome";
+	}
+	
+	@RequestMapping(value="/camp", method=RequestMethod.GET)
+    public String  searchCamp(Model model) throws Exception {
+		setFilterFields(model, Constants.CAMP_TYPE);
+		return "searchHome";
+	}
+
+	@RequestMapping(value="/program", method=RequestMethod.GET)
+    public String  searchProgram(Model model) throws Exception { 	
+		setFilterFields(model, Constants.PRODUCT_CATEGORY_PROGRAM);
+		return "searchHome";
+	}
+
+	@RequestMapping(value="/event", method=RequestMethod.GET)
+    public String  searchEvent(Model model) throws Exception { 	
+		setFilterFields(model, Constants.PRODUCT_CATEGORY_EVENT);
+		return "searchHome";
+	}
+	@RequestMapping(value="/addEvent", method=RequestMethod.GET)
+    public String  addEvent(Model model) throws Exception { 
+		model.addAttribute("gottocontact", "true");
+		setFilterFields(model, Constants.PRODUCT_CATEGORY_EVENT);
+		return "searchHome";
+	}
+
+	@RequestMapping(value="/search/facility", method=RequestMethod.GET)
+    public @ResponseBody List<SearchGrid>  searchFacility(@RequestParam String l, @RequestParam String cat, @RequestParam String key,String ids) throws Exception { 	
+		String fromDate = request.getParameter("datestart");
+		String toDate = request.getParameter("dateend");
+		return searchItemDetailService.search(Constants.FACILITY_TYPE,cat,key, l, fromDate, toDate,ids);
+	}
+	
+	@RequestMapping(value="/search/camp", method=RequestMethod.GET)
+    public @ResponseBody List<SearchGrid>  searchCamp(@RequestParam String l, @RequestParam String cat, @RequestParam String key,String ids) throws Exception { 	
+		String fromDate = request.getParameter("datestart");
+		String toDate = request.getParameter("dateend");
+		return searchItemDetailService.search(Constants.CAMP_TYPE,cat,key, l, fromDate, toDate,ids);
+	}
+	
+	@RequestMapping(value="/search/program", method=RequestMethod.GET)
+    public @ResponseBody List<SearchGrid>  searchProgram(@RequestParam String l, @RequestParam String cat, @RequestParam String key,String ids) throws Exception { 	
+		String fromDate = request.getParameter("datestart");
+		String toDate = request.getParameter("dateend");
+		return searchItemDetailService.search(Constants.PRODUCT_CATEGORY_PROGRAM,cat,key, l, fromDate, toDate,ids);
+	}
+	
+	@RequestMapping(value="/search/event", method=RequestMethod.GET)
+    public @ResponseBody List<SearchGrid>  searchEvent(@RequestParam String l, @RequestParam String cat, @RequestParam String key,String ids) throws Exception { 	
+		String fromDate = request.getParameter("datestart");
+		String toDate = request.getParameter("dateend");
+		return searchItemDetailService.search(Constants.PRODUCT_CATEGORY_EVENT,cat,key, l, fromDate, toDate,ids);
+	}
+	
+	private void setFilterFields(Model model, String pageType) {
+		model.addAttribute("pageType", pageType);
+		model.addAttribute("productcategories", itemDetailDao.getDistinctCategoryByType(pageType));
+        model.addAttribute("locations", locationDao.findByStatusOrderByRecordNameAsc("Active"));
+        
+        // TODO Need to be removed
+		Authentication authenticate = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId =authenticate.getName();
+		}catch(Exception e){
+			log.error("Error  ",e);
+		}
+		Account account = null;
+    	User user =  null;	
+    	List<PaymentMethod> paymentMethodList = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+			if(account != null){
+		    	request.setAttribute("userId", userId);				
+				user = getUserByAccount(account, user);
+				paymentMethodList = paymentMethodDao.getPaymentMethodListForAccountID(account.getAccountId());
+				model.addAttribute("paymentInfoLst" , paymentMethodList);
+				model.addAttribute("accInfo" , account);
+			}
+    	}
+    	
+		List<WaiversAndTC> terms = waiversAndTCDao.getTcByTypeAndDate(Constants.WAIVERS_TC_TYPE_COMMON);
+		if(terms != null && !terms.isEmpty()){
+        	model.addAttribute("terms", terms.get(0).getTcDescription());
+        }
+	}
+}

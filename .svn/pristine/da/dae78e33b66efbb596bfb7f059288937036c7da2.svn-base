@@ -1,0 +1,58 @@
+package com.ymca.test.controller;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Resource;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.ymca.CoreConfig;
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.DonationDao;
+import com.ymca.model.Account;
+import com.ymca.model.Address;
+import com.ymca.model.ContactWaiversAndTC;
+import com.ymca.model.Donation;
+import com.ymca.model.Membership;
+import com.ymca.model.User;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = CoreConfig.class)
+public class DonationControllerTest {
+
+	@Resource
+	DonationDao donationDao;
+
+	@Test
+	public void getAll() {
+		List<Donation> donationLst = donationDao.findAll();
+
+		System.out.println("User List Size " + donationLst.size());
+	}
+	
+	@Test
+	public void save() {
+		Donation donationVo = new Donation();
+		
+		donationVo.setAccountId(12345L);
+		donationVo.setContactName("Kate Winslet");
+		donationVo.setContactPartyId(12345L);
+		donationVo.setCustomerName("Kate Winslet");
+		donationVo.setDonationAmount(1000D);
+		donationVo.setDonationDate(new Date());
+		donationVo.setDonationId(123456L);
+		donationVo.setDonationNumber(234567L);
+		donationVo.setPaymentMethod("Visa");
+		donationVo.setPaymentMethodId("45678");
+		donationVo.setType("Donation Type");
+    	
+		Donation donation = donationDao.saveAndFlush(donationVo);
+		System.out.println(donation.getContactName());
+	}
+}

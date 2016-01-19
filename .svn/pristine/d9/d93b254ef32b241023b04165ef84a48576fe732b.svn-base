@@ -1,0 +1,70 @@
+<%@ include file="../../layouts/include_taglib.jsp" %> 
+
+<spring:bind path="account.*">
+    <c:if test="${not empty status.errorMessages}">
+        <div class="alert alert-danger alert-dismissable">
+            <a href="#" data-dismiss="alert" class="close">&times;</a>
+            <c:forEach var="error" items="${status.errorMessages}">
+                <c:out value="${error}" escapeXml="false"/><br/>
+            </c:forEach>
+        </div>
+    </c:if>
+</spring:bind>
+ 
+ <div id="form" class="bootstrap-frm">
+ <div id="profileinfo">
+ 
+	  <h2>
+	   <span>PROFILE INFORMATION</span>
+	  </h2>
+	  
+	  <input type="hidden" name="usrId" id="usrId" value="${usInfo.id}">
+	  <!-- 
+	  <label><form:input type="text" path="username" placeholder="Username" name="Username" id="Username" value="${usInfo.username}" /></label>
+	  <label><form:input type="password" path="password" placeholder="Password" style="" name="Password" id="Password" value="${usInfo.password}" /></label> -->
+	  <label><form:input type="text" path="firstName" placeholder="First Name" name="firstName" id="firstName" value="${usInfo.firstName}" /></label>
+	  <label><form:input type="text" path="lastName" placeholder="Last Name" name="lastName" id="lastName" value="${usInfo.lastName}" /></label>
+	  <label><form:input type="text" path="workNumber" placeholder="Work Number"  id="workNumber" value="${usInfo.workNumber}" /></label>
+	  <label><form:input type="text" path="phoneNumber"  placeholder="Cell Number" name="phoneNumber" id="phoneNumber" value="${usInfo.phoneNumber}" /></label>
+	  <label><form:input type="text" path="homeNumber" placeholder="Home Number"  id="homeNumber" value="${usInfo.homeNumber}" /></label>
+	  <label><form:input type="hidden" path="email" placeholder="Email" name="Email" id="Email" value="${usInfo.email}" /></label>  
+	 
+	 </div> 
+	  <div id="customerAddress">
+	  <h2>
+	   <span>ADDRESS</span>
+	  </h2>
+	  
+	  <label><form:input type="text" path="addressLine1" placeholder="Number/Street" name="addressLine1" id="addressLine1" value="${accInfo.addressLine1}" /></label>
+	  <label><form:input type="text" path="addressLine2"  placeholder="Address 2" name="addressLine2" id="addressLine2" value="${accInfo.addressLine2}" /></label> 
+	  <label><form:input type="text" path="city" placeholder="City" name="city" id="city" value="${accInfo.city}" /></label>
+	  <label><form:input type="text" path="state" placeholder="State" name="state" id="state" value="${accInfo.state}" /></label>
+	  <label><form:input type="text" path="country" placeholder="Zip Code" name="postalCode" id="postalCode" value="${accInfo.country}" /></label>
+	 
+	 </div> 
+	  </div>
+	  
+	  <div id="enrolled_programs" class="k-block" style=" width:668px;background-color:#FFFFFF; padding:5px;">
+	  	   <h2>
+	  <span class="head" width="100%" style="margin-top:1px;">ENROLLED PROGRAMS</span></br>
+	  	  </h2>
+<table id="countrytable"  cellpadding="0" cellspacing="0" width="100%"  rules="none" style="margin-left:0px;padding-left:4px;padding-top:4px;"> 
+    
+        <tr id ="countryrow" style="outline: hidden;"> 
+		<td style="padding-bottom:2px;padding-left:20px;">FinalAmount</td>
+		<td style="padding-bottom:2px;padding-left:29px;">Location</td>
+		<td style="padding-bottom:2px;padding-left:29px;">StartDATE</td>
+		<td style="padding-bottom:2px;padding-left:29px;">EndDate</td>
+		<td style="padding-bottom:2px;padding-left:29px;">Status</td>
+
+    <td>
+        &nbsp;
+        <!--you just need a space in a row-->
+    </td>
+</tr>
+
+
+ </table>
+ 
+		
+</div>

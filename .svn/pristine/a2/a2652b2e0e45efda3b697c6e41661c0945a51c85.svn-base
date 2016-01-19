@@ -1,0 +1,38 @@
+package com.serene.job.processor;
+
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.service.PaymentJobService;
+
+@Service
+@ComponentScan("com.ymca.core.service")
+public class JetpayResponseProcessor extends GenericItemProcessor implements ItemProcessor<Object,Object>{
+	
+	private static final Log log = LogFactory.getLog(JetpayResponseProcessor.class);
+	
+	@Resource
+	private PaymentJobService paymentJobService ;
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Object process(Object item) throws Exception {
+		Integer sno = 1;
+		Map<String,Object> data = (Map<String, Object>) item;
+		
+		try {
+		
+		} catch(Exception e){
+			
+		}
+		
+		return data;
+	}
+}

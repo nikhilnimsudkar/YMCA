@@ -1,0 +1,10 @@
+package com.serene.job.common;
+
+public class Constants {
+
+	public static final String OBJECT_ID_FIELD = "ObjectIdField";
+	public static final String OBJECT_NAME = "ObjectName";
+	
+	public static final String JDBC_ITEM_READER = "jdbcItemReader";
+	public static final String LAST_UPDATED_DATE = "#lastUpdatedDate";
+}

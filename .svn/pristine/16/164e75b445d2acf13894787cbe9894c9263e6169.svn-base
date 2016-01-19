@@ -1,0 +1,47 @@
+package com.ymca.test.common;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.transaction.Transactional;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.ymca.CoreConfig;
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.UserDao;
+import com.ymca.model.Account;
+import com.ymca.model.User;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = CoreConfig.class)
+public class ApplicationTests {
+
+	private static Logger log = LoggerFactory.getLogger(ApplicationTests.class);
+
+	@Resource
+	UserDao userDao ;
+	
+	@Resource 
+	private AccountDao accountDao ;
+	
+	@Test
+	public void getAll() {
+		//List<User> userLst = userDao.findAll();
+		
+		////System.out.println("User List Size " + userLst.size() + "  " + userLst.get(0).getFirstName());
+	} 
+	
+	@Test
+	@Transactional
+	public void getAccountByEmail(){
+		Account account = accountDao.getByEmail("gpatwa@serenecorp.com");
+		log.info(account.getUser().toString());
+	}
+	
+}

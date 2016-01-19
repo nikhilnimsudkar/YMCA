@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+  <definition name="YAgentConsole" extends="agent_layout">
+    <put-attribute name="body" value="/WEB-INF/views/yagent/YAgentConsole.jsp" />
+  </definition>
+  
+   <definition name="impersoanteUser" extends="agent_layout">
+    <put-attribute name="body" value="/WEB-INF/views/yagent/impersonateUser.jsp" />
+  </definition>
+  
+  <definition name="yAgentSearchUser" extends="agent_layout">
+    <put-attribute name="body" value="/WEB-INF/views/yagent/YAgentSearchUser.jsp" />
+  </definition>
+  
+  <definition name="YAgentMemberCheckin" extends="agent_layout">
+    <put-attribute name="body" value="/WEB-INF/views/yagent/MembershipCheckin.jsp" />
+  </definition>
+  
+  <definition name="testLayout" extends="ajax_default">
+    <put-attribute name="body" value="/WEB-INF/views/yagent/testMain.jsp" />
+  </definition>
+  
+   <definition name="addGuest" extends="ajax_default">
+    <put-attribute name="body" value="/WEB-INF/views/yagent/addGuest.jsp" />
+  </definition>
+  <definition name="viewSexOffenderDetails" extends="agent_layout">
+    <put-attribute name="body" value="/WEB-INF/views/yagent/viewSexOffenderDetails.jsp" />
+  </definition>
+  
+  <definition name="yAgentSearchKidsNcheckin" extends="agent_layout">
+    <put-attribute name="body" value="/WEB-INF/views/yagent/yAgentSearchKidsNcheckin.jsp" />
+  </definition>
+  
+  <definition name="KidsClubCheckinWind" extends="ajax_default">
+    <put-attribute name="body" value="/WEB-INF/views/yagent/KidsClubCheckinWind.jsp" />
+    
+  </definition>
+  
+  <definition name="alreadyCheckedInKids" extends="agent_layout">
+    <put-attribute name="body" value="/WEB-INF/views/yagent/viewCheckedInKids.jsp" />
+  </definition>
+</tiles-definitions>

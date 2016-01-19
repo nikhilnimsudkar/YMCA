@@ -1,0 +1,114 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"   pageEncoding="ISO-8859-1"%>
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+<span class="head">Please select preferred priority for camp activities or click on Next button for the default priority</span>
+<div id="itemActivity" style="margin-top: 15px;">
+	<%--  <table id="activityTable" ></table> --%>
+</div>
+<div style="float:right;margin-top: 95px;">
+	<button class="k-button" style="font-size: small; width: 150px;" onclick="loadTransportGrid();">Next</button>
+</div>
+<script type="text/javascript">
+	var respData  ; 
+	var activityDataSource  ; 
+	var transportDataSource   ; 
+	
+	function initActivityGrid(){
+		 $("#itemActivity").kendoGrid ( {
+			 	dataSource: getActivityDataSource(),    	
+		        filterable: false,
+		        sortable: true,
+		        pageable: false,
+		        scrollable:true,
+		        resizable: true,
+		        editable: true,
+		        groupable: false,
+		        columns: [ 
+						  {field: "groupField", title: "Sign Up",hidden:true},
+						  {field: "cId", title: "Person",hidden:true},
+		                  {field: "id", title: "Id",hidden:true},
+						  {field: "type", title: "Type",hidden:true},
+						  {field: "parentItemId", title: "Camp",hidden:true},
+						  {field: "name", title: "Activity Name"},
+						  {field: "priority", title: "Priority"}
+						]
+		 });
+	}
+	
+	function loadActivityTransportData() {
+		var cIds = "";
+		var item_Detail_Ids =  "" ; 
+		$('#allmembers').find('input[class="usercheck"]').each(function(){
+			if($("#user_"+this.value).is(':checked')){
+				var cId = this.value.split("_")[1];
+				var contact = getContactDataSource(cId);
+				cIds = cIds + contact.id + "_" + contact.fname + " "  + contact.lname  + "," ;
+			}
+		});
+		$('#program_session').find('input[name="selectedItemSession"]').each(function(){
+			if($(this).is(':checked')){
+				item_Detail_Ids = item_Detail_Ids + this.value + "," ;
+			}
+		});
+		item_Detail_Ids = item_Detail_Ids.slice(0,-1);
+		cIds = cIds.slice(0,-1);
+		//alert(cIds);
+		$.ajax({
+			url: "./sc/agent/getItemActivityAndTransportService?itemDetailId="+item_Detail_Ids + "&cIds="+cIds,
+			cache: false
+			})
+			.done(function(data) {
+				respData = data ;
+				initActivityGrid();
+				activityDataSource.read();
+				var actData = activityDataSource.data();
+				if (actData.length > 0) {
+					$("#contactActivityDiv").slideDown();	
+				} else {
+					loadTransportGrid();
+				}
+				/* 
+					for (var d in data) {
+						if (d.type == 'Activity') {
+						    var row = $("<tr />")
+						    $("#activityTable").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
+						    row.append($("<td>" + rowData.name + "</td>"));
+						    row.append($("<td><input type='text' value='" + rowData.priority + "' /></td>"));
+					}
+				} */
+			});
+	}
+	
+	$(document).ready(function(){
+		//loadActivityTransportData();
+	});	
+	
+	
+	function getActivityDataSource(){
+		activityDataSource  = new kendo.data.DataSource({
+            data: respData,
+            schema: {
+          	  model: {
+                id: "id",
+                fields: {
+                		id: { editable: false},
+                		groupField: {  editable: false},
+                		cId: {  editable: false},
+                		type: {  editable: false},
+	                	name: {  editable: false},
+	                	priority: {  editable: true,type: "number"}
+            	    }
+        	    }
+    	    },
+		    filter : [{
+		        field: "type", operator: "eq", value: "Activity"
+		    }],
+		    groupable: false,
+	        group: [{
+	            field: "groupField",
+	            dir: "asc"}],
+        	pageSize: 20
+   	 	});
+    	return activityDataSource;
+	}
+</script>

@@ -1,0 +1,548 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+
+
+/**
+ * This class represents the basic "Membership" object in YMCA Portal that allows for Membership management.  
+ *
+ */
+@Entity
+@Table(name = "customer", catalog = "ymca")
+public class Account extends BaseObject implements Serializable {
+    private static final long serialVersionUID = 3832626162173359411L;
+    
+
+	public Account(){
+    	
+    }
+
+	public Account(Long accountId, String name, String addressLine1,
+			String addressLine2, String city, String state, String country,
+			String username, String password, String passwordHint,
+			String firstName, String lastName, String email,
+			String phoneNumber, String homeNumber, String workNumber,
+			Date dateOfBirth, String website,
+			String tcDescription, Set<User> user, Membership membership) {
+		super();
+		this.accountId = accountId;
+		this.name = name;
+		this.addressLine1 = addressLine1;
+		this.addressLine2 = addressLine2;
+		this.city = city;
+		this.state = state;
+		this.country = country;
+		this.username = username;
+		this.password = password;
+		this.passwordHint = passwordHint;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.email = email;
+		this.phoneNumber = phoneNumber;
+		this.homeNumber = homeNumber;
+		this.workNumber = workNumber;
+		this.dateOfBirth = dateOfBirth;
+		this.website = website;
+		this.tcDescription = tcDescription;
+		this.user = user;
+		this.membership = membership;
+	}
+
+	/*public Account(Long accountId, String name, String addressLine1,
+			String addressLine2, String city, String state, String country) {
+		super();
+		this.accountId = accountId;
+		this.name = name;
+		this.addressLine1 = addressLine1;
+		this.addressLine2 = addressLine2;
+		this.city = city;
+		this.state = state;
+		this.country = country;
+		
+	}*/
+    
+    
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)    
+    private Long accountId;					// required  PK
+    
+	@Column(name = "name", nullable = false)
+   	private String name;                    	
+    
+    @Column(name = "address_line1", nullable = false)
+    private String addressLine1;                
+    
+    @Column(name = "address_line2", nullable = false)
+    private String addressLine2;
+    
+    @Column(name = "city", nullable = false)
+    private String city;
+    
+    @Column(name = "state", nullable = false)
+    private String state;
+    
+    @Column(name = "country", nullable = false)
+    private String country;    
+    
+    @Column(name = "email", nullable = false)
+   	private String email;  
+    
+    private String postalCode;
+    
+    @Column(name = "reset_password", columnDefinition="boolean default false")
+   	private boolean resetPassword;  
+    @Column(name = "token")
+   	private String token;  
+    @Column(name = "sentdate", columnDefinition="DATETIME")
+   	private Date sentdate;  
+    @Column(name = "passwordresetdate", columnDefinition="DATETIME")
+   	private Date passwordresetdate;  
+    
+    @Transient
+    private String username;                  
+	
+    @Transient
+    private String password;                  
+	
+    @Transient
+    private String passwordHint;
+	
+    @Transient
+    private String firstName;                   
+	
+    @Transient
+    private String lastName;                    
+    
+    @Transient
+    private String phoneNumber;
+    
+    @Transient
+    private String homeNumber;
+    
+    @Transient
+    private String workNumber;
+	
+    @Transient
+    private Date dateOfBirth;	
+    
+    @Transient
+    private String website;
+    
+    @Transient
+    private String tcDescription;    
+    
+    //@OneToOne
+    //private Contact contact;
+    
+    /*@OneToMany(cascade={CascadeType.ALL})
+	@JoinColumn(name="accountId")
+	@IndexColumn(name="idx")
+    private Set<Contact> contact = new HashSet<Contact>(0);*/
+    
+    //@OneToMany(cascade={CascadeType.ALL})
+    //@JoinColumn(name="accountId")
+    //private Set<User> user = new HashSet<User>(0);
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "accountId")
+    private Set<User> user = new HashSet<User>(0);
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "accountId")
+    private List<Interaction> interactions = new ArrayList<>();
+    
+    @OneToOne(cascade={CascadeType.ALL})
+    private Membership membership;
+    
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getAddressLine1() {
+		return addressLine1;
+	}
+
+	public void setAddressLine1(String addressLine1) {
+		this.addressLine1 = addressLine1;
+	}
+
+	public String getAddressLine2() {
+		return addressLine2;
+	}
+
+	public void setAddressLine2(String addressLine2) {
+		this.addressLine2 = addressLine2;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public Long getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(Long accountId) {
+		this.accountId = accountId;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getPasswordHint() {
+		return passwordHint;
+	}
+
+	public void setPasswordHint(String passwordHint) {
+		this.passwordHint = passwordHint;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPostalCode() {
+		return postalCode;
+	}
+
+	public void setPostalCode(String postalCode) {
+		this.postalCode = postalCode;
+	}
+
+	public boolean isResetPassword() {
+		return resetPassword;
+	}
+
+	public void setResetPassword(boolean resetPassword) {
+		this.resetPassword = resetPassword;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	public Date getSentdate() {
+		return sentdate;
+	}
+
+	public void setSentdate(Date sentdate) {
+		this.sentdate = sentdate;
+	}
+
+	public Date getPasswordresetdate() {
+		return passwordresetdate;
+	}
+
+	public void setPasswordresetdate(Date passwordresetdate) {
+		this.passwordresetdate = passwordresetdate;
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public String getHomeNumber() {
+		return homeNumber;
+	}
+
+	public void setHomeNumber(String homeNumber) {
+		this.homeNumber = homeNumber;
+	}
+
+	public String getWorkNumber() {
+		return workNumber;
+	}
+
+	public void setWorkNumber(String workNumber) {
+		this.workNumber = workNumber;
+	}
+
+	public Date getDateOfBirth() {
+		return dateOfBirth;
+	}
+
+	public void setDateOfBirth(Date dateOfBirth) {
+		this.dateOfBirth = dateOfBirth;
+	}
+
+	public String getWebsite() {
+		return website;
+	}
+
+	public void setWebsite(String website) {
+		this.website = website;
+	}
+
+	public String getTcDescription() {
+		return tcDescription;
+	}
+
+	public void setTcDescription(String tcDescription) {
+		this.tcDescription = tcDescription;
+	}
+
+	public Membership getMembership() {
+		return membership;
+	}
+	
+	/*public Set<User> getUser() {
+		return user;
+	}
+
+	public void setUser(Set<User> user) {
+		this.user = user;
+	}*/
+
+	public Set<User> getUser() {
+		return user;
+	}
+
+	public void setUser(Set<User> user) {
+		this.user = user;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((accountId == null) ? 0 : accountId.hashCode());
+		result = prime * result
+				+ ((addressLine1 == null) ? 0 : addressLine1.hashCode());
+		result = prime * result
+				+ ((addressLine2 == null) ? 0 : addressLine2.hashCode());
+		result = prime * result + ((city == null) ? 0 : city.hashCode());
+		result = prime * result + ((country == null) ? 0 : country.hashCode());
+		result = prime * result
+				+ ((dateOfBirth == null) ? 0 : dateOfBirth.hashCode());
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
+		result = prime * result
+				+ ((firstName == null) ? 0 : firstName.hashCode());
+		result = prime * result
+				+ ((lastName == null) ? 0 : lastName.hashCode());
+		result = prime * result
+				+ ((membership == null) ? 0 : membership.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((password == null) ? 0 : password.hashCode());
+		result = prime * result
+				+ ((passwordHint == null) ? 0 : passwordHint.hashCode());
+		result = prime * result
+				+ ((phoneNumber == null) ? 0 : phoneNumber.hashCode());
+		result = prime * result
+				+ ((homeNumber == null) ? 0 : homeNumber.hashCode());
+		result = prime * result
+				+ ((workNumber == null) ? 0 : workNumber.hashCode());
+		result = prime * result + ((state == null) ? 0 : state.hashCode());
+		result = prime * result
+				+ ((tcDescription == null) ? 0 : tcDescription.hashCode());
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		result = prime * result
+				+ ((username == null) ? 0 : username.hashCode());
+		result = prime * result + ((website == null) ? 0 : website.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Account other = (Account) obj;
+		if (accountId == null) {
+			if (other.accountId != null)
+				return false;
+		} else if (!accountId.equals(other.accountId))
+			return false;
+		if (addressLine1 == null) {
+			if (other.addressLine1 != null)
+				return false;
+		} else if (!addressLine1.equals(other.addressLine1))
+			return false;
+		if (addressLine2 == null) {
+			if (other.addressLine2 != null)
+				return false;
+		} else if (!addressLine2.equals(other.addressLine2))
+			return false;
+		if (city == null) {
+			if (other.city != null)
+				return false;
+		} else if (!city.equals(other.city))
+			return false;
+		if (country == null) {
+			if (other.country != null)
+				return false;
+		} else if (!country.equals(other.country))
+			return false;
+		if (dateOfBirth == null) {
+			if (other.dateOfBirth != null)
+				return false;
+		} else if (!dateOfBirth.equals(other.dateOfBirth))
+			return false;
+		if (email == null) {
+			if (other.email != null)
+				return false;
+		} else if (!email.equals(other.email))
+			return false;
+		if (firstName == null) {
+			if (other.firstName != null)
+				return false;
+		} else if (!firstName.equals(other.firstName))
+			return false;
+		if (lastName == null) {
+			if (other.lastName != null)
+				return false;
+		} else if (!lastName.equals(other.lastName))
+			return false;
+		if (membership == null) {
+			if (other.membership != null)
+				return false;
+		} else if (!membership.equals(other.membership))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (password == null) {
+			if (other.password != null)
+				return false;
+		} else if (!password.equals(other.password))
+			return false;
+		if (passwordHint == null) {
+			if (other.passwordHint != null)
+				return false;
+		} else if (!passwordHint.equals(other.passwordHint))
+			return false;
+		if (phoneNumber == null) {
+			if (other.phoneNumber != null)
+				return false;
+		} else if (!phoneNumber.equals(other.phoneNumber))
+			return false;
+		if (state == null) {
+			if (other.state != null)
+				return false;
+		} else if (!state.equals(other.state))
+			return false;
+		if (tcDescription == null) {
+			if (other.tcDescription != null)
+				return false;
+		} else if (!tcDescription.equals(other.tcDescription))
+			return false;
+		if (user == null) {
+			if (other.user != null)
+				return false;
+		} else if (!user.equals(other.user))
+			return false;
+		if (username == null) {
+			if (other.username != null)
+				return false;
+		} else if (!username.equals(other.username))
+			return false;
+		if (website == null) {
+			if (other.website != null)
+				return false;
+		} else if (!website.equals(other.website))
+			return false;
+		return true;
+	}
+
+	public void setMembership(Membership membership) {
+		this.membership = membership;
+	}
+	
+}

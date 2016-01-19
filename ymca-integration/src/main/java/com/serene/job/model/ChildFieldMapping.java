@@ -1,0 +1,130 @@
+/**
+ * @author gpatwa
+ * Model class ChildFieldMapping
+ */
+package com.serene.job.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Transient;
+
+@Entity(name="batch_child_field_mapping")
+@Access (AccessType.FIELD)
+public class ChildFieldMapping implements Serializable {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long id;
+	
+	@Transient
+/*	@ManyToOne
+	@JoinColumns({
+	@JoinColumn(name="job_name",referencedColumnName="job_name"),
+	@JoinColumn(name="object_name",referencedColumnName="object_name")})
+*/	private ChildObject childObject  ;
+	
+	//@Column(name="JOB_NAME",updatable=false,insertable=false)
+	//private String jobName ;
+	
+	@Column(name="FROM_FIELD")
+	private String fromField ;
+	
+	@Column(name="TO_FIELD")
+	private String toField ;
+	
+	@Column(name="DEFAULT_VALUE")
+	private String defaultValue ;
+	
+	@Column(name="OPERATION_TYPE", columnDefinition="varchar(10) DEFAULT 'ALL'")
+	private String operationType ;
+	
+	@Column(name="STATUS", columnDefinition="boolean DEFAULT 1")
+	private Boolean status = true;
+	
+	@Column(name="CALLBACK_UPDATE", columnDefinition="boolean DEFAULT false")
+	private Boolean callbackUpdate  ;
+	
+	@Column(name="INCLUDE_NULL_VALUE", columnDefinition="boolean DEFAULT false")
+	private Boolean includeNullValue  ;
+	
+	@Column(name="job_name")
+	private String jobName ;
+	
+	@Column(name="object_name")
+	private String objectName ;
+	
+	public String getFromField() {
+		return fromField;
+	}
+	public void setFromField(String fromField) {
+		this.fromField = fromField;
+	}
+	public String getToField() {
+		return toField;
+	}
+	public void setToField(String toField) {
+		this.toField = toField;
+	}
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+	public Boolean getStatus() {
+		return status;
+	}
+	public void setStatus(Boolean status) {
+		this.status = status;
+	}
+	public String getOperationType() {
+		return operationType;
+	}
+	public void setOperationType(String operationType) {
+		this.operationType = operationType;
+	}
+
+	public Boolean getCallbackUpdate() {
+		return callbackUpdate;
+	}
+	public void setCallbackUpdate(Boolean callbackUpdate) {
+		this.callbackUpdate = callbackUpdate;
+	}
+	public Boolean getIncludeNullValue() {
+		return includeNullValue;
+	}
+	public void setIncludeNullValue(Boolean includeNullValue) {
+		this.includeNullValue = includeNullValue;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public ChildObject getChildObject() {
+		return childObject;
+	}
+	public void setChildObject(ChildObject childObject) {
+		this.childObject = childObject;
+	}
+	public String getJobName() {
+		return jobName;
+	}
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
+	}
+	public String getObjectName() {
+		return objectName;
+	}
+	public void setObjectName(String objectName) {
+		this.objectName = objectName;
+	}
+}

@@ -1,0 +1,35 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+<table style="padding-left:4px;padding-top:4px; width: 100%;">
+	<tr>
+		<td colspan="4" align="left">
+			<span class="head" style="margin-left:4px;">
+				Facility Details
+			</span>
+		</td>
+	</tr>
+	<tr><td><br><hr></td></tr>
+	<tr>
+	<td id="facilityDetails">
+	<c:choose>
+		<c:when test="${fn:length(facilityList)!=0}">
+			<c:forEach var="contact" items="${facilityList}" varStatus="status">
+				
+					<table style="width: 100%;">
+						<tr>
+							<td align="right"><b>Contact </b></td>
+							<td colspan="3"><b>${contact.Item} ${contact.location}</b>								
+							</td>
+						</tr>						
+						<tr><td colspan="4"><br><hr></td></tr>
+					</table>
+			
+			</c:forEach>
+		
+		</c:when>
+	</c:choose> 
+	</td>
+	</tr>
+	
+	
+</table>

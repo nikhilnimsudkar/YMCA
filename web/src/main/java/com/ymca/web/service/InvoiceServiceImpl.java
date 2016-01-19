@@ -1,0 +1,182 @@
+package com.ymca.web.service;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.ymca.dao.InvoiceDao;
+import com.ymca.dao.PaymentDao;
+import com.ymca.model.Invoice;
+import com.ymca.model.Payment;
+import com.ymca.model.Signup;
+import com.ymca.web.enums.PaymentTypeEnum;
+
+@Service
+public class InvoiceServiceImpl implements InvoiceService {
+	
+	/**
+	 * Created by Lavy Toteza
+	 * lstoteza@serenecorp.com
+	 * 10072015
+	 */
+	
+	private static Logger log = LoggerFactory.getLogger(InvoiceServiceImpl.class);
+	
+	@Resource
+	private InvoiceDao invoiceDao;
+	
+	@Resource
+	private PaymentDao paymentDao;
+	
+	// created by Raju 
+	@Override
+	public String generateInvoiceNumber(Long accountId, Long signupId, Long payerId, Date billDate){
+
+		DateFormat sdf = new SimpleDateFormat("MMddYYYY");
+		String invoiceNumber = accountId +"-"+ signupId +"-"+ payerId +"-"+ sdf.format(billDate);
+		
+		return invoiceNumber;
+	}
+	
+	@Override
+	public Double getPastDueAmountBySignup(Signup signup) {
+		// all invoice where due date is passed and have open balance - that is past Due Amount
+		Double pastDueAmount = 0D;
+		
+		if(signup!=null && signup.getSignupId()!=null){
+			Long varSignupId = signup.getSignupId();
+			
+			List<Invoice> invoiceList = invoiceDao.getPastInvoiceByActiveSignup(varSignupId);
+			if(invoiceList != null && invoiceList.size() > 0){
+				for (Invoice invoice : invoiceList) {
+					double openBalance = getOpenBalanceForInvoice(invoice);
+					if(openBalance > 0){
+						pastDueAmount += openBalance;
+					}
+				}
+			}
+		}
+		
+		return pastDueAmount;
+	}
+	
+	@Override
+	public List<Invoice> getAllInvoiceByBilldate(Signup signUp, Date billDate) {
+		// get all invoice where invoice bill date > input bill date
+		
+		Date nextMonthBillDate = getNextMonthDate(billDate);
+		List<Invoice> invoiceList = invoiceDao.findBySignupAndBillDateOrderByBillDateAscending(signUp, billDate, nextMonthBillDate);
+		
+		return invoiceList;
+	}
+
+	private Date getNextMonthDate(Date date) {
+		Date nextMonthDate = null;
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.MONTH, (cal.get(Calendar.MONTH)+1));
+		nextMonthDate = cal.getTime();
+		return nextMonthDate;
+	}
+	
+	@Override
+	public double getOpenBalanceForInvoice(Invoice invoice){
+		// calculates open balance for invoice ( using same as developed by Atul)
+		double  openBalanceOnInvoice = 0, 
+				trueInvoiceValue = 0, 
+				sumOfDebitPayment = 0, 
+				sumOfCreditMemoFAWaiver = 0, 
+				sumOfCreditMemoWaiver = 0,
+				sumOfCreditMemoWriteOff = 0, 
+				sumOfCreditMemoRefund = 0, 
+				sumOfNSF = 0, 
+				sumOfChargeBack = 0,
+				sumOfCreditMemoADJ = 0;
+		
+		List<Payment> payments = paymentDao.getPaymentListForInvoice(invoice.getInvoiceId());
+		for (Payment payment : payments) {
+			switch (PaymentTypeEnum.getEnumByString(payment.getType())) {
+				
+				case CreditMemoFAWaiver:
+					sumOfCreditMemoFAWaiver += payment.getAmount();
+					break;
+				case CreditMemoWaiver:
+					sumOfCreditMemoWaiver += payment.getAmount();
+					break;
+				case CreditMemoRefund:
+					sumOfCreditMemoRefund += payment.getAmount();
+					break;
+				case CreditMemoWriteOff:
+					sumOfCreditMemoWriteOff += payment.getAmount();
+					break;
+				case Debit:
+					sumOfDebitPayment += payment.getAmount();
+					break;
+				case NSF:
+					sumOfNSF += payment.getAmount();
+					break;
+				case ChargeBack:
+					sumOfChargeBack += payment.getAmount();
+					break;
+				case CreditMemoADJ:
+				    sumOfCreditMemoADJ+= payment.getAmount();
+				default:
+					break;
+			} 
+		}
+		
+		trueInvoiceValue = (invoice.getAmount() + sumOfCreditMemoADJ)
+				- (sumOfCreditMemoWaiver + sumOfCreditMemoFAWaiver + sumOfCreditMemoWriteOff);
+		
+		openBalanceOnInvoice = trueInvoiceValue
+				- (sumOfDebitPayment + sumOfCreditMemoRefund)
+				+ ((sumOfNSF > 0 ? sumOfNSF : sumOfChargeBack));
+
+		return openBalanceOnInvoice;
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public Date getInvoiceDraftDate(String draftCycle, Date dueDate) {
+		
+		Date draftDate = null;
+		if(draftCycle != null && dueDate != null){
+			String[] draftCycleA = draftCycle.split(",");
+			if(draftCycleA.length == 2){
+				draftDate = dueDate;
+				draftDate.setDate(Integer.parseInt(draftCycleA[1]));
+			}
+		}
+		
+		return draftDate;
+	}
+	
+	/*
+	 * Check and update draft date for future invoices, if any
+	 */
+	public void checkAndUpdateInvoiceDraftDate(Signup signup){
+		if(signup != null && signup.getDraftCycle() != null){
+			List<Invoice> invoices = invoiceDao.getInvoiceListForDonationSignup(signup.getSignupId()); // signup.getInvoices();
+			if(invoices != null){
+				for (Invoice invoice : invoices) {
+					Date dueDate = invoice.getDueDate();
+					Date currentDate = new Date();
+					if(dueDate != null && dueDate.after(currentDate)){
+						Date draftDate = getInvoiceDraftDate(signup.getDraftCycle(), dueDate);
+						invoice.setDraftDate(draftDate);
+						invoice.setLastUpdated(Calendar.getInstance());
+						invoiceDao.save(invoice);
+					}
+				}
+			}
+		}
+	}
+}

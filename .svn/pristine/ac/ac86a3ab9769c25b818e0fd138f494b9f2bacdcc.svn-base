@@ -1,0 +1,7 @@
+package com.ymca.dao;
+
+import com.ymca.model.Product;
+
+
+public interface ProductDao extends GenericDao<Product, Long> {
+}

@@ -1,0 +1,10 @@
+package com.ymca.web.enums;
+
+public enum ProductTypeEnum {
+	EVENT,
+	PROGRAM,
+	CAMP,
+	Memberships,
+	MEMBERSHIP,
+	CHILDCARE
+}

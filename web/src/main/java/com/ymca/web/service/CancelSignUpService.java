@@ -1,0 +1,339 @@
+package com.ymca.web.service;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.stereotype.Service;
+
+import com.ymca.dao.ItemDetailPricingRuleDao;
+import com.ymca.dao.PaymentDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.model.Activity;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.ItemDetailPricingRule;
+import com.ymca.model.Payment;
+import com.ymca.model.Signup;
+import com.ymca.web.enums.InteractionActivityTypeEnum;
+import com.ymca.web.enums.ProductTypeEnum;
+import com.ymca.web.enums.SignupStatusEnum;
+import com.ymca.web.util.Constants;
+import com.ymca.web.util.MemberAge;
+
+@Service
+public class CancelSignUpService extends BaseService {
+	
+	private static Logger log = LoggerFactory.getLogger(CancelSignUpService.class);
+	
+	@Resource
+	private ItemDetailPricingRuleDao itemDetailPricingRuleDao ;
+	
+	@Resource
+	private SignUpService signUpService ;
+	
+	@Resource
+	private CapacityManagementService capacityManagementService ;
+	
+	@Resource
+	private PaymentDao paymentDao;
+	
+	@Resource
+	private PaymentService paymentService;
+	
+	@Resource
+	private SignupDao signupDao ;
+	
+	
+	@Transactional(value=TxType.REQUIRES_NEW)
+	public void cancelSignUp(String sId, String cancelDt,String lastModifiedBy,String inserviceSelectedFutureDays) throws Exception {
+			Signup signup = signupDao.getOne(Long.parseLong(sId));
+			ItemDetail program = signup.getItemDetail();
+			
+			cancelSingleSingUp(cancelDt, lastModifiedBy,inserviceSelectedFutureDays, signup,program);
+			
+			// Cancel and reassign related signup for Camp enrollment
+			cancelAndRessignRelatedSignUp(cancelDt, lastModifiedBy,	inserviceSelectedFutureDays, signup, program);
+	}
+
+	private void cancelAndRessignRelatedSignUp(String cancelDt,String lastModifiedBy, String inserviceSelectedFutureDays,Signup signup, ItemDetail program) throws Exception {
+		
+		List<Signup> parentSignups = signupDao.findByParentSignUpIdAndStatus(signup.getSignupId(), SignupStatusEnum.Active.toString());
+		List<Signup> relatedSignUps = new ArrayList<Signup>();
+		List<Signup> transportationSignups = new ArrayList<Signup>();
+		
+		for(Signup s : parentSignups){
+			if(s.getItemDetail() != null && s.getItemDetail().getCategory().equalsIgnoreCase(Constants.CAMP_CATERORY_TRANSPORTATION)){
+				transportationSignups.add(s);
+			}else{
+				relatedSignUps.add(s);
+			}
+		}
+		
+		if (StringUtils.equalsIgnoreCase(program.getType(),Constants.CAMP_TYPE)) {
+			// Cancel transportation service for Residence Camp if present
+			//List<Signup> transportationSignups = signupDao.findByParentSignUpIdAndStatus(signup.getSignupId(), SignupStatusEnum.Active.toString()); 
+			for (Signup s : transportationSignups) {
+				cancelSingleSingUp(cancelDt, lastModifiedBy,inserviceSelectedFutureDays, s,s.getItemDetail());		
+			}
+			
+			// Cancel Kids Signup for family camp if only one adult is sign up
+			//List<Signup> relatedSignups = signupDao.findByParentSignUpIdAndStatus(signup.getSignupId(), SignupStatusEnum.Active.toString());
+			
+			// check if more then one adult is signup
+			Signup newParentSignup = null ;
+			for (Signup s : relatedSignUps) {
+				MemberAge mAge = new MemberAge();
+				Integer contactAge  = mAge.getAge(s.getContact().getDateOfBirth());
+				 if (contactAge >= 18) {
+					 newParentSignup = s ;
+					 break ;
+				 }
+			}
+			if (newParentSignup != null) {
+				// re assign parent sign 
+				for (Signup s : relatedSignUps) {
+					if (newParentSignup.getSignupId() != s.getSignupId()) {
+						s.setParentSignUp(newParentSignup);
+					} else {
+						s.setParentSignUp(null);	
+					}
+						signupDao.save(s);
+				}
+			} else {
+				// no adult sign up found, cancel all kids sign ups
+				for (Signup s : relatedSignUps) {
+					cancelSingleSingUp(cancelDt, lastModifiedBy,inserviceSelectedFutureDays, s,s.getItemDetail());		
+				}
+			}
+			
+		} /*else 	if (StringUtils.equalsIgnoreCase(program.getCategory(),Constants.CAMP_TYPE_FAMILY)) { 
+			// Cancel Kids Signup for family camp if only one adult is sign up
+			
+		}*/
+	}
+	
+	public double evaluateRefundExpressionAndReturnReimbursedAmount(Signup signup, double cancellationPrice) {
+		
+		double reimbursedAmount = 0D;
+		
+		List<ItemDetailPricingRule> refundRules = itemDetailPricingRuleDao.findByItemDetailIdAndStatusAndPricingRule_StatusAndPricingRule_Type(signup.getItemDetail().getId(), Constants.Status_Active, Constants.Status_Active,Constants.REFUND);
+		if(refundRules.size()>0){
+			for(ItemDetailPricingRule pr: refundRules){
+				String refundExpression = pr.getPricingRule().getRefundExpression();
+				
+				StandardEvaluationContext signupContext = new StandardEvaluationContext(signup);  
+				ExpressionParser parser = new SpelExpressionParser(); 
+				org.springframework.expression.Expression exp = parser.parseExpression(refundExpression);
+				
+				Boolean match = exp.getValue(signupContext,Boolean.class);
+				//System.out.println(match);
+				
+				if(match){
+					BigDecimal refundPercentage = pr.getPricingRule().getRefundPercent();
+					BigDecimal refundAmount = refundPercentage.multiply(BigDecimal.valueOf(Double.parseDouble(signup.getFinalAmount())));
+					refundAmount = refundAmount.divide(new BigDecimal(100));
+					
+					reimbursedAmount = (refundAmount.subtract(BigDecimal.valueOf(cancellationPrice))).doubleValue();
+					break;
+				}
+			}
+		}
+		return reimbursedAmount;
+	}
+	
+	private void cancelSingleSingUp(String cancelDt, String lastModifiedBy,String inserviceSelectedFutureDays,Signup signup, ItemDetail program) throws Exception {
+		double reimbursedAmount;
+		boolean isFutureCancelDate = capacityManagementService.isFutureCancelDate(cancelDt);
+		if(Constants.PRODUCT_CATEGORY_CHILD_CARE.equalsIgnoreCase(program.getType()) && Constants.PRODUCT_CATEGORY_INSERVICE.equalsIgnoreCase(program.getCategory())){
+			// in case of inservice dont update status to cancel until all future days are being cancelled 
+		}else{
+			signup.setPortalLastModifiedBy(lastModifiedBy);
+			signUpService.updateCancelInfo(cancelDt, isFutureCancelDate, signup);
+		}
+		
+		if(!isFutureCancelDate){
+			invokeCapacityManagement(cancelDt, inserviceSelectedFutureDays,	isFutureCancelDate, signup, program);
+		}
+		
+		// set modified by 
+		signup.setPortalLastModifiedBy(lastModifiedBy);
+		
+		if(program.getType() != null && !program.getType().equals(ProductTypeEnum.EVENT.toString())){
+			double cancellationPrice = 0D;
+			List<ItemDetailPricingRule> lstCancellationPR = itemDetailPricingRuleDao.findByItemDetailIdAndStatusAndPricingRule_StatusAndPricingRule_Type(signup.getItemDetail().getId(), Constants.Status_Active, Constants.Status_Active,Constants.CANCEL);
+			if(lstCancellationPR.size()>0){
+				for(ItemDetailPricingRule cancellationPR: lstCancellationPR){
+					cancellationPrice += cancellationPR.getPricingRule().getTierPrice();
+				}
+			}
+			reimbursedAmount = evaluateRefundExpressionAndReturnReimbursedAmount(signup, cancellationPrice);
+			
+			if(reimbursedAmount > 0){
+				initialRefundAndCancelProcess(reimbursedAmount, signup, program,cancellationPrice);
+			}
+		}else if(program.getType() != null && program.getType().equals(ProductTypeEnum.EVENT.toString())){
+			if(program.getStatus().equalsIgnoreCase("Active")){
+				logCancellationActivity(signup, program, InteractionActivityTypeEnum.CancelEnrollment.toString());
+			} else {
+				logCancellationActivity(signup, program, InteractionActivityTypeEnum.EventCancelled.toString());	
+			}
+		}
+	}
+
+	private void initialRefundAndCancelProcess(double reimbursedAmount, Signup signup,ItemDetail program, double cancellationPrice) {
+		Double debitPayment = 0D;
+		Double nsfOrCBorRefundPayment = 0D;
+		List<String> cashOrChequePaymentIds = new ArrayList<String>();
+		List<String> creditcardPaymentIds = new ArrayList<String>();
+		List<String> achPaymentIds = new ArrayList<String>();
+		
+		List<Payment> lstAllPaymentsBySignup = paymentDao.findBySignupOrderByAmountDesc(signup);
+		for(Payment payment: lstAllPaymentsBySignup){
+			if(Constants.DEBIT.equalsIgnoreCase(payment.getType())){
+				debitPayment += payment.getAmount();
+				
+				if(Constants.CASH.equalsIgnoreCase(payment.getPaymentMode()) || Constants.CHEQUE.equalsIgnoreCase(payment.getPaymentMode())){
+					cashOrChequePaymentIds.add(payment.getPaymentId().toString());
+				}
+				else if(Constants.CREDITCARD.equalsIgnoreCase(payment.getPaymentMode())){
+					creditcardPaymentIds.add(payment.getPaymentId().toString());
+				}
+				else if(Constants.ACH.equalsIgnoreCase(payment.getPaymentMode())){
+					achPaymentIds.add(payment.getPaymentId().toString());
+				}
+			}
+			else if(Constants.NSF.equalsIgnoreCase(payment.getType()) || Constants.CHARGEBACK.equalsIgnoreCase(payment.getType()) || Constants.CREDITMEMOREFUND.equalsIgnoreCase(payment.getType())){
+				nsfOrCBorRefundPayment += payment.getAmount();
+			}
+		}
+		if(debitPayment>0){
+			if((debitPayment-nsfOrCBorRefundPayment)-reimbursedAmount >= 0){ // check if total paid payment is more than the refund amount
+				processRefund(reimbursedAmount,cashOrChequePaymentIds,creditcardPaymentIds, achPaymentIds,lstAllPaymentsBySignup);
+			}
+			else{ // total paid payment is less than the refund amount, charge them cancellation charges
+				processCancellationCharges(reimbursedAmount,signup, program, cancellationPrice,cashOrChequePaymentIds,creditcardPaymentIds, achPaymentIds,lstAllPaymentsBySignup);
+			}
+		}
+	}
+
+	private void invokeCapacityManagement(String cancelDt,
+			String inserviceSelectedFutureDays, boolean isFutureCancelDate,
+			Signup signup, ItemDetail program) throws Exception {
+		if(Constants.PRODUCT_CATEGORY_CHILD_CARE.equalsIgnoreCase(program.getType()) && !Constants.PRODUCT_CATEGORY_AFTER_SCHOOL.equalsIgnoreCase(program.getCategory())){
+			// day wise for child care and in-service
+			//String inserviceSelectedFutureDays = request.getParameter("selDays");
+			if(capacityManagementService.updateCapacityCancelledSignupDays(signup, program,inserviceSelectedFutureDays))
+				signUpService.updateCancelInfo(cancelDt, isFutureCancelDate, signup);
+		}
+		else {
+			// capacity management block
+			capacityManagementService.cancelCapacityManagement(program,signup);
+			
+			// automated wait list batch job will take care of this.
+			//capacityManagementService.automaticWaitListProcessing(program);
+		}
+	}
+
+
+	private void logCancellationActivity(Signup signup, ItemDetail program,String activityType) {
+		Activity activity = new Activity();
+		activity.setSignup(signup);
+		activity.setCustomer(signup.getCustomer());
+		activity.setType(activityType);
+		activity.setContact(signup.getContact());
+		activity.setCreatedDate(new Date());
+		activity.setDescription(program.getProgramDirector());
+		activity.setLastUpdated(Calendar.getInstance());
+		activityDao.save(activity);
+	}
+
+
+	private void processCancellationCharges(double reimbursedAmount,
+			Signup signup, ItemDetail program, 	double cancellationPrice, List<String> cashOrChequePaymentIds,
+			List<String> creditcardPaymentIds, List<String> achPaymentIds,
+			List<Payment> lstAllPaymentsBySignup) {
+		if(cashOrChequePaymentIds.size()>0 && creditcardPaymentIds.size()==0 && achPaymentIds.size()==0){ // all cash/ cheque payment
+			// create activity as the payment was done through cash/ cheque
+			
+			logCancellationActivity(signup, program, Constants.CANCELLATIONCHARGE);
+			
+			/*
+			Activity activity = new Activity();
+			activity.setSignup(signup);
+			activity.setCustomer(signup.getCustomer());
+			activity.setType(Constants.CANCELLATIONCHARGE);
+			activity.setContact(signup.getContact());
+			activity.setCreatedDate(new Date());
+			activity.setDescription(program.getProgramDirector());
+			activity.setLastUpdated(Calendar.getInstance());
+			activityDao.save(activity);
+			*/
+		}
+		else if(cashOrChequePaymentIds.size()==0){ // only CC or ACH payment
+			// charge only cancellation charges as there is not much payment 
+			Double balanceAmount = cancellationPrice;
+			Double refundAmount = 0D;
+			
+			for(Payment p: lstAllPaymentsBySignup){ 
+				if(Constants.DEBIT.equalsIgnoreCase(p.getType())){ // list all payment with type = 'Debit'
+					if(balanceAmount>0){
+						if(p.getAmount()>=balanceAmount){
+							refundAmount = balanceAmount;
+							balanceAmount = 0D;
+						}
+						else{
+							balanceAmount = reimbursedAmount - p.getAmount();
+							refundAmount = p.getAmount();
+						}
+						paymentService.initialRefund(refundAmount, p);
+					}
+				}
+			}
+		}
+	}
+
+
+	private void processRefund(double reimbursedAmount,List<String> cashOrChequePaymentIds,List<String> creditcardPaymentIds, List<String> achPaymentIds,List<Payment> lstAllPaymentsBySignup) {
+		if(cashOrChequePaymentIds.size()>0 && creditcardPaymentIds.size()==0 && achPaymentIds.size()==0){
+			// all cash/ cheque payment
+			Long paymentId = Long.parseLong(cashOrChequePaymentIds.get(0));
+			Payment p = paymentDao.findByPaymentId(paymentId);
+
+			paymentService.initialRefund(reimbursedAmount, p);
+		}
+		else if(cashOrChequePaymentIds.size()==0){
+			// no cash/ cheque payment
+			Double balanceAmount = reimbursedAmount;
+			Double refundAmount = 0D;
+			
+			for(Payment p: lstAllPaymentsBySignup){ 
+				if(Constants.DEBIT.equalsIgnoreCase(p.getType())){ // list all payment with type = 'Debit'
+					if(balanceAmount>0){
+						if(p.getAmount()>=balanceAmount){
+							refundAmount = balanceAmount;
+							balanceAmount = 0D;
+						}
+						else{
+							balanceAmount = reimbursedAmount - p.getAmount();
+							refundAmount = p.getAmount();
+						}
+						
+						paymentService.initialRefund(refundAmount, p);
+					}
+				}
+			}
+		}
+	}
+}

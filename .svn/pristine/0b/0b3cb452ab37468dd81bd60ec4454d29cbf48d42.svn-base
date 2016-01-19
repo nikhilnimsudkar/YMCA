@@ -1,0 +1,162 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+       
+<body>
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="main">
+<div id="content" style="margin-top:30px;margin-bottom:30px;">
+		<form:form commandName="paymentMethod" class="bootstrap-frm" id="updateBankInfoForm" method="post" action="updateBankInfo" style="padding:40px;">  
+			<div>
+				  <h2><span>Bank Information</span></h2>
+				  <table style="width :100%;">
+					<tr>
+						<td width="50%"><span><b>Bank Routing Number</b></span></td>						
+						<td><span id="updBankRoutingNumber">${paymentInfo.bankRoutingNumber }</span></td>						
+					</tr>					
+					<tr>
+						<td><span><b>Drivers License Number</b></span></td>						 
+						<td><span id="updBankDriversLicenseNumber">${paymentInfo.driversLicenseNumber }</span></td>					
+					</tr>
+					<tr>
+						<td><span><b>State Of DL</b></span></td>						 
+						<td><span id="updBankStateOfDL">${paymentInfo.stateOfDL }</span></td>					
+					</tr>
+					<tr>
+						<td><span><b>Phone Number</b></span></td>						 
+						<td><span id="updBankPhoneNumber">${paymentInfo.phoneNumber }</span></td>					
+					</tr>
+					<tr>
+						<td><span><b>Checking Account Number</b></span></td>						 
+						<td><span id="updBankCheckingAccountNumber">${paymentInfo.checkingAccountNumber }</span></td>					
+					</tr>
+				</table>				  
+				 <!--  			  
+				  <input type="text" placeholder="Bank Routing Number" name="bankRoutingNumber" id="bankRoutingNumber" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Checking Account Number" name="checkingAccountNumber" id="checkingAccountNumber" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Drivers License Number" name="driversLicenseNumber" id="driversLicenseNumber" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="State Of DL" name="stateOfDL" id="stateOfDL" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Phone Number" name="phoneNumber" id="phoneNumber" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Token Number" name="tokenNumber" id="tokenNumber" value="" style="width: 230px;"/> -->
+				  
+				  <h2><span>Billing Address Information</span></h2>
+				  <input type="text" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1Bank" value=""  style="width: 230px;"/>
+				  <input type="text" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2Bank" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing City" name="billingCity" id="billingCityBank" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing State" name="billingState" id="billingStateBank" value="" style="width: 230px;"/><br />
+				  
+				  
+				  <!-- <label><input type="text" name="paymentId" id="paymentId" value="" style="display:none;" /></label> -->
+				  <input type="text" style="display:none;" name="paymentId" value="" id="updBankPaymentId">
+				  <input type="text" style="display:none;" name="accountId" value="" id="updBankAccountId">
+				  
+				  <div id="statusBlock">
+					<span class="k-block k-success-colored" id="bankSuccessSpan"></span>
+					<span class="k-block k-error-colored" id="bankErrorSpan"></span>
+				  </div>
+					
+				  <span id="updateBankInfoBtn" class="k-button" style="width: 150px; text-shadow: none;">Update</span>
+				  <span id="removeBankInfoBtn" class="k-button" style="width: 150px; margin-left: 10px; text-shadow: none;">Remove</span>
+				  
+			</div>
+			<div id="PaymentInformationBackLnk" align="right">
+	        		<a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a>
+	        </div>
+		</form:form>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {		
+		
+		$( "#updateBankInfoBtn" ).click(function(){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait while the Bank Information is Updated");			
+			$.ajax({
+				  type: "POST",
+				  url: $('#updateBankInfoForm').attr( "action"),
+				  data: $('#updateBankInfoForm').serialize(),
+				  success: function( data ) {				  	  
+				  	  if(data=='SUCCESS'){
+					  	  $("#bankErrorSpan").css("display", "none");		
+						  $("#bankErrorSpan" ).html("");	
+						  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+						  setTimeout(function(){$(".k-loading-text").html("Member was added successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+					  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+					  	  
+					  	  $("#bankSuccessSpan").css("display", "block");		
+						  $("#bankSuccessSpan" ).html("Bank Information Updated successfully");
+					  	  
+					  	  //setTimeout(function(){location.reload();}, 7000);
+					  	  
+				  	  }else if(data == 'NOT_FOUND'){
+				  		  $("#bankSuccessSpan").css("display", "none");		
+						  $("#bankSuccessSpan" ).html("");	
+						  $("#bankErrorSpan").css("display", "block");		
+						  $( "#bankErrorSpan" ).html("Payment Information Not Found.");
+						  $(".k-loading-mask").hide();
+				  	  }else {
+				  		  $("#bankSuccessSpan").css("display", "none");		
+						  $("#bankSuccessSpan" ).html("");	
+						  $("#bankErrorSpan").css("display", "block");		
+						  $( "#bankErrorSpan" ).html("There was some error. Please try again later");
+						  $(".k-loading-mask").hide();
+				  	  }					  
+				  },
+				  error: function( xhr,status,error ){
+					  $("#bankSuccessSpan").css("display", "none");		
+					  $("#bankSuccessSpan" ).html("");	
+					  $("#bankErrorSpan").css("display", "block");		
+					  $( "#bankErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+				  }
+			});
+			
+		});		
+		
+		$( "#removeBankInfoBtn" ).click(function(){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait while the Bank Information is Removed");			
+			$.ajax({
+				  type: "GET",
+				  url: "removeBankInfo/"+$("#updBankPaymentId").val(),				  
+				  success: function( data ) {				  	  
+				  	  if(data=='SUCCESS'){
+				  		$("#bankErrorSpan").css("display", "none");		
+						  $("#bankErrorSpan" ).html("");	
+						  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+						  setTimeout(function(){$(".k-loading-text").html("Member was added successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+					  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+					  	  
+					  	  $("#bankSuccessSpan").css("display", "block");		
+						  $("#bankSuccessSpan" ).html("Bank Information Removed successfully");
+					  	  
+					  	  setTimeout(function(){location.reload();}, 5000);
+					  	  
+				  	  }else if(data == 'NOT_FOUND'){
+				  		  $("#bankSuccessSpan").css("display", "none");		
+						  $("#bankSuccessSpan" ).html("");	
+						  $("#bankErrorSpan").css("display", "block");		
+						  $( "#bankErrorSpan" ).html("Payment Information Not Found.");
+						  $(".k-loading-mask").hide();
+				  	  }else {
+				  		  $("#bankSuccessSpan").css("display", "none");		
+						  $("#bankSuccessSpan" ).html("");	
+						  $("#bankErrorSpan").css("display", "block");		
+						  $( "#bankErrorSpan" ).html("There was some error. Please try again later");
+						  $(".k-loading-mask").hide();
+				  	  }					  
+				  },
+				  error: function( xhr,status,error ){
+					  $("#bankSuccessSpan").css("display", "none");		
+					  $("#bankSuccessSpan" ).html("");	
+					  $("#bankErrorSpan").css("display", "block");		
+					  $( "#bankErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+				  }
+			});
+			
+		});	
+	});
+</script>
+
+</body>

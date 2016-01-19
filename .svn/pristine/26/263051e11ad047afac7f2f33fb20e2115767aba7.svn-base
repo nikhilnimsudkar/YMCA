@@ -1,0 +1,81 @@
+package com.ymca.web.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.model.Account;
+import com.ymca.model.User;
+
+@Controller
+public class PaymentController extends BaseController {
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	@RequestMapping(value="/viewPaymentHistory", method=RequestMethod.GET)
+    public String viewPaymentHistory(final HttpServletRequest request, final HttpServletResponse response) { 
+        return "viewPaymentHistory";
+    }
+	
+	@RequestMapping(value="/viewPaymentInformation", method=RequestMethod.GET)
+    public ModelAndView viewPaymentInformation(final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			model.addAttribute("errMsg", "Your session is expired");
+			return new ModelAndView("viewPaymentInformation", model.asMap());
+		}
+		
+		Account account = null;
+    	User user =  null;	
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			user = getUserByAccount(account, user);
+    	}
+    	
+    	if(account != null){	    		    	    	
+	        model.addAttribute("accInfo", account);
+	        model.addAttribute("usInfo", user);	
+	        int userCount = account.getUser().size();
+	        List<User> userS = new ArrayList<User>();
+	        int countmembers = 0;
+	        if(userCount>1){
+		        for(User u: account.getUser()){
+		        	if(!user.getUsername().equalsIgnoreCase(u.getUsername()) && u.isActive()){
+		        		countmembers = countmembers + 1;
+		        		userS.add(u);
+		        	}
+		        }
+			}
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("userS", userS);
+	        
+    	}else {
+			model.addAttribute("errMsg", "Please Login");
+			return new ModelAndView("login", model.asMap());
+			
+		}		
+	        
+	        
+		return new ModelAndView("viewPaymentInformation", model.asMap());
+    }
+}

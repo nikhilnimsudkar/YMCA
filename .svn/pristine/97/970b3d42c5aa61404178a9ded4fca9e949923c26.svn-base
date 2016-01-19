@@ -1,0 +1,14 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.ItemPromoDetails;
+import com.ymca.model.Promocode;
+
+public interface ItemPromoDetailsDao extends GenericDao<ItemPromoDetails, Long> {
+
+	@Query("select ipd  from ItemPromoDetails ipd inner join ipd.promocode p inner join ipd.itemDetails id where id.id=?1 and p.status='ACTIVE' and p.autoApply=1 and DATE(p.startdate)<=DATE(now()) and DATE(p.enddate)>=DATE(now())")
+	List<ItemPromoDetails> getAutoApplyPromoDiscount(Long itemDetailsId);
+}

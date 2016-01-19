@@ -1,0 +1,121 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "item_details_session", catalog = "ymca") 
+@XmlRootElement
+public class ItemDetailsSession extends BaseObject implements Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "item_details_session_id", nullable = false)
+	private Long itemDetailsSessionId;
+	
+	@Column(name = "start_time", columnDefinition="TIME")
+	private Date starttime;
+	
+	@Column(name = "end_time", columnDefinition="TIME")
+	private Date endtime;
+	
+	@Column(name = "days", nullable = false)
+	private String days;
+	
+	private Long capacity;
+	private String instructorName;
+	private String sessionName;
+	
+	@ManyToOne
+	@JoinColumn(name="product_id")
+	private Product item;
+	
+	@ManyToOne
+	@JoinColumn(name="itemDetails_id")
+	private ItemDetails itemDetails;
+	
+	public Long getItemDetailsSessionId() {
+		return itemDetailsSessionId;
+	}
+	public void setItemDetailsSessionId(Long itemDetailsSessionId) {
+		this.itemDetailsSessionId = itemDetailsSessionId;
+	}
+	public Date getStarttime() {
+		return starttime;
+	}
+	public void setStarttime(Date starttime) {
+		this.starttime = starttime;
+	}
+	public Date getEndtime() {
+		return endtime;
+	}
+	public void setEndtime(Date endtime) {
+		this.endtime = endtime;
+	}
+	public String getDays() {
+		return days;
+	}
+	public void setDays(String days) {
+		this.days = days;
+	}
+	public Long getCapacity() {
+		return capacity;
+	}
+	public void setCapacity(Long capacity) {
+		this.capacity = capacity;
+	}
+	public String getInstructorName() {
+		return instructorName;
+	}
+	public void setInstructorName(String instructorName) {
+		this.instructorName = instructorName;
+	}
+	public String getSessionName() {
+		return sessionName;
+	}
+	public void setSessionName(String sessionName) {
+		this.sessionName = sessionName;
+	}
+	public Product getItem() {
+		return item;
+	}
+	public void setItem(Product item) {
+		this.item = item;
+	}
+	public ItemDetails getItemDetails() {
+		return itemDetails;
+	}
+	public void setItemDetails(ItemDetails itemDetails) {
+		this.itemDetails = itemDetails;
+	}
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+}

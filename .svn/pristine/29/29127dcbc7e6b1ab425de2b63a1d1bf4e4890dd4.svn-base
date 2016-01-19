@@ -1,0 +1,177 @@
+package com.ymca.web.controller;
+
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+
+import com.ymca.dao.ItemDetailDao;
+import com.ymca.dao.ItemDetailDaysDao;
+import com.ymca.dao.ItemDetailPricingRuleDao;
+import com.ymca.dao.JetPayPaymentDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.dao.PayerDao;
+import com.ymca.dao.VolunteerActivityDao;
+import com.ymca.model.Account;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.ItemDetailDays;
+import com.ymca.model.User;
+import com.ymca.model.VolunteerActivity;
+import com.ymca.web.service.BaseService;
+import com.ymca.web.service.PaymentService;
+
+@Controller
+public class BaseController {
+	
+	@Resource
+	private VolunteerActivityDao volunteerActivityDao;
+	
+	@Resource
+	private JetPayPaymentDao jetPayPaymentDao;
+	
+	@Resource
+	protected ItemDetailDao itemDetailDao;
+	
+	@Resource
+	protected LocationDao locationDao;
+	
+	@Autowired
+	protected HttpServletRequest request;
+	
+	@Autowired
+	protected HttpServletResponse response;
+
+	@Resource
+	protected BaseService baseService ; 
+	
+	@Resource
+	protected ItemDetailDaysDao itemDetailDaysDao;
+	
+	@Resource
+	protected PayerDao payerDao ;
+	
+	List<String> daysArr = Arrays.asList("Sun","Mon","Tues","Wed","Thurs","Fri","Sat");
+	
+	public static Logger log = LoggerFactory.getLogger(PaymentService.class);
+	
+	protected User getUserByAccount(Account account, User user) {
+		if(account !=null && account.getUser() != null && account.getUser().size()>0){
+			if(account.getUser().size()==1){
+				for(User u: account.getUser()){
+					user = u;
+				}
+			}
+			else{
+				boolean primaryUserFound = false;
+				for(User u: account.getUser()){
+					if(u.isPrimary()){
+						primaryUserFound = true;
+						user = u;
+						break;
+					}
+				}
+				if(user==null && !primaryUserFound){
+					user = account.getUser().iterator().next();
+				}
+			}
+		}
+		return user;
+	}
+	
+	protected List<VolunteerActivity> getVolunteerActivity() {
+		return volunteerActivityDao.findAll();
+	}
+	
+	protected Long convertNullToZero(Long val){
+		if(val==null)
+			 val = 0L;
+		
+		return val;
+	}
+	
+	protected void setAgentUidInSession() {
+		try {
+			String agentUid = request.getParameter("agentUid") ;
+			if (StringUtils.isNotBlank(agentUid)) {
+				request.getSession().setAttribute("agentUid", request.getParameter("agentUid"));	
+			}
+		} catch (Exception e) {
+			log.error(" Error while setting agent uid in session",e);
+		}
+	}
+	
+	protected String getAgentUidFromSession() {
+		String agentUid = null;
+		try {
+			agentUid = (String) request.getSession().getAttribute("agentUid");				
+		} catch (Exception e) {
+			log.error(" Error while setting agent uid in session",e);
+		}
+		return agentUid;
+	}
+	
+	protected String getPortalLastModifiedBy() {
+		String portalLastModifiedBy = null;
+		try {
+			String agentUid = (String) request.getSession().getAttribute("agentUid");
+			if (StringUtils.isBlank(agentUid)) {
+				Authentication a = SecurityContextHolder.getContext().getAuthentication();
+				//portalLastModifiedBy = ((UserDetails) a.getPrincipal()).getUsername();
+				portalLastModifiedBy = a.getName();
+			} else {
+				portalLastModifiedBy = agentUid;
+			}
+			log.info(" Portal modified by " + portalLastModifiedBy);
+		} catch (Exception e) {
+			log.error(" Error while getting portal last modified by",e);
+		}
+		return portalLastModifiedBy;
+	}
+
+	public HttpServletRequest getRequest() {
+		return request;
+	}
+
+	public void setRequest(HttpServletRequest request) {
+		this.request = request;
+	}
+	
+	protected void updateCapacityDecrementForDays(ItemDetail itemDetail,
+			String childcareItemDetailId, String selDaysId, String WLDays) {
+		if(childcareItemDetailId!=null && !"".equals(childcareItemDetailId) && selDaysId!=null && !"".equals(selDaysId)){
+			if(itemDetail.getId().equals(Long.parseLong(childcareItemDetailId))){
+				List<String> lstSelDayId = Arrays.asList(selDaysId.split(";"));
+				if(lstSelDayId.size()>0){
+					List<String> lstWLDays = Arrays.asList(WLDays.split(";"));
+					for(String dayId: lstSelDayId){
+						boolean updateDay = true;
+						if(lstWLDays.size()>0){
+							for(String wlDays: lstWLDays){
+								if(daysArr.get(Integer.parseInt(dayId)).equalsIgnoreCase(wlDays)){
+									updateDay = false;
+									break;
+								}
+							}
+						}
+						
+						// update capacity for only confirmed days
+						if(updateDay){
+							baseService.updateCapacityforDays(itemDetail,dayId);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+}

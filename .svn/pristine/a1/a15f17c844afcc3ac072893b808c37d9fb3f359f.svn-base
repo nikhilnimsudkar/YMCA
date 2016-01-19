@@ -1,0 +1,765 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "item_detail") 
+public class ItemDetail extends BaseObject implements Serializable {
+private static final long serialVersionUID = 1L;
+	
+	public ItemDetail(){
+		
+	}	
+	
+	@Id
+	@Column(name="Id")
+	private Long id;
+	
+	@Column(name = "RecordName", nullable = false)
+	private String recordName;
+
+	@Column(name = "Duration_c")
+	private String duration;
+
+	@Column(name = "ClassID_c", nullable = false)
+	private String classID;
+
+	@Column(name = "Description_c", nullable = false)
+	private String description;
+	
+	@Column(name = "StartTime_c", columnDefinition="TIME")
+	private Date startTime;
+	
+	@Column(name = "EndTime_c", columnDefinition="TIME")
+	private Date endTime;
+
+	@Column(name="locationId",insertable=false,updatable=false)
+	private Long locationId;	
+
+	@OneToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="locationId")
+	private Location location;	
+
+	@Column(name = "Gender_c")
+	private String gender;
+	
+	@Column(name = "MinAge_c")
+	private Integer minAge;
+	
+	@Column(name = "MaxAge_c")
+	private Integer maxAge;
+
+	@Column(name = "Type_c")
+	private String type;
+	
+	@Column(name = "Category_c")
+	private String category;
+
+/*	@Column(name = "Type_c")
+	private String subType;*/
+	
+	@Column(name = "subCategory_c")
+	private String subCategory;
+	
+	@Column(name = "ActualCapacity_c")
+	private Long actualCapacity;
+
+	@Column(name = "WebCapacity_c")
+	private Long webCapacity;
+	
+	@Column(name = "RemainingCapacity_c")
+	private Long remainingCapacity;
+	
+	@Column(name = "actualRemainingCapacity_c")
+	private Long actualRemainingCapacity;
+	
+	@Column(name = "WaitlistCounter_c")
+	private Long waitlistCounter;
+
+	@Column(name = "FinancialAid_c")
+	private String financialAid;
+
+	@Column(name = "BillingRules_c")
+	private String billingRules;
+
+	@Column(name = "PaymentPlan_c")
+	private String paymentPlan;
+
+	@Column(name = "AutomaticPayment_c")
+	private String automaticPayment;
+	
+	@Column(name = "DueDateOffset_c")
+	private Integer dueDateOffset;
+
+	@Column(name = "SchoolDaysPerYear_c")
+	private Integer schoolDaysPerYear;
+
+	@Column(name = "AutomatedWaitlist_c", columnDefinition="boolean default false")
+	private Boolean automatedWaitlist;
+
+	@Column(name = "CancellationCutOffPeriod_c")
+	private Integer cancellationCutOffPeriod;
+	
+	//@Temporal(TemporalType.DATE)
+	@Column(name = "MemberRegistrationStartDate_c")
+	private Date memberRegistrationStartDate;
+	
+	//@Temporal(TemporalType.DATE)
+	@Column(name = "NonMemberRegistrationStartDate_c")
+	private Date nonMemberRegistrationStartDate;
+
+	//@Temporal(TemporalType.DATE)
+	@Column(name = "MemberRegistrationEndDate_c")
+	private Date memberRegistrationEndDate;
+
+	//@Temporal(TemporalType.DATE)
+	@Column(name = "NonMemberRegistrationEndDate_c")
+	private Date nonMemberRegistrationEndDate;
+
+	@Column(name = "PreRequisities_c")
+	@Temporal(TemporalType.DATE)
+	private Date preRequisities;
+
+	@Column(name = "RecurringPeriod_c")
+	private Integer recurringPeriod;
+	
+	@Column(name = "Status_c")
+	private String status;
+	
+	@Column(name = "PackageSize_c")
+	private Integer packageSize;
+
+	@Column(name = "MaxAdultsPerMembership_c")
+	private Integer maxAdultsPerMembership;
+
+	@Column(name = "MaxHoldPeriod_c")
+	private Integer maxHoldPeriod;
+
+	@Column(name = "MinHoldPeriod_c")
+	private Integer minHoldPeriod;
+
+	@Column(name = "ProgramDirector_c")
+	private String programDirector;
+	
+	@Column(name = "FacilityManager_c")
+	private String facilityManager;
+
+	@Column(name = "DonationManager_c")
+	private String donationManager;
+
+	@Column(name = "LodgingType_c")
+	private String lodgingType;
+
+	@Column(name = "TransportationLocation_c")
+	private String transportationLocation;
+
+	@Column(name = "Direction_c")
+	private String direction;
+	
+	@Column(name = "FAEligible_c")
+	private String fAEligible;
+
+	@OneToOne
+	@JoinColumn(name="waivers_and_tc_id_FK")
+	private WaiversAndTC waiversAndTC;
+	
+	@Column(name = "price", nullable = false)
+	private Double price;
+
+	@Column(name = "registrationPrice", nullable = false)
+	private Double registrationPrice;
+	
+	@Column(name = "StartDate_c", columnDefinition="DATE")
+	private Date startDate;
+	
+	@Column(name = "EndDate_c", columnDefinition="DATE")
+	private Date endDate;
+	
+	
+	@Column(name = "RegistrationStartDate", columnDefinition="DATE")
+	private Date registrationStartDate ;
+	
+	private Integer noofdaysinschoolyear;
+	private Integer noofmonthsinschoolyear;
+	
+	@Column(name="RequiresSetUpFee")
+	private Boolean requiresSetUpFee;
+	
+	@Column(name="RequiresHealthHistory")
+	private Boolean requiresHealthHistory;
+	
+	@Column(name="RequiresEmergencyContact_c", columnDefinition="boolean default false")
+	private Boolean requiresEmergencyContact;
+	
+	@Column(name = "DueDate_c", columnDefinition="DATE")
+	private Date dueDate;
+	
+	/*
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="product_id")
+	private Product product;*/
+	
+	/*
+	@OneToMany(mappedBy = "itemDetails")
+	private List<ItemDetailsSession> itemDetailsSession;
+	*/
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="itemDetail")
+	private List<ItemDetailDays> itemDays;
+	
+	@ManyToMany
+    @JoinTable(name="item_detail_pricing_rule", 
+    joinColumns=@JoinColumn(name="item_detail_id"),
+    inverseJoinColumns=@JoinColumn(name="pricing_rule_id"))
+	private List<PricingRule> pricingRules;
+	
+	@OneToMany(mappedBy = "associatedItemDetail")
+	private List<ItemDetailAssociatedItemDetail> associatedItemDetails;
+	
+	private Calendar lastUpdated;
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		id = id;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String recordName) {
+		recordName = recordName;
+	}
+
+	public String getClassID() {
+		return classID;
+	}
+
+	public void setClassID(String classID) {
+		classID = classID;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		description = description;
+	}
+
+	public Date getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(Date startTime) {
+		startTime = startTime;
+	}
+
+	public Date getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(Date endTime) {
+		endTime = endTime;
+	}
+
+	public Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		this.location = location;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		gender = gender;
+	}
+
+	public Integer getMinAge() {
+		return minAge;
+	}
+
+	public void setMinAge(Integer minAge) {
+		minAge = minAge;
+	}
+
+	public Integer getMaxAge() {
+		return maxAge;
+	}
+
+	public void setMaxAge(Integer maxAge) {
+		maxAge = maxAge;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public Long getActualCapacity() {
+		return actualCapacity;
+	}
+
+	public void setActualCapacity(Long actualCapacity) {
+		this.actualCapacity = actualCapacity;
+	}
+
+	public Long getWebCapacity() {
+		return webCapacity;
+	}
+
+	public void setWebCapacity(Long webCapacity) {
+		this.webCapacity = webCapacity;
+	}
+
+	public Long getRemainingCapacity() {
+		return remainingCapacity;
+	}
+
+	public void setRemainingCapacity(Long remainingCapacity) {
+		this.remainingCapacity = remainingCapacity;
+	}
+
+	public Long getWaitlistCounter() {
+		return waitlistCounter;
+	}
+
+	public void setWaitlistCounter(Long waitlistCounter) {
+		this.waitlistCounter = waitlistCounter;
+	}
+
+	public String getFinancialAid() {
+		return financialAid;
+	}
+
+	public void setFinancialAid(String financialAid) {
+		financialAid = financialAid;
+	}
+
+	public String getBillingRules() {
+		return billingRules;
+	}
+
+	public void setBillingRules(String billingRules) {
+		billingRules = billingRules;
+	}
+
+	public String getPaymentPlan() {
+		return paymentPlan;
+	}
+
+	public void setPaymentPlan(String paymentPlan) {
+		paymentPlan = paymentPlan;
+	}
+
+	public String getAutomaticPayment() {
+		return automaticPayment;
+	}
+
+	public void setAutomaticPayment(String automaticPayment) {
+		automaticPayment = automaticPayment;
+	}
+
+	public Integer getDueDateOffset() {
+		return dueDateOffset;
+	}
+
+	public void setDueDateOffset(Integer dueDateOffset) {
+		dueDateOffset = dueDateOffset;
+	}
+
+	public Integer getSchoolDaysPerYear() {
+		return schoolDaysPerYear;
+	}
+
+	public void setSchoolDaysPerYear(Integer schoolDaysPerYear) {
+		schoolDaysPerYear = schoolDaysPerYear;
+	}
+
+	public Boolean getAutomatedWaitlist() {
+		return automatedWaitlist;
+	}
+
+	public void setAutomatedWaitlist(Boolean automatedWaitlist) {
+		this.automatedWaitlist = automatedWaitlist;
+	}
+
+	public Date getMemberRegistrationStartDate() {
+		return memberRegistrationStartDate;
+	}
+
+	public void setMemberRegistrationStartDate(Date memberRegistrationStartDate) {
+		memberRegistrationStartDate = memberRegistrationStartDate;
+	}
+
+	public Date getNonMemberRegistrationStartDate() {
+		return nonMemberRegistrationStartDate;
+	}
+
+	public void setNonMemberRegistrationStartDate(
+			Date nonMemberRegistrationStartDate) {
+		nonMemberRegistrationStartDate = nonMemberRegistrationStartDate;
+	}
+
+	public Date getMemberRegistrationEndDate() {
+		return memberRegistrationEndDate;
+	}
+
+	public void setMemberRegistrationEndDate(Date memberRegistrationEndDate) {
+		memberRegistrationEndDate = memberRegistrationEndDate;
+	}
+
+	public Date getNonMemberRegistrationEndDate() {
+		return nonMemberRegistrationEndDate;
+	}
+
+	public void setNonMemberRegistrationEndDate(
+			Date nonMemberRegistrationEndDate) {
+		nonMemberRegistrationEndDate = nonMemberRegistrationEndDate;
+	}
+
+	public Date getPreRequisities() {
+		return preRequisities;
+	}
+
+	public void setPreRequisities(Date preRequisities) {
+		preRequisities = preRequisities;
+	}
+
+	public Integer getRecurringPeriod() {
+		return recurringPeriod;
+	}
+
+	public void setRecurringPeriod(Integer recurringPeriod) {
+		recurringPeriod = recurringPeriod;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		status = status;
+	}
+
+	public Integer getPackageSize() {
+		return packageSize;
+	}
+
+	public void setPackageSize(Integer packageSize) {
+		packageSize = packageSize;
+	}
+
+	public Integer getMaxAdultsPerMembership() {
+		return maxAdultsPerMembership;
+	}
+
+	public void setMaxAdultsPerMembership(Integer maxAdultsPerMembership) {
+		maxAdultsPerMembership = maxAdultsPerMembership;
+	}
+
+	public Integer getMaxHoldPeriod() {
+		return maxHoldPeriod;
+	}
+
+	public void setMaxHoldPeriod(Integer maxHoldPeriod) {
+		maxHoldPeriod = maxHoldPeriod;
+	}
+
+	public Integer getMinHoldPeriod() {
+		return minHoldPeriod;
+	}
+
+	public void setMinHoldPeriod(Integer minHoldPeriod) {
+		minHoldPeriod = minHoldPeriod;
+	}
+
+	public String getFacilityManager() {
+		return facilityManager;
+	}
+
+	public void setFacilityManager(String facilityManager) {
+		facilityManager = facilityManager;
+	}
+
+	public String getDonationManager() {
+		return donationManager;
+	}
+
+	public void setDonationManager(String donationManager) {
+		donationManager = donationManager;
+	}
+
+	public String getLodgingType() {
+		return lodgingType;
+	}
+
+	public void setLodgingType(String lodgingType) {
+		lodgingType = lodgingType;
+	}
+
+	public String getTransportationLocation() {
+		return transportationLocation;
+	}
+
+	public void setTransportationLocation(String transportationLocation) {
+		transportationLocation = transportationLocation;
+	}
+
+	public String getDirection() {
+		return direction;
+	}
+
+	public void setDirection(String direction) {
+		direction = direction;
+	}
+
+	public String getFAEligible() {
+		return fAEligible;
+	}
+
+	public void setFAEligible(String fAEligible) {
+		this.fAEligible = fAEligible;
+	}
+
+	public WaiversAndTC getWaiversAndTC() {
+		return waiversAndTC;
+	}
+
+	public void setWaiversAndTC(WaiversAndTC waiversAndTC) {
+		this.waiversAndTC = waiversAndTC;
+	}
+
+	public Double getPrice() {
+		return price;
+	}
+
+	public void setPrice(Double price) {
+		this.price = price;
+	}
+
+	public Double getRegistrationPrice() {
+		return registrationPrice;
+	}
+
+	public void setRegistrationPrice(Double registrationPrice) {
+		this.registrationPrice = registrationPrice;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public Integer getCancellationCutOffPeriod() {
+		return cancellationCutOffPeriod;
+	}
+
+	public void setCancellationCutOffPeriod(Integer cancellationCutOffPeriod) {
+		this.cancellationCutOffPeriod = cancellationCutOffPeriod;
+	}
+
+	public Date getRegistrationStartDate() {
+		return registrationStartDate;
+	}
+
+	public void setRegistrationStartDate(Date registrationStartDate) {
+		this.registrationStartDate = registrationStartDate;
+	}
+
+	public Integer getNoofdaysinschoolyear() {
+		return noofdaysinschoolyear;
+	}
+
+	public void setNoofdaysinschoolyear(Integer noofdaysinschoolyear) {
+		this.noofdaysinschoolyear = noofdaysinschoolyear;
+	}
+
+	public Integer getNoofmonthsinschoolyear() {
+		return noofmonthsinschoolyear;
+	}
+
+	public void setNoofmonthsinschoolyear(Integer noofmonthsinschoolyear) {
+		this.noofmonthsinschoolyear = noofmonthsinschoolyear;
+	}
+
+	public List<ItemDetailDays> getItemDays() {
+		return itemDays;
+	}
+
+	public void setItemDays(List<ItemDetailDays> itemDays) {
+		this.itemDays = itemDays;
+	}
+
+	public List<PricingRule> getPricingRules() {
+		return pricingRules;
+	}
+
+	public void setPricingRules(List<PricingRule> pricingRules) {
+		this.pricingRules = pricingRules;
+	}
+
+	
+	
+	public String getProgramDirector() {
+		return programDirector;
+	}
+
+	public void setProgramDirector(String programDirector) {
+		this.programDirector = programDirector;
+	}
+
+	public Boolean isRequiresSetUpFee() {
+		return requiresSetUpFee;
+	}
+
+	public void setRequiresSetUpFee(Boolean requiresSetUpFee) {
+		this.requiresSetUpFee = requiresSetUpFee;
+	}
+
+	public Long getActualRemainingCapacity() {
+		return actualRemainingCapacity;
+	}
+
+	public void setActualRemainingCapacity(Long actualRemainingCapacity) {
+		this.actualRemainingCapacity = actualRemainingCapacity;
+	}
+
+	public Boolean getRequiresSetUpFee() {
+		return requiresSetUpFee;
+	}
+
+	public Date getDueDate() {
+		return dueDate;
+	}
+
+	public void setDueDate(Date dueDate) {
+		this.dueDate = dueDate;
+	}
+
+	public Calendar getLastUpdated() {
+		return lastUpdated;
+	}
+
+	public void setLastUpdated(Calendar lastUpdated) {
+		this.lastUpdated = lastUpdated;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public Boolean getRequiresHealthHistory() {
+		return requiresHealthHistory;
+	}
+
+	public void setRequiresHealthHistory(Boolean requiresHealthHistory) {
+		this.requiresHealthHistory = requiresHealthHistory;
+	}
+	public String getDuration() {
+		return duration;
+	}
+
+	public void setDuration(String duration) {
+		this.duration = duration;
+	}
+
+	public Long getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(Long locationId) {
+		this.locationId = locationId;
+	}
+
+	public String getSubCategory() {
+		return subCategory;
+	}
+
+	public void setSubCategory(String subCategory) {
+		this.subCategory = subCategory;
+	}
+
+	public String getfAEligible() {
+		return fAEligible;
+	}
+
+	public void setfAEligible(String fAEligible) {
+		this.fAEligible = fAEligible;
+	}
+
+	public List<ItemDetailAssociatedItemDetail> getAssociatedItemDetails() {
+		return associatedItemDetails;
+	}
+
+	public void setAssociatedItemDetails(
+			List<ItemDetailAssociatedItemDetail> associatedItemDetails) {
+		this.associatedItemDetails = associatedItemDetails;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+	public Boolean getRequiresEmergencyContact() {
+		return requiresEmergencyContact;
+	}
+	public void setCategory(String category) {
+		this.category = category;
+	}
+	public void setRequiresEmergencyContact(Boolean requiresEmergencyContact) {
+		this.requiresEmergencyContact = requiresEmergencyContact;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+}

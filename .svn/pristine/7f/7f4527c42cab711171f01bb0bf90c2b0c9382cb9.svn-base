@@ -1,0 +1,60 @@
+<div id="members" style="width: 666px;; padding: 12px;">
+	<div class="k-window1" id="popup_add" style="display: none;"></div>
+	<div>
+		<span class="head" style="float:left;">Select Family Member for Program</span>
+		<div style="float:left; margin-left: 50px;"><span>OR</span></div>
+		<div style="margin-left: 50px; float: left; margin-top: -5px;"><span  class="k-button" id="add_member" style="float:left;" onclick="add_member();">Add New Member</span></div>
+	</div>
+	<div style="clear: both;"></div> 
+	<div id="family_details" style="margin: 20px 20px 30px;  min-height: 220px;">
+		<div id="allmembers"></div>
+		
+	</div>
+	
+	<div id="cartbtns">
+		<button id="backtoprogram" class="k-button">Back to Program List</button>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<button id="checkoutBtn" class="k-button">Checkout</button>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<button id="continueshop" class="k-button">ADD TO CART & CONTINUE SHOPPING</button>
+		
+	</div>
+</div>
+
+<script>
+$(document).ready(function(){
+	
+	$( "#checkoutBtn" ).click(function(){
+		$(".k-loading-mask").show();
+		if(validateCheckout()){
+			$("#familymembers").fadeOut(200);
+			$("#checkout_content").show();
+		}
+		$(".k-loading-mask").hide();
+	});
+	
+	$( "#continueshop" ).click(function(){
+		$(".k-loading-mask").show();
+		if(validateCheckout()){
+			$("#familymembers").fadeOut(200);
+			$("#program").fadeIn(100);
+			getProgramSession();
+			//$("#details-checkout").hide();
+			//location.href = '#/';
+		}
+		$(".k-loading-mask").hide();
+	});
+	
+	$( "#backtoprogram" ).click(function(){
+		    $(".k-loading-mask").show();
+		    $("#tcSuccessSpan").css("display", "none");		
+			$("#tcSuccessSpan" ).html("");	
+			$("#tcErrorSpan").css("display", "none");		
+			$( "#tcErrorSpan" ).html("");
+		
+			$("#familymembers").fadeOut(200);
+			$("#program").fadeIn(100);
+			getProgramSession();
+	});
+});
+</script>

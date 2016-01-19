@@ -1,0 +1,304 @@
+package com.ymca.web.controller;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.serene.ws.service.impl.GenericWebServiceImpl;
+import com.ymca.dao.ActivityDao;
+import com.ymca.dao.UserDao;
+import com.ymca.model.Activity;
+import com.ymca.model.User;
+import com.ymca.web.email.Sender;
+import com.ymca.web.model.SexOffender;
+import com.ymca.web.service.HallPassService;
+import com.ymca.web.util.Constants;
+
+@Controller
+public class SexOffenderController extends BaseController  implements Serializable{
+	
+	@Resource
+	private UserDao userDao;
+	
+	@Resource
+	private ActivityDao activityDao;
+	
+	@Resource(name="genericWebServiceImpl")
+	GenericWebServiceImpl genericWebService;
+	
+	@Resource
+	private HallPassService hallPassService;
+	
+	@Resource
+    private final Sender sender = null;
+
+    @Autowired
+    private final SimpleMailMessage msg = null;
+	
+	@RequestMapping(value= "/admin/contactSystemDirector", method = RequestMethod.GET)
+	 public @ResponseBody Boolean contactSystemDirector(@RequestParam String memberContactId, final HttpServletRequest request, final HttpServletResponse response) {		
+		 if(memberContactId!=""){
+			 Long contactId = Long.parseLong(memberContactId);
+			 User u = userDao.getByContactId(contactId);
+			 
+			 Activity activity = new Activity();
+			 activity.setContact(u);
+			 activity.setCustomer(u.getCustomer());
+			 activity.setType(Constants.SEX_OFFENDER_ENTRY_REQUEST_LBL);
+			 activity.setShowOnPortal(false);
+			 activityDao.save(activity);
+			 
+			 Map<String, Object> props = new HashMap<String, Object>();
+		     props.put("firstName", u.getFirstName());
+		     props.put("lastName", u.getLastName());
+		     props.put("link", "https://"+request.getServerName()+":"+request.getServerPort()+"/ymca-web/admin/viewSexOffenderDetails?cId="+u.getContactId());
+			 
+		     sender.send(msg, props);
+		     
+			 return true;
+		 }
+		 
+		 return false;
+		 
+	 }
+	
+	 @RequestMapping(value= "/admin/saveSexOffenderInfo", method = RequestMethod.GET)
+	 public @ResponseBody Boolean saveSexOffenderInfo(@RequestParam String memberContactId, final HttpServletRequest request, final HttpServletResponse response) {		
+		 if(memberContactId!=""){
+			 String comment = request.getParameter("Comment");
+			 String sexOffender = request.getParameter("sexOffender");
+			 List<String> offenderIds = new ArrayList<String>();
+			 
+			 Long contactId = Long.parseLong(memberContactId);
+			 User u = userDao.getByContactId(contactId);
+
+			 u.setSexOffender(sexOffender);
+			 u.setComment(comment);
+			 u.setOffenderIds(hallPassService.getOffenderIds(u));
+			 
+			 userDao.save(u);
+			
+			 return true;
+		 }
+		 
+		 return false;
+		 
+	 }
+	 
+	@RequestMapping(value = "/admin/viewSexOffenderDetails", method = RequestMethod.GET)
+	public @ResponseBody ModelAndView viewSexOffenderDetails(@RequestParam String cId) {
+			log.info(" viewSexOffenderDetails :: contactId " + cId );
+			Model model = new ExtendedModelMap();
+			List<SexOffender> lstSexOffender = new ArrayList<SexOffender>(); 
+			
+			Boolean isSexOffender = false;
+			String sexOffenderDetails = "";
+			String memberNumber = "";
+			String comment = "";
+			String isUserSexOffender = "";
+			
+			if(cId!=null){
+				Long contactId = Long.parseLong(cId);
+				User user = userDao.getByContactId(contactId);
+				memberNumber = user.getFacilityAccessNumber();
+				comment = user.getComment();
+				isUserSexOffender = user.getSexOffender();
+				
+				isSexOffender = hallPassService.isSexOffender(user);
+				if(isSexOffender){
+					sexOffenderDetails = hallPassService.FetchSORDetails(user).toString();
+					populateSexOffenderData(lstSexOffender, sexOffenderDetails);
+					//System.out.println(lstSexOffender);
+				}
+			
+			}
+			
+			model.addAttribute("contactId",cId);
+			model.addAttribute("isSexOffender",isSexOffender);
+			model.addAttribute("sexOffenderDetails",lstSexOffender);
+			model.addAttribute("recordscount",lstSexOffender.size());
+			model.addAttribute("memberNumber",memberNumber);
+			model.addAttribute("comment",comment);
+			model.addAttribute("isUserSexOffender",isUserSexOffender);
+			
+			return new ModelAndView("viewSexOffenderDetails", model.asMap());
+	}	
+	
+	@RequestMapping(value="/admin//FetchIndividualDetailsBySexOffenderIdNumber", method=RequestMethod.GET)
+   public @ResponseBody String FetchIndividualDetailsBySexOffenderIdNumber(@RequestParam String SexOffenderIdNumber, final HttpServletRequest request, final HttpServletResponse response) { 
+		JSONArray json = new JSONArray();
+		
+		if(SexOffenderIdNumber!=null && StringUtils.isNotBlank(SexOffenderIdNumber)){
+			
+	    	Object sexOffenderDetails = hallPassService.FetchSORIndividualDetails(SexOffenderIdNumber);
+	    	if(sexOffenderDetails!=null){
+	    		List<Map> sexOffenderDetailsMap = (List<Map>) sexOffenderDetails;
+	    		for(Map m: sexOffenderDetailsMap){
+	    			JSONObject obj = new JSONObject();
+	    				JSONArray offenderDetailsArr = new JSONArray();
+	    					JSONObject offenderDetailsObj = new JSONObject();
+			    	    	offenderDetailsObj.put("SexOffenderIdNumber", SexOffenderIdNumber);
+			    	    	offenderDetailsObj.put("EyeColor", m.get("EyeColor"));
+			    	    	offenderDetailsObj.put("Designation", "");
+			    	    	offenderDetailsObj.put("HairColor", m.get("HairColor"));
+			    	    	offenderDetailsObj.put("Name", m.get("FirstName") + " " + m.get("MiddleName") + " " + m.get("LastName"));
+				        	offenderDetailsObj.put("Height", m.get("Height"));
+				        	offenderDetailsObj.put("Gender", m.get("Sex"));
+				        	offenderDetailsObj.put("Weight", m.get("Weight"));
+				        	offenderDetailsObj.put("DOB", m.get("DOB"));
+				        	offenderDetailsObj.put("Race", m.get("Race"));
+				        	offenderDetailsObj.put("StatusRemarks", m.get("StatusRemarks"));
+				        offenderDetailsArr.add(offenderDetailsObj);
+				    obj.put("offenderDetails", offenderDetailsArr);
+				    
+					    JSONArray vehicleInformationArr = new JSONArray();
+							JSONObject vehicleInformationObj = new JSONObject();
+							vehicleInformationObj.put("DriversLicenseExpirationYear", m.get("DriversLicenseExpirationYear"));
+							vehicleInformationObj.put("DriversLicenseNumber", m.get("DriversLicenseNumber"));
+							vehicleInformationObj.put("DriversLicenseState", m.get("DriversLicenseState"));
+		    	    	vehicleInformationArr.add(vehicleInformationObj);
+		    	    obj.put("vehicleInformation", vehicleInformationArr);
+				        
+		    	    	JSONArray scarMarksCollectionArr = new JSONArray();
+		    	    	if(m.containsKey("ScarMarksCollection")){
+			    	    	for(Map s: (List<Map>) m.get("ScarMarksCollection")){
+			    	    		if(s.containsKey("SORScarsMarksTattoosData")){
+					        		for(Map d: (List<Map>) s.get("SORScarsMarksTattoosData")){
+					        			if(d.containsKey("SORScarsMarksTattoosData")){
+						        				JSONObject scarMarksCollectionObj = new JSONObject();
+						        				scarMarksCollectionObj.put("Description", d.get("Description"));
+						        				scarMarksCollectionObj.put("Item", d.get("Item"));
+						        			scarMarksCollectionArr.add(scarMarksCollectionObj);
+					        			}
+					        		}
+			    	    		}
+				        	}
+		    	    	}
+	    	    	obj.put("scarMarksCollection", scarMarksCollectionArr);
+	    	    	
+		    	    	JSONArray aliasCollectionArr = new JSONArray();
+		    	    	if(m.containsKey("AliasCollection")){
+			    	    	for(Map s: (List<Map>) m.get("AliasCollection")){
+			    	    		if(s.containsKey("SORAliasData")){
+					        		for(Map d: (List<Map>) s.get("SORAliasData")){
+					        			JSONObject aliasCollectionObj = new JSONObject();
+					        				aliasCollectionObj.put("FirstName", d.get("FirstName"));
+					        				aliasCollectionObj.put("MiddleName", d.get("MiddleName"));
+					        				aliasCollectionObj.put("LastName", d.get("LastName"));
+					        				aliasCollectionObj.put("Suffix", d.get("Suffix"));
+					        				aliasCollectionObj.put("DOB", d.get("DOB"));
+					        				aliasCollectionArr.add(aliasCollectionObj);
+					        		}
+			    	    		}
+				        	}
+		    	    	}
+		    	    obj.put("aliasCollection", aliasCollectionArr);
+		    	    
+			    	    JSONArray addressCollectionArr = new JSONArray();
+			    	    if(m.containsKey("AddressCollection")){
+			    	    	for(Map s: (List<Map>) m.get("AddressCollection")){
+			    	    		if(s.containsKey("SORAddressData")){
+					        		for(Map d: (List<Map>) s.get("SORAddressData")){
+					        			//System.out.println(d);
+					        				JSONObject addressCollectionObj = new JSONObject();
+					        				addressCollectionObj.put("Address1", d.get("Address1"));
+					        				addressCollectionObj.put("Address2", d.get("Address2"));
+					        				addressCollectionObj.put("City", d.get("City"));
+					        				addressCollectionObj.put("Country", d.get("Country"));
+					        				addressCollectionObj.put("State", d.get("State"));
+					        				addressCollectionObj.put("PostalCode", d.get("PostalCode"));
+					        				addressCollectionObj.put("PhoneNumber", d.get("PhoneNumber"));
+					        				addressCollectionObj.put("AddressVerifiedDate", d.get("AddressVerifiedDate"));
+					        				addressCollectionObj.put("AddressReportedDate", d.get("AddressReportedDate"));
+					        				addressCollectionArr.add(addressCollectionObj);
+					        		}
+			    	    		}
+				        	}
+			    	    }
+		    	    obj.put("addressCollection", addressCollectionArr);
+		    	    
+	    	    	json.add(obj);
+	    		}
+	    	}
+	    	
+	    	
+		}
+   	
+		return json.toString();
+	}
+			
+	private void populateSexOffenderData(List<SexOffender> lstSexOffender, String value) {
+		Pattern pattern = Pattern.compile("\\{[.[^\\{}]]+\\}");
+		Matcher matcher = pattern.matcher(value);
+		ArrayList<String> matches = new ArrayList<String>();
+		while(matcher.find()){
+		     matches.add(value.substring(matcher.start() + 1, matcher.end() - 1));       // +1-1 to cut off {}
+		}
+		
+		for(String line : matches){
+			SexOffender sexOffender = new SexOffender();
+		    for(String fragment : line.split(",")){
+		        System.out.println(fragment.trim());
+		        
+		        String[] entry = fragment.split("="); 
+		        String key = entry[0].trim();
+		        String val = "";
+		        if(entry.length==2)
+		        	val = entry[1].trim();
+		        
+		        if(key.equals("SexOffenderIdNumber")){
+		        	sexOffender.setSexOffenderIdNumber(val);
+		        }
+		        if(key.equals("Image")){
+		        	sexOffender.setPhoto(val);
+		        }
+		        if(key.equals("FirstName")){
+		        	sexOffender.setFirstname(val);
+		        }
+		        if(key.equals("MiddleName")){
+		        	sexOffender.setMiddlename(val);
+		        }
+		        if(key.equals("LastName")){
+		        	sexOffender.setLastname(val);
+		        }
+		    }
+		    
+		    Boolean addSoToList = true;
+		    if(lstSexOffender.size()>0){
+		    	for(SexOffender s: lstSexOffender){
+		    		if(s.getSexOffenderIdNumber()!=null && s.getSexOffenderIdNumber().equalsIgnoreCase(sexOffender.getSexOffenderIdNumber())){
+		    			addSoToList = false;
+		    			break;
+		    		}
+		    	}
+		    }
+		    
+		    if(addSoToList)
+		    	lstSexOffender.add(sexOffender);
+		}
+	}
+}

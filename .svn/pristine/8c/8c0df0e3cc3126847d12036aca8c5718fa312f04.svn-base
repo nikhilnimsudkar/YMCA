@@ -1,0 +1,130 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "item_details", catalog = "ymca") 
+@XmlRootElement
+public class ItemDetails extends BaseObject implements Serializable {
+private static final long serialVersionUID = 1L;
+	
+	public ItemDetails(){
+		
+	}	
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", nullable = false)
+	private Long id;
+	
+	@Column(name = "price", nullable = false)
+	private double price;
+	
+	@Column(name = "start_date", columnDefinition="DATE")
+	private Date startdate;
+	
+	@Column(name = "end_date", columnDefinition="DATE")
+	private Date enddate;
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="product_id")
+	private Product product;
+	
+	@OneToOne
+	@JoinColumn(name="locationId")
+	private Locations locations;
+	
+	@OneToMany(mappedBy = "itemDetails")
+	private List<ItemDetailsSession> itemDetailsSession;
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public double getPrice() {
+		return price;
+	}
+
+	public void setPrice(double price) {
+		this.price = price;
+	}
+
+	public Date getStartdate() {
+		return startdate;
+	}
+
+	public void setStartdate(Date startdate) {
+		this.startdate = startdate;
+	}
+
+	public Date getEnddate() {
+		return enddate;
+	}
+
+	public void setEnddate(Date enddate) {
+		this.enddate = enddate;
+	}
+
+	public Product getProduct() {
+		return product;
+	}
+
+	public void setProduct(Product product) {
+		this.product = product;
+	}
+
+	public Locations getLocations() {
+		return locations;
+	}
+
+	public void setLocations(Locations locations) {
+		this.locations = locations;
+	}
+
+	public List<ItemDetailsSession> getItemDetailsSession() {
+		return itemDetailsSession;
+	}
+
+	public void setItemDetailsSession(List<ItemDetailsSession> itemDetailsSession) {
+		this.itemDetailsSession = itemDetailsSession;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

@@ -1,0 +1,27 @@
+package com.serene.job.model;
+
+public class FieldMapping {
+
+	private String fromField ;
+	private String toField ;
+	private String defaultValue ;
+	
+	public String getFromField() {
+		return fromField;
+	}
+	public void setFromField(String fromField) {
+		this.fromField = fromField;
+	}
+	public String getToField() {
+		return toField;
+	}
+	public void setToField(String toField) {
+		this.toField = toField;
+	}
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+}

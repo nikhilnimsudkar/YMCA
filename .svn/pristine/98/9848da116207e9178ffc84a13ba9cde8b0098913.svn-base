@@ -1,0 +1,101 @@
+package com.ymca.web.controller;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.LocationDao;
+import com.ymca.model.ChildCare;
+import com.ymca.service.ChildCareService;
+
+@Controller
+// @RequestMapping("/childcare")
+@ComponentScan("com.ymca.service")
+public class ChildCareController {
+	
+	@Resource
+	private LocationDao locationDao;
+	
+	/*
+	@Autowired(required = true)
+	private ChildCareService childCareService;
+	
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public String index(@ModelAttribute("ChildCare") ChildCare childCare) {
+		return "childcare";
+	}
+
+	@RequestMapping(value = "/create", method = RequestMethod.POST)
+	protected ModelAndView createChildCareAccount(
+			@ModelAttribute("ChildCare") ChildCare childCare) throws Exception {
+
+		if (childCare.getAccountId() != null) {
+			try {
+				childCareService.create(childCare);
+			} catch (Exception e) {
+
+			}
+		}
+		String message = "New childCare " + childCare.getName()
+				+ " was successfully created.";
+		ModelAndView mav = new ModelAndView("final", "message", message);
+		return mav;
+	}
+
+	@RequestMapping(value = "/list", method = RequestMethod.GET)
+	public ModelAndView childCareListPage(
+			@ModelAttribute("ChildCare") ChildCare childCare) {
+		List<ChildCare> childcareList = childCareService.findAll();
+		ModelAndView mav = new ModelAndView("read", "childcareList",
+				childcareList);
+		return mav;
+	}
+
+	@RequestMapping(value = "/find", method = RequestMethod.GET)
+	public ModelAndView findById(@RequestParam("accountId") Long accountId) {
+		ChildCare shop = childCareService.findById(accountId);
+		ModelAndView mav = new ModelAndView("find", "shop", shop);
+		return mav;
+	}
+
+	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
+	public ModelAndView deleteChildCareEntry(@RequestParam Long accountId) {
+		ChildCare childCare = childCareService.delete(accountId);
+		String message = "The shop " + childCare.getName()
+				+ " was successfully deleted.";
+		ModelAndView mav = new ModelAndView("delete", "message", message);
+		return mav;
+	}
+
+	@RequestMapping(value = "/edit", method = RequestMethod.PUT)
+	public ModelAndView editShop(@ModelAttribute ChildCare childCare) {
+
+		String message = "Shop was successfully updated.";
+		childCareService.update(childCare);
+		ModelAndView mav = new ModelAndView("update", "message", message);
+		return mav;
+	}*/
+	
+	@RequestMapping(value="/Childcare", method=RequestMethod.GET)
+    public ModelAndView searchChildcare(final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		
+		model.addAttribute("locations", locationDao.findAll());
+        return new ModelAndView("viewChildcare", model.asMap());
+    }
+	
+}

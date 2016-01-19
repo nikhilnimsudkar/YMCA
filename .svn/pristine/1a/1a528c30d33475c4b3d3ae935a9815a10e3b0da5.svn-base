@@ -1,0 +1,332 @@
+/**
+ * @author lstoteza
+ * FTP Item writer template 
+ */
+package com.serene.job.writer;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.ChunkListener;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.ItemWriteListener;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobExecutionListener;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.batch.core.annotation.BeforeStep;
+import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.scope.context.StepSynchronizationManager;
+import org.springframework.batch.item.file.FlatFileFooterCallback;
+import org.springframework.batch.item.file.FlatFileHeaderCallback;
+import org.springframework.batch.item.file.FlatFileItemWriter;
+import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
+import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.UrlResource;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.common.BatchJobContext;
+import com.serene.job.common.Constants;
+import com.serene.job.dao.JobFieldMappingDao;
+import com.serene.job.dao.JobSchedulerMetadataDao;
+import com.serene.job.model.FieldMapping;
+import com.serene.job.model.JobSchedulerMetadata;
+import com.serene.job.service.FTPUploadService;
+import com.serene.job.service.GPGFileEncryptionService;
+import com.serene.job.service.SystemPropertyService;
+import com.serene.job.util.JobUtils;
+
+@Service
+@Scope("prototype")
+public class FileItemWriter<T> extends FlatFileItemWriter<T> implements StepExecutionListener, FlatFileFooterCallback, FlatFileHeaderCallback {
+	
+	/*
+	 * @author: Lavy Toteza
+	 */
+	
+	private static Logger log = LoggerFactory.getLogger(FileItemWriter.class);
+	
+	@Resource
+	private BatchJobContext batchJobContext ;
+	
+	@Resource 
+	private JobUtils jobUtils ;
+	
+	@Resource
+	private FTPUploadService ftpUploadService ;
+	
+	@Resource
+	private GPGFileEncryptionService gpgFileEncryptionService ;
+	
+	@Resource
+	private JobFieldMappingDao jobFieldMappingDao;
+	
+	@Autowired
+	private SystemPropertyService systemPropertyService;
+	
+	@Resource
+	private JobSchedulerMetadataDao jobSchedulerMetadataDao ;
+	
+	private Integer sno = 1;
+	SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMdd");
+	SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HHmmss");
+	SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyMMddHHmmsS");
+	String JET_PAY_FILE_UPLOAD_PATH = "";
+	String FILE_SEPERATOR = "\\";
+	String FILE_NAME = TIMESTAMP_FORMAT.format(new Date());
+	String FILE_COLUMN_SEPERATOR = ",";
+	String OUTPUT_FILE_NAME_EXTENSION = "REQ";
+	Integer NET_AMOUNT = 0;
+	Integer DETAIL_COUNT = 0;
+	Integer CREDIT_AMOUNT = 0;
+	Integer CREDIT_COUNT = 0;
+	Integer DEBIT_AMOUNT = 0;
+	Integer DEBIT_COUNT = 0;
+	File CURRENT_PATH = null;
+	
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		
+	}
+	
+	@Override
+	public void beforeStep(StepExecution stepExecution) {
+		// initialize variables
+		DEBIT_AMOUNT = 0;
+		CREDIT_AMOUNT = 0;
+		sno = 1;
+		
+		log.debug("DEBUG - Reached block beforeStep - step1 ");
+		UrlResource path = null;
+		try {
+			
+			FILE_NAME = FILE_NAME.substring(0,15);
+			CURRENT_PATH = File.createTempFile(FILE_NAME, "");
+			String FILE_PATH = "file:" + CURRENT_PATH;
+			path = new UrlResource(FILE_PATH);
+			log.debug("DEBUG - set the file path as beforeStep"+FILE_PATH);
+			
+		} catch (IOException e) {
+			log.error("Error while accessing the file ",e);
+		}
+		setResource(path);
+		setHeaderCallback(this);
+		setFooterCallback(this);
+		
+		DelimitedLineAggregator<T> lineAggregator = new DelimitedLineAggregator<>();
+		lineAggregator.setDelimiter(",");
+		setLineAggregator(lineAggregator );
+	}
+
+	@Override
+	public ExitStatus afterStep(StepExecution stepExecution) {
+		
+		log.debug("DEBUG - Reached block afterStep steplast "+sno);
+		try{
+			//String CURRENT_PATH = new java.io.File( JET_PAY_FILE_UPLOAD_PATH ).getCanonicalPath();
+			String FILE_PATH = CURRENT_PATH.getAbsolutePath();
+			String outFile = CURRENT_PATH + "." + OUTPUT_FILE_NAME_EXTENSION;
+			log.error("DEBUG - In file: "+FILE_PATH);
+			log.error("DEBUG - Out file: "+outFile);
+			
+			
+			File file = new File(FILE_PATH);
+			if(sno>1){
+				gpgFileEncryptionService.GPGFileEncrypt(FILE_PATH, outFile);
+				
+				// update payment status to "Sending to Jetpay"
+				ftpUploadService.uploadToFTPServer(outFile);
+				
+				// update payment status to "sent to Jetpay"
+			} else{
+				file.delete();
+			}
+			
+			//file.delete();
+			
+		} catch (IOException e) {
+			log.error("Error while accessing the file ",e);
+		}
+		return null;
+	}
+
+	// TODO validate the resource file
+	public boolean validateFile() {
+		return true ;
+	}
+	
+	@Override
+	public void write(final List<? extends T> items) throws Exception {
+		log.debug("DEBUG -Inside write method..Item size: " +items.size());
+		DEBIT_AMOUNT = 0;
+		CREDIT_AMOUNT = 0;
+		//List<Map<String,Object>> values = new ArrayList<Map<String, Object>>();
+		List<LinkedHashMap<String,Object>> values = new ArrayList<LinkedHashMap<String, Object>>();
+		//List<FieldMapping> fieldMappings = batchJobContext.getFieldMappings();
+	
+		List<FieldMapping> fieldMappings = jobFieldMappingDao.findByJobNameAndStatusOrderByFieldOrderAsc(batchJobContext.getJobSchedulerMetadata().getJobName(), true);
+		for (int i = 0 ; i < items.size() ; i++) {
+			
+			Map<String,Object> item = (Map<String, Object>) items.get(i);
+			JXPathContext context = JXPathContext.newContext(item);
+			context.setLenient(true);	
+			
+			LinkedHashMap<String,Object> value = new LinkedHashMap<String,Object>();
+			for (FieldMapping m : fieldMappings) { 
+					
+					Object fv = context.getValue(m.getFromField());
+					/*if (StringUtils.equalsIgnoreCase(jobSchedulerMetadata.getToObjectIdField(), m.getToField()) && fv != null && StringUtils.equalsIgnoreCase("",fv.toString()) ){
+						fv = null ;
+					}*/
+					if (fv != null && StringUtils.equalsIgnoreCase("",fv.toString()) ){
+						fv = null ;
+					}
+					if (fv == null && StringUtils.isNoneBlank(m.getDefaultValue())) {
+						fv = m.getDefaultValue();
+					}
+					
+					if(fv!=null){
+						value.put(m.getFromField(), fv);
+						
+						if(m.getFromField().equalsIgnoreCase(Constants.TRANSACTION_AMOUNT)){
+							log.error("DEBUG -inside write method: "
+									+ "Job Name: "+Constants.PAYMENT_JOB_NAME 
+									+ "Debit amount "+DEBIT_AMOUNT 
+									+ "Transaction amount: " +Integer.parseInt(fv.toString()));
+							if(Constants.PAYMENT_JOB_NAME.equalsIgnoreCase(batchJobContext.getJobSchedulerMetadata().getJobName()))
+								DEBIT_AMOUNT = DEBIT_AMOUNT + Integer.parseInt(fv.toString());
+							else if(Constants.REFUND_JOB_NAME.equalsIgnoreCase(batchJobContext.getJobSchedulerMetadata().getJobName()))
+								CREDIT_AMOUNT = CREDIT_AMOUNT + Integer.parseInt(fv.toString());
+						}
+					}
+					
+			}
+			values.add(value);
+		}
+		log.debug("DEBUG -inside write method size of data to write is: "+values.size());
+		sno = values.size() + 1;
+		
+		super.write((List<? extends T>) values);
+		
+	}
+
+	@Override
+	public void writeHeader(Writer writer) throws IOException {
+		// TODO Auto-generated method stub
+		sno = 1;
+		log.debug("DEBUG -Inside writeHeader method..");
+		String MERCHANT_ID = systemPropertyService.getPropertyByKeyName(Constants.JETPAY_MERCHANT_ID);
+		String MERCHANT_NAME = systemPropertyService.getPropertyByKeyName(Constants.JETPAY_MERCHANT_NAME);
+		String currentDate = DATE_FORMAT.format(new Date());
+		String currentTime = TIME_FORMAT.format(new Date());
+		
+		StringBuffer fileHeader = new StringBuffer();
+		// file header
+		fileHeader.append("FH");
+		fileHeader.append(FILE_COLUMN_SEPERATOR);
+		fileHeader.append(sno);
+		fileHeader.append(FILE_COLUMN_SEPERATOR);
+		fileHeader.append(MERCHANT_ID);
+		fileHeader.append(FILE_COLUMN_SEPERATOR);
+		fileHeader.append(currentDate);
+		fileHeader.append(FILE_COLUMN_SEPERATOR);
+		fileHeader.append(currentTime);
+		fileHeader.append(FILE_COLUMN_SEPERATOR);
+		fileHeader.append(MERCHANT_NAME);
+		fileHeader.append(FILE_COLUMN_SEPERATOR);
+		fileHeader.append(FILE_NAME);
+
+		try {
+			writer.write(fileHeader.toString());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void writeFooter(Writer writer) throws IOException {
+		// TODO Auto-generated method stub
+		log.error("DEBUG -Inside writeFooter method..");
+		StringBuffer fileTrailer = new StringBuffer();
+		
+		// output fields not required pass it blank
+		String APROVED_AMOUNT = "";
+		String APROVED_COUNT = "";
+		String REJECTED_AMOUNT = "";
+		String REJECTED_COUNT = "";
+		String DECLINED_AMOUNT = "";
+		String DECLINED_COUNT = "";
+		String CAPTURED_AMOUNT = "";
+		String CAPTURED_COUNT = "";
+		
+		if(DEBIT_AMOUNT>0)
+			DEBIT_COUNT = sno-1;
+		
+		if(CREDIT_AMOUNT>0)
+			CREDIT_COUNT = sno-1;
+		
+		NET_AMOUNT = DEBIT_AMOUNT-CREDIT_AMOUNT;
+		DETAIL_COUNT = DEBIT_COUNT+CREDIT_COUNT;
+		
+		// file trailer
+		fileTrailer.append("FT");
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		sno = sno + 1;
+		fileTrailer.append(sno.toString());
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(NET_AMOUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(DETAIL_COUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(CREDIT_AMOUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(CREDIT_COUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(DEBIT_AMOUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(DEBIT_COUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(APROVED_AMOUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(APROVED_COUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(REJECTED_AMOUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(REJECTED_COUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(DECLINED_AMOUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(DECLINED_COUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(CAPTURED_AMOUNT);
+		fileTrailer.append(FILE_COLUMN_SEPERATOR);
+		fileTrailer.append(CAPTURED_COUNT);
+		
+		try {
+			writer.write(fileTrailer.toString());
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}

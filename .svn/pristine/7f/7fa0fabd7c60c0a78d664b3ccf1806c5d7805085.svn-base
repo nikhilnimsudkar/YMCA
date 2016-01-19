@@ -1,0 +1,206 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    
+<body>
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="main">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+	<div id="content">
+		<div class="k-window1" id="popup_add" style="display:none;"></div>
+		<form:form commandName="account" id="updateMembershipForm" method="post" action="update_membership">  
+			<div id="member">
+				<%@ include file="member.jsp" %> 
+			</div>
+			
+			<div id="profile">
+				<%@ include file="Form.jsp" %> 
+			</div>
+			
+			<div id="update">
+				<%@ include file="RightSection.jsp" %>
+			</div>
+		</form:form>
+	</div>
+</div>
+
+<script id="delete-confirmation" type="text/x-kendo-template">
+    <p class="delete-message">Are you sure you want to remove?</p>
+	
+    <div class="confirmbutton"><button class="delete-confirm k-button">Yes</button>&nbsp;&nbsp;&nbsp;
+    <span class="delete-cancel k-button">No</span></div>
+</script>
+
+<script>
+	$(document).ready(function() {
+		$("#top_profile").attr('class','current');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		
+		$("#tabstrip").kendoTabStrip({
+			animation:  {
+				open: {
+					effects: "fadeIn"
+				}
+			}
+		});
+		
+		$("#tabstrip1").kendoTabStrip({
+			animation:  {
+				open: {
+					effects: "fadeIn"
+				}
+			}
+		});
+		$("#tabstrip2").kendoTabStrip({
+			animation:  {
+				open: {
+					effects: "fadeIn"
+				}
+			}
+		});
+		
+		
+		$('.scroller').slimScroll({
+			height: '110px',
+			width: '160px',
+			alwaysVisible: true,
+			color: '#666666',
+			distance: '4px',
+			railVisible: true,
+			allowPageScroll: true
+		}).parent().css({
+		  border: '1px solid #cccccc'
+		});
+		
+		
+	});
+	
+	function view_member(mType, member_id){
+		//alert(member_id);
+		$("#customerAddress").show();
+		$(".k-loading-mask").show();
+		$("#updateProfInfo").css("display", "none");		
+		$("#updateProfInfo" ).html("");	
+		$("#tcErrorSpan").css("display", "none");		
+		$("#tcErrorSpan" ).html("");	
+		if(member_id!=''){
+			$("#usrId").val(member_id);
+			$.ajax({
+				  url: "view_member?member_id="+member_id,
+				  success: function( data ) {
+					if(mType=='A'){
+						$("#customerAddress").hide();
+					}
+				  	//console.log("Success:"+ data.username);
+					$("#firstName").val(data.firstName);
+					$("#lastName").val(data.lastName);
+					$("#workNumber").val(data.workNumber);
+					$("#phoneNumber").val(data.phoneNumber);
+					$("#homeNumber").val(data.homeNumber);
+					$("#Email").val(data.email);
+					
+					$(".k-loading-mask").hide();
+				  },
+				  error: function( xhr,status,error ){
+					  //alert("1" +status);
+					  console.log(xhr);
+					  
+				  }
+			});
+		}
+	}
+	
+	function remove_member(member_id){
+		$("#updateProfInfo").css("display", "none");		
+		$("#updateProfInfo" ).html("");	
+		$("#tcErrorSpan").css("display", "none");		
+		$("#tcErrorSpan" ).html("");	
+		var kendoWindow = $("<div />").kendoWindow({
+            title: "Confirm",
+            resizable: false,
+            modal: true,
+            width:400
+        });
+		
+		kendoWindow.data("kendoWindow")
+        .content($("#delete-confirmation").html())
+        .center().open();
+		
+		 kendoWindow
+	        .find(".delete-confirm,.delete-cancel")
+	            .click(function() {
+	                if ($(this).hasClass("delete-confirm")) {
+	                    //alert("Deleting record...");
+	                    $(".k-loading-mask").show();
+	                    delete_record(member_id);
+	                }
+	                
+	                kendoWindow.data("kendoWindow").close();
+	            })
+	            .end()
+	}
+	
+	function delete_record(member_id){
+		$.ajax({
+			  url: "remove_member?member_id="+member_id,
+			  success: function( data ) {
+			  	 // alert(data);
+			  	 if(data=='SUCCESS'){
+			  		$(".k-loading-text").html("Please wait while the member is removed");
+			  		setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 3000);
+			  		setTimeout(function(){$(".k-loading-text").html("Member was removed successfully");$(".k-loading-text").fadeIn("slow");}, 4000);
+			  		setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 7000);
+			  		setTimeout(function(){location.reload();}, 7000);
+			  		
+			  	 }
+			  	 else{
+			  		$(".k-loading-text").html("Please wait while the member is removed");
+				  	setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 3000);
+				  	setTimeout(function(){$(".k-loading-text").html("There was some Error while processing your request");$(".k-loading-text").fadeIn("slow");}, 4000);
+				  	setTimeout(function(){$(".k-loading-text").fadeOut("slow"); $(".k-loading-mask").hide();}, 7000);
+				  	setTimeout(function(){location.reload();}, 7000);
+			  	 }
+			  	  
+			  },
+			  error: function( xhr,status,error ){
+				  //alert("1" +status);
+				    console.log(xhr);
+				    $(".k-loading-text").html("Please wait while the member is removed");
+			  		setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 3000);
+			  		setTimeout(function(){$(".k-loading-text").html("There was some Error while processing your request");$(".k-loading-text").fadeIn("slow");}, 4000);
+			  		setTimeout(function(){$(".k-loading-text").fadeOut("slow"); $(".k-loading-mask").hide();}, 7000);
+			  		setTimeout(function(){location.reload();}, 7000);
+			  }
+		});
+		
+	}
+	
+	function add_member(){
+		 var window_add = $("#popup_add"); 
+		 window_add.clone().kendoWindow({
+             title: "Add Members",
+             content: "addMember",
+             modal: false,
+             width : "700px",            
+             close: onClose,
+             deactivate: function(e) {
+    	            this.destroy();
+    	     }
+         }).data("kendoWindow").center().open();
+		 $('[data-role="draggable"]').css('top','20px');
+	}
+	
+	 var onClose = function() {
+    	 //this.destroy();   
+     };
+</script>
+
+</body>

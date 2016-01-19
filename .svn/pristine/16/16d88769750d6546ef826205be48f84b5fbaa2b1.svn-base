@@ -1,0 +1,71 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+<div id="tabstrip5" class="k-block" style="width:420px; border-color:#fcaf17;">
+	<span class="head" width="100%" style="margin-left:3px;">MY PROFILE</span>
+	<div id="team">
+		<div id="team_info" style="float: left; padding: 20px;">
+			<span class="pname">${usInfo.firstName } ${usInfo.lastName }</span>
+			<c:if test="${ userCount >= 1}"><br>
+				<c:forEach var="member" items="${userS}" varStatus="count">
+					<br><span class="name">${member.firstName } ${member.lastName }</span>
+				</c:forEach>
+			</c:if>
+		</div>
+	</div>
+	<span class="profilepic" style="background: url('${usInfo.profileImage}') transparent no-repeat 0 0;">&nbsp;</span>
+	
+	<div id="pay_information" class="pay_header">
+		<span class="head" style="width:100px; padding-top:50px; margin-left:3px;">PAYMENT INFORMATION</span>
+		<div style="font-size: 10px;">
+			<table>
+				<tr>
+					<td><span>Credit & Debit Cards</span></td>
+					<td><span>XXXX-XXXX-XXXX-1234</span></td>
+					<td></td>
+					<td><button id="editcartBtn" class="k-button">Edit card Info</button></td>
+				</tr>
+				<tr>
+					<td><span>Bank Details</span></td>
+					<td><span>XXXXX-XXXXX</span></td>
+					<td></td>
+					<td><button id="editcartBtn" class="k-button">Edit card Info</button></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	
+	<div id="pay_history" class="pay_header">
+		<span class="head" style="width:100px; padding-top:50px; margin-left:3px;">PAYMENT HISTORY</span>
+		<div style="font-size: 10px; padding:4px;">
+			<span>Recent Payments</span><br>
+			<table>
+				<tr>
+					<td><span>Membership Payment</span></td>
+					<td width="25%"></td>
+					<td><span>$59</span></td>
+				</tr>
+				<tr>
+					<td><span>Swim Class</span></td>
+					<td></td>
+					<td><span>$59</span></td>
+				</tr>
+				<tr>
+					<td><span>Donation</span></td>
+					<td></td>
+					<td><span>$100</span></td>
+				</tr>
+			</table>
+			<br><br>
+			<span>Next Payment Due Date</span><br>
+			<table>
+				<tr>
+					<td><span>08/05/2014</span></td>
+					<td><span>Membership Payment</span></td>
+					<td></td>
+					<td><span>$59</span></td>
+				</tr>
+				
+			</table>
+		</div>
+	</div>
+</div>

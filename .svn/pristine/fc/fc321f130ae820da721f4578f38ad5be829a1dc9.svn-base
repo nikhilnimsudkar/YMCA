@@ -1,0 +1,20 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.SignUpDays;
+import com.ymca.model.Signup;
+
+public interface SignUpDaysDao extends GenericDao<SignUpDays, Long>  {
+	List<SignUpDays> findBySignup(Signup signup);
+	
+	List<SignUpDays> findBySignupAndSignupDateAfter(Signup signup, Date currentDate);
+	List<SignUpDays> findBySignupAndStatusAndSignupDateAfter(Signup signup, String status, Date currentDate);
+	List<SignUpDays> findBySignupAndStatus(Signup signup, String status);
+	
+	@Query("select s from SignUpDays sd INNER JOIN sd.signup s where sd.status = 'ACTIVE' and s.status IN ('ACTIVE', 'Confirmed', 'Wait Listed') and s.itemDetail.id = ?1 and s.contact.contactId = ?2 ")
+	List<SignUpDays> checkActiveSignupDays(Long itemDetailId, Long contactId);
+}

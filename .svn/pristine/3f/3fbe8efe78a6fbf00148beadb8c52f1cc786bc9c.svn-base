@@ -1,0 +1,659 @@
+package com.ymca.web.controller;
+
+import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.ParameterExpression;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.ItemDaysDao;
+import com.ymca.dao.ItemDetailsDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.dao.PricingRuleDao;
+import com.ymca.dao.ProductDao;
+import com.ymca.dao.PromocodeDao;
+import com.ymca.dao.UserDao;
+import com.ymca.model.Account;
+import com.ymca.model.ItemDays;
+import com.ymca.model.ItemDetails;
+import com.ymca.model.ItemDetailsSession;
+import com.ymca.model.ItemPromoDetails;
+import com.ymca.model.JetPayPayment;
+import com.ymca.model.Locations;
+import com.ymca.model.PaymentMethod;
+import com.ymca.model.PricingRule;
+import com.ymca.model.Product;
+import com.ymca.model.Promocode;
+import com.ymca.model.Signup;
+import com.ymca.model.User;
+import com.ymca.web.enums.ProductTypeEnum;
+import com.ymca.web.service.PaymentService;
+import com.ymca.web.util.Constants;
+
+@Controller
+public class EventController extends BaseController {
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	/*@Resource
+	private ProductDao productDao;*/
+	
+	@Resource
+	private PromocodeDao promocodeDao;
+	
+	@Resource
+	private PricingRuleDao pricingRuleDao;
+	
+	@Resource
+	private UserDao userDao;
+	
+	@Resource
+	private LocationDao locationDao;
+	
+	@Resource
+	private PaymentService paymentService;
+	
+	@Resource
+	private ItemDaysDao itemDaysDao;
+	
+	@Resource
+	private ItemDetailsDao itemDetailsDao;
+	/**
+	 * Dispatch to Event Registration
+	 */
+	@RequestMapping(value="/eventRegistration", method=RequestMethod.GET)
+    public ModelAndView eventRegistration(final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		model.addAttribute("productcategories", itemDetailsDao.getItemsCategoriesByItemType(ProductTypeEnum.Event.toString()));
+        model.addAttribute("locations", locationDao.findAll());
+        
+		Authentication authenticate = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) authenticate.getPrincipal()).getUsername();
+		}catch(Exception e){
+			//e.printStackTrace();
+		}
+		
+		Account account = null;
+    	User user =  null;	
+    	List<PaymentMethod> paymentList = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			user = getUserByAccount(account, user);
+			paymentList = account.getPaymentMethod();
+    	}
+    	
+    	if(account != null){	    		    	    	
+	        model.addAttribute("accInfo", account);
+	        model.addAttribute("usInfo", user);	
+	        
+	        int userCount = account.getUser().size();
+	        List<User> userS = new ArrayList<User>();
+	        int countmembers = 0;
+	        if(userCount>1){
+		        for(User u: account.getUser()){
+		        	if(!user.getUsername().equalsIgnoreCase(u.getUsername()) && u.isActive()){
+		        		countmembers = countmembers + 1;
+		        		userS.add(u);
+		        	}
+		        }
+			}
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("userS", userS);
+	        model.addAttribute("AlluserS", account.getUser());
+	        model.addAttribute("paymentInfoLst" , paymentList);	     
+	        model.addAttribute("gottocontact", "false");
+    	}
+		return new ModelAndView("eventRegistration", model.asMap());
+    }
+	
+	/**
+	 * Get Events for filter criteria
+	 */
+	@RequestMapping(value="/getEventDetails", method=RequestMethod.GET)
+    public @ResponseBody List<Object[]>  getEventDetails(@RequestParam String location, @RequestParam String category, @RequestParam String productname, final HttpServletRequest request, final HttpServletResponse response) { 	
+		
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");  
+		DateFormat inputsdf = new SimpleDateFormat("M/d/yyyy");  
+
+		String datestart = request.getParameter("datestart");
+		String dateend = request.getParameter("dateend");
+		
+		Locations locations = new Locations();
+		Long locId = Long.parseLong(location);
+		locations.setLocationId(locId);
+		
+		Date startDate;
+        Date endDate;
+		try {
+			startDate = sdf.parse(sdf.format(inputsdf.parse(datestart)));
+	        endDate = sdf.parse(sdf.format(inputsdf.parse(dateend)));
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return null;
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			return null;
+		}
+		
+		try {
+			List<Object[]> itemDetailsSession = getEvents(category, productname, locations, startDate, endDate);
+			
+			if(itemDetailsSession != null && itemDetailsSession.isEmpty()){
+				return null;
+			}
+			
+			for(Object obj: itemDetailsSession){
+				Object objArr1[] = (Object[]) obj;	
+				
+				double membertierPrice = 0D;
+				double nonmembertierPrice = 0D;
+				  
+				List<PricingRule> pricingRuleLst =  pricingRuleDao.findByitemDetailsIdAndTier(Long.parseLong(objArr1[16].toString()), objArr1[15].toString());
+				for(PricingRule pricingRule: pricingRuleLst) {
+					  membertierPrice += Double.parseDouble(pricingRule.getTierPrice());
+					  nonmembertierPrice += Double.parseDouble(pricingRule.getNonmemberTierPrice());
+				}
+				
+				objArr1[7] = membertierPrice;
+				objArr1[8] = nonmembertierPrice;
+				 
+			}
+			
+			return itemDetailsSession;
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			return null;
+		}
+	}
+	
+    /**
+     * Get events for filter criteria
+     * TODO: Move the method to DAO layer in ymca-core
+     */
+	@PersistenceContext
+	public EntityManager em;
+	private List<Object[]> getEvents(String category, String productname, Locations locations, Date startDate, Date endDate) {
+		List<Locations> bayareaLocations = new ArrayList<Locations>();;
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = builder.createQuery(Object[].class);
+		Root<ItemDays> ids = query.from(ItemDays.class);
+		Join<ItemDays, ItemDetails> i = ids.join("itemDetails",JoinType.INNER);
+		Join<ItemDetails, Product> p = i.join("product",JoinType.INNER);
+		Join<ItemDetails, Locations> l = i.join("locations",JoinType.INNER);
+
+		ParameterExpression<String> prodType = builder.parameter(String.class);
+		ParameterExpression<Date> sd = builder.parameter(Date.class);
+		ParameterExpression<Date> ed = builder.parameter(Date.class);
+		ParameterExpression<String> cat = builder.parameter(String.class);
+		ParameterExpression<String> prodName = builder.parameter(String.class);
+		ParameterExpression<Locations> loc = builder.parameter(Locations.class);
+		
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		predicates.add(
+			builder.and(
+				builder.equal(p.get("productType"), prodType),
+				builder.greaterThanOrEqualTo(i.<Date>get("startdate"), sd),
+				builder.lessThanOrEqualTo(i.<Date>get("startdate"), ed),
+				builder.equal(p.get("category"), cat)
+			)
+		);
+		
+		if(!"".equals(productname.trim())){
+			predicates.add(builder.and(builder.like(p.<String>get("productName"), prodName)));
+		}
+		
+		if(locations.getLocationId()==1){
+			// Do nothing
+		} else if(locations.getLocationId()==2){
+			 bayareaLocations = locationDao.getLocationsByArea(Constants.LOCATION_BAYAREA);
+			 Collection<Locations> lstlocations = bayareaLocations;
+			 Expression<Locations> lstloc = i.get("locations");
+			 predicates.add(lstloc.in(lstlocations));
+		} else {
+			predicates.add(builder.and(builder.equal(i.<Locations>get("locations"), loc)));
+		}
+		
+		query.multiselect(ids.get("instructorName"),ids.get("sessionName"),i.get("starttime"),i.get("endtime"),ids.get("itemDaysId"),ids.get("capacity"),ids.get("capacity")
+				,i.get("price"),i.get("price"),i.get("startdate"),i.get("enddate")
+				,p.get("productId"),p.get("productName"),p.get("description")
+				,l.get("branchName"),l.get("tier"),i.get("id"));
+		query.where(predicates.toArray(new Predicate[]{}));
+
+		TypedQuery<Object[]> typequery = em.createQuery(query);
+		typequery.setParameter(prodType, ProductTypeEnum.Event.toString());
+		typequery.setParameter(sd, startDate);
+		typequery.setParameter(ed, endDate);
+		typequery.setParameter(cat, category);
+		if(!"".equals(productname.trim())){
+			typequery.setParameter(prodName, productname.trim()+"%");
+		}
+		
+		if(locations.getLocationId()==1){
+			// Do nothing
+		} else if(locations.getLocationId()==2){
+			// Do nothing
+		} else {
+			typequery.setParameter(loc, locations);
+		}
+		
+		List<Object[]> lstObj = typequery.getResultList();
+		
+		return lstObj;
+	}
+	
+	/**
+	 * Add event to cart and navigate to event registration
+	 */
+	@RequestMapping(value="/addEventToCart", method=RequestMethod.GET)
+    public ModelAndView addEventToCart(final HttpServletRequest request, final HttpServletResponse response) { 
+		
+		Model model = new ExtendedModelMap();
+		model.addAttribute("productcategories", itemDetailsDao.getItemsCategoriesByItemType(ProductTypeEnum.Event.toString()));
+        model.addAttribute("locations", locationDao.findAll());
+        
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		Account account = null;
+    	User user =  null;	
+    	List<PaymentMethod> paymentList = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			user = getUserByAccount(account, user);
+			paymentList = account.getPaymentMethod();
+    	}
+    	
+    	if(account != null){	    		    	    	
+	        model.addAttribute("accInfo", account);
+	        model.addAttribute("usInfo", user);	
+	        
+	        int userCount = account.getUser().size();
+	        List<User> userS = new ArrayList<User>();
+	        int countmembers = 0;
+	        if(userCount>1){
+		        for(User u: account.getUser()){
+		        	if(!user.getUsername().equalsIgnoreCase(u.getUsername()) && u.isActive()){
+		        		countmembers = countmembers + 1;
+		        		userS.add(u);
+		        	}
+		        }
+			}
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("userS", userS);
+	        model.addAttribute("AlluserS", account.getUser());
+	        
+	        model.addAttribute("paymentInfoLst" , paymentList);	     
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("gottocontact", "true");
+    	} else {
+    		return new ModelAndView("loginpop", model.asMap());
+		}	
+		return new ModelAndView("eventRegistration", model.asMap());
+	}
+	
+	/**
+	 * Get event items as JSON
+	 */
+	@RequestMapping(value="/getEventItems", method=RequestMethod.GET)
+    public @ResponseBody String getEventItems(@RequestParam String location, @RequestParam String category, @RequestParam String productname, final HttpServletRequest request, final HttpServletResponse response) { 	
+		
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");  
+		DateFormat inputsdf = new SimpleDateFormat("M/d/yyyy");  
+		DateFormat inputmonthsdf = new SimpleDateFormat("MMM yyyy");  
+
+		String datestart = request.getParameter("datestart");
+		String dateend = request.getParameter("dateend");
+		
+		Locations locations = new Locations();
+		Long locId = Long.parseLong(location);
+		locations.setLocationId(locId);
+		
+		Date startDate;
+        Date endDate;
+        
+		
+		try {
+			startDate = sdf.parse(sdf.format(inputsdf.parse(datestart)));
+	        endDate = sdf.parse(sdf.format(inputsdf.parse(dateend)));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return null;
+		}
+		try {
+			/*
+			List<Object[]> itemDetailsSession = null;
+			if("".equals(productname.trim())){
+				itemDetailsSession = productDao.getMembershipProgramSession(startDate,endDate,category,locations);
+			} else {
+				itemDetailsSession = productDao.getMembershipProgramSession(startDate,endDate,category,productname,locations);
+			}*/
+			
+			List<Object[]> itemDetailsObj = getMembershipProgramSession(category,productname, locations, startDate, endDate);
+			
+			if(itemDetailsObj.size()==0){
+				return null;
+			}
+
+			JSONArray json = new JSONArray();
+			for(Object obj: itemDetailsObj){
+				ItemDetails i = (ItemDetails) obj;	
+				
+				double membertierPrice = 0D;
+				double nonmembertierPrice = 0D;
+				  
+				List<PricingRule> pricingRuleLst =  pricingRuleDao.findByitemDetailsIdAndTier(i.getId(), i.getLocations().getTier());
+				for(PricingRule pricingRule: pricingRuleLst) {
+					  membertierPrice += Double.parseDouble(pricingRule.getTierPrice());
+					  nonmembertierPrice += Double.parseDouble(pricingRule.getNonmemberTierPrice());
+				}
+				
+				
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("id", i.getId());
+				jsonObj.put("productId", i.getId());
+				jsonObj.put("startDate", i.getStartdate());
+				jsonObj.put("endDate", i.getEnddate());
+				jsonObj.put("startTime", i.getStarttime());
+				jsonObj.put("endTime", i.getEndtime());
+				jsonObj.put("capacity", i.getCapacity());
+				jsonObj.put("gender", i.getGender());
+				jsonObj.put("memberprice", membertierPrice);
+				jsonObj.put("nonmembertierPrice", nonmembertierPrice);
+				jsonObj.put("productName", i.getItemName());
+				jsonObj.put("productDesc", i.getDescription());
+				jsonObj.put("productCategory", i.getCategory());
+				jsonObj.put("productType", i.getItemType());
+				jsonObj.put("branchName", i.getLocations().getBranchName());
+				jsonObj.put("tier", i.getLocations().getTier());
+				
+				String sessionName = "";
+			    String instructorName = "";
+			    String sessionDays = "";
+			    for(ItemDays idys : i.getItemDays()){
+			    	sessionName = idys.getSessionName();
+			    	instructorName = idys.getInstructorName();
+			    	sessionDays = sessionDays + "," + idys.getItemDaysId();
+			    }
+			    
+				jsonObj.put("sessionName", sessionName);
+				jsonObj.put("instructorName", instructorName);
+				jsonObj.put("dayId", sessionDays);
+				
+				json.add(jsonObj);
+			}
+			
+			return json.toString();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+			return null;
+		}
+		
+		
+		/* List<Promocode> promo = new ArrayList<Promocode>();
+		  List<Product> productLst =  productDao.findByProductType("EVENT");
+		  
+		  try {
+			  promo = promocodeDao.getACPromoDiscountByItemDetailsId();
+		  } catch (Exception e) {
+				e.printStackTrace();
+		  }
+		  
+		  JSONArray json = new JSONArray();
+		  
+		  for(Product p: productLst){
+		      if(p.getItemDetails()!=null){
+		    	  List<ItemDetailsSession> itemSession = p.getItemDetails().getItemDetailsSession();
+		    	  if(itemSession.size()>0){
+		    		  for(ItemDetailsSession ids : itemSession){
+							
+						  double membertierPrice = 0D;
+						  double nonmembertierPrice = 0D;
+						  
+						  List<PricingRule> pricingRuleLst =  pricingRuleDao.findByitemDetailsIdAndTier(ids.getItemDetails().getId(), ids.getItemDetails().getLocations().getTier().toString());
+						  for(PricingRule pricingRule: pricingRuleLst) {
+							  membertierPrice += Double.parseDouble(pricingRule.getTierPrice());
+							  nonmembertierPrice += Double.parseDouble(pricingRule.getNonmemberTierPrice());
+						  }
+		    			  
+				    	  JSONObject obj = new JSONObject();
+				    	  obj.put("id", ids.getItemDetailsSessionId());
+						  obj.put("prodId", ids.getItemDetailsSessionId());
+					      obj.put("name", p.getProductName());
+				    	  obj.put("memberprice", membertierPrice);
+				    	  obj.put("nonmemberprice", nonmembertierPrice);
+				    	  obj.put("description", p.getDescription());
+					      obj.put("category", p.getCategory());
+					      obj.put("sessionName", ids.getSessionName());
+					      obj.put("instructor", ids.getInstructorName());
+					      obj.put("start_time", ids.getStarttime());
+					      obj.put("end_time", ids.getEndtime());
+					      obj.put("start_date", ids.getItemDetails().getStartdate());
+					      obj.put("end_date", ids.getItemDetails().getEnddate());
+					      obj.put("itemDetailsId", ids.getItemDetails().getId());
+					      obj.put("itemDetailsSessionId", ids.getItemDetailsSessionId());
+					      obj.put("days", ids.getDays());
+					      
+					      Double memberdiscount = new Double(0);
+					      Double nonmemberdiscount = new Double(0);
+					      
+					      String lblPromoCode = "";
+					      if(promo.size()>0){
+					    	  for(Promocode pc: promo){
+					    		  for(ItemPromoDetails ipd: pc.getItemPromoDetails()){
+					    			  if(ipd.getItemDetails().getId().equals(ids.getItemDetails().getId())){
+					    				  lblPromoCode = pc.getPromoCode();
+					    				  if(pc.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_VALUE)){
+					    					  memberdiscount = pc.getDiscountvalue();
+					    					  nonmemberdiscount = pc.getDiscountvalue();
+					    				  }
+					    				  else if(pc.getDiscounttype().equalsIgnoreCase(Constants.LABEL_ITEM_DISCOUNT_PERCENTAGE)){
+					    					  BigDecimal memberdiscountAmount = pc.getDiscountpercentage().multiply(BigDecimal.valueOf(membertierPrice));
+					    					  memberdiscountAmount = memberdiscountAmount.divide(new BigDecimal(100));
+					    					  memberdiscount = memberdiscountAmount.doubleValue();
+					    					  
+					    					  BigDecimal nonmemberdiscountAmount = pc.getDiscountpercentage().multiply(BigDecimal.valueOf(nonmembertierPrice));
+					    					  nonmemberdiscountAmount = nonmemberdiscountAmount.divide(new BigDecimal(100));
+					    					  nonmemberdiscount = nonmemberdiscountAmount.doubleValue();
+					    				  }
+					    			  }
+					    		  }
+					    	  }
+					      }
+					      obj.put("memberdiscount", memberdiscount);
+					      obj.put("nonmemberdiscount", nonmemberdiscount);
+					      obj.put("discountcode", lblPromoCode);
+					      obj.put("finalamount", new Double(0));
+					      json.add(obj);
+		    		  }
+		    	  }
+		      }
+		  }
+	      
+	      return json.toString();*/
+	}
+	
+	private List<Object[]> getMembershipProgramSession(String category,
+			String productname, Locations locations, Date startDate,
+			Date endDate) {
+		
+		List<Locations> bayareaLocations = new ArrayList<Locations>();;
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = builder.createQuery(Object[].class);
+		//Root<ItemDays> ids = query.from(ItemDays.class);
+		//Join<ItemDays, ItemDetails> i = ids.join("itemDetails",JoinType.INNER);
+		Root<ItemDetails> i = query.from(ItemDetails.class);
+		Join<ItemDetails, Product> p = i.join("product",JoinType.INNER);
+		Join<ItemDetails, Locations> l = i.join("locations",JoinType.INNER);
+
+		ParameterExpression<String> prodType = builder.parameter(String.class);
+		ParameterExpression<Date> sd = builder.parameter(Date.class);
+		ParameterExpression<Date> ed = builder.parameter(Date.class);
+		ParameterExpression<String> cat = builder.parameter(String.class);
+		ParameterExpression<String> prodName = builder.parameter(String.class);
+		ParameterExpression<Locations> loc = builder.parameter(Locations.class);
+		
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		predicates.add(
+				builder.and(
+					builder.equal(p.get("productType"), prodType),
+					builder.greaterThanOrEqualTo(i.<Date>get("startdate"), sd),
+					builder.lessThanOrEqualTo(i.<Date>get("startdate"), ed),
+					builder.equal(p.get("category"), cat)
+				)
+		);
+		
+		
+		if(!"".equals(productname.trim())){
+			predicates.add(builder.and(builder.like(p.<String>get("productName"), prodName)));
+		}
+		
+		if(locations.getLocationId()==1){}
+		else if(locations.getLocationId()==2){
+			 bayareaLocations = locationDao.getLocationsByArea(Constants.LOCATION_BAYAREA);
+			 Collection<Locations> lstlocations = bayareaLocations;
+			 //Expression<Collection<Locations>> lstLocations = lstlocations;
+			 Expression<Locations> lstloc = i.get("locations");
+			 predicates.add(lstloc.in(lstlocations));
+			 
+			 
+		}
+		else {
+			predicates.add(builder.and(builder.equal(i.<Locations>get("locations"), loc)));
+		}
+		query.multiselect(i);
+		/*
+		query.multiselect("instructorName","sessionName",i.get("starttime"),i.get("endtime"),"itemDaysId",i.get("capacity"),"capacity"
+				,i.get("price"),i.get("price"),i.get("startdate"),i.get("enddate")
+				,p.get("productId"),p.get("productName"),p.get("description")
+				,l.get("branchName"),l.get("tier"),i.get("id")); */
+		query.where(predicates.toArray(new Predicate[]{}));
+
+		TypedQuery<Object[]> typequery = em.createQuery(query);
+		typequery.setParameter(prodType, ProductTypeEnum.Event.toString());
+		typequery.setParameter(sd, startDate);
+		typequery.setParameter(ed, endDate);
+		typequery.setParameter(cat, category);
+		if(!"".equals(productname.trim())){
+			typequery.setParameter(prodName, productname.trim()+"%");
+		}
+		if(locations.getLocationId()==1){}
+		else if(locations.getLocationId()==2){
+			/*String locat = "3,4";
+			typequery.setParameter(lstloc, locat);*/
+		}
+		else {
+			typequery.setParameter(loc, locations);
+		}
+		
+		List<Object[]> lstObj = typequery.getResultList();
+		return lstObj;
+	}
+	
+	
+	@RequestMapping(value="/signupEvent", method=RequestMethod.POST)
+    public @ResponseBody String  signupEvent(ItemDetailsSession itemDetailsSession, final HttpServletRequest request, final HttpServletResponse response) { 	
+		//for(ItemDetailsSession ids: itemDetailsSession){
+			//System.out.println(itemDetailsSession.getItemDetailsSessionId());
+		//}
+		//String location = request.getParameter("location");
+		String tansId = "";
+		String paymentId = request.getParameter("paymentId");
+		String jp_request_hash = request.getParameter("jp_request_hash");
+		String orderNumber = request.getParameter("orderNumber");
+		
+		String lstCartItem = request.getParameter("cartItems");
+		List<String> lstStrCartItem = Arrays.asList(lstCartItem.split(","));
+		
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			return "FAIL";
+		}
+    	
+    	try{
+    		Account customer = null;
+        	if(userId != null && !"".equals(userId)){
+        		customer = accountDao.getByEmail(userId);			
+        	}
+    		
+	    	if(lstStrCartItem.size()>0){
+	    		for(String lstcartItems: lstStrCartItem){
+	
+	    			List<String> cartItems = Arrays.asList(lstcartItems.split("__"));
+	
+	    			//ItemDetailsSession ids =  itemDetailsSessionDao.getByItemDetailsSessionId(Long.parseLong(cartItems.get(0)));
+	    			String itemDetailId = cartItems.get(0);
+	    			ItemDetails itemDetails = itemDetailsDao.getById(Long.parseLong(itemDetailId));;
+	    			
+	    			//ItemDays ids = itemDaysDao.getByItemDaysIdAndItemDetails(Long.parseLong(itemDaysMapId.get(0)), itemDetails);
+	    			User u =  userDao.getByPartyId(Long.parseLong(cartItems.get(1)));
+	    			
+	    			Signup signupprogram = paymentService.savesignup(paymentId, customer, cartItems, itemDetails, u, ProductTypeEnum.Event);
+	    			//JetPayPayment jetpay = paymentService.savepayment(paymentId, jp_request_hash, orderNumber, customer, cartItems, u, signupprogram, ProductTypeEnum.Event,null);
+	    			
+	    			//if(jetpay!=null)
+	    			//	tansId = jetpay.getTransId();
+	    		}
+	    	}
+    	}
+    	catch(Exception e){
+    		return "FAIL";
+    	}
+		
+		return "SUCCESS__"+tansId;
+	}
+}

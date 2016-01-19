@@ -1,0 +1,79 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+	<div id="tabstrip3" class="k-block" style=" background-color:#FFFFFF;">
+		<span class="head" width="100%">MY UPCOMING
+					PROGRAMS</span>
+
+		<div>
+			<div>
+
+				<table class="border1" bgcolor="#ffffff" border="0" cellpadding="0"
+					cellspacing="4">
+					<tr>
+  <th>Date</th>
+  <th>Time</th>
+  <th>Class</th>
+   <th>Location</th>
+    <th>Member Name</th>
+	<th>Action</th>
+
+  
+</tr>
+						<c:forEach var="program" items="${programList}">
+							
+							<tr style="outline:thin solid;">
+								<td>
+								<fmt:formatDate
+										type="date" pattern="MM/dd/yyyy"
+										value="${program.programStartDate}" /></td>
+										<td ><fmt:formatDate
+										type="time" pattern="hh:mm"
+										value="${program.programStartDate}" /></td>
+								<td >${program.programName}</td>
+								<td >${program.ylocation}</td>
+								<td >${program.memberName}</td>
+								<td >EDIT</td>
+
+							</tr>
+						</c:forEach>
+					
+				</table>
+
+			</div>
+		</div>
+</div>
+		 <div id="tabstrip3" class="k-block" style=" background-color:#FFFFFF;">
+		
+				<span class="head"  width="100%">SCHEDULES</span></br>
+			
+		
+		<span style="font-size: .7em;">Find schedules quickly with our quick search feature. Select the member name, class, and view (day or week).</br>
+Then simply print the schedule you need.</span></br></br>
+<span class="head"  width="100%">MEMBER</span>
+
+	<span style="font-size: .7em;margin: 20px;">Select Calendar view:</span><div id="calendar"></div></br>
+
+	<table class="border1" bgcolor="#ffffff" border="0" cellpadding="0"
+					cellspacing="0" width="10%">
+					<tbody>
+							<c:forEach var="member" items="${userS}">
+
+							<tr>
+							    <td><input type="checkbox"/></td>
+								<span style="margin: 50px;"><td>${member.firstName}</td></span>
+								
+							</tr>
+						</c:forEach>
+
+					</tbody>
+				</table>
+		 </div>
+<script>
+		 $(document).ready(function(){
+    $("#calendar").kendoCalendar()({
+		value: new Date(),
+		)}
+});
+</script>
+		
+	

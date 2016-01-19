@@ -1,0 +1,134 @@
+package com.serene.job.processor;
+
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.service.PaymentJobService;
+
+@Service
+@ComponentScan("com.ymca.core.service")
+public class JetpayRefundProcessor extends GenericItemProcessor implements ItemProcessor<Object,Object>{
+	
+	private static final Log log = LogFactory.getLog(JetpayRefundProcessor.class);
+	
+	private Integer sno = 1;
+	
+	@Resource
+	private PaymentJobService paymentJobService ;
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Object process(Object item) throws Exception {
+		
+		Map<String,Object> data = (Map<String, Object>) item;
+		
+		try {
+			if(data.get("PaymentMode")!=null && data.get("amount")!=null){
+				String UNUSED = "";
+				Integer TRANSACTION_SEQUENCE_NUMBER = 0;
+				Double TRANSACTION_AMOUNT = Double.parseDouble(data.get("amount").toString()) * 100;
+				String TRANSACTION_TYPE = "CR"; // credits for refund
+				
+				if(data.get("PaymentMode").toString().equalsIgnoreCase("ACH")){
+					sno++;
+					
+					Object ABA_NUMBER = data.get("bank_routing_number");
+					Object ACCOUNT_NUMBER_OR_TOKEN = data.get("token_number");
+					Object CHECK_NUMBER = data.get("check_number");
+					Object ACCOUNT_TYPE = data.get("BankAccountType_c");
+					Object ACCOUNT_HOLDER_NAME = data.get("full_name");
+					String ACTION_CODE = "";
+					String MERCHANT_ASSIGNED_REFERENCE_NUMBER = data.get("InvoiceId")+"_"+data.get("paymentId");
+					
+					data.put("RECORD_TYPE", "CH");
+					data.put("SEQ_NO", sno.toString());
+					data.put("TRANSACTION_SEQUENCE_NUMBER", TRANSACTION_SEQUENCE_NUMBER);
+					data.put("TRANSACTION_TYPE", TRANSACTION_TYPE);
+
+					data.put("ABA_NUMBER", convertNullToBlank(ABA_NUMBER)); 
+					data.put("ACCOUNT_NUMBER_OR_TOKEN", convertNullToBlank(ACCOUNT_NUMBER_OR_TOKEN));
+					data.put("CHECK_NUMBER", convertNullToBlank(CHECK_NUMBER));
+					
+					String acct_Type = convertNullToBlank(ACCOUNT_TYPE);
+					if(!"".equals(acct_Type) && acct_Type.length()>1)
+						acct_Type = acct_Type.substring(0,1);
+					
+					data.put("ACCOUNT_TYPE", acct_Type);
+					data.put("TRANSACTION_AMOUNT", convertNullToBlank(TRANSACTION_AMOUNT.intValue()));
+					data.put("ACCOUNT_HOLDER_NAME", convertNullToBlank(ACCOUNT_HOLDER_NAME));
+					data.put("ACTION_CODE", convertNullToBlank(ACTION_CODE));
+					data.put("UNUSED", convertNullToBlank(UNUSED));
+					data.put("MERCHANT_ASSIGNED_REFERENCE_NUMBER", convertNullToBlank(MERCHANT_ASSIGNED_REFERENCE_NUMBER));
+					
+				} else {
+					sno++;
+
+					Object PRIMARY_ACCOUNT_NUMBER_OR_TOKEN = data.get("token_number");
+					Object expMonth = data.get("expiration_month");
+					Object expYearObj = data.get("expiration_year");
+					String expYear = "";
+					if(expYearObj!=null)
+						expYear = expYearObj.toString().substring(2,4);
+					String EXPIRATION_DATE = expYear+expMonth;
+					String AUTHORIZATION_CODE = "";
+					String RESPONSE_CODE = "";
+					String REFERNCE_NUMBER = data.get("InvoiceId").toString()+"_"+data.get("paymentId").toString();
+					
+					data.put("RECORD_TYPE", "DR");
+					data.put("SEQ_NO", sno.toString());
+					data.put("TRANSACTION_SEQUENCE_NUMBER", TRANSACTION_SEQUENCE_NUMBER);
+					data.put("TRANSACTION_TYPE", TRANSACTION_TYPE);
+					
+					data.put("UNUSED1", convertNullToBlank(UNUSED));
+					data.put("UNUSED2", convertNullToBlank(UNUSED));
+					data.put("PRIMARY_ACCOUNT_NUMBER_OR_TOKEN", convertNullToBlank(PRIMARY_ACCOUNT_NUMBER_OR_TOKEN));
+					data.put("EXPIRATION_DATE", convertNullToBlank(EXPIRATION_DATE));
+					data.put("TRANSACTION_AMOUNT1", convertNullToBlank(TRANSACTION_AMOUNT.intValue()));
+					data.put("UNUSED3", convertNullToBlank(UNUSED));
+					data.put("UNUSED4", convertNullToBlank(UNUSED));
+					data.put("UNUSED5", convertNullToBlank(UNUSED));
+					data.put("AUTHORIZATION_CODE", convertNullToBlank(AUTHORIZATION_CODE));
+					data.put("RESPONSE_CODE", convertNullToBlank(RESPONSE_CODE));
+					data.put("UNUSED6", convertNullToBlank(UNUSED));
+					data.put("UNUSED7", convertNullToBlank(UNUSED));
+					data.put("REFERNCE_NUMBER", convertNullToBlank(REFERNCE_NUMBER));
+					data.put("UNUSED8", convertNullToBlank(UNUSED));
+				}
+				
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			log.error("Error in refund processor ",e);
+		}
+		
+		// update payment status to "sent to Jetpay"
+		paymentJobService.updatePaymentStatus(data,batchJobContext.getJobSchedulerMetadata(),"Sent to Jetpay");
+				
+		data.remove("PaymentMode");
+		data.remove("paymentId");
+		
+		return data;
+	}
+
+	private String convertNullToBlank(Object obj) {
+		String str = "";
+		if (obj==null){
+			str = "";
+		}
+		else if (obj.toString().trim().equals("")){
+			str = "";
+		} 
+		else{
+			str = obj.toString();
+		}
+		return str;
+	}
+}

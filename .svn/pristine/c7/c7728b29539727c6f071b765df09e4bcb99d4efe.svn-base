@@ -1,0 +1,124 @@
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="tabstrip3" class="k-block" style=" background-color:#FFFFFF; padding:12px; width:100%">	
+		<form:form commandName="interaction" id="ccSignupFrm" method="post" action="childcaresignup">			
+			<!-- <h2>
+				Request for Cancellation
+			</h2> -->
+        	
+        	<div id="formBlock">
+        		<div id="cc_search">
+        			<span class="head">Search</span>
+        			
+        			<div style="margin:10px;">
+        				<div class="srchtext"><span>Location (School Name):</span></div>
+						<select name="location" id="location" style="width:200px;">
+							<c:forEach var="location" items="${locations}" varStatus="count">
+								<option value="${location.locationId }">${location.branchName }</option>
+							</c:forEach>
+						</select>
+					</div>
+					<div style="margin:10px;">
+        				<div class="srchtext"><span>Age range:</span></div>
+						<input class="k-textbox" type="text" style="width:90px;">
+						<span>-</span>
+						<input class="k-textbox" type="text" style="width:90px;">
+					</div>
+					<div style="margin:10px;">
+        				<div class="srchtext"><span>Type:</span></div>
+						<select name="type" id="type" style="width:200px;">
+							<option value="Morning Care">Morning Care</option>
+							<option value="Afternoon Care">Afternoon Care</option>
+							<option value="Kinder Care">Kinder Care</option>
+							<option value="Pre School">Pre School</option>
+						</select>
+					</div>
+					<div style="margin:10px;">
+        				<div class="srchtext"><span>Keyword:</span></div>
+						<input class="k-textbox" type="text" style="width:200px;">
+					</div>
+        		</div>
+        		
+        		<div id="cc_list">
+        			<span class="head">List (Select slots for pricing to show up)</span>
+        			<div>
+        				<table id="childcare_list"  style="table-layout: fixed; display:none;">
+        					<thead>
+	        					<tr>
+	        						<th>Type</th>
+	        						<th>Location</th>
+	        						<th>Start Time</th>
+	        						<th>End Time</th>
+	        						<th>Age Range</th>
+	        						<th>Gender</th>
+	        						<th>M / # of available slots</th>
+	        						<th>Tu / # of available slots</th>
+	        						<th>W / # of available slots</th>
+	        						<th>Th / # of available slots</th>
+	        						<th>F / # of available slots</th>
+	        					</tr>
+        					</thead>
+        					<tbody>
+	        					<tr>
+	        						<td>Morning Care</td>
+	        						<td>Simonds</td>
+	        						<td>7 AM</td>
+	        						<td>8:30 AM</td>
+	        						<td>5-7</td>
+	        						<td>M, F</td>
+	        						<td>&nbsp;</td>
+	        						<td>&nbsp;</td>
+	        						<td>&nbsp;</td>
+	        						<td>&nbsp;</td>
+	        						<td>&nbsp;</td>
+	        					</tr>
+        					</tbody>
+        				</table>
+        			</div>
+        		</div>
+        	</div>
+        	
+        	<div id="statusBlock">
+				<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+				<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+			</div>
+        	
+        	<div align="center">
+        		<span id="ccsignup" class="k-button" style="text-shadow:none;">CONTINUE TO SIGN UP</span>
+        	</div>
+        	
+		 </form:form>
+</div>
+
+<script>
+	$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_programregistration").attr('class','');
+		$("#top_childcare").attr('class','current');
+		
+		//$("#page_name").html("PAYMENT INFORMATION");
+		$("#location").kendoDropDownList();
+		$("#type").kendoDropDownList();
+		
+		$("#childcare_list").kendoGrid({
+			dataSource: {
+            	pageSize: 10
+			},
+            pageable: true,
+            selectable: "row",
+            height: 300
+		});
+		$("#childcare_list").show();
+	});
+</script>
+
+<style>
+.k-grid  .k-grid-header  .k-header  .k-link {
+    height: auto;
+}
+  
+.k-grid  .k-grid-header  .k-header {
+    white-space: normal;
+}
+</style>

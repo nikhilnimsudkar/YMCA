@@ -1,0 +1,9 @@
+package com.ymca.dao;
+
+import com.ymca.model.ItemDays;
+import com.ymca.model.ItemDetails;
+
+public interface ItemDaysDao  extends GenericDao<ItemDays, Long>{
+	
+	ItemDays getByItemDaysIdAndItemDetails(Long itemDaysId, ItemDetails itemDetails);
+}

@@ -1,0 +1,128 @@
+package com.ymca.web.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.serene.ws.service.FusionWebService;
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.ItemDetailDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.model.Account;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.Location;
+import com.ymca.model.Signup;
+import com.ymca.model.User;
+import com.ymca.web.service.FacilityBookingService;
+import com.ymca.web.util.Constants;
+
+@Controller
+public class FacilityBookingController extends BaseController {
+
+	@Resource
+	private ItemDetailDao itemDetailsDao; 
+	
+	@Resource
+	private LocationDao locationDao;
+	
+	@Resource
+	private FacilityBookingService facilityBookingService ;
+	
+	@Autowired
+	private FusionWebService fusionWebService ; 
+	
+	@Autowired
+	private AccountDao accountDao ; 
+	
+	
+	@RequestMapping(value="/sc/agent/facilitybooking", method=RequestMethod.GET)
+    public String  facilityBookingSc(Long o,RedirectAttributes model) throws Exception {
+    	Map<String,Object> objs = fusionWebService.query("select Name,TargetPartyId,LocationId,PrimaryContactPartyId,ChildRevenue,ChildRevenue.ItemDetail_Id_c,ChildRevenue.RevnAmount from Opportunity where OptyId = " + o);
+    	
+    	if (objs == null || objs.isEmpty()) throw new Exception(" Invalid opportunity Id ");
+    	List<Map<String,Object>> list = (List<Map<String, Object>>) objs.get("result");
+    	
+    	Map<String,Object> oppty = list.get(0);
+    	
+    	String partyId = (String) oppty.get("TargetPartyId");
+    	if (StringUtils.isBlank(partyId)) throw new Exception("Please select customer before creating facility booking");
+    	
+    	List<Map<String,Object>> revenues = (List<Map<String, Object>>) oppty.get("ChildRevenue");
+    	
+    	if (revenues == null || revenues.isEmpty()) throw new Exception("No revenue line item found for this opportunity");
+
+    	Account customer = accountDao.findFirst1ByPartyId(Long.parseLong(partyId));
+    	if (customer == null) throw new Exception(" Customer record is not in sync to portal ");
+
+		StringBuffer itemDetailIds = new StringBuffer("");
+		for (Map<String,Object> revenue :  revenues) {
+			itemDetailIds.append(revenue.get("ItemDetail_Id_c")).append(",");
+		}
+		itemDetailIds.deleteCharAt(itemDetailIds.lastIndexOf(","));
+
+		Map<String,Object> prvParam = new HashMap<String, Object>();
+		prvParam.put("loadSearch", true);
+		prvParam.put("selectSearchResult", true);
+		prvParam.put("itemDetailIds", itemDetailIds);
+		prvParam.put("optyId", o);
+		
+		model.addFlashAttribute("prvParam",prvParam);
+		return "redirect:/facility";
+	}
+
+/*	@RequestMapping(value="/sc/agent/facilitybooking/create", method=RequestMethod.GET)
+    public @ResponseBody String  createfacilityBookingSc(Long o, String sso,Model model) throws Exception {
+		facilityBookingService.createFaciltyBoking(o);
+		return "requestBookingSc";
+	}*/
+	
+	
+	@RequestMapping(value="/sc/agent/facilitybooking/create", method=RequestMethod.GET)
+    public @ResponseBody String  createfacilityBookingSc(Long o, String sso,Model model) throws Exception {
+		facilityBookingService.createFaciltyBoking(o);
+		return "requestBookingSc";
+	}
+	
+    @RequestMapping(value="/facilityBooking", method=RequestMethod.GET)
+    public ModelAndView facilityBooking() {
+    	
+    	Model model = new ExtendedModelMap();
+    	
+    	List<ItemDetail> itemList =  itemDetailsDao.findByCategory("facility");
+    	JSONArray resultList = new JSONArray();
+    	for(Object object : itemList){
+    		ItemDetail itemDetail = (ItemDetail) object;
+    		JSONObject obj = new JSONObject();
+    		obj.put("Item", itemDetail.getDescription());
+    		if (itemDetail.getLocationId() != null) {
+    			Location location = locationDao.getLocationsByLocationId(itemDetail.getLocationId());
+    			if (location != null) {
+    				obj.put("location",location.getAddressLine1_c() + "," + location.getCity_c() + "," +  location.getState_c()); 
+    			}
+    		}
+    		   		
+    		resultList.add(obj);
+    	}
+    	
+    	model.addAttribute("facilityList", resultList);
+    	return new ModelAndView("facilityBooking", model.asMap());
+    }
+    
+    
+}

@@ -1,0 +1,364 @@
+/**
+ * @author gpatwa
+ * This is the abstract fusion writer class. The write does basic write operation and calls callback writer if it is enable in the Job scheduler metadata
+ * The Abstract Fusion writer does not check for any duplicate record check. 
+ * In order to perform correct create and update operation fusion Id should be present in the payload
+ *  
+ */
+package com.serene.job.writer;
+
+import java.util.AbstractList;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+import com.serene.job.common.BaseService;
+import com.serene.job.common.BatchJobContext;
+import com.serene.job.common.JXpathFactory;
+import com.serene.job.dao.IntermidiateTableDao;
+import com.serene.job.model.ChildFieldMapping;
+import com.serene.job.model.ChildObject;
+import com.serene.job.model.FieldMapping;
+import com.serene.job.util.JobUtils;
+
+public class AbstractFusionItemWriter extends BaseService implements ItemWriter<Map<String,Object>> {
+
+	
+	public static final String FUSION_OPERATION_UPDATE = "UPDATE";
+
+	public static final String FUSION_OPERATION_CREATE = "CREATE";
+	
+	@Resource 
+	protected DbCallbackWriter dbCallbackWriter ;
+
+	protected String  operation ;
+	
+	@Resource
+	private JdbcTemplate jdbcTemplate;
+	
+	@Resource
+	private NamedParameterJdbcTemplate namedParameterJdbcTemplate; 
+	
+	@Resource 
+	private JobUtils jobUtils ;
+	
+	@Resource
+	private IntermidiateTableDao intermidiateTableDao ; 
+
+	@Resource
+	protected BatchJobContext batchJobContext ;
+
+	private static Logger log = LoggerFactory.getLogger(AbstractFusionItemWriter.class); 
+	
+	private List<String> operationTypes = new ArrayList<String>();
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void write(List<? extends Map<String, Object>> items) throws Exception {
+		
+		for (Map<String, Object> item : items) {
+			try {
+				Object id = item.get(batchJobContext.getJobSchedulerMetadata().getToObjectIdField());
+				if (id == null) operation = FUSION_OPERATION_CREATE;
+				else operation = FUSION_OPERATION_UPDATE;
+				
+				setOperationTypes("ALL",operation);
+				
+				//TODO Implement first query based on SC ID logic then decide whether it update or insert
+				
+				List<String> operationTypes = getOperationTypes();
+				
+				// ADD child writer if present
+				addChildItems(item);
+				
+				Map<String,Object> payload = getPayload(item);
+				
+				List<Map<String,Object>> responses = new ArrayList<Map<String,Object>>();
+				Object resp = null ;
+				Map<String,Object> response = null ;
+				if (StringUtils.equalsIgnoreCase(batchJobContext.getJobSchedulerMetadata().getToObjectName(), "SalesParty") || StringUtils.equalsIgnoreCase(batchJobContext.getJobSchedulerMetadata().getToObjectName(), "Activity")) {
+					if (StringUtils.equalsIgnoreCase(operation, FUSION_OPERATION_CREATE))	resp = fusionWebService.create(payload, batchJobContext.getJobSchedulerMetadata().getToObjectName());
+					else fusionWebService.update(payload, batchJobContext.getJobSchedulerMetadata().getToObjectName());
+				}
+				else {
+					resp = fusionWebService.merge(payload, batchJobContext.getJobSchedulerMetadata().getToObjectName());
+				}
+				
+				if (resp instanceof AbstractMap) {
+					responses.add((Map<String, Object>) resp);
+				} else if (resp != null) { 
+					responses = (List<Map<String, Object>>) resp ;
+				}
+				if(responses != null && !responses.isEmpty()){
+					updateResponse(item, operationTypes, responses.get(0));
+				}				
+				
+			} catch (Exception e) {
+				log.error("Error while writing data ",e);
+				// TODO dirty implement ideally it should throw an error and call the listener 
+				logErrorInDb(item, e);
+			}
+		}
+	}
+
+	public void logErrorInDb(Map<String, Object> item, Exception e) {
+		try {
+			jobUtils.logItemStatus(e, batchJobContext.getJobSchedulerMetadata().getJobName(), batchJobContext.getJobSchedulerMetadata().getFromObjectName(), batchJobContext.getJobSchedulerMetadata().getFromObjectIdField(), item);
+		} catch (Exception e1) {
+			log.error("Error while writing error log ",e1);
+		}
+	}
+
+	public void updateResponse(Map<String, Object> item,List<String> operationTypes, Map<String, Object> response) throws Exception {
+		// TODO move this to some service class
+		if (response != null && batchJobContext.getJobSchedulerMetadata().getCallbackUpdate()) {
+			dbCallbackWriter.setDataSource((DataSource) applicationContext.getBean(batchJobContext.getJobSchedulerMetadata().getToDataSource()));
+			
+			Map<String,Object> value = new HashMap<String, Object>() ;  
+			Object resp =response.get("result");
+
+			Object objValue = null ;
+			if (resp instanceof AbstractMap) {
+				objValue = ((Map<String, Object>) resp).get("Value");
+			} else {
+				objValue = ((List)resp).get(0) ;
+			}
+			
+			if (objValue instanceof AbstractMap) {
+				value = (Map<String, Object>) objValue ;
+			} else if (objValue != null) {
+				value = ((List<Map<String, Object>>) objValue).get(0) ;
+			}		
+			
+			if (value == null) value = (Map<String, Object>) resp ;
+			
+			Map<String,Object> respData = new HashMap<String, Object>();
+			if (value.get("Value") instanceof AbstractList) {
+				respData = ((List<Map<String, Object>>) value.get("Value")).get(0) ;
+			} else {
+				respData = value ;
+			}
+			
+			dbCallbackWriter.updateResponse(item,respData, operationTypes);
+			
+			// update child callback
+			List<ChildObject> childObjects = batchJobContext.getChilds();
+			for (ChildObject childObject : childObjects) {
+				if (!childObject.getCallbackUpdate()) continue;
+				
+				/*List<ChildFieldMapping> childFieldMappings = childFieldMappingDao.findByJobNameAndStatusAndOperationTypeIn(jobSchedulerMetadata.getJobName(), true, operationTypes);*/
+				List<ChildFieldMapping> childFieldMappings = batchJobContext.getChildFieldMappings().get(childObject.getObjectName());
+				Object obj = item.get(childObject.getObjectName());
+				
+				List<Map<String,Object>> childRequests = new ArrayList<Map<String,Object>>();
+				if (obj instanceof AbstractMap) childRequests.add((Map<String, Object>) obj);
+				else childRequests = (List<Map<String, Object>>) obj; 
+				
+				if (childRequests != null) {
+					for (int i= 0 ; i < childRequests.size() ; i++) {
+						Map<String,Object> childRequest = childRequests.get(i);
+
+						List<Map<String,Object>> childResponses = new ArrayList<Map<String,Object>>();
+						
+						Object resObj =  value.get(childObject.getObjectName());
+						if (resObj instanceof AbstractMap) childResponses.add((Map<String, Object>) resObj);
+						else childResponses = (List<Map<String, Object>>) resObj; 
+							
+						childResponses.add((Map<String, Object>) resObj);
+						
+						dbCallbackWriter.updateChildResponse(childObject,childRequest, childResponses.get(i), operationTypes);					
+					}
+				}
+			}
+			log.info(" Processing next record");
+		}
+	}
+	
+	public void setOperation(String operation){
+		this.operation = operation;
+	}
+
+	
+	/**
+	 * @param Input Data as Map
+	 * @return Output as Map
+	 * TODO implement support of multiple records in the child. Currently only one record is supported in the child
+	 */
+	@SuppressWarnings("rawtypes")
+	protected Map<String,Object> getPayload(Map<String,Object> item){
+		/*List<FieldMapping> fieldMapping = jobFieldMappingDao.findByJobNameAndStatusAndOperationTypeIn(jobSchedulerMetadata.getJobName(), true, getOperationTypes());*/
+		List<FieldMapping> fieldMapping = batchJobContext.getFieldMappings();
+		Map<String, Object> payload = contructPayload(fieldMapping,item,batchJobContext.getJobSchedulerMetadata().getToObjectName());
+		
+		return payload;
+	}
+
+	private void addChildItems(Map<String, Object> item) {
+		List<ChildObject> childObjects =  batchJobContext.getJobSchedulerMetadata().getChildObjects();
+		jdbcTemplate.setDataSource((DataSource) applicationContext.getBean(batchJobContext.getJobSchedulerMetadata().getToDataSource()));
+		namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate.getDataSource());
+		for(ChildObject c : childObjects) {
+			
+			// skip the child updates
+			if (!c.getActive()) continue ;
+			
+			List<Map<String,Object>> childObjs =  namedParameterJdbcTemplate.queryForList(c.getSql(),item);
+			List<Map<String,Object>> childPayloads = new ArrayList<Map<String,Object>>();
+			for (Map<String,Object> childObj : childObjs) {
+				childPayloads.add(childObj);
+			}
+			item.put(c.getObjectName(),childPayloads);
+		}
+	}
+
+	private Map<String, Object> contructChildPayload(List<ChildFieldMapping> fieldMapping,Map<String, Object> item,String toObjectName) {
+		Map<String,Object> payload = new LinkedHashMap<String,Object>();
+		JXPathContext dataContext = JXPathContext.newContext(item);
+		dataContext.setLenient(true);
+		JXPathContext context = JXPathContext.newContext(payload);
+		context.setLenient(true);
+		context.setFactory(new JXpathFactory());
+
+		for(ChildFieldMapping f : fieldMapping) {
+			String tagName = f.getToField();
+			Object value = dataContext.getValue(f.getFromField());
+			if (value != null && StringUtils.isNotBlank(value.toString()) || f.getIncludeNullValue()){
+				context.createPathAndSetValue(tagName,value);
+			}
+		}
+		return payload;
+	}
+	
+	private Map<String, Object> contructPayload(List<FieldMapping> fieldMapping,Map<String, Object> item,String toObjectName) {
+		Map<String,Object> payload = new LinkedHashMap<String,Object>();
+		JXPathContext dataContext = JXPathContext.newContext(item);
+		dataContext.setLenient(true);
+		JXPathContext context = JXPathContext.newContext(payload);
+		context.setLenient(true);
+		context.setFactory(new JXpathFactory());
+
+		for(FieldMapping f : fieldMapping) {
+			String tagName = f.getToField();
+			Object value = dataContext.getValue(f.getFromField());
+			
+			// set default value 
+			if ((value == null || StringUtils.isBlank(value.toString()) && StringUtils.isNoneBlank(f.getDefaultValue()))) {
+				value = f.getDefaultValue();
+			}
+			
+			// bypass null value based on config
+			if (value != null && StringUtils.isNotBlank(value.toString()) || f.getIncludeNullValue()){
+				context.createPathAndSetValue(tagName,value);
+			}
+		}
+		
+		List<ChildObject> childObjects =  batchJobContext.getChilds();
+		for(ChildObject c : childObjects) {
+			
+			// skip the child updates
+			if (!c.getActive()) continue ;
+			
+			List<Map<String,Object>> childObjs =  (List<Map<String, Object>>) item.get(c.getObjectName());
+			List<Map<String,Object>> childPayloads = new ArrayList<Map<String,Object>>();
+			for (Map<String,Object> childObj : childObjs) {
+				/*List<ChildFieldMapping> childFieldMapping =  childFieldMappingDao.findByJobNameAndObjectNameAndStatus(jobSchedulerMetadata.getJobName(), c.getToObjectName(), true);*/
+				List<ChildFieldMapping> childFieldMapping = batchJobContext.getChildFieldMappings().get(c.getObjectName());
+				Map<String, Object> childPayload = contructChildPayload(childFieldMapping,childObj,c.getToObjectName());
+				childPayloads.add(childPayload);
+			}
+			payload.put(c.getObjectName(),childPayloads);
+		}
+		
+		return payload;
+	}
+
+	
+	protected Map<String, Object> getPayLoadTemplate(List<FieldMapping> fieldMapping) {
+		Map<String, Object> payloadTemplate = new LinkedHashMap<String, Object>();
+		for(FieldMapping f : fieldMapping) {
+			String tagName = f.getToField();
+
+			List<String> operationTypes = getOperationTypes();
+			/*List<FieldMapping> objs = jobFieldMappingDao.findByJobNameAndStatusAndToFieldAndOperationTypeIn(jobSchedulerMetadata.getJobName(), true,tagName,operationTypes);*/
+			List<FieldMapping> objs = batchJobContext.getFieldMappings();
+			if (objs == null || objs.isEmpty()) continue ;			
+			
+			if (StringUtils.startsWith(tagName, "/")) tagName = tagName.substring(1);
+			if (!StringUtils.contains(tagName, "/")) {
+				payloadTemplate.put(tagName,"");
+				continue ;
+			}
+			 String[] tags = StringUtils.split(tagName,"/");			
+			 for (int j = 0 ;j < tags.length;j++) {
+				 String collectionIndex = StringUtils.substringBetween(tags[j], "[", "]");
+				 int index = 0 ;
+				 if (StringUtils.isNoneBlank(collectionIndex)) {
+					 index = Integer.parseInt(collectionIndex);
+				 }
+				 String curTag = StringUtils.substringBeforeLast(tags[j], "[");
+				 constructChildPayload(payloadTemplate,tagName,curTag, index);
+			 }
+		}
+		return payloadTemplate;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void constructChildPayload(Map<String, Object> payloadTemplate,String xpath,String currentTag, int index) {
+		List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
+		JXPathContext context = JXPathContext.newContext(payloadTemplate) ;
+		context.setLenient(true);
+		String relativePath= "" ;
+		if (StringUtils.startsWith(xpath, currentTag)) {
+			relativePath = currentTag;
+		} else {
+			relativePath = StringUtils.substring(xpath, 0,StringUtils.indexOf(xpath, currentTag)-1);
+		}
+		if (StringUtils.endsWith(xpath, currentTag)) {
+			if (!StringUtils.contains(relativePath, "[")) relativePath = relativePath +"[1]";
+			 Map<String, Object> map =  (Map<String, Object>) context.getValue(relativePath);
+			 map.put(currentTag, "");
+			 relativePath = StringUtils.substringBeforeLast(relativePath, "[");
+			 list = (List<Map<String, Object>>) context.getValue(relativePath);
+			 return ;
+		}
+		if (!StringUtils.equals(xpath, currentTag)) {
+			list = (List<Map<String, Object>>) context.getValue(relativePath);
+			if (list == null) {
+				list = new ArrayList<Map<String,Object>>();	
+			}
+		}
+		int totalIndex =  index -list.size(); 
+		if (totalIndex == 0 && list.isEmpty()) totalIndex = 1;
+		for (int k = 0 ; k < totalIndex ; k++) {
+			Map<String,Object> child = new LinkedHashMap<String, Object>();
+			list.add(child);
+		}
+		payloadTemplate.put(currentTag,list);
+		return ;
+	}
+
+	public void setOperationTypes(String... operations) {
+		operationTypes = new ArrayList<String>();
+		for (String o : operations) {
+			operationTypes.add(o);
+		}
+	}	
+	
+	public List<String> getOperationTypes() {
+		return operationTypes;
+	}
+}

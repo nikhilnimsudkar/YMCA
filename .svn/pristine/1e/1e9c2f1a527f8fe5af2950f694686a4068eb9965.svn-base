@@ -1,0 +1,312 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+<div> 
+<%@ include file="../../layouts/include_taglib.jsp"%>
+	<div >
+	<!-- <div class="k-window1" id="popup_add" style="display: none;"></div>
+ -->		<div id="myprofile">
+			<%@ include file="testLeft.jsp" %> 
+		</div>
+		
+		<div id="programs">
+			<%@ include file="testRight.jsp" %> 
+		</div>
+		
+		
+		
+	</div>
+</div>
+<script>
+var memberContactId=$("#primContId").val();
+$(document).ready(function() {
+	$("#dateOfBirth").kendoDatePicker();
+	$("#dateOfBirthAdd").kendoDatePicker();
+	$("#top_profile").attr('class', 'current');
+	$("#top_login").attr('class', '');
+	
+	$("#phoneNumber").mask("(999) 999-9999");
+	//var memberContactId=$("#primContId").val();
+	var sexoffenderRed=$("#sexOffenderRed"+memberContactId).val();
+	
+	if(sexoffenderRed=='Yes'){
+		 $("#checkinMember"+memberContactId).hide();
+			// document.getElementById("tabstrip3"+memberContactId).style.backgroundColor = "red";
+			$("#tabstrip3"+memberContactId).css('background-color', 'red');
+			 $("#accDeny"+memberContactId).show();
+			$("#sexOffResonDiv"+memberContactId).show();
+			// $("#accDenySexOff"+memberContactId).show();
+			 $("#allowGuest").show();
+			 
+	}
+	
+	
+	
+		
+	
+
+	$("#tabstrip").kendoTabStrip({
+		animation : {
+			open : {
+				effects : "fadeIn"
+			}
+		}
+	});
+
+	$("#tabstrip1").kendoTabStrip({
+		animation : {
+			open : {
+				effects : "fadeIn"
+			}
+		}
+	});
+	$("#tabstrip2").kendoTabStrip({
+		animation : {
+			open : {
+				effects : "fadeIn"
+			}
+		}
+	});
+
+	/* $('.scroller').slimScroll({
+		height : '110px',
+		width : '160px',
+		alwaysVisible : true,
+		color : '#666666',
+		distance : '4px',
+		railVisible : true,
+		allowPageScroll : true
+	}).parent().css({
+		border : '1px solid #cccccc'
+	}); */
+	
+});	
+	
+$("#sexOffResonList"+memberContactId).kendoDropDownList(); 
+
+var SexOffenderReasonDropdownlist = $("#sexOffResonList"+memberContactId).data("kendoDropDownList");
+SexOffenderReasonDropdownlist.select(0);	
+
+$("#sexOffResonList"+memberContactId).on('change',function(e){  
+    if(SexOffenderReasonDropdownlist.text() != '--Select Reason--'){
+  //  alert("{location change}");
+    	 $("#unAuthAccess"+memberContactId).show();
+    }else if(locationDropdownlist.text() == '--Select Reason--'){
+       // alert("{location change to first pos}");
+    	$("#unAuthAccess"+memberContactId).hide();
+        }
+});
+
+
+
+
+
+
+function add_Guest() {
+	
+	var window_add1 = $(document).find("#popup_add");
+	window_add1.clone().kendoWindow({
+		actions: [ "Refresh", "Close"],
+		title : "Add Guest Contact",
+		content : "addGuest",
+		modal : false,
+		width : "430px",
+		close : onClose,
+		deactivate : function(e) {
+			this.destroy();
+		}
+	}).data("kendoWindow").center().open();
+	$('[data-role="draggable"]').css('top', '20px');
+}
+var onClose = function() {
+	//this.destroy();   
+};
+
+/* $(document).ready(function() {
+	$("#dateOfBirth").kendoDatePicker();
+	$("#dateOfBirthAdd").kendoDatePicker();
+	$("#top_profile").attr('class', 'current');
+	$("#top_login").attr('class', '');
+	
+	
+$(document).on('click', '#addGuestBtn', function(){	
+	alert("on clik on addguest buttom");
+	var url = "isEmailExists";
+	var validator1 = $(document).find("#addGuestForm").validate({
+		debug: true,
+		errorElement: "em",			
+		errorPlacement: function(error, element) {
+			$element = $(element);			
+			//console.log($element.hasClass("dateOfBirth"));
+			if($element.attr("id") == "dateOfBirthAdd"){
+				$element.parent().parent().parent().next("td").html("");
+				element.addClass("inputErrorr");
+				error.appendTo(element.parent().parent().parent().next("td"));
+				element.parent().parent().parent().next("td").addClass("textMsgError");
+				$element.parent().parent().parent().next("td").css("color","red");
+			}else{
+				element.addClass("inputErrorr");
+				error.appendTo(element.parent("td").next("td"));
+				element.parent("td").next("td").addClass("textMsgError");
+				$element.parent("td").next("td").css("color","red");
+			}
+			//$("#wizard"). smartWizard("fixHeight");
+			/* element.addClass("inputErrorr");
+			error.appendTo(element.parent("td").next("td"));
+			element.parent("td").next("td").addClass("textMsgError"); */
+	/* 	},
+		success: function(label, element) {
+			//alert("success");
+			//label.text("ok!").addClass("success");
+			var $element = $(element);
+			var $label = $(label);
+	       	$element.removeClass("inputErrorr");
+			$element.removeClass("error");
+			$element.addClass("success");
+			
+			$label.removeClass("textMsgError");
+			$label.removeClass("error");
+			$label.addClass("success");
+			//$("#wizard"). smartWizard("fixHeight");
+			
+		},
+		rules: {
+			"firstName": {
+				required: true,
+				minlength: 2,
+				maxlength: 30
+			},
+			"lastName": {
+				required: true,
+				minlength: 2,
+				maxlength: 30
+			},
+			"dateOfBirth": {
+				required: true,
+				//check_date_of_birth: true,
+			},
+			"Email" : {				
+				email: true				
+			}						
+			
+		},
+		messages: {
+			"firstName": {				
+				required: "Please enter your First Name",
+				minlength: "First Name must consist of at least 2 characters",
+				maxlength : "First Name must be less than of 30 characters"
+			},
+			
+			"lastName": {				
+				required: "Please enter your Last Name",
+				minlength: "Last Name must consist of at least 2 characters",
+				maxlength : "Last Name must be less than of 30 characters"
+			},			
+			"dateOfBirth" : {
+		    	  required: "Please enter your Date of Birth",
+		    	  //check_date_of_birth : "You must be less than "+ $("#kidsAgeValidation").html() +" years of age, or choose another membership product"
+					
+		    },
+	        "Email" : {				
+				email: "Please enter correct email address"				
+			}
+		}				
+	});	
+	
+	
+	if(!$("#addGuestForm").valid()) {
+		 //console.log("")
+		 return false;
+	} else {
+		//console.log("Validation Success submittting form");
+		addcurrentfamilymember();
+	}
+	
+	
+});
+
+});
+ */
+ 
+
+
+
+
+/* function addGuestmember(){
+	$(".k-loading-mask").show();
+	$(".k-loading-text").html("Please wait while the guest is added");
+	
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan1").css("display", "none");		
+	 $( "#tcErrorSpan1" ).html("");
+	  
+	//alert($('#addMembershipForm').serialize());
+	$.ajax({
+		  type: "POST",
+		  url: $('#addGuestForm').attr( "action"),
+		  data: $('#addGuestForm').serialize(),
+		  success: function( data ) {
+			  var jsonDataArr = jQuery.parseJSON(data);
+			  if(jsonDataArr != null && jsonDataArr.length > 0){			  
+			  	  if(jsonDataArr[0] != null && jsonDataArr[0].Success != null && jsonDataArr[0].Success =='Success'){
+				  	  $("#tcErrorSpan").css("display", "none");		
+					  $("#tcErrorSpan" ).html("");	
+					  //$("#tcSuccessSpan").css("display", "block");		
+					  //$("#tcSuccessSpan" ).html("Profile Information Updated successfully.");
+					  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 100);
+					  setTimeout(function(){$(".k-loading-text").html("Guest was added successfully");$(".k-loading-text").fadeIn("slow");}, 300);
+				  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 500);
+				  	  //setTimeout(function(){location.href='view_membership';}, 7000);
+				  	  //setTimeout(function(){location.reload();}, 7000);
+				  	  //getFamilymembers();
+				  	  $("#tcSuccessSpan1").css("display", "block");		
+					  $("#tcSuccessSpan1" ).html("You are checking-in an guest member..");	
+					  $("#guestCount").css("display", "block");	
+					  $("#guestCount").html("Guest Check-In count = "+jsonDataArr[0].guestCount);
+					  $("#tcErrorSpan1").css("display", "none");		
+					  $( "#tcErrorSpan1" ).html("");
+					  $("#addGuestBtn").hide();
+					//  setTimeout(function(){location.href='view_membership';}, 4000);
+				  	  //closeAllwindow();
+				  	  $(".k-loading-mask").hide();
+				  	//location.href='view_membership';
+				  	  
+			  	  }
+			  	 else if(jsonDataArr[0] != null && jsonDataArr[0].Duplicate != null && jsonDataArr[0].Duplicate=='Duplicate'){
+			  		  $("#tcSuccessSpan1").css("display", "none");		
+					  $("#tcSuccessSpan1" ).html("");	
+					  $("#tcErrorSpan1").css("display", "block");		
+					  $( "#tcErrorSpan1" ).html("You have already checked-in this  guest 5 times..!!");
+					  $(".k-loading-mask").hide();
+			  	  }
+			  	  else{
+			  		  $("#tcSuccessSpan1").css("display", "none");		
+					  $("#tcSuccessSpan1" ).html("");	
+					  $("#tcErrorSpan1").css("display", "block");		
+					  $( "#tcErrorSpan1" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+			  	  }
+			  }else{					  
+				  $("#tcSuccessSpan1").css("display", "none");		
+				  $("#tcSuccessSpan1" ).html("");	
+				  $("#tcErrorSpan1").css("display", "block");		
+				  $( "#tcErrorSpan1" ).html("There was some error. Please try again later");
+				  $(".k-loading-mask").hide();
+			  }
+			  //$(".k-loading-mask").hide();
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			  $("#tcSuccessSpan1").css("display", "none");		
+			  $("#tcSuccessSpan1" ).html("");	
+			  $("#tcErrorSpan1").css("display", "block");		
+			  $( "#tcErrorSpan1" ).html("There was some error. Please try again later");
+			  $(".k-loading-mask").hide();
+		  }
+	});
+} */
+</script>

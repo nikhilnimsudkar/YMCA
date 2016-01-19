@@ -1,0 +1,20 @@
+<html>
+<body>
+<p>
+<strong>SOR Alert - ${Facility_Checkin_Location}</strong><br>
+${Checkin_Datetime}
+</p>
+
+<p>
+Name=${name}<br>
+Gender=${gender}<br>
+Age=${age}<br>
+Location=${Facility_Checkin_Location}<br>
+Branch=${Facility_Checkin_Branch}<br>
+AccessNbr=${Facility_Access_Number}<br>
+</p>
+
+<p>Access the sex offender details <a href="${link}">here</a> </p>
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="member_profile_1">
+	<div id="tabstrip" class="k-block" style="border-color:#fcaf17;">
+		<ul>
+			<li class="k-state-active">
+				<span class="head">PRIMARY FAMILY CONTACT INFORMATION</span>
+			</li>
+		</ul>
+		 <div>
+			<div id="team">
+				<div id="team_info" style="float:left; width:100px; padding-top:50px;">
+					<span class="name">${usInfo.personFirstName } ${usInfo.personLastName }</span>
+				</div>
+				<%-- <div style="float:right;padding-top:5px;border:0px solid; width:160px;">
+					<span style="font-size:11px;">I am interested in</span>
+					<div>&nbsp;</div>
+					<div id="team_section" class="scroller" style="font-size:11px">
+						<c:forEach var="vactivity" items="${volunteerActivity}" varStatus="count">
+							<input type="checkbox" id="volunteerActivity" name="volunteerActivity_${usInfo.contactId}" value="${vactivity.id }" /> ${vactivity.activity } <br />
+						</c:forEach>									
+					</div>
+				</div> --%>
+			</div>
+			<span class="profilepic" style="background: url('<%=contextPath %>/${usInfo.profileImage}') transparent no-repeat 0 0;">&nbsp;</span>
+		<!-- 	<img src="A:/YMCA-06-04-15/ymca/web/src/main/webapp/resources/img/portal_Images/defaultpic.jpg" alt="" ></img> -->
+			
+			<%-- <div>
+				<div class="moreinfo">
+					Family Contact and Program <br />Information
+					<span class="viewmore" onclick="view_member('P','${usInfo.contactId}')" style="margin-left : 95px;">View</span>
+					<span style="">
+			 			<a id="addmemberLink" href="#" style="float:right;" onclick="add_member();">Add Family Contact</a>
+			 		</span>
+				</div>				
+		 	</div> --%>
+		</div>
+	</div>
+</div>
+
+
+<c:if test="${ userCount >= 1}">
+<div id="member_profile_2">
+	<div id="tabstrip1" class="k-block">
+		<ul>
+			<li class="k-state-active">
+				<span class="head">ADDITIONAL MEMBER(S)</span>
+			</li>
+		</ul>
+		 <div>
+		 	<span style="float: right; width: 100%; right: 0px; top: -30px; position: relative;">
+		 		<!-- <a id="addmemberLink" href="#" style="float:right;" onclick="add_member();">Add Member</a> -->
+		 	</span>
+		 	<c:forEach var="member" items="${userS}" varStatus="count">
+			  	<div id="team">
+			  	<span id="checkinMember" class="k-button" onclick="membercheckin('${member.contactId}')" style="text-shadow: none; width: 110px; margin-top: 46px;">CHECK-IN</span>
+			  	<span style="background-color: green; border: 0px none; font-size: 18px; display:none;" id="chkdmem">Member Checked</span>
+					<div id="team_info" style="float:left; width:100px; padding-top:50px;">
+						<span class="name">${member.personFirstName } ${member.personLastName }</span>
+						
+					</div>
+					</div>
+					<%-- <span class="profilepic" style="background: url('${.profileImage}'); transparent no-repeat 0 0;height: 113px;">&nbsp;</span> --%>
+					<span class="profilepic" style="background: url('<%=contextPath %>/${member.profileImage}') transparent no-repeat 0 0;">&nbsp;</span>
+				<c:if test="${!count.last}"><hr></c:if>
+			</c:forEach>
+			
+		
+		</div>
+	</div>
+</div>
+</c:if>
+
+<script  type="text/javascript">
+$("#tabstrip1").kendoTabStrip({
+	animation : {
+		open : {
+			effects : "fadeIn"
+		}
+	}
+});
+$("#tabstrip2").kendoTabStrip({
+	animation : {
+		open : {
+			effects : "fadeIn"
+		}
+	}
+});
+
+$('.scroller').slimScroll({
+	height : '110px',
+	width : '160px',
+	alwaysVisible : true,
+	color : '#666666',
+	distance : '4px',
+	railVisible : true,
+	allowPageScroll : true
+}).parent().css({
+	border : '1px solid #cccccc'
+});
+
+
+
+function membercheckin(memberContactId){
+	//alert("Membershipid contact id");
+	//alert(memberContactId);
+	//$("#m_id").val(12);
+	if (memberContactId != '') {
+		
+		$.ajax({
+			url : "checkIn_member?memberContactId=" + memberContactId,
+			success : function(data) {
+				 if(data=='SUCCESS'){
+					 $("#checkinMember").hide();
+					 $("#chkdmem").show();
+					 
+				 }
+				
+			}
+		});
+	}
+}
+
+
+
+
+
+
+</script>

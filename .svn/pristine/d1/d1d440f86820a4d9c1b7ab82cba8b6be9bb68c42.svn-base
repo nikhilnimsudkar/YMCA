@@ -1,0 +1,365 @@
+// JavaScript Document
+$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_programregistration").attr('class','');
+		$("#top_childcare").attr('class','current');
+		
+		$("#page_name").html("CHILD CARE MANAGEMENT");
+		//$("#page_name").html("PAYMENT INFORMATION");
+		$("#location").kendoDropDownList();
+		$("#type").kendoDropDownList();
+		
+		$("#cart-header").appendTo("#shoppingcart");
+		
+		$("#agerangeslider").kendoRangeSlider({
+            change: rangeSliderOnChange,
+            slide: rangeSliderOnSlide,
+            min: 1,
+            max: 100,
+            smallStep: 1,
+            largeStep: 2,
+            tickPlacement: "both"
+        });
+		
+		$( "#SearchBtn" ).click(function(){
+			 $("#tcSuccessSpan").css("display", "none");
+			 $("#tcErrorSpan").css("display", "none");
+			 $(".k-loading-mask").show();
+			 //$("#details-checkout").fadeOut("fast");
+			 getChildcareGrid();
+			 getInserviceGrid();
+			 getAfterSchoolGrid();
+			 
+			 $(".k-loading-mask").hide();
+		});
+		
+		$( "#cart-info" ).click(function(){
+			 $("#tcSuccessSpan").css("display", "none");		
+			 $("#tcSuccessSpan" ).html("");	
+			 $("#tcErrorSpan").css("display", "none");		
+			 $( "#tcErrorSpan" ).html("");
+			 
+			$("#childcare").hide();
+			$("#searchchildcare").fadeOut();
+			$("#payment_cart").hide();
+			$("#familymembers").hide();
+			$("#checkout_content").show();
+			$("#details-checkout").show();
+			$("#add-to-cart").hide();
+			
+			location.href = '#/checkout';
+			$("#backtofamily").hide();
+			setTimeout(function(){
+				if(cartPreviewModel.totalPrice()=='$0.00'){
+					$("#promo").hide();
+				}else{
+					$("#promo").show();
+				}
+			}, 500);
+		});
+});
+
+function emptycart(){
+	$("#searchchildcare").fadeIn(100);
+	
+}
+
+function getChildcareGrid(){
+		var location = $("#location").val();
+		var age_min = $("#min_age").val();
+		var age_max = $("#max_age").val();
+		var keyword = $("#keyword").val();
+		
+		$.ajax({
+			  type: "GET",
+			  url:"searchchildcare?location="+location+"&keyword="+keyword+"&minage="+age_min+"&maxage="+age_max, 
+			  success: function( data ) {
+				$("#childcare_session").html(data);
+				
+				$("#childcare_list").kendoGrid({
+					dataSource: {
+						pageSize: 10
+					},
+					pageable: true
+				});
+				$("#childcare_list").show();
+				$("input[type='checkbox']").uniform();
+			  },
+			  error: function( xhr,status,error ){
+				  $("#tcSuccessSpan").css("display", "none");
+			 	  $("#tcErrorSpan").css("display", "none");
+				  $("#tcErrorSpan").html("There is some error please try again later");
+			  }
+		});
+}
+
+function getInserviceGrid(){
+		var location = $("#location").val();
+		var age_min = $("#min_age").val();
+		var age_max = $("#max_age").val();
+		var keyword = $("#keyword").val();
+		
+		$.ajax({
+			  type: "GET",
+			  url:"searchInservice?location="+location+"&keyword="+keyword+"&minage="+age_min+"&maxage="+age_max,
+			  success: function( data ) {
+				$("#inservice_session").html(data);
+				
+				$("#inservice_list").kendoGrid({
+					dataSource: {
+						pageSize: 10
+					},
+					pageable: true
+				});
+				$("#inservice_list").show();
+				$("input[type='checkbox']").uniform();
+			  },
+			  error: function( xhr,status,error ){
+				  $("#tcSuccessSpan").css("display", "none");
+			 	  $("#tcErrorSpan").css("display", "none");
+				  $("#tcErrorSpan").html("There is some error please try again later");
+			  }
+		});
+}
+
+function getAfterSchoolGrid(){
+	var location = $("#location").val();
+	var age_min = $("#min_age").val();
+	var age_max = $("#max_age").val();
+	var keyword = $("#keyword").val();
+	
+	$.ajax({
+		  type: "GET",
+		  url:"searchAfterschool?location="+location+"&keyword="+keyword+"&minage="+age_min+"&maxage="+age_max,
+		  success: function( data ) {
+			$("#afterschool_session").html(data);
+			
+			$("#afterschool_list").kendoGrid({
+				dataSource: {
+					pageSize: 10
+				},
+				pageable: true
+			});
+			$("#afterschool_list").show();
+			$("input[type='checkbox']").uniform();
+		  },
+		  error: function( xhr,status,error ){
+			  $("#tcSuccessSpan").css("display", "none");
+		 	  $("#tcErrorSpan").css("display", "none");
+			  $("#tcErrorSpan").html("There is some error please try again later");
+		  }
+	});
+}
+
+function rangeSliderOnSlide(e) {
+	//kendoConsole.log("Slide :: new slide values are: " + e.value.toString().replace(",", " - "));
+}
+
+function rangeSliderOnChange(e) {
+	//kendoConsole.log("Change :: new values are: " + e.value.toString().replace(",", " - "));
+}
+
+function calcPrice(){
+	var hourlyrate = 0 , fulldayfactor = 0, fulldayhours = 0
+	var totaldays = 0;
+	var totalmonthlyprice = 0;
+	var cc_signup = [];
+	var daysFactorArr = {}; 
+	var lstLocations = [];
+	var selectedDays = [];
+	var daysArr = {};
+	daysArr[1] = "Mon";
+	daysArr[2] = "Tues";
+	daysArr[3] = "Wed";
+	daysArr[4] = "Thurs";
+	daysArr[5] = "Fri";
+	
+	$('#childcare_list').find('input[name="ItemDetailsId"]').each(function(){
+		var itemDetailsId = this.value;
+		var tier = $("#tier_"+itemDetailsId).val();
+		var noofdays = $("#noofday_"+itemDetailsId).val();
+		var noofmonths = $("#noofmonth_"+itemDetailsId).val();
+		var location = $("#location_"+itemDetailsId).val();
+		var capacity1 = $("#capacity1_"+itemDetailsId).val();
+		var capacity2 = $("#capacity2_"+itemDetailsId).val();
+		var capacity3 = $("#capacity3_"+itemDetailsId).val();
+		var capacity4 = $("#capacity4_"+itemDetailsId).val();
+		var capacity5 = $("#capacity5_"+itemDetailsId).val();
+		
+		$.ajax({
+			  type: "POST",
+			  url: "getPricingruleByItemDetailsIdAndTier",	
+			  data: { itemDetailsId: itemDetailsId, tier : tier},
+			  async: false,
+			  dataType: "json",
+			  success: function( data ) {
+				 console.log(data);
+				 if(data.length>0){
+					 $.each(data, function(i,pr) {
+						 hourlyrate = parseFloat(pr.hourlyRate);
+						 fulldayfactor = parseFloat(pr.fullDayFactor);
+						 fulldayhours = parseFloat(pr.fullDayHours);  
+						 daysFactorArr[1] = parseFloat(pr.day1Factor);
+						 daysFactorArr[2] = parseFloat(pr.days2Factor);
+						 daysFactorArr[3] = parseFloat(pr.days3Factor);
+						 daysFactorArr[4] = parseFloat(pr.days4Factor);
+						 daysFactorArr[5] = parseFloat(pr.days5Factor);
+					 });
+				 }
+					 
+			  },
+			  error: function( xhr,status,error ){
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("There was some error. Please try again later");			
+			  }
+		});	
+		
+		lstLocations.push(location);
+		
+		cc_signup.push({ 	
+				itemDetailsId: itemDetailsId, 
+				tier: tier,
+				hourlyrate: hourlyrate,
+				fulldayfactor: fulldayfactor,
+				fulldayhours: fulldayhours,
+				daysFactorArr: daysFactorArr,
+				noofdays: noofdays,
+				noofmonths: noofmonths,
+				location: location,
+				capacity1: capacity1,
+				capacity2: capacity2,
+				capacity3: capacity3,
+				capacity4: capacity4,
+				capacity5: capacity5,
+				day1: 0, 
+				day2:0, 
+				day3:0, 
+				day4:0, 
+				day5:0, 
+				totalcount:0, 
+				totalperweek:0, 
+				totalperday:0, 
+				totalpermonth:0, 
+				totalyearly:0,
+				days:""
+		});
+	});
+	
+	lstLocations = ArrNoDupe(lstLocations);
+	console.log("1");
+	console.log(cc_signup);
+	
+	for(dId = 1; dId <= 5; dId++){
+		$.each(lstLocations, function(index, value){
+			var locId = value;
+
+			var proceed = false;
+			var fullday = true;
+			var FDF = 1;
+			
+			$('#childcare_list').find('input[class="slot_'+dId+'_'+locId+'"]').each(function(){
+				if($("#slot_"+this.value).is(':checked')){
+					proceed = true;
+					totaldays = dId;
+					
+				} else {
+					fullday = false;
+				}
+			});
+	
+			if(proceed){
+				//totaldays = totaldays+1;
+	
+				for (var i = 0; i < cc_signup.length; i ++) {
+			        var current = cc_signup[i];
+			        if(current.location==locId){
+				        if(fullday)
+							 FDF = current.fulldayfactor;
+						
+						console.log("ItemDetailsId:" + current.itemDetailsId +" Full Day:" + fullday + " - FDF:" + FDF + " fulldayhours:" + current.fulldayhours + " hourlyrate:" + current.hourlyrate );
+						var step1 = FDF * current.fulldayhours * current.hourlyrate;
+				        
+						if($("#slot_"+dId+"_"+current.itemDetailsId).is(':checked')){
+							
+					        if(dId==1)
+					        	current.day1 = step1;
+					        if(dId==2)
+					        	current.day2 = step1;
+					        if(dId==3)
+					        	current.day3 = step1;
+					        if(dId==4)
+					        	current.day4 = step1;
+					        if(dId==5)
+					        	current.day5 = step1;
+						}
+			        }
+			    }
+				
+				console.log("Day: " + dId +" - " + step1);
+			}
+		});
+	}
+	
+	console.log("Total days:" + totaldays);
+	var dayfactor = daysFactorArr[totaldays];
+	console.log("Day factor:" +dayfactor);
+	
+	console.log("2");
+	console.log(cc_signup);
+	
+	// Calculate Daily Weekly Monthly Yearly Price for each items
+	for (var i = 0; i < cc_signup.length; i ++) {
+		 var current = cc_signup[i];
+		 
+		 var totalcount = current.day1 + current.day2 + current.day3 + current.day4 + current.day5; 
+		 current.totalcount = totalcount;
+		 
+		 var totalperweek = parseFloat(dayfactor) * current.totalcount;
+		 current.totalperweek = totalperweek;
+		 
+		 var totalperday = totalperweek/5;
+		 current.totalperday = totalperday;
+		 
+		 if(current.noofdays!=""){
+			 var totalyearly = totalperday * parseFloat(current.noofdays);
+			 current.totalyearly = totalyearly;
+		 }
+		 
+		 var totalpermonth = 0;
+		 if(current.noofmonths!=""){
+			 totalpermonth = totalyearly/parseFloat(current.noofmonths);
+			 current.totalpermonth = totalpermonth;
+		 }
+		 
+		 totalmonthlyprice += totalpermonth;
+	}
+	
+	console.log("3");
+	console.log(cc_signup);
+	$("#totalchildcareprice").html("$ "+totalmonthlyprice.toFixed(2));
+	
+	items.fetch(function() {
+			var data = this.data();
+			//console.log(data);
+			for (var i = 0; i < cc_signup.length; i ++) {
+				 var current = cc_signup[i];
+				
+				 if(current.itemDetailsId!=-9){
+					 var iid = items.get(current.itemDetailsId);
+					 console.log(iid);
+					 console.log(iid.memberprice);
+					 console.log(iid.nonmemberprice);
+					 iid.set("memberprice",current.totalpermonth);
+					 iid.set("nonmemberprice",current.totalpermonth);
+					 iid.set("days",current.days);
+					 console.log(iid.memberprice);
+					 console.log(iid.nonmemberprice);
+				 }
+			}
+	});
+	
+}

@@ -1,0 +1,109 @@
+package com.ymca.web.service;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.GrantedAuthorityImpl;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.model.Account;
+import com.ymca.model.Donation;
+import com.ymca.model.Program;
+import com.ymca.model.User;
+
+@Service 
+public class UserService implements UserDetailsService{
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	 @Override  
+	 public UserDetails loadUserByUsername(String username)  
+	            throws UsernameNotFoundException {  
+	        // TODO Auto-generated method stub  
+	          
+	        System.out.println("Entering UserService.loadUserByUsername: " + username);  
+	        User user =  null;
+	        UserDetails userDetails = null;  
+	          
+	        try  
+	        {  
+	        	Account account = accountDao.getByEmail(username.trim());
+	        	if(account.getUser() != null){
+	    			for (Iterator<User> it = account.getUser().iterator(); it.hasNext(); ) {
+	    	    		user = it.next();
+	    					        
+	    		    }
+	    		}
+
+	            userDetails = new org.springframework.security.core.userdetails.User(  
+	            		username.trim(), user.getPassword().toLowerCase(), true,  
+	                    true, true, true, getAuthorities(0));  
+	        }  
+	          
+	        catch (UsernameNotFoundException ex)  
+	        {  
+	            System.out.println(ex.toString());  
+	            throw ex;  
+	        }  
+	          
+	        catch (Exception ex)  
+	        {  
+	            System.out.println(ex.toString());  
+	        }  
+	        doAutoLogin(user);
+	        return userDetails;  
+	    }  
+	      
+	    @SuppressWarnings("deprecation")
+		public Collection<GrantedAuthority> getAuthorities(Integer access) {  
+	        System.out.println("Entering UserService.getAuthorities");  
+	        List<GrantedAuthority> authList = new ArrayList<GrantedAuthority>(2);  
+	          
+	       // All users are granted with ROLE_USER access
+	 	   // Therefore this user gets a ROLE_USER by default
+	 	   authList.add(new GrantedAuthorityImpl("USER"));
+	 	    
+	 	   // Check if this user has admin access 
+	 	   // We interpret Integer(1) as an admin user
+	 	   if ( access.compareTo(1) == 0) {
+	 	    // User has admin access
+	 	    
+	 		   authList.add(new GrantedAuthorityImpl("ADMIN"));
+	 	   }
+	 	 
+	 	   // Return list of granted authorities
+	 	   return authList;
+	    }  
+	    
+	    public void doAutoLogin(User user) {
+		    try {
+		        // Must be called from request filtered by Spring Security, otherwise SecurityContextHolder is not updated
+		    	Authentication token = new UsernamePasswordAuthenticationToken(user, user.getPassword());
+		        //token.setDetails(new WebAuthenticationDetails(request));
+		        //Authentication authentication = authenticationProvider.authenticate(token);
+		        //System.out.println(authentication);
+		        //System.out.println("Logging in with [{}]"+ authentication.getPrincipal());
+		        SecurityContextHolder.getContext().setAuthentication(token);
+		    } catch (Exception e) {
+		        SecurityContextHolder.getContext().setAuthentication(null);
+		    }
+
+		}
+}

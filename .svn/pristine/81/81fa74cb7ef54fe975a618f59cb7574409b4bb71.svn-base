@@ -1,0 +1,18 @@
+reset_link_expiry_hours=48
+
+#current membership labels values
+membershipNo=Membership#
+membershipType=Membership Type
+membershipStartDate=Membership Start Date
+membershipEndDate=Membership End Date
+membershipStatus=Membership Status
+membershipFee=Membership Fee
+membershipFeeFreq=Membership Fee Frequency
+membersshipFeeNextBillingDate=Membership Fee Next Billing Date
+paymentMethod=Payment Method
+
+allItemType=Program,Event,Child Care,Camp
+view_program_search_end_date_year_count=3
+
+hallPassUsername=YmCaSV
+hallPassPassword=yMCa6445

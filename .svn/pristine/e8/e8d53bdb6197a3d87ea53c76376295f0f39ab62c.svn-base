@@ -1,0 +1,7 @@
+package com.ymca.dao;
+
+import com.ymca.model.Payer;
+
+public interface PayerDao extends GenericDao<Payer, Long> {
+
+}

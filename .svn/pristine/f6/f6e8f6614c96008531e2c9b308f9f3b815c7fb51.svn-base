@@ -1,0 +1,116 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "app_product", catalog = "ymca") 
+@XmlRootElement
+public class Product  extends BaseObject implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
+	public Product(){
+		
+	}	
+	
+	public Product(Long productId, String productName, String description) {
+		super();
+		this.productId = productId;
+		this.productName = productName;
+		this.description = description;
+	}
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "product_id", nullable = false)
+	private Long productId;
+	
+	@Column(name = "product_name", nullable = false)
+	private String productName;
+	
+	@Column(name = "description", nullable = false)
+	private String description;
+	
+	@OneToOne
+	@JoinColumn(name="pricing_rule_id_FK")
+	private PricingRule pricingRule;
+	
+	@OneToOne
+	@JoinColumn(name="waivers_and_tc_id_FK")
+	private WaiversAndTC waiversAndTC;
+	
+	
+	public Long getProductId() {
+		return productId;
+	}
+	public void setProductId(Long productId) {
+		this.productId = productId;
+	}
+	public String getProductName() {
+		return productName;
+	}
+	public void setProductName(String productName) {
+		this.productName = productName;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	public PricingRule getPricingRule() {
+		return pricingRule;
+	}
+
+	public void setPricingRule(PricingRule pricingRule) {
+		this.pricingRule = pricingRule;
+	}
+
+	public WaiversAndTC getWaiversAndTC() {
+		return waiversAndTC;
+	}
+
+	public void setWaiversAndTC(WaiversAndTC waiversAndTC) {
+		this.waiversAndTC = waiversAndTC;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Product other = (Product) obj;
+		if (productId == null) {
+			if (other.productId != null)
+				return false;
+		} else if (!productId.equals(other.productId))
+			return false;
+		return true;
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((productId == null) ? 0 : productId.hashCode());
+		return result;
+	}
+
+}

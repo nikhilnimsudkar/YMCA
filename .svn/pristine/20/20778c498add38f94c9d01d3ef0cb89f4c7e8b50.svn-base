@@ -1,0 +1,121 @@
+package com.serene.job.processor;
+
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+
+import com.serene.job.common.Constants;
+import com.serene.job.service.CommonService;
+import com.serene.job.service.InvoiceService;
+import com.serene.job.service.PaymentJobService;
+import com.ymca.model.JetPayPayment;	
+
+@Service
+@ComponentScan("com.ymca.core.service")
+public class AutomatedWaitlistProcessor extends GenericItemProcessor implements ItemProcessor<Object,Object>{
+	
+	private static final Log log = LogFactory.getLog(AutomatedWaitlistProcessor.class);
+	
+	@Resource
+	private PaymentJobService paymentJobService ;
+	@Resource
+	private CommonService commonService ;
+	@Resource
+	private InvoiceService invoiceService ;
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Object process(Object item) throws Exception {
+		
+		Map<String,Object> data = (Map<String, Object>) item;
+		
+		try {
+			if((data.get("no_of_tickets") !=null 
+					&& Integer.parseInt(data.get("no_of_tickets").toString()) <= Integer.parseInt(data.get("remaining_capacity_c").toString())) 
+					|| data.get("no_of_tickets") ==null){
+				
+				String paymentMode = data.get("payment_mode").toString();
+				String paymentMethod = data.get("paymentmethod_id").toString();
+				if(paymentMethod!=null && paymentMode!=null && !"".equals(paymentMode)){
+					String payAmount = data.get("final_amount").toString();
+					JetPayPayment jp = null;
+					
+					if(Double.parseDouble(payAmount)>0){
+						if("ACH".equalsIgnoreCase(paymentMode)){
+							// process ACH payment
+							jp = paymentJobService.processJetpayACHPayment(data, payAmount, batchJobContext.getJobSchedulerMetadata());
+						}
+						else if("CREDIT".equalsIgnoreCase(paymentMode)){
+							// process CC payment
+							jp = paymentJobService.processCCjetPayTransaction(data,payAmount, batchJobContext.getJobSchedulerMetadata());
+						}
+					}
+					
+					if(jp==null){
+						data.put("SignupStatus", "Inactive");
+					} else{
+						// capacity management
+						String signupStatus = commonService.signupCapacityManagement(data, batchJobContext.getJobSchedulerMetadata());
+						data.put("SignupStatus", signupStatus);
+						// process invoice
+						Long invoiceId = invoiceService.saveinvoice(data, batchJobContext.getJobSchedulerMetadata());
+						// process payment
+						paymentJobService.savePayment(
+								data, 
+								batchJobContext.getJobSchedulerMetadata(), 
+								Double.parseDouble(data.get("amount").toString()), 
+								invoiceId,
+								"Payment");
+						// process fa amount
+						Object fa = data.get("FAamount_c");
+		    			if(fa!=null && Double.parseDouble(fa.toString())>0){
+	    					String paymentType = "Credit Memo/FA Waiver";
+	    					paymentJobService.savePayment(
+									data, 
+									batchJobContext.getJobSchedulerMetadata(), 
+									Double.parseDouble(data.get("amount").toString()), 
+									invoiceId,
+									paymentType);
+	    				}
+						
+					}
+					
+					Calendar cal = Calendar.getInstance();
+					data.put("lastUpdatedDate", cal);
+				}
+			}
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			log.error("Error in automated waitlist processor ",e);
+		}
+		
+		return data;
+	}
+}

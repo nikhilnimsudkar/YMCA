@@ -1,0 +1,71 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%@ include file="../../layouts/include_taglib.jsp" %>
+    
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    <link rel="stylesheet" href="<%=contextPath %>/resources/css/styles.css" type="text/css" media="screen"/>
+	<link href="<%=contextPath %>/resources/css/ymca_bootstrap.css" rel="stylesheet" />   
+	<link rel="stylesheet" href="<%=contextPath %>/resources/css/style1.css" type="text/css" media="screen"/>
+    
+<body>
+<div class="k-window1" id="popup_add" style="display:none;"></div>
+<c:if test="${pageContext.request.userPrincipal.isAuthenticated()}">
+<div id="main">
+	<div id="content">	
+		<div id="myprofile">
+			<%@ include file="donationProfile.jsp" %> 
+		</div>
+	
+		<div id="donationDetailDiv">
+			<div id="donationRightSection" style="  margin-left: 35px;">
+				<%@ include file="donationHomeDashboard.jsp" %> 
+			</div>					 
+		</div>
+	</div>
+</div>
+</c:if>
+</body>
+
+<script>
+	$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_donation").attr('class','current');
+		
+		$("#page_name").html("DONATION INFORMATION");
+		
+		var isUserLoggedin = '${pageContext.request.userPrincipal.isAuthenticated()}';
+		
+		if(isUserLoggedin){
+			//getFamilymembers();
+			$("#cart-header").show();
+		}
+		else{
+			//location.href = 'addprogramtocart';
+			//window.open('addprogramtocart');
+			var window = $("#popup_add");
+			window.clone().kendoWindow({
+				title : "Login",
+				content : "loginPopup?dispatchTo=Donation",
+				modal : true,
+				width : "500px",
+				height : "550px",
+				data: { dispatchTo: 'program' },
+				close : onClose
+				
+				//deactivate : function(e) {
+				//	this.destroy();
+				//}
+			}).data("kendoWindow").center().open();
+			
+			var onClose = function() {
+				 //$("#add_member").show();
+			}
+			
+			$('Div[data-role="draggable"]').css('top', '50px');
+		}
+	});
+</script>

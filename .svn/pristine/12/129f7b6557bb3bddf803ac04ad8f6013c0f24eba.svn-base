@@ -1,0 +1,343 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<script type="text/javascript">
+function resetUpdateCardForm(){
+	 $("#updCardFullName").text('');
+ 	  $("#updCardCardNo").text('');
+ 	  $("#updCardPaymentId").attr("value","");
+ 	  $("#updCardAccountId").attr("value","");	  
+ 	  $("#expirationMonthOpt0").prop("selected", true);
+ 	  $("#expirationYearOpt0").prop("selected", true);		
+ 	  $("#billingAddressLine1").attr("value","");
+ 	  $("#billingAddressLine2").attr("value" , "");
+ 	  $("#billingCity").attr("value","");
+ 	  $("#billingState").attr("value","");
+ 	  $("#tcSuccessSpan").css("display", "none");		
+	  $("#tcSuccessSpan" ).html("");
+	  $("#tcErrorSpan").css("display", "none");		
+	  $( "#tcErrorSpan" ).html("");
+}
+
+function resetBankInfoForm(){
+	  $("#updBankRoutingNumber").text('');				  	  
+	  $("#updBankDriversLicenseNumber").text('');
+	  $("#updBankStateOfDL").text('');	
+	  $("#updBankPhoneNumber").text('');
+	  $("#updBankCheckingAccountNumber").text('');	
+	  
+	  $("#billingAddressLine1Bank").attr("value", "");
+	  $("#billingAddressLine2Bank").attr("value", "");
+	  $("#billingCityBank").attr("value", "");
+	  $("#billingStateBank").attr("value", "");
+	  
+	  $("#updBankPaymentId").attr("value", "");
+	  $("#updBankAccountId").attr("value", "");
+	  
+	  $("#bankSuccessSpan").css("display", "none");		
+	  $("#bankSuccessSpan" ).html("");	
+	  $("#bankErrorSpan").css("display", "none");		
+	  $( "#bankErrorSpan" ).html("");
+}
+  
+$(document).ready(function (){      
+	//$("#paymentId").attr("value", );
+     $('.editcardBtn').on( "click", function() {        	
+    	$(".k-loading-mask").show();
+		$(".k-loading-text").html("Please wait...");
+		var paymentId = $(this).parent().parent().find('.pmMakePrimaryPaymentId').html(); 
+		//alert(paymentId);
+		$.ajax({
+			  type: "GET",
+			  url: "updateCardInfo/"+paymentId,			 
+			  success: function( data ) {				 
+			  	 if(data!=null){
+			  		  resetUpdateCardForm();
+			  		  resetBankInfoForm();
+				  	  $("#updCardFullName").text(data.fullName);
+				  	  $("#updCardCardNo").text(data.cardNumber);
+				  	  $("#updCardPaymentId").attr("value",data.paymentId);
+				  	  $("#updCardAccountId").attr("value",data.customer.accountId);				  	  		  	  
+				  	  $("select#expirationMonth option").each(function() { this.selected = (this.text == data.expirationMonth); });
+				 	  $("select#expirationYear option").each(function() { this.selected = (this.text == data.expirationYear); });				  	
+				  	  $("#billingAddressLine1").attr("value",data.billingAddressLine1);
+				  	  $("#billingAddressLine2").attr("value" , data.billingAddressLine2);
+				  	  $("#billingCity").attr("value",data.billingCity);
+				  	  $("#billingState").attr("value",data.billingState);
+			  			
+				  	  $("#tcErrorSpan").css("display", "none");		
+					  $("#tcErrorSpan" ).html("");
+					  $("#purchase").css("display", "none");
+					  $("#updateBankInfoDiv").css("display", "none");
+					  $("#addBankCardInfoDiv").css("display", "none");
+					  $("#updateCardInfoDiv").css("display", "block");							  						  
+			  	  }else{
+			  		  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcSuccessSpan" ).html("");	
+					  $("#tcErrorSpan").css("display", "block");		
+					  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+			  	  } 
+				  //$(".k-loading-mask").hide();
+			  },
+			  error: function( xhr,status,error ){
+				  //alert("1" +status);
+				  console.log(xhr);
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+				  $(".k-loading-mask").hide();
+			  }
+		});
+     });
+     
+     $('.editBankBtn').on( "click", function() {        	
+     	$(".k-loading-mask").show();
+ 		$(".k-loading-text").html("Please wait...");	
+ 		var paymentId = $(this).parent().parent().find('.pmMakePrimaryPaymentId').html(); 
+ 		$.ajax({
+ 			  type: "GET",
+ 			  url: "updateBankInfo/"+paymentId,			 
+ 			  success: function( data ) {		  	 
+ 			  	 if(data!=null){
+ 			  		  resetUpdateCardForm();
+			  		  resetBankInfoForm();			  		 
+				  	  $("#updBankRoutingNumber").text(data.bankRoutingNumber);				  	  
+				  	  $("#updBankDriversLicenseNumber").text(data.driversLicenseNumber);
+				  	  $("#updBankStateOfDL").text(data.stateOfDL);	
+				  	  $("#updBankPhoneNumber").text(data.phoneNumber);
+				  	  $("#updBankCheckingAccountNumber").text(data.checkingAccountNumber);	
+				  	  
+				  	  $("#billingAddressLine1Bank").attr("value",data.billingAddressLine1);
+				  	  $("#billingAddressLine2Bank").attr("value", data.billingAddressLine2);
+				  	  $("#billingCityBank").attr("value",data.billingCity);
+				  	  $("#billingStateBank").attr("value",data.billingState);
+				  	  
+				  	  $("#updBankPaymentId").attr("value",data.paymentId);
+				  	  $("#updBankAccountId").attr("value",data.customer.accountId);  	  
+				  	 
+					  $("#bankErrorSpan").css("display", "none");		
+					  $( "#bankErrorSpan" ).html("");
+ 					 $("#purchase").css("display", "none");
+					  $("#updateCardInfoDiv").css("display", "none");
+					  $("#addBankCardInfoDiv").css("display", "none");
+ 					  $("#updateBankInfoDiv").css("display", "block");						  					  
+ 			  	  }else{
+ 			  		  $("#bankSuccessSpan").css("display", "none");		
+	 			  	  $("#bankSuccessSpan" ).html("");	
+	 			  	  $("#bankErrorSpan").css("display", "block");		
+	 			  	  $( "#bankErrorSpan" ).html("There was some error. Please try again later");	 					  
+ 					  $(".k-loading-mask").hide();
+ 			  	  } 
+ 				  //$(".k-loading-mask").hide();
+ 			  },
+ 			  error: function( xhr,status,error ){
+ 				  //alert("1" +status);
+ 				  //console.log(xhr);
+ 				  $("#bankSuccessSpan").css("display", "none");		
+			  	  $("#bankSuccessSpan" ).html("");	
+			  	  $("#bankErrorSpan").css("display", "block");		
+			  	  $( "#bankErrorSpan" ).html("There was some error. Please try again later");
+ 				  $(".k-loading-mask").hide();
+ 			  }
+ 		});
+      });
+     
+     $('#addCardBankDetail').on( "click", function() {        	
+      	$(".k-loading-mask").show();
+  		$(".k-loading-text").html("Please wait...");
+  		$("#tcErrorSpan").css("display", "none");		
+	    $("#tcErrorSpan" ).html("");	
+	    $("#purchase").css("display", "none");
+	    $("#updateCardInfoDiv").css("display", "none");
+	    $("#updateBankInfoDiv").css("display", "none");	
+	    $("#addBankCardInfoDiv").css("display", "block");	
+  		/* var paymentId = $(this).parent().parent().find('.paymentIdSpan').html(); 
+ 		$.ajax({
+ 			  type: "GET",
+ 			  url: "updateBankInfo/"+paymentId,					 
+  			  success: function( data ) {		  	 
+  			  	 if(data!=null){
+  				  	  $("#tcErrorSpan").css("display", "none");		
+  					  $("#tcErrorSpan" ).html("");	
+  					  $("#purchase").css("display", "none");
+ 					  $("#updateCardInfoDiv").css("display", "none");
+  					  $("#updateBankInfoDiv").css("display", "none");	
+  					  $("#addBankCardInfoDiv").css("display", "block");	
+  			  	  }else{
+  			  		  $("#tcSuccessSpan").css("display", "none");		
+  					  $("#tcSuccessSpan" ).html("");	
+  					  $("#tcErrorSpan").css("display", "block");		
+  					  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+  					  $(".k-loading-mask").hide();
+  			  	  } 
+  				  //$(".k-loading-mask").hide();
+  			  },
+  			  error: function( xhr,status,error ){
+  				  //alert("1" +status);
+  				  console.log(xhr);
+  				  $("#tcSuccessSpan").css("display", "none");		
+  				  $("#tcSuccessSpan" ).html("");	
+  				  $("#tcErrorSpan").css("display", "block");		
+  				  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+  				  $(".k-loading-mask").hide();
+  			  }
+  		}); */
+       });
+     
+     $('#pmPrimary').on( "click", function() {        	
+      	//$(".k-loading-mask").show();
+  		//$(".k-loading-text").html("Please wait...");	
+  		var paymentId = $('input[name=paymentInfoRadio]:checked').parent().parent().parent().parent().find('.pmMakePrimaryPaymentId').html();  		
+  		$.ajax({
+  			  type: "GET",
+  			  url: "updatePaymentMethodPrimary/"+paymentId,			 
+  			  success: function( data ) {		  	 
+  			  	 if(data=="SUCCESS"){
+ 					  $("#pmPrimaryError").css("display", "none");		
+ 					  $("#pmPrimaryError" ).html("");					  
+ 					  $("#pmPrimarySuccess").css("display", "block");		
+	 			  	  $("#pmPrimarySuccess" ).html("The Selected Payment Method successessfully set as Primary.");  
+	 			  	  setTimeout(function(){
+						 $("#pmPrimarySuccess").css("display", "none");
+				      }, 5000);
+					  setTimeout(function(){
+						 $("#bankSuccessSpan" ).html("");	
+				      }, 5000);
+  			  	  }else{
+  			  		  $("#bankSuccessSpan").css("display", "none");		
+ 	 			  	  $("#bankSuccessSpan" ).html("");	
+ 	 			  	  $("#pmPrimaryError").css("display", "block");		
+ 	 			  	  $("#pmPrimaryError" ).html("There was some error. Please try again later");	 
+ 	 			  	setTimeout(function(){
+						 $("#pmPrimaryError").css("display", "none");
+				      }, 5000);
+					  setTimeout(function(){
+						 $("#pmPrimaryError" ).html("");	
+				      }, 5000);
+  					  $(".k-loading-mask").hide();
+  			  	  } 
+  				  //$(".k-loading-mask").hide();
+  			  },
+  			  error: function( xhr,status,error ){
+  				  //alert("1" +status);
+  				  //console.log(xhr);
+  				  $("#bankSuccessSpan").css("display", "none");		
+ 			  	  $("#bankSuccessSpan" ).html("");	
+ 			  	  $("#pmPrimaryError").css("display", "block");		
+ 			  	  $( "#pmPrimaryError" ).html("There was some error. Please try again later");
+ 			  	setTimeout(function(){
+					 $("#pmPrimaryError").css("display", "none");
+			      }, 5000);
+				  setTimeout(function(){
+					 $("#pmPrimaryError" ).html("");	
+			      }, 5000);
+  				  $(".k-loading-mask").hide();
+  			  }
+  		}); 
+       });
+     
+     
+ });
+
+</script>
+
+<div id="tabstrip5" class="k-block" style="width:420px; border-color:#fcaf17;">
+	<span class="head" width="100%" style="margin-left:3px;">MY PROFILE</span>
+	<div id="team">
+		<div id="team_info" style="float: left; padding: 20px;">
+			<span class="pname">${usInfo.firstName } ${usInfo.lastName }</span>
+			<c:if test="${ userCount >= 1}"><br>
+				<c:forEach var="member" items="${userS}" varStatus="count">
+					<br><span class="name">${member.firstName } ${member.lastName }</span>
+				</c:forEach>
+			</c:if>
+		</div>
+	</div>
+	<span class="profilepic" style="background: url('${usInfo.profileImage}') transparent no-repeat 0 0;">&nbsp;</span>
+	
+	<%-- <div id="pay_information" class="pay_header">
+		<span class="head" style="width:100px; padding-top:50px; margin-left:3px;">PAYMENT INFORMATION</span>
+		<div style="font-size: 10px;">
+			<table>				
+				<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'Credit' }">
+						<tr>
+							<td><span>Credit & Debit Cards</span></td>
+							<!-- <td><span>XXXX-XXXX-XXXX-1234</span></td> -->
+							<td><span>${paymentInfo.cardNumber }</span></td>					
+							<td><span class="paymentIdSpan" style="display:none;">${paymentInfo.paymentId }</span></td>
+							<td><button id="editcardBtn" class="k-button editcardBtn">Edit card Info</button></td>
+						</tr>
+					</c:if>
+					
+				</c:forEach>	
+				<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'EFT' }">
+							<tr>
+								<td><span>Bank Details</span></td>
+								 <!-- <td><span>XXXXX-XXXXX</span></td> -->
+								<td><span>${paymentInfo.bankRoutingNumber }</span></td> 
+								<td><span class="paymentIdSpan" style="display:none;">${paymentInfo.paymentId }</span></td>
+								<td><button id="editcartBtn" class="k-button editBankBtn">Edit Bank Info</button></td>
+							</tr>
+						</c:if>		
+				</c:forEach>	
+				<tr>
+					<td><span>Credit & Debit Cards</span></td>
+					<!-- <td><span>XXXX-XXXX-XXXX-1234</span></td> -->
+					<td><span>${paymentInfoLst[0].cardNumber }</span></td>					
+					<td></td>
+					<td><button id="editcardBtn" class="k-button">Edit card Info</button></td>
+				</tr>
+				<tr>
+					<td><span>Bank Details</span></td>
+					 <!-- <td><span>XXXXX-XXXXX</span></td> -->
+					<td><span>${paymentInfoLst[0].bankRoutingNumber }</span></td> 
+					<td></td>
+					<td><button id="editcartBtn" class="k-button">Edit Bank Info</button></td>
+				</tr>
+				<tr>					
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td><button id="addCardBankDetail" class="k-button">Add Card/Bank Info</button></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	
+	<div id="pay_history" class="pay_header">
+		<span class="head" style="width:100px; padding-top:50px; margin-left:3px;">PAYMENT HISTORY</span>
+		<div style="font-size: 10px; padding:4px;">
+			<span>Recent Payments</span><br>
+			<table>
+				<tr>
+					<td><span>Membership Payment</span></td>
+					<td width="25%"></td>
+					<td><span>$59</span></td>
+				</tr>
+				<tr>
+					<td><span>Swim Class</span></td>
+					<td></td>
+					<td><span>$59</span></td>
+				</tr>
+				<tr>
+					<td><span>Donation</span></td>
+					<td></td>
+					<td><span>$100</span></td>
+				</tr>
+			</table>
+			<br><br>
+			<span>Next Payment Due Date</span><br>
+			<table>
+				<tr>
+					<td><span>08/05/2014</span></td>
+					<td><span>Membership Payment</span></td>
+					<td></td>
+					<td><span>$59</span></td>
+				</tr>
+				
+			</table>
+		</div>
+	</div> --%>
+</div>

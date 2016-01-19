@@ -1,0 +1,137 @@
+/**
+ * @author gpatwa
+ * This is the abstract Job Scheduler. This class contains Job Scheduler Metadata 
+ * This class is called by the Spring Scheduler
+ *  
+ */
+package com.serene.job.scheduler;
+
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.context.ApplicationContext;
+
+import com.serene.job.common.CustomJobBuilderFactory;
+import com.serene.job.common.ResultsetToHashMap;
+import com.serene.job.dao.JobDao;
+import com.serene.job.dao.JobSchedulerMetadataDao;
+import com.serene.job.logger.ItemListener;
+import com.serene.job.model.JobSchedulerMetadata;
+import com.serene.job.writer.AbstractFusionItemWriter;
+import com.serene.job.writer.ItemWriterFactory;
+
+public abstract class AbstractJobScheduler implements JobScheduler  {
+	
+	private Logger log = LoggerFactory.getLogger(AbstractJobScheduler.class);
+
+	@Resource
+	protected ItemListener itemListener;
+	
+	@Resource
+	protected JobLauncher jobLauncher;
+
+	@Resource
+	protected JobOperator jobOperator;
+
+	@Resource
+	protected ApplicationContext applicationContext;
+
+	@Resource
+	protected JobRepository jobRepository;
+
+	@Resource(name="fusionItemWriter")
+	protected AbstractFusionItemWriter fusionItemWriter ;
+	
+	@Resource 
+	protected JobBuilderFactory jobBuilderFactory ;
+	
+	@Resource 
+	protected StepBuilderFactory stepBuilderFactory  ;
+
+	@Resource 
+	protected ResultsetToHashMap resultsetToHashMap ;
+	
+	@Resource
+	protected JobDao jobDao ;
+	
+	@Resource
+	protected SpringJobScheduler springJobScheduler ;
+
+	@Resource
+	protected ItemWriterFactory itemWriterFactory ;
+	
+	@Resource
+	protected JobSchedulerMetadataDao jobSchedulerMetadataDao ;
+
+	@Resource
+	protected CustomJobBuilderFactory customJobBuilderFactory ;
+
+	
+	protected String jobParameters;
+	
+	protected DataSource dataSource ;
+	
+	protected String jobName ;
+	
+	protected Job job ;
+	
+	public void runJob() throws Exception{
+		// set thread name
+		Thread.currentThread().setName(jobName);
+		
+		//TODO Error handling
+		
+		// Reload the job metadata 
+		JobSchedulerMetadata jobSchedulerMetadata = jobSchedulerMetadataDao.findOne(jobName);
+		
+		if (jobSchedulerMetadata.getActive()) run();
+		else log.info("Skipping job " + jobSchedulerMetadata.getJobName() + " since it is disabled" );
+	}
+	
+	
+	public JobLauncher getJobLauncher() {
+		return jobLauncher;
+	}
+
+	public void setJobLauncher(JobLauncher jobLauncher) {
+		this.jobLauncher = jobLauncher;
+	}
+
+	public JobOperator getJobOperator() {
+		return jobOperator;
+	}
+
+	public void setJobOperator(JobOperator jobOperator) {
+		this.jobOperator = jobOperator;
+	}
+
+	public JobRepository getJobRepository() {
+		return jobRepository;
+	}
+
+	public void setJobRepository(JobRepository jobRepository) {
+		this.jobRepository = jobRepository;
+	}
+	
+	public void setDataSource(String dataSource){
+		this.dataSource = applicationContext.getBean(dataSource, DataSource.class);
+	}
+
+
+	public String getJobName() {
+		return jobName;
+	}
+
+
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
+	}
+}

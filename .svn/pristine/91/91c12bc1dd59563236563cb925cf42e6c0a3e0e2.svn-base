@@ -1,0 +1,93 @@
+/**
+ * @author gpatwa
+ * Model class IntermediateTable
+ */
+package com.serene.job.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.Transient;
+
+@Entity(name="batch_intermediate_table")
+@IdClass(IntermediateTablePrimaryKey.class)
+@Access (AccessType.FIELD)
+public class IntermediateTable implements Serializable {
+
+	@Id
+	private String jobName ;
+	
+	@Id
+	private String objectName ;
+	@Id
+	private String objectId ;
+	
+	private String data ;
+	
+	@Transient
+	private String dataAsMap ;
+	
+	private String syncState ;
+	private String syncStatus ;
+	private String errorMessage; 
+	private Integer retryCount = 0 ;
+	
+	public String getObjectName() {
+		return objectName;
+	}
+	public void setObjectName(String objectName) {
+		this.objectName = objectName;
+	}
+	public String getObjectId() {
+		return objectId;
+	}
+	public void setObjectId(String objectId) {
+		this.objectId = objectId;
+	}
+	public String getData() {
+		return data;
+	}
+	public void setData(String data) {
+		this.data = data;
+	}
+	public String getSyncState() {
+		return syncState;
+	}
+	public void setSyncState(String syncState) {
+		this.syncState = syncState;
+	}
+	public String getSyncStatus() {
+		return syncStatus;
+	}
+	public void setSyncStatus(String syncStatus) {
+		this.syncStatus = syncStatus;
+	}
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+	public Integer getRetryCount() {
+		return retryCount;
+	}
+	public void setRetryCount(Integer retryCount) {
+		this.retryCount = retryCount;
+	}
+	public String getDataAsMap() {
+		return dataAsMap;
+	}
+	public void setDataAsMap(String dataAsMap) {
+		this.dataAsMap = dataAsMap;
+	}
+	public String getJobName() {
+		return jobName;
+	}
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
+	}
+}

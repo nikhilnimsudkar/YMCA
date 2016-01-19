@@ -1,0 +1,325 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+
+
+/**
+ * This class represents the basic "Membership" object in YMCA Portal that allows for Membership management.  
+ *
+ */
+@Entity
+@Table(name = "app_membership") 
+@XmlRootElement
+public class Membership extends BaseObject implements Serializable {
+    private static final long serialVersionUID = 3832626162173359411L;
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "membership_id", nullable = false)
+    private Long membershipId;					// required  PK
+    
+    @Column(name = "product_id")
+   	private Long productId;                    	// required  PK,FK2
+    
+    @Column(name = "pricing_rule_id")
+    private Long pricingRuleId;                 // required  PK,FK3
+    
+    @Column(name = "membership_number")
+    private String membershipNumber ;
+    
+    @Column(name = "contact_name")
+    private String contactName;
+    
+    @Column(name = "membership_begin_date")
+    private Date membershipBeginDate;
+    
+    @Column(name = "membership_end_date")
+    private Date membershipEndDate;   
+    
+    @Column(name = "contact_party_id")
+    private String contactPartyId;
+    
+    @Column(name = "customer_party_id")
+    private String customerPartyId;
+    
+    @Column(name = "membership_price")
+    private String membershipPrice;    
+    
+    @Column(name = "membership_type")
+    private String membershipType;    
+    
+    @Column(name = "membership_duration")
+    private String membershipDuration;    
+    
+    @Transient
+    @OneToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private PricingRule pricingRule;
+
+    public PricingRule getPricingRule() {
+		return pricingRule;
+	}
+
+	public void setPricingRule(PricingRule pricingRule) {
+		this.pricingRule = pricingRule;
+	}
+
+	/**
+     * Default constructor - creates a new instance with no values set.
+     */
+    public Membership() {
+    }
+
+    public Long getMembershipId() {
+		return membershipId;
+	}
+    
+    public Long getProductId() {
+		return productId;
+	}
+
+	public void setProductId(Long productId) {
+		this.productId = productId;
+	}
+
+	public Long getPricingRuleId() {
+		return pricingRuleId;
+	}
+
+	public void setPricingRuleId(Long pricingRuleId) {
+		this.pricingRuleId = pricingRuleId;
+	}
+
+	public String getMembershipNumber() {
+		return membershipNumber;
+	}
+
+	public void setMembershipNumber(String membershipNumber) {
+		this.membershipNumber = membershipNumber;
+	}
+
+	public String getContactName() {
+		return contactName;
+	}
+
+	public void setContactName(String contactName) {
+		this.contactName = contactName;
+	}
+
+	public Date getMembershipBeginDate() {
+		return membershipBeginDate;
+	}
+
+	public void setMembershipBeginDate(Date membershipBeginDate) {
+		this.membershipBeginDate = membershipBeginDate;
+	}
+
+	public Date getMembershipEndDate() {
+		return membershipEndDate;
+	}
+
+	public void setMembershipEndDate(Date membershipEndDate) {
+		this.membershipEndDate = membershipEndDate;
+	}
+
+	public String getContactPartyId() {
+		return contactPartyId;
+	}
+
+	public void setContactPartyId(String contactPartyId) {
+		this.contactPartyId = contactPartyId;
+	}
+
+	public String getCustomerPartyId() {
+		return customerPartyId;
+	}
+
+	public void setCustomerPartyId(String customerPartyId) {
+		this.customerPartyId = customerPartyId;
+	}
+
+	/*@OneToOne(fetch = FetchType.EAGER)
+	@Fetch(FetchMode.SELECT)
+	@JoinTable(
+	            name = "app_pricing_rule",
+	            joinColumns = { @JoinColumn(name = "pricing_rule_id") },
+	            inverseJoinColumns = @JoinColumn(name = "pricing_rule_id")
+	)*/
+	/*@OneToOne(fetch = FetchType.EAGER)
+	@Fetch(FetchMode.SELECT)
+    @JoinTable(
+            name = "app_pricing_rule",
+            joinColumns = { @JoinColumn(name = "pricing_rule_id", referencedColumnName="pricingRuleId")})     */   
+	/*@ManyToMany(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
+    @JoinTable(
+            name = "app_pricing_rule",
+            joinColumns = { @JoinColumn(name = "pricing_rule_id") },
+            inverseJoinColumns = @JoinColumn(name = "pricingRuleId")
+    )*/ 
+
+
+	public String getMembershipPrice() {
+		return membershipPrice;
+	}
+
+	public void setMembershipPrice(String membershipPrice) {
+		this.membershipPrice = membershipPrice;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	public String getMembershipType() {
+		return membershipType;
+	}
+
+	public void setMembershipType(String membershipType) {
+		this.membershipType = membershipType;
+	}
+
+	public String getMembershipDuration() {
+		return membershipDuration;
+	}
+
+	public void setMembershipDuration(String membershipDuration) {
+		this.membershipDuration = membershipDuration;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Membership other = (Membership) obj;
+		if (contactName == null) {
+			if (other.contactName != null)
+				return false;
+		} else if (!contactName.equals(other.contactName))
+			return false;
+		if (contactPartyId == null) {
+			if (other.contactPartyId != null)
+				return false;
+		} else if (!contactPartyId.equals(other.contactPartyId))
+			return false;
+		if (customerPartyId == null) {
+			if (other.customerPartyId != null)
+				return false;
+		} else if (!customerPartyId.equals(other.customerPartyId))
+			return false;
+		if (membershipBeginDate == null) {
+			if (other.membershipBeginDate != null)
+				return false;
+		} else if (!membershipBeginDate.equals(other.membershipBeginDate))
+			return false;
+		if (membershipDuration == null) {
+			if (other.membershipDuration != null)
+				return false;
+		} else if (!membershipDuration.equals(other.membershipDuration))
+			return false;
+		if (membershipEndDate == null) {
+			if (other.membershipEndDate != null)
+				return false;
+		} else if (!membershipEndDate.equals(other.membershipEndDate))
+			return false;
+		if (membershipId == null) {
+			if (other.membershipId != null)
+				return false;
+		} else if (!membershipId.equals(other.membershipId))
+			return false;
+		if (membershipNumber == null) {
+			if (other.membershipNumber != null)
+				return false;
+		} else if (!membershipNumber.equals(other.membershipNumber))
+			return false;
+		if (membershipPrice == null) {
+			if (other.membershipPrice != null)
+				return false;
+		} else if (!membershipPrice.equals(other.membershipPrice))
+			return false;
+		if (membershipType == null) {
+			if (other.membershipType != null)
+				return false;
+		} else if (!membershipType.equals(other.membershipType))
+			return false;
+		if (pricingRule == null) {
+			if (other.pricingRule != null)
+				return false;
+		} else if (!pricingRule.equals(other.pricingRule))
+			return false;
+		if (pricingRuleId == null) {
+			if (other.pricingRuleId != null)
+				return false;
+		} else if (!pricingRuleId.equals(other.pricingRuleId))
+			return false;
+		if (productId == null) {
+			if (other.productId != null)
+				return false;
+		} else if (!productId.equals(other.productId))
+			return false;
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((contactName == null) ? 0 : contactName.hashCode());
+		result = prime * result
+				+ ((contactPartyId == null) ? 0 : contactPartyId.hashCode());
+		result = prime * result
+				+ ((customerPartyId == null) ? 0 : customerPartyId.hashCode());
+		result = prime
+				* result
+				+ ((membershipBeginDate == null) ? 0 : membershipBeginDate
+						.hashCode());
+		result = prime
+				* result
+				+ ((membershipDuration == null) ? 0 : membershipDuration
+						.hashCode());
+		result = prime
+				* result
+				+ ((membershipEndDate == null) ? 0 : membershipEndDate
+						.hashCode());
+		result = prime * result
+				+ ((membershipId == null) ? 0 : membershipId.hashCode());
+		result = prime
+				* result
+				+ ((membershipNumber == null) ? 0 : membershipNumber.hashCode());
+		result = prime * result
+				+ ((membershipPrice == null) ? 0 : membershipPrice.hashCode());
+		result = prime * result
+				+ ((membershipType == null) ? 0 : membershipType.hashCode());
+		result = prime * result
+				+ ((pricingRule == null) ? 0 : pricingRule.hashCode());
+		result = prime * result
+				+ ((pricingRuleId == null) ? 0 : pricingRuleId.hashCode());
+		result = prime * result
+				+ ((productId == null) ? 0 : productId.hashCode());
+		return result;
+	}
+}

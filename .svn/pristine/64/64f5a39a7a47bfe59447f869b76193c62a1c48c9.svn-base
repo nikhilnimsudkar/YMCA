@@ -1,0 +1,161 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<%
+	String contextPath = request.getContextPath();
+%>
+<script src="<%=contextPath %>/resources/js/app/common-util.js"></script>
+<script src="<%=contextPath %>/resources/js/app/common_new.js"></script>
+<script src="<%=contextPath %>/resources/js/program-cart-new.js"></script>
+<script src="<%=contextPath %>/resources/js/maskedinput.min.js"></script>
+<!-- <script src="<%=contextPath %>/resources/js/app/childcare-cart.js"></script> -->
+<body>
+
+<!-- hidden fields starts here  -->
+<input type="hidden" id="familyContactPageType">
+<!-- hidden fields ends here  -->
+<div id="main">
+	<div id="content">
+		<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+			<span class="k-loading-text">Loading... Please wait</span>
+			<div class="k-loading-image">
+				<div class="k-loading-color"></div>
+			</div>
+		</div>
+	
+		<div id="tabstrip3" class="k-block" style=" background-color:#FFFFFF; padding:12px; width:100%">	
+		<!-- <form id="ccSignupFrm" method="post" action="childcaresignup">	 -->
+			<input type="hidden" id="pageType" value="CHILD CARE" />
+			<div id="searchchildcare">
+				<%@ include file="searchchildcare.jsp" %>
+			</div>
+			<div id="childcare_details">
+				<div id="childcare">
+					<div id="childcare_session">
+					
+					</div>
+					
+					<div id="inservice_session">
+					
+					</div>
+					
+					<div id="afterschool_session">
+					
+					</div>
+					
+					<div align="center" style="margin: 10px;">
+						<span id="continueToSignup" class="k-button" style="display: none;">CONTINUE TO SIGN UP</span>
+					</div>
+				</div>
+				
+				<div id="inserviceDaysselect" style="display:none;">
+					<%@ include file="inserviceDays.jsp" %>
+				</div>
+				
+				<div id="familymembers" style="display:none;">
+					<%@ include file="../common/familymembers.jsp" %>
+				</div>
+				
+				<div style="clear: both;"></div> 
+				<div id="prgcart">
+					<%@ include file="../programs_cart.jsp" %> 
+				</div>
+				
+				<div id="tandc" style="display:none;">
+					<div id="termsDiv" class="formatdiv k-shadow" style="margin-left: 20px; padding: 15px; width: 735px; overflow-y: scroll; height:300px;">     
+						${terms }
+	            	</div>
+	            	<br><br>
+				   	<div class="formatdiv" style="margin-left:20px;">
+				   		<input type="checkbox" name="chkTermsAndCond" style="margin-top: 10px;">&nbsp;I accept terms and conditions
+				   	</div> 
+				   	<br><br>
+					<div class="formatdiv" style="margin-left:20px;">
+						<span id="confirmsignup" class="k-button">Confirm</span>
+					</div>
+				</div>
+				<div class="k-window1" id="popup_add_common" style="display:none;"></div>
+				<div id="contactHealthHistoryDiv" style="display:none;">
+					<%@ include file="../program/contactHealthHistory.jsp" %>
+				</div>
+				
+				<div id="emergencyContact" style="display:none;">
+					<%@ include file="../common/emergencyContact.jsp" %>
+				</div>
+				
+				<div id="authorisedContact" style="display:none;">
+					<%@ include file="../common/authorisedContact.jsp" %>
+				</div>
+			
+				<div id="purchase" style="display:none;">
+					<%@ include file="../payment/payment_cart.jsp" %> 
+				</div>
+				
+				<div id="contactActivityDiv" style="display:none;">
+					<jsp:include page="../signup/itemActivity.jsp" ></jsp:include>
+				</div>
+				<div id="contactTransportDiv" style="display:none;">
+					<jsp:include page="../signup/itemTransport.jsp" ></jsp:include>
+				</div>
+			
+				<div style="clear: both;"></div> 
+				<div id="statusBlock">
+					<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+					<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+				</div>
+			</div>
+		<!-- </form>  -->
+		</div>
+	</div>
+</div>
+</body>
+
+<script src="<%=contextPath %>/resources/js/childcare.js"></script>
+<iframe src="<%=contextPath %>/viewPaymentForm" height="1px" width="1px" id="childIframeId" style="position:absolute; bottom:-10px; left:-10px;"></iframe>
+<style>
+	.k-grid  .k-grid-header  .k-header {
+	    white-space: normal;
+	    word-wrap: break-word;
+	}
+</style>
+
+<script id="terms-conditions-ErrorBox" type="text/x-kendo-template">
+    <p class="error-message-p">Please agree the terms and conditions before Proceding</p>
+	
+    <div class="confirmbutton" align="center"><button class="confirm-terms-conditions k-button" style=" width: 35%;">Ok</button>   
+</script>
+
+<script>
+	$(document).ready(function() {
+		$("#tandc").hide();
+		$("input[type='checkbox']").uniform();
+		
+		$("#confirmsignup").click(function(){
+			
+			if(!$("input[name='chkTermsAndCond']:checked").val()){
+				var kendoWindow = $("<div />").kendoWindow({
+		        	title: "Error",
+		        	resizable: false,
+		        	modal: true,
+		        	width:400
+		        });
+		
+	  			kendoWindow.data("kendoWindow")
+		         .content($("#terms-conditions-ErrorBox").html())
+		         .center().open();
+	  			
+		        kendoWindow
+		        .find(".confirm-terms-conditions")
+		        .click(function() {
+		        	if ($(this).hasClass("confirm-terms-conditions")) {         		
+		        		kendoWindow.data("kendoWindow").close();
+		        	}
+		        })
+		        .end();
+		        		
+				return false;
+	 		}else{
+	 			fnCheckout();
+	 		}
+		});
+	});
+</script>

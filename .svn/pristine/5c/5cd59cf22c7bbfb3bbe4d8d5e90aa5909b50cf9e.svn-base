@@ -1,0 +1,107 @@
+#panels
+{
+	margin-left: 10px;
+	text-align: center;
+}
+
+#panels li
+{
+	margin-right: 4px;
+	margin-bottom: 10px;
+	list-style: none;
+	float: left;
+}
+.k-block-div{
+	height: 314px;
+	width : 140px;
+	background-color: white;
+	border: 2px solid black !important;
+	font-family: cursive;
+}
+.k-header-custom-orange{
+	height: 40px !important;
+	background-color: #D68227;
+	background-image : none;
+	color : white;
+	font-family: cursive;
+	border-bottom : 2px solid black !important;
+	font-size: 18px !important;
+}
+.k-header-custom-gray{
+	height: 40px !important;
+	background-color: #929292;
+	background-image : none;
+	color : white;
+	font-family: cursive;
+	border-bottom : 2px solid black !important;
+	font-size: 18px !important;
+	
+}
+.price-div{
+	font-size: x-large;
+	font-family: cursive;
+}
+.product-description-div{
+	margin-top: 5px;
+	height: 30px;
+	/* font-size: small; */
+}
+.product-location-div{
+	/* font-size: small; */
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.product-join-fee-text-div{
+	/* font-size: small; */
+	margin-top: 5px;
+}
+.product-join-fee-text-val-div{
+	/* font-size: small; */
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.border-bottom-line{
+	border-bottom: 2px black solid;
+	margin-right: 10px;
+	margin-left: 10px;    	
+}
+
+a.add-child-lnk span {
+font-size: 20px;
+font-weight: normal;
+border-radius: 3px;
+background: #fff;
+border: 1px solid #009ddc;
+padding: 0px 3px;
+vertical-align: middle;
+}
+
+
+.add-child-lnk {
+float: right;
+font-size: 11px;
+color: #009ddc;
+cursor: pointer;
+}
+
+a.remove-child-lnk span {
+font-size: 20px;
+font-weight: normal;
+border-radius: 3px;
+background: #fff;
+border: 1px solid #009ddc;
+padding: 0px 6px 0px 6px;
+vertical-align: middle;
+}
+
+
+.remove-child-lnk {
+float: right;
+font-size: 11px;
+color: #009ddc;
+cursor: pointer;
+}
+
+#productPriceTable tr td {
+    padding-right: 0px !important;
+}

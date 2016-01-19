@@ -1,0 +1,73 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    
+    %>
+<head>
+    <%-- <meta name="_csrf" content="${_csrf.token}"/>
+    
+    <meta name="_csrf_header" content="${_csrf.headerName}"/> --%>
+<link rel="stylesheet" href="<%=contextPath %>/resources/css/style1.css" type="text/css" media="screen"/>
+<script src="<%=contextPath %>/resources/js/jquery.validate.min.js"></script>
+<script src="<%=contextPath %>/resources/js/maskedinput.min.js"></script>
+<script src="<%=contextPath %>/resources/js/additional-methods.min.js"></script>
+</head>   
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<span id="" class="k-button" style=" margin-left:295px;" onclick="searchUser()" >View Kids </span>
+<div id="kgrid"  ></div>
+
+
+<script type="text/javascript">
+
+var source ;  
+function initGrid(){
+	 source = getRemoteData();
+	 $("#kgrid").kendoGrid ( {
+		 	dataSource: source,    	
+		 	autoBind: false,
+			height: 500,
+	        filterable: false,
+	        sortable: true,
+	        pageable: true,
+	        resizable: true,
+	        columns: 
+				[ {field: "ActivityID", title: " Id" },
+				  {field: "ProfilePic", title: "Kid Profile ",template: '<img src="#=ProfilePic #" alt="image" />'},
+				 {field: "KidName", title: "Kid Name"},
+				 {field: "CheckedInTime", title: "Checked-in Time"} ,
+ 				 {field: "CheckedInPerson", title: "Checked-In Person "},
+				 {field: "CheckInPersonId", title: "Checked-In Person Email "},	
+ 				 {field: "CheckInPersonPhn", title: "Checked-In Person Phone "},	
+ 				 {field: "CheckedInLoc", title: "Checked-In Location "}	
+				 				 
+ 				]
+	 });
+}
+	
+function getRemoteData() { 
+	source = new kendo.data.DataSource({
+        autoSync: false,
+        transport: {
+            read: {
+                type: "GET",
+                url: "kidsPaginationajax",
+                
+                dataType: "json",                
+                cache: false
+            }    	            
+        },
+        pageSize: 5
+    });
+    return source;
+}
+		 
+function searchUser(){
+	source.read();
+	return true;
+}
+
+$(document).ready(function() { 
+	initGrid();
+});
+</script>

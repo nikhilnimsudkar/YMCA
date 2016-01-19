@@ -1,0 +1,86 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%@ include file="../../layouts/include_taglib.jsp" %>
+    
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    <link rel="stylesheet" href="<%=contextPath %>/resources/css/styles.css" type="text/css" media="screen"/>
+	<link href="<%=contextPath %>/resources/css/ymca_bootstrap.css" rel="stylesheet" />   
+	<link rel="stylesheet" href="<%=contextPath %>/resources/css/style1.css" type="text/css" media="screen"/>
+    
+<body>
+<div class="k-window1" id="popup_add" style="display:none;"></div>
+
+<div id="main">
+	<div id="content">	
+		<div id="myprofile">
+			<%@ include file="donationProfile.jsp" %> 
+		</div>
+	
+		<div id="donationDetailDiv">
+					<div id="donationRightSection" style="margin-left: 35px;">
+						<div id="tabstrip4" class="k-block"	style="background-color: #FFFFFF; margin-left: -71px; padding: 10px;   width: 600px;">
+							<span class="k-button" id="updProfile"	onclick="location.href='donationDonate'" style="margin-left: 5px;">Give to the Y</span></br>
+							</br>
+							<span>Donation process completed successfully.</span><br />
+							
+							<span><u>Donation Information</u> : </span><br /><br />
+							<fmt:parseNumber var="donationAmount" type="number" value="${signup.pledgeAmount}" />
+							<c:if test="${signup.pledgeAmountFrequency != null}">								
+								<fmt:parseNumber var="donationPaymentFrequency" type="number" value="${signup.pledgeAmountFrequency}" />
+								<fmt:parseNumber var="deltaDonationPaymentFrequency" type="number" value="${signup.pledgeAmountFrequency - 1}" />
+							</c:if>
+							<table border="0">
+								<tr>
+									<td><span style="font-weight: normal;">Current charged amount</span></td>
+									<td> : </td>
+									<td><span>$${currentChargedAmt }</span></td>
+								</tr>
+								<tr>
+									<td><span style="font-weight: normal;">Pledge amount</span></td>
+									<td> : </td>
+									<td><span>$${donationAmount}</span></td>
+								</tr>
+								
+								<tr>
+									<td><span style="font-weight: normal;">Remaining Amount</span></td>
+									<td> : </td>
+									<td><span>$${donationAmount - currentChargedAmt}</span></td>
+								</tr>							
+								<tr>
+									<td><span style="font-weight: normal;">Payment Frequency</span></td>
+									<td> : </td>
+									<td><span>${signup.signUpPricingOption }</span></td>
+								</tr>							
+								<c:if test="${signup.signUpPricingOption != null}">
+								<tr>
+									<td><span style="font-weight: normal;">Number of Remaining ${signup.signUpPricingOption }</span></td>
+									<td> : </td>
+									<td><span>${signup.pledgeAmountFrequency -1 }</span></td>
+								</tr>
+								</c:if>		
+														
+							</table>
+							<div id="PaymentInformationBackLnk" align="right" style="margin-top : 25px;">
+					        		<a href="/ymca-web/donationHome">Back to Donation Information</a>
+					        </div>
+						</div>
+					</div>
+				</div>
+	</div>
+</div>
+
+</body>
+
+<script>
+	$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_donation").attr('class','current');
+		
+		$("#page_name").html("DONATION INFORMATION");
+		
+	});
+</script>

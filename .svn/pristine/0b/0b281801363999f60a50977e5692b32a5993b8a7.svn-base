@@ -1,0 +1,538 @@
+package com.ymca.web.controller;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.DonationDao;
+import com.ymca.dao.InvoiceDao;
+import com.ymca.dao.ItemDetailsDao;
+import com.ymca.dao.ItemDetailsSessionDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.dao.MembershipDao;
+import com.ymca.dao.PaymentDao;
+import com.ymca.dao.ProductDao;
+import com.ymca.dao.ProgramDao;
+import com.ymca.dao.PromocodeDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.model.Account;
+import com.ymca.model.Donation;
+import com.ymca.model.Invoice;
+import com.ymca.model.Membership;
+import com.ymca.model.Payment;
+import com.ymca.model.PaymentMethod;
+import com.ymca.model.Product;
+import com.ymca.model.Promocode;
+import com.ymca.model.Signup;
+import com.ymca.model.User;
+import com.ymca.web.model.OtherPrograms;
+import com.ymca.web.util.PropFileUtil;
+import com.ymca.web.util.propReaderForCurrentMemShip;
+
+@Controller
+public class HomePage extends BaseController {
+
+	@Resource
+	private PromocodeDao 	promocodeDao; 
+	
+	@Resource
+	private ItemDetailsDao 	itemDetailsDao;
+	
+	@Resource
+	private InvoiceDao invoiceDao;
+	
+	@Resource
+	private PaymentDao paymentDao;
+	
+	
+	@Resource
+	private DonationDao donationDao;
+
+	@Resource
+	private AccountDao accountDao;
+
+	@Resource
+	private ProgramDao programDao;
+	
+	@Resource
+	private SignupDao signupDao;
+	
+	@Resource
+	private ProductDao productDao;
+	
+	@Resource
+	private LocationDao locationDao;
+	
+	@Resource
+	private MembershipDao membershipDao; 
+
+	@RequestMapping(value = "/home", method = RequestMethod.GET)
+	public ModelAndView index(final HttpServletRequest request,
+			final HttpServletResponse response) {
+		Model model = new ExtendedModelMap();
+	try{
+		// HttpSession session = request.getSession();
+		Authentication a = SecurityContextHolder.getContext()
+				.getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+		
+		Account account = null;
+		Membership memberShip=null;
+		User user = null;
+		List<Signup> programList = null;
+		if (userId != null && !"".equals(userId)) {
+			account = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);
+			if (account != null && account.getUser() != null) {
+				User tempUser = null;
+				for (Iterator<User> it = account.getUser().iterator(); it
+						.hasNext();) {
+					tempUser = it.next();
+					if(tempUser.isPrimary()){
+						user = tempUser;
+					}
+
+				}
+			}
+
+			if(user!=null)
+			{
+				 programList  = signupDao.findByContactNameAndTypeNotLike(user.getPartyId().toString(), "Memberships");
+			}
+
+			
+			int userCount = account.getUser().size();
+			List<User> userS = new ArrayList<User>();
+			if (userCount > 1) {
+				for (User u : account.getUser()) {
+					if (!user.getPrimaryEmailAddress().equalsIgnoreCase(u.getPrimaryEmailAddress())) {
+						userS.add(u);
+					}
+				}
+			}
+
+			model.addAttribute("userS", userS);
+
+//			List<Program> programList = programDao.findAll();
+			Collections.sort(programList, Signup.DATE_ORDER_DEC_COMPARATOR);
+		
+			model.addAttribute("programList", programList);
+
+			HttpSession session = request.getSession();			            
+            session.setAttribute("usInfo", user);
+           
+            session.setAttribute("programList", programList);
+			
+			List<Donation> donationList = donationDao.findAll();
+
+			Collections.sort(donationList, Donation.DATE_ORDER_DEC_COMPARATOR);
+			model.addAttribute("donationList", donationList);
+			 session.setAttribute("donationList", donationList);
+			
+			 memberShip= account.getMembership();
+			 
+			 model.addAttribute("memberShip", memberShip);
+			 session.setAttribute("memberShip", memberShip);
+			 
+			 model.addAttribute("usInfo", user);
+			 
+			 
+			 
+			 
+			// -----------------------------------
+				List<Signup> signupList2=null;
+				Product prod=null;
+				List<OtherPrograms> OtherProgramsList = new ArrayList<OtherPrograms>();
+				Promocode promocode=null;
+				if (account != null && account.getUser() != null) {
+					/*for (Iterator<User> it = account.getUser().iterator(); it
+							.hasNext();) {
+						user = it.next();*/
+						
+						System.out.println("prod getLocation  before query-- "+user.getLocation().getLocationId());
+						Date startDate1 = new Date();
+						System.out.println(" startDate1-- "+startDate1);
+						//prod=	itemDetailsDao.getByLocationsAndRegistrationStartDate(user.getLocation().getLocationId(),startDate1,user.getAreaOfInterest());
+					
+					
+						if(prod!=null && prod.getProductId()!=null){
+						//signupList2=signupDao.getByContactAndItem(user.getPartyId(),prod.getProductId());
+						}
+						if(signupList2!=null && signupList2.size()==0)
+						{
+							//if(prod.getItemDetails()!=null && prod.getItemDetails().getId()!=null)
+							//{
+								
+							//promocode=promocodeDao.getDefaultPromocode(prod.getItemDetails().getId());
+							//}
+							OtherPrograms otherPrograms = new OtherPrograms();
+							//otherPrograms.setName("Fany");
+							//otherPrograms.setPrograms("Zumba Class");
+							otherPrograms.setName(user.getPersonFirstName());
+							otherPrograms.setPrograms(prod.getProductName());
+							if(promocode!=null && promocode.getPromoCode()!=null)
+							otherPrograms.setDefaultPromoCode(promocode.getPromoCode());
+							otherPrograms.setText("SIGN UP");
+							/*OtherPrograms otherPrograms2 = new OtherPrograms();
+							otherPrograms2.setName("Fany");
+							otherPrograms2.setPrograms("Spin Class");
+							otherPrograms2.setText("SIGN UP");
+							*/OtherProgramsList.add(otherPrograms);
+							//OtherProgramsList.add(otherPrograms2);
+							model.addAttribute("otherPrograms", OtherProgramsList);
+						}
+					
+				}
+
+				
+				
+				//------------------------------------
+			 
+			 
+			 //----------------------------------
+			 
+			 
+			// Invoice start
+
+			// CurrentDue
+			Date startDate = new Date();
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(startDate);
+			cal.add(Calendar.DAY_OF_YEAR, -14);
+			Date formattedStartDate = cal.getTime();
+
+			Date endDate = new Date();
+			Calendar cal1 = Calendar.getInstance();
+			cal1.setTime(endDate);
+			cal1.add(Calendar.DAY_OF_YEAR, 14);
+			Date formattedEndDate = cal1.getTime();
+
+			List<Invoice> invoiceList = null;
+			List<Payment> paymentList = null;
+			
+			
+			double invoiceAmountTotal = 0;
+			double paymentAmountTotal = 0;
+			
+			invoiceList = invoiceDao.getInvoiceByCustomer(
+					account.getAccountId(), startDate, formattedEndDate);
+			for (Invoice invoice : invoiceList) {
+				
+				double invoiceAmount = 0;
+				double paymentAmount = 0;
+				invoiceAmount = invoice.getAmount();
+
+				paymentList = paymentDao.getPaymentAmount(invoice
+						.getInvoiceId());
+
+				for (Payment payment : paymentList) {
+
+					paymentAmount += payment.getAmount();
+
+				}
+				if(invoiceAmount>paymentAmount)
+				{
+					invoiceAmountTotal+=invoiceAmount;
+					paymentAmountTotal+=paymentAmount;
+				}
+				System.out.println("invoiceAmount--  " + invoiceAmount);
+				System.out.println("paymentAmount--  " + paymentAmount);
+			}
+			
+			double dueAmount = invoiceAmountTotal - paymentAmountTotal;
+			System.out.println("dueAmount--  " + dueAmount);
+			// Double d = new Double(dueAmount);
+			if (dueAmount > 0)
+				model.addAttribute("dueAmount", dueAmount);
+			else
+				model.addAttribute("dueAmount", 0);
+			// Past Due
+			
+			double invoicePastAmountTotal=0;
+			double paymenPastAmountTotal=0;
+			
+			invoiceList = invoiceDao.getInvoicePastDueByCustomer(
+					account.getAccountId(), startDate);
+			for (Invoice invoice : invoiceList) {
+				double invoicePastAmount = 0;
+				double paymentPastAmount = 0;
+				invoicePastAmount = invoice.getAmount();
+
+				paymentList = paymentDao.getPaymentAmount(invoice
+						.getInvoiceId());
+
+				for (Payment payment : paymentList) {
+
+					paymentPastAmount += payment.getAmount();
+
+				}
+				System.out.println("invoicePastAmount--  " + invoicePastAmount);
+				System.out.println("paymentPastAmount--  " + paymentPastAmount);
+				if(invoicePastAmount>paymentPastAmount)
+				{
+					invoicePastAmountTotal+=invoicePastAmount;
+					paymenPastAmountTotal+=paymentPastAmount;
+				}
+			}
+			
+			double pastDueAmount = invoicePastAmountTotal - paymenPastAmountTotal;
+			System.out.println("pastDueAmount--  " + pastDueAmount);
+
+			if (pastDueAmount > 0)
+				model.addAttribute("pastDueAmount", pastDueAmount);
+			else
+				model.addAttribute("pastDueAmount", 0);
+
+			// Invoice end
+
+			
+			
+			return new ModelAndView("customer_home", model.asMap());
+		} else {
+			model.addAttribute("errMsg", "Please Login");
+			return new ModelAndView("login", model.asMap());
+
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+		model.addAttribute("errMsg", "Please Login");
+		return new ModelAndView("login", model.asMap());
+	}
+	}
+	
+	@RequestMapping(value = "/currentmembership", method = RequestMethod.GET)
+	 public ModelAndView currentMembershipView() 
+	 {
+
+	  Authentication a = SecurityContextHolder.getContext()
+	    .getAuthentication();
+	  String userId = ((UserDetails) a.getPrincipal()).getUsername();
+	  System.out.println(userId);
+	  Model model = new ExtendedModelMap();
+
+	  Account account = null;
+	  User user = null;
+	  Membership member = null;
+	  Signup signup=null;
+	  List<Signup> signupList=null;
+	  List<Signup> signupFamilyMemberList=null;
+	  
+	  
+	  List<PaymentMethod> paymentList = null;
+	  List<Product> products = null;
+	  
+	   if (userId != null && !"".equals(userId))
+	   {
+	   
+	   account = accountDao.getByEmail(userId);
+	   
+	   
+	   user = getUserByAccount(account, user);
+	   
+	   member = account.getMembership();
+	   
+	   
+	   paymentList = account.getPaymentMethod();
+	  }
+	   
+	   try{
+	   //signupList=signupDao.getByCustomerAndTypeLike(account.getAccountId(), "Membership");
+	   signupList=signupDao.getByCustomerAndType(account,"Membership" );
+	   for(Signup si:signupList ){
+	      
+	      if(si.getPaymentMethod()!=null){
+	       signup=si;
+	       break;
+	      }
+	      }
+	   
+	   }catch(Exception e){
+	    System.out.println("no acc");
+	    e.printStackTrace();
+	   }
+	  
+	   if(account != null)
+	   { 
+	    int userCount = account.getUser().size();
+	    List<User> userS = new ArrayList<User>();
+	    int countmembers = 0;
+	    if (userCount > 1) 
+	    {
+	     for (User u : account.getUser()) 
+	     {
+	      if (user.getPrimaryEmailAddress() != null && u.getPrimaryEmailAddress() != null && !user.getPrimaryEmailAddress().equalsIgnoreCase(u.getPrimaryEmailAddress())) 
+	      {
+	      countmembers = countmembers + 1;
+	      userS.add(u);
+	      }
+	     }
+	    }
+	   
+	    if(signup!=null)
+	    {
+	       
+	      model.addAttribute("signup",signup);
+	      HashMap<String,String> getPropr=new HashMap<String,String>();
+	      getPropr=propReaderForCurrentMemShip.loadPropInfo();
+	   
+	      model.addAttribute("labelVal", getPropr);
+	      //model.addAttribute("userCount", countmembers);
+	      model.addAttribute("userCount", countmembers);
+	      model.addAttribute("userS", userS);
+	      model.addAttribute("usInfo", user);
+	      model.addAttribute("member", member);
+	      model.addAttribute("paymentInfoLst" , paymentList);     
+	      model.addAttribute("volunteerActivity", getVolunteerActivity());
+	      model.addAttribute("locations", locationDao.findAll());
+	   
+	    }
+	    else{
+	    
+	      System.out.println("No Active MembersHip now");
+	      model.addAttribute("NoMembersHip", " WELCOME BACK ");
+	     }
+	    
+	   }
+	   else {
+	    model.addAttribute("errMsg",com.ymca.web.util.Constants.NO_RECORDS_FOUND);
+	      
+	   }
+	   
+	    return new ModelAndView("currentmembership", model.asMap());
+	  
+	 }
+
+	/*@RequestMapping(value = "/currentmembership", method = RequestMethod.GET)
+	public ModelAndView currentMembershipView() 
+	{
+
+		Authentication a = SecurityContextHolder.getContext()
+				.getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+		System.out.println(userId);
+		Model model = new ExtendedModelMap();
+
+		Account account = null;
+		User user = null;
+		Membership member = null;
+		Signup signup=null;
+		
+		
+		List<PaymentMethod> paymentList = null;
+		
+		
+			if (userId != null && !"".equals(userId))
+			{
+			
+			account = accountDao.getByEmail(userId);
+			
+			
+			user = getUserByAccount(account, user);
+			
+			member = account.getMembership();
+			
+			
+			paymentList = account.getPaymentMethod();
+		}
+			
+			signup=signupDao.findByContactNameAndStatusAndTypeLike(member.getContactName(), "ACTIVE", "Memberships");
+			if(account != null)
+			{	
+				int userCount = account.getUser().size();
+				List<User> userS = new ArrayList<User>();
+				int countmembers = 0;
+				if (userCount > 1) 
+				{
+					for (User u : account.getUser()) 
+					{
+						if (!user.getPrimaryEmailAddress().equalsIgnoreCase(u.getPrimaryEmailAddress())) 
+						{
+						countmembers = countmembers + 1;
+						userS.add(u);
+						}
+					}
+				}
+				
+				if(signup!=null)
+				{
+							
+						model.addAttribute("signup",signup);
+				
+						//List<Product> products = productDao.findAll();
+
+
+						HashMap<String,String> getPropr=new HashMap<String,String>();
+						getPropr=propReaderForCurrentMemShip.loadPropInfo();
+			
+						model.addAttribute("labelVal", getPropr);
+						model.addAttribute("userCount", countmembers);
+
+						model.addAttribute("userS", userS);
+						model.addAttribute("usInfo", user);
+						model.addAttribute("member", member);
+						model.addAttribute("paymentInfoLst" , paymentList);	    
+						//model.addAttribute("products", products);
+						model.addAttribute("locations", locationDao.findAll());
+			
+				}
+				else{
+				
+						System.out.println("No Active MembersHip now");
+						model.addAttribute("NoMembersHip", " WELCOME BACK ");
+					}
+				
+			}
+			else {
+				model.addAttribute("errMsg",com.ymca.web.util.Constants.NO_RECORDS_FOUND);
+						
+			}
+			
+				return new ModelAndView("currentmembership", model.asMap());
+		
+	}*/
+	
+	
+	@RequestMapping(value = "/fullUpcomingPrograms", method = RequestMethod.GET)
+	public ModelAndView fullUpcomingPrograms() {
+
+		Authentication a = SecurityContextHolder.getContext()
+				.getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+
+		//Model model = new ExtendedModelMap();
+
+				return new ModelAndView("fullUpcomingPrograms");
+
+	}
+	
+	@RequestMapping(value = "/fullDonationsList", method = RequestMethod.GET)
+	public ModelAndView fullDonationsList() {
+
+		Authentication a = SecurityContextHolder.getContext()
+				.getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+
+			return new ModelAndView("fullDonationsList");
+
+	}
+}

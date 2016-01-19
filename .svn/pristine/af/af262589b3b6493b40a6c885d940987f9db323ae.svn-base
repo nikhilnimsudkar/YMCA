@@ -1,0 +1,7 @@
+package com.serene.job.service;
+
+public interface FTPUploadService {
+	
+	public void uploadToFTPServer(String strFile);
+
+}

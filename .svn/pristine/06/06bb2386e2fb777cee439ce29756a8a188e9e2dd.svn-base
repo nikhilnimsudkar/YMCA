@@ -1,0 +1,462 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+<% try { %>
+<style>
+	.k-grid  .k-grid-header  .k-header {
+	    white-space: normal;
+	    word-wrap: break-word;
+	}.
+</style>
+<script src="<%=contextPath %>/resources/js/payment/luhn.js"></script>
+<script src="<%=contextPath %>/resources/js/app/common.js"></script>
+<script src="<%=contextPath %>/resources/js/app/payment.js"></script>
+
+<script>
+	$(document).ready(function() {
+		
+		$("#statusBlock11").hide();
+		
+		$("input#cardNum").on({
+			  keydown: function(e) {
+			    if (e.which === 32 || e.which == 173)
+			      return false;
+			  },
+			  change: function() {
+			    this.value = this.value.replace(/\s/g, "");
+			  }
+			});
+		
+		var currentYear = new Date().getFullYear();
+		currentYear = parseInt(currentYear.toString().substring(2, 4));
+		for(var i=0; i<30 ; i++){
+			$('#addCardExpirationYearID').append($('<option>', {value: currentYear,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		$("#addCardExpirationYearID").kendoDropDownList();    
+	    $("#addCardExpirationMonthID").kendoDropDownList();
+		$("#paymentMethodSelect").kendoDropDownList();
+		
+		 $('body').on( "change", "#paymentMethodSelect", function() {
+			 	
+			 	console.log(" -->  "+$("#paymentMethodSelect").val());
+		 
+				if($("#paymentMethodSelect").val()=='PaymentMethod_Card'){
+					
+					$("#fullName").attr("value", "").attr("disabled", false).removeClass("k-state-disabled");
+			  		$("#cardNum").attr("value", "").attr("disabled", false).removeClass("k-state-disabled");
+			  		
+			  		$("#cardimage").show();
+			  		
+			  		$("#addCardExpirationMonthID").attr("value", "01").attr("disabled", false).removeClass("k-state-disabled");
+			  		$("#addCardExpirationYearID").attr("value", "15").attr("disabled", false).removeClass("k-state-disabled");
+			  		
+			  		$("#securityCode").attr("value", "").attr("disabled", false).removeClass("k-state-disabled");
+			  		
+			  		$("#questionMarkImgID").show();
+			  		
+			  		$("#billingAddressLine1").attr("value", "");
+			  		$("#billingAddressLine2").attr("value", "");
+			  		
+			  		$("#billingCity").attr("value", "");
+			  		$("#billingState").attr("value", "");
+			  		
+			  		$("#billingZip").attr("value", "");
+			  		$("#nickName").attr("value", "").attr("disabled", false).removeClass("k-state-disabled");
+					
+					$('#addBank').hide();	
+					$('#addcard').show();			
+					$(".stepContainer").height($(".stepContainer").find("div:not(:hidden)").height());
+					$("#SaveTypeID").attr("value", "ADD_CARD");
+				}else if($("#paymentMethodSelect").val()=='PaymentMethod_Bank'){
+					$('#addcard').hide();
+					$('#addBank').show();			
+					$(".stepContainer").height($(".stepContainer").find("div:not(:hidden)").height());
+					$("#SaveTypeID").attr("value", "ADD_BANK");
+				} else{
+					$("#SaveTypeID").attr("value", "UPDATE_CARD");
+					$('#addcard').hide();
+					$('#addBank').hide();	
+					$(".stepContainer").height($(".stepContainer").find("div:not(:hidden)").height());
+					$("#paymentTokenIdSpan").html($("#paymentMethodSelect").val());
+					$("#paymentMethodIdHidInput").attr("value", $("#paymentMethodSelect").val()); 
+					
+					console.log(" paymentMethodSelect >>  "+$("#paymentMethodSelect").val());
+					
+					console.log("  on change .... ");
+					
+					$.ajax({
+						  type: "GET",
+						  url: "getPaymentMethodByToken?token="+$("#paymentMethodSelect").val(),
+						  dataType: "json",
+						  success: function( data ) {
+							  console.log(" got ");
+						  	  if(data){
+						  		
+						  		  	console.log("  data "+data);
+						  		  
+						  			/* if(data.length==1){
+						  				console.log("  data.length "+data.length); 
+										$.each(data, function(i, paymentMethod) {*/
+										  
+											console.log(" card :: "+data.cardNumber);
+											console.log(" fullName ::  "+data.fullName);
+									  	//});
+						  			//}
+						  		
+						  		//console.log(" got data :: 22 ");
+							  	  	/* $("#tcErrorSpan").css("display", "none");		
+								  	$("#tcErrorSpan" ).html("");	
+								  	setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+								  	setTimeout(function(){$(".k-loading-text").html("Card Information Removed successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+							  	  	setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+							  	  
+							  	 	$("#tcSuccessSpan").css("display", "block");		
+								   	*///$("#tcSuccessSpan" ).html("Card Information Removed successfully");
+							  	  
+							  	  	// setTimeout(function(){location.reload();}, 5000);
+							  	  
+							  	  //	console.log(" got data ::  "+data);
+							  	  	//console.log(" data.expirationMonth > >> "+data.expirationMonth);
+							  	 // console.log(" data.expirationYear >>>>  "+data.expirationYear);
+							  	  
+							  	/*  
+							  	 console.log(" got data ::  "+data);
+							  	 
+							  	console.log(" cardNumber ::  "+data.cardNumber);
+							  	console.log(" expirationMonth ::  "+data.expirationMonth);
+							  	console.log(" expirationYear ::  "+data.expirationYear);
+							  	console.log(" securityCode ::  "+data.securityCode);
+							  	console.log(" billingAddressLine1 ::  "+data.billingAddressLine1);
+							  	console.log(" billingAddressLine2 ::  "+data.billingAddressLine2);
+							  	console.log(" billingCity ::  "+data.billingCity);
+							  	console.log(" billingState ::  "+data.billingState);
+							  	console.log(" billingZip ::  "+data.billingZip);
+							  	console.log(" nickName ::  "+data.nickName); */
+							  	
+							  	 
+							  		 $('#addcard').show();
+							  		
+							  		$("#fullName").attr("value", data.fullName).attr("disabled", true).addClass("k-state-disabled");
+							  		$("#cardNum").attr("width", "130px");
+							  		$("#cardNum").attr("value", data.cardNumber).attr("disabled", true).addClass("k-state-disabled");
+							  		
+							  		
+							  		$("#cardimage").hide();
+							  		
+							  		$("#addCardExpirationMonthID").attr("value", data.expirationMonth);
+							  		$("#addCardExpirationYearID").attr("value", data.expirationYear);
+							  		
+							  		//$("#securityCode").attr("value", data.securityCode).attr("disabled", "disabled").addClass("k-state-disabled");
+							  		$("#securityCode").attr("value", "XXXX").attr("disabled", "disabled").addClass("k-state-disabled");
+							  		
+							  		$("#questionMarkImgID").hide();
+							  		
+							  		$("#billingAddressLine1").attr("value", data.billingAddressLine1);
+							  		$("#billingAddressLine2").attr("value", data.billingAddressLine2);
+							  		$("#billingCity").attr("value", data.billingCity);
+							  		$("#billingState").attr("value", data.billingState);
+							  		$("#billingZip").attr("value", data.billingZip);
+							  		
+							  		$("#nickName").hide();
+							  		$("#nickNameLabel").hide();
+							  		
+						  	  }else {
+						  		  /* $("#tcSuccessSpan").css("display", "none");		
+								  $("#tcSuccessSpan" ).html("");	
+								  $("#tcErrorSpan").css("display", "block");		
+								  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+								  $(".k-loading-mask").hide(); */
+								  
+								 console.log(" error while get data. ");
+						  	  }
+						  },
+						  error: function( xhr,status,error ){
+							  console.log("  Status   "+status);
+							  console.log("  error   "+error);
+							  console.log("  xhr   "+xhr.responseText);
+							  /* $("#tcSuccessSpan").css("display", "none");		
+							  $("#tcSuccessSpan" ).html("");	
+							  $("#tcErrorSpan").css("display", "block");		
+							  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+							  $(".k-loading-mask").hide(); */
+							  console.log(" There was some error. Please try again later ");
+						  }
+					});
+				}
+			});
+		
+		 $('.tooltip_display').click(function() {
+			    var $this = $(this);
+			    
+			    $("#large").html(function() {
+			    	
+			    	var pos = $(".tooltip_display").position();
+				    var leftPos = pos.left - 355;
+				    $("#large").css({left: leftPos, position:'absolute'});
+			    	
+			    	$('.ttip').css({
+			            //left: $this.position() + '20px',
+			            //top: $this.position() + '50px'
+			        }).show(500)  // "slide", { direction: "right" }, 
+
+			    }).fadeIn("fast");
+
+			});
+		
+		 $('.note').on('click', function() {
+			    $('.ttip').hide(500);
+			    $("#background").fadeOut("slow");
+			    $("#large").fadeOut("slow");
+
+			});
+		 
+		 
+		$( "#addCardButton" ).click(function(){
+			console.log("  addCardButton clicked ");
+			validateAndProcessPaymentMethod($("#SaveTypeID").val());
+		});
+		
+		
+		$( "#addBankInfoButton" ).click(function(){
+			console.log("  addBankInfoButton clicked ");
+			validateAndProcessPaymentMethod($("#SaveTypeID").val());
+		});
+		
+	});
+	
+</script>
+
+<body>
+		<%-- <%@ include file="../../layouts/include_taglib.jsp"%> --%>
+		
+		<div id="paymentDetailDiv">	
+			<div class="bootstrapBorder">
+				
+        		<div id="purchase_info" style="height: 260px;">
+					
+					<div class="addcarddiv" id="paymentMethodSelectDiv">
+						<div style="height:20px;" id="selectPaymentMethodLbl">Please select Payment Method</div>
+						<div>
+							<select id="paymentMethodSelect" name="paymentMethodSelect" style="width:300px;">
+								
+								<option value="0" selected="selected">-- Select Payment Method --</option>
+								
+								<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+									<c:choose>
+										<c:when test="${ paymentInfo[2] == '1' }">
+											<option selected value="${paymentInfo[6] }">${paymentInfo[7] } ${paymentInfo[3] } </option> <%-- ${paymentInfo[4] }/${paymentInfo[5] }--%>
+										</c:when>
+										<c:when test="${ paymentInfo[2] == '0' || paymentInfo[2] == null}">
+											<option value="${paymentInfo[6] }">${paymentInfo[7] } ${paymentInfo[3] } </option>
+										</c:when>
+									</c:choose>
+									
+								</c:forEach>
+								
+								<option value="PaymentMethod_Card">Add Card Payment Method Info</option>
+								<option value="PaymentMethod_Bank">Add Bank Payment Method Info</option>
+							
+						</select>
+						
+						</div>
+					</div>
+					
+					<input type="hidden" name="SaveTypeID" id="SaveTypeID" value="">
+					
+					<div class="addcarddiv" style="width: 100%;">
+					</div>
+						
+					<div id="addcard" style="margin-top:10px; margin-bottom:10px; display:none; float: left; ">
+						  <div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;" id="fullNameLabel">Name on card</div>
+									<div><input type="text" class="k-textbox" placeholder="Full Name on Card" name="fullName" id="fullName" value="" tabIndex="1"></div>
+								</div>
+								 
+								<div class="addcarddiv" style="margin-right : 30px;">
+									<div style="height:20px;">Card Number</div>
+									<div>
+									<form id="paymentForm" action="#" > 
+										<div>
+											<input type="text" class="k-textbox" placeholder="Card Number" name="cardNum" id="cardNum" value="" tabIndex="2" onchange="handleCCTyping(this.form, event);" onkeyup="handleCCTyping(this.form, event);">
+											<img src="resources/img/payment_credit_cards/cards/invalid.png" name="cardimage" ID="cardimage" width="40"  height="22" hspace="10" vspace="0" align="top">
+										</div>
+									</form>
+									</div> 
+								</div>
+								
+								<div class="addcarddiv">
+									<div style="height:20px;">Expiration date</div>
+									<div>
+										<span>
+											<select id="addCardExpirationMonthID" name="addCardExpirationMonthID"  style="width:50px;">
+							                      <option value="01">01</option>
+							                      <option value="02">02</option>
+							                      <option value="03">03</option>
+							                      <option value="04">04</option>
+							                      <option value="05">05</option>
+							                      <option value="06">06</option>
+							                      <option value="07">07</option>
+							                      <option value="08">08</option>
+							                      <option value="09">09</option>
+							                      <option value="10">10</option>
+							                      <option value="11">11</option>
+							                      <option value="12">12</option>
+											</select>
+										</span>
+										<span>
+											<select id="addCardExpirationYearID" name="addCardExpirationYearID" style="width:70px;">																
+											</select>
+										</span>
+									</div>
+								</div>
+								
+								<div class="addcarddiv">
+									<div style="height:20px;">Security Code</div>
+									<div>
+										<input type="password" class="k-textbox" placeholder="Security Code" style="width: 90px;" name="securityCode" id="securityCode" value="" tabIndex="3" title="CVV Help"> 
+									</div>
+								</div>
+								
+								<div class="addcarddiv" id="questionMarkImgID">
+									<div style="height:20px;">&nbsp;</div>
+									<div>
+										<a href="#" class="tooltip_display">
+											<img src="resources/img/question-mark.png" height="25px" width="25px"></img>
+										</a>
+										<div id="large">
+											<div class="ttip">
+												<span>
+													<a class="note" style="float: right; height: 25px; width: 25px;">
+														<img src="resources/img/close.jpg" height="20px" width="20px"></img>
+													</a>
+												</span>
+												<div class="contents">
+													<span><img src="resources/img/cv_card.gif" height="130px" width="160px"></img></span>
+													<span><img src="resources/img/cv_amex_card.gif" height="130px" width="160px"></img></span>																		
+												</div>
+												<div id="background"></div>
+											</div>
+										</div> 
+									</div>
+								</div>
+							</div>
+							
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Address Line 1</div>
+									<div>
+										<input type="text" class="k-textbox" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" value="" tabIndex="4">
+									</div> 
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Address Line 2</div>
+									<div><input type="text" class="k-textbox" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2" value="" tabIndex="5"></div> 
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">City</div>
+									<div><input type="text" class="k-textbox" placeholder="Billing City" name="billingCity" id="billingCity" value="" tabIndex="6"></div> 
+								</div>
+								<div class="addcarddiv" style="width:45px;">
+									<div style="height:20px;">State</div>
+									<div><input type="text" class="k-textbox" placeholder="State" name="billingState" id="billingState" value="" style="width:45px;" tabIndex="7"></div> 
+								</div>
+								<div class="addcarddiv" style="width:60px">
+									<div style="height:20px;">Zip</div>
+									<div><input type="text" class="k-textbox" placeholder="Zip" name="billingZip" id="billingZip" value="" style="width:60px;" tabIndex="8"></div> 
+								</div>
+								<div class="addcarddiv" style="display:none;">
+									 <span id="paymentTokenIdSpan"></span>
+									 <span id="paymentAmountSpan"></span>
+								</div>
+							</div>
+							
+							<div style="height:50px;">
+								<div id="nickname" class="addcarddiv" >
+									<div style="height:20px;" id="nickNameLabel">Nick Name</div>
+									<div><input type="text" class="k-textbox" placeholder="Nick Name" name="nickName" id="nickName" value=""></div> 
+								</div>
+							</div>
+									
+							<div style="float: right; width: 300px;">
+							
+							</div>
+					        
+					        <div style="height:50px; margin-top:30px; margin-bottom:10px;" >
+								<div class="addcarddiv" align="center">
+				        			<div align="center">
+					        			<span class="autopaySpan" style="width: 300px;">
+											<button id="addCardButton" class="k-button">Save</button>
+										</span>
+				        			</div>
+				        			
+				        		</div>
+				        		
+				        		<div class="addcarddiv" align="right"> 
+				        			<div align="right"><a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a></div>
+				        		</div>
+					        </div>
+							
+						</div>
+						
+						<div id="addBank" style="margin-top:10px; margin-bottom:10px; height:100px; display:none;   float: left; ">										
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Account Number</div>
+									<div><input type="text" class="k-textbox" placeholder="Account Number" name="bankAccountNumber" id="bankAccountNumber" value=""  style="width: 15.4em;" tabIndex="1"></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Bank Routing Number</div>
+									<div><input type="text" class="k-textbox" placeholder="Bank Routing Number" name="bankRoutingNumber" id="bankRoutingNumber" value=""  style="width: 15.4em;" tabIndex="2"></div>
+								</div>
+							</div>
+							
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Check Number</div>
+									<div><input type="text" class="k-textbox" placeholder="Check Number" name="checkNumber" id="checkNumber" value=""  style="width: 15.4em;" tabIndex="3"></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Card Name</div>
+									<div><input type="text" class="k-textbox" placeholder="Card Name" name="cardName" id="cardName" value=""  style="width: 15.4em;" tabIndex="4"></div>
+								</div>
+							</div>
+							
+							<div style="height:50px; margin-top:30px; margin-bottom:10px;" >
+								<div class="addcarddiv" align="center">
+				        			<div align="center">
+					        			<span class="autopaySpan" style="width: 300px;">
+											<button id="addBankInfoButton" class="k-button">Save</button>
+										</span>
+				        			</div>
+				        			
+				        		</div>
+				        		
+				        		<div class="addcarddiv" align="right">
+				        			<div align="right"><a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a></div>
+				        		</div>
+					        </div>
+						</div>
+						
+						<div id="statusBlock11">
+							<span class="k-block k-success-colored" id="tcSuccessSpan11"></span>
+							<span class="k-block k-error-colored" id="tcErrorSpan11"></span>
+							<div class="addcarddiv" id="backToProgramRegistrationLink" align="right"> 
+			        			<div align="right"><a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a></div>
+			        		</div>
+						</div>
+						
+	        	</div> 
+			</div>
+		</div>
+		
+		<iframe src="<%=contextPath %>/viewPaymentForm" height="1px" width="1px" id="childIframeId" style="position:absolute; bottom:-10px; left:-10px;"></iframe>
+</body>
+
+<% 
+				
+							}catch(Exception e1){ 
+							
+								e1.printStackTrace();
+						
+							} 
+						%>

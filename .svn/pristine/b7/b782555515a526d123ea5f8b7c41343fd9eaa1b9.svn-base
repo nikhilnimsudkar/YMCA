@@ -1,0 +1,156 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+<script>
+	$(document).ready(function() {	
+		var today = kendo.date.today();
+		
+        var start = $("#start").kendoDatePicker({
+			format: "yyyy-MM-dd",
+            value: today,                
+            parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+        });
+
+        var end = $("#end").kendoDatePicker({
+            format: "yyyy-MM-dd",
+            value: today,                
+            parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+        });
+	});
+</script>
+            
+<div id="purchaseinfoPg">
+<div id="tabstrip3" class="k-block">
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">PURCHASE INFORMATION</span>
+		<span class="autopaySpan" style="width: 300px;">
+			<button id="pmPrimary" class="k-button" style="margin-right: 10px; text-shadow: none;">Make Primary</button>
+			<button id="addCardBankDetail" class="k-button">Add Card/Bank Info</button>
+		</span>
+		
+		<div id="purchase_info" >
+			<table>
+				<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'Credit' }">
+						<tr>
+							<c:if test="${ paymentInfo.isPrimary == '1' }">
+								<td><input type="radio" name="paymentInfoRadio" checked="checked" class="bootstrapRadio"></td>
+							</c:if>
+							<c:if test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null}">
+								<td><input type="radio" name="paymentInfoRadio" class="bootstrapRadio"></td>
+							</c:if>	
+							<td><span>Credit & Debit Cards</span></td>
+							<!-- <td><span>XXXX-XXXX-XXXX-1234</span></td> -->
+							<td><span>${paymentInfo.cardNumber }</span><span class="pmMakePrimaryPaymentId" style="display:none;">${paymentInfo.paymentId }</span></td>
+							<td></td>
+							<td>Expiration Date</td>
+							<!-- <td>07/20</td> -->
+							<td>${paymentInfo.expirationMonth }/${paymentInfo.expirationYear }</td>
+							<td><button id="editcardBtn" style="width: 100px; text-shadow: none; margin-left: 10px;" class="k-button editcardBtn">Edit card Info</button></td>
+							<!-- <td><span  class="k-button updatePaymentMethod" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit card Info</span></td> -->
+						</tr>
+					</c:if>
+				</c:forEach>
+				<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'EFT' }">
+						<tr>
+							<c:if test="${ paymentInfo.isPrimary == '1' }">
+								<td><input type="radio" name="paymentInfoRadio" checked="checked" class="bootstrapRadio"></td>
+							</c:if>
+							<c:if test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null }">
+								<td><input type="radio" name="paymentInfoRadio" class="bootstrapRadio"></td>
+							</c:if>	
+													
+							<td><span>Bank Details</span></td>
+							<!-- <td><span>XXXXX-XXXXX</span></td> -->
+							<td><span>${paymentInfo.bankRoutingNumber }</span><span class="pmMakePrimaryPaymentId" style="display:none;">${paymentInfo.paymentId }</span></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td><button id="editcartBtn" class="k-button editBankBtn" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit Bank Info</button></td>
+						<!-- 	<td><span  class="k-button updatePaymentMethod" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit Bank Info</span></td> -->
+						</tr>
+					</c:if>
+				</c:forEach>			
+			</table>
+			<div >
+				<span class="k-block k-success-colored" id="pmPrimarySuccess"></span>
+				<span class="k-block k-error-colored" id="pmPrimaryError"></span>
+			</div>
+		</div>
+	</div>
+	
+	<%-- <div class="pay_header">
+		<span class="head" style="margin-left:3px;">BILLING ADDRESS</span>
+		<div id="bill_info">
+			<span id="address1">${accInfo.addressLine1}</span>
+			<span id="address2">${accInfo.addressLine2}</span><br>
+			<span id="city">${accInfo.city}</span>
+			<span id="state">${accInfo.state}</span><br>
+			<span id="zip">${accInfo.postalCode}</span>
+			<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+				<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.isPrimary == '1' }">
+					<span id="address1">${paymentInfo.billingAddressLine1}</span>
+					<span id="address2">${paymentInfo.billingAddressLine2}</span><br>
+					<span id="city">${paymentInfo.billingCity}</span>
+					<span id="state">${paymentInfo.billingState}</span><br>					
+				</c:if>
+			</c:forEach>
+			
+			<span id="zip">${paymentInfo.postalCode}</span>
+		</div>
+	</div> --%>
+	
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">VIEW PAYMENT HISTORY</span>
+		<div id="bill_info">
+			<span>Start Date : <input type="text" id="start" name="startDate"></span>
+			<span style="margin-left: 5px;">End Date : <input type="text" id="end" name="endDate"></span>
+			<span id="getPaymentHistoryBtn" class="k-button" style="width: 70px; text-shadow: none; margin-left: 10px;">Go</span>
+			<span >
+				<table style="margin-top: 10px;">
+					<tr>
+						<td><span>Swim Class</span></td>
+						<td width="25%"></td>
+						<td><span>$100</span></td>
+					</tr>
+					<tr>
+						<td><span>Dancing Class</span></td>
+						<td></td>
+						<td><span>$75</span></td>
+					</tr>
+					<tr>
+						<td><span>Donation</span></td>
+						<td></td>
+						<td><span>$50</span></td>
+					</tr>
+				</table>
+			</span>
+		</div>
+	</div>
+	
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">RECENT PAYMENTS</span>
+		<div id="bill_info">
+			<table>
+				<tr>
+					<td><span>Membership Payment</span></td>
+					<td width="25%"></td>
+					<td><span>$59</span></td>
+				</tr>
+				<tr>
+					<td><span>Swim Class</span></td>
+					<td></td>
+					<td><span>$59</span></td>
+				</tr>
+				<tr>
+					<td><span>Donation</span></td>
+					<td></td>
+					<td><span>$100</span></td>
+				</tr>
+			</table>
+		</div>
+	</div>	
+	
+	
+</div>
+</div>

@@ -1,0 +1,98 @@
+<div id="members" style="width: 780px;; padding: 12px;">
+	<div class="k-window1" id="popup_add" style="display:none;"></div>
+
+	<div>
+		<span class="head" style="float:left;">Select Family Member for Event</span>
+		<div style="float:left; margin-left: 50px;"><span>OR</span></div>
+		<div style="margin-left: 50px; float: left; margin-top: -5px;"><span  class="k-button" id="add_member" style="float:left;">Add New Family Member</span></div>
+	</div>
+
+	<div style="clear: both;"></div> 
+
+	<div id="family_details" style="margin: 20px 20px 30px;  min-height: 220px;">
+		<div id="allmembers"></div>
+	</div>
+	
+	<div id="cartbtns" align="right">
+		<button id="backtoevent" class="k-button">Back to Event List</button>&nbsp;&nbsp;&nbsp;&nbsp;
+		<span id="checkoutBtn" class="k-button">View Cart</span>&nbsp;&nbsp;&nbsp;&nbsp;
+		<button id="continueshop" class="k-button">ADD TO CART & CONTINUE SHOPPING</button>
+	</div>
+</div>
+
+<script>
+
+$(document).ready(function(){
+	
+	$( "#checkoutBtn" ).click(function(){
+		$(".k-loading-mask").show();
+		cart.set("errMsg","");
+		$("#dspErr").hide();
+		
+		if(validateCheckout()){
+			 setTimeout(function(){
+				 	if(cart.errMsg==""){
+				 		$("#familymembers").fadeOut(200);
+						$("#checkout_content").show();
+				 	}
+				 	else{
+				 		//setTimeout(function(){cart.set("errMsg","");},5100);
+				 	}
+			 }, 1000);
+		}
+		$(".k-loading-mask").hide();
+	});
+	
+	$( "#continueshop" ).click(function(){
+		$(".k-loading-mask").show();
+		event_cart.set("errMsg","");
+		$("#dspErr").hide();
+		
+		if(validateCheckout()){
+
+			setTimeout(function(){
+			 	if(event_cart.errMsg==""){
+			 		$("#familymembers").fadeOut("fast");
+					$("#event").fadeIn("fast");
+					getEventSession();
+			 	} else {
+			 		
+			 	}
+			}, 1000);
+		}
+		$(".k-loading-mask").hide();
+	});
+	
+	$( "#backtoevent" ).click(function(){
+		    $(".k-loading-mask").show();
+		    $("#tcSuccessSpan").css("display", "none");		
+			$("#tcSuccessSpan").html("");	
+			$("#tcErrorSpan").css("display", "none");		
+			$("#tcErrorSpan").html("");
+			$("#familymembers").fadeOut(200);
+			$("#event").fadeIn(100);
+			getEventSession();
+	});
+	
+	var window = $("#popup_add");
+	$("#add_member").bind("click", function() {	
+		addfamilyMember();
+		window.data("kendoWindow").center().open();
+		$("#add_member").hide();
+		$('Div[data-role="draggable"]').css('top', '20px');
+	});
+	
+	var onClose = function() {
+		 $("#add_member").show();
+    }
+	
+	if (!window.data("kendoWindow")) {
+        window.kendoWindow({
+            width: "700px",
+            title : "Add Family Member",
+            modal : true,
+            close: onClose
+        });
+    }
+});
+</script>

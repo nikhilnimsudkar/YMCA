@@ -1,0 +1,53 @@
+package com.ymca.web.service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.stereotype.Service;
+
+import com.ymca.dao.ItemDetailPricingRuleDao;
+import com.ymca.model.ItemDetailPricingRule;
+import com.ymca.model.Signup;
+import com.ymca.web.util.Constants;
+
+@Service
+public class CancelSignUpService extends BaseService {
+	
+	@Resource
+	private ItemDetailPricingRuleDao itemDetailPricingRuleDao ;
+ 
+	public double evaluateRefundExpressionAndReturnReimbursedAmount(
+			Signup signup, double cancellationPrice) {
+		
+		double reimbursedAmount = 0D;
+		
+		List<ItemDetailPricingRule> refundRules = itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Type(signup.getItemDetail().getId(), Constants.REFUND);
+		if(refundRules.size()>0){
+			for(ItemDetailPricingRule pr: refundRules){
+				String refundExpression = pr.getPricingRule().getRefundExpression();
+				
+				StandardEvaluationContext signupContext = new StandardEvaluationContext(signup);  
+				ExpressionParser parser = new SpelExpressionParser(); 
+				org.springframework.expression.Expression exp = parser.parseExpression(refundExpression);
+				
+				Boolean match = exp.getValue(signupContext,Boolean.class);
+				//System.out.println(match);
+				
+				if(match){
+					BigDecimal refundPercentage = pr.getPricingRule().getRefundPercent();
+					BigDecimal refundAmount = refundPercentage.multiply(BigDecimal.valueOf(Double.parseDouble(signup.getFinalAmount())));
+					refundAmount = refundAmount.divide(new BigDecimal(100));
+					
+					reimbursedAmount = (refundAmount.subtract(BigDecimal.valueOf(cancellationPrice))).doubleValue();
+					break;
+				}
+			}
+		}
+		return reimbursedAmount;
+	}
+}

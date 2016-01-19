@@ -1,0 +1,475 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+
+<style>
+	.k-grid  .k-grid-header  .k-header {
+	    white-space: normal;
+	    word-wrap: break-word;
+	}.
+</style>
+<script src="${ contextPath }/resources/js/payment/luhn.js"></script>
+<script src="${ contextPath }/resources/js/app/common.js"></script>
+<script src="${ contextPath }/resources/js/app/payment.js"></script>
+<script src="${ contextPath }/resources/js/app/payment-method.js"></script>
+
+<script>
+	$(document).ready(function() {
+		
+		$("input#cardNum").on({
+			  keydown: function(e) {
+			    if (e.which === 32 || e.which == 173)
+			      return false;
+			  },
+			  change: function() {
+			    this.value = this.value.replace(/\s/g, "");
+			  }
+		});
+		
+		var currentYear = new Date().getFullYear();
+		currentYear = parseInt(currentYear.toString().substring(2, 4));
+		for(var i=0; i<30 ; i++){
+			$('#addCardExpirationYearSelect').append($('<option>', {value: currentYear,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		$("#paymentMethodSelect").kendoDropDownList();
+		$("#addCardExpirationYearSelect").kendoDropDownList();    
+	    $("#addCardExpirationMonthSelect").kendoDropDownList();
+		$("#bankAccountTypeSelect").kendoDropDownList();
+		$("#bankAccountNumber").keypress(function (e){
+		    return checkKeyPressEventIsNumeric(e);
+		});
+		$("#bankRoutingNumber").keypress(function (e) {
+			return checkKeyPressEventIsNumeric(e);
+		});
+		$("#billingZip").keypress(function (e) {
+			return checkKeyPressEventIsNumeric(e);
+		});
+		
+		$('body').on( "change", "#paymentMethodSelect", function() {
+			 updatePaymentMethodDDAction();
+		});
+		
+		$('.tooltip_display').click(function() {
+		    var $this = $(this);
+		    $("#large").html(function() {
+		    	var pos = $(".tooltip_display").position();
+			    var leftPos = pos.left - 355;
+			    $("#large").css({left: leftPos, position:'absolute'});
+		    	
+		    	$('.ttip').css({
+		        }).show(500)
+		    }).fadeIn("fast");
+		});
+		
+		$('.note').on('click', function() {
+		    $('.ttip').hide(500);
+		    $("#background").fadeOut("slow");
+		    $("#large").fadeOut("slow");
+		});
+		 
+		$("#addCardButton").click(function(){
+			console.log("  addCardButton clicked ");
+			validateAndProcessPaymentMethod($("#SaveTypeID").val());
+		});
+		
+		$("#addBankInfoButton").click(function(){
+			console.log("  addBankInfoButton clicked ");
+			validateAndProcessPaymentMethod($("#SaveTypeID").val());
+		});
+		
+		$("#removeBankInfoButton").click(function(){
+			console.log("  removeBankInfoButton clicked ");
+			removePaymentMethod();
+		});
+		
+		$("#removeCardInfoButton").click(function(){
+			console.log("  removeCardInfoButton clicked ");
+			removePaymentMethod();
+		});
+	});
+	
+</script>
+<%
+	try{
+%>
+
+		<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+			<span class="k-loading-text">Loading... Please wait</span>
+			<div class="k-loading-image">
+				<div class="k-loading-color"></div>
+			</div>
+		</div>
+		<div id="purchaseinfoPg">	
+			
+			<div id="paymentMethodEdit" class="k-block" style="margin-top: 20px; padding: 10px; height: 350px;" >
+			
+        		<div id="purchase_info" >
+					
+					<div class="addcarddiv" id="paymentMethodSelectDiv">
+						<div style="height:20px;" id="selectPaymentMethodLbl">Please select Payment Method</div>
+						<div>
+							<select id="paymentMethodSelect" name="paymentMethodSelect" style="width:250px; font-weight: normal;">
+								
+								<option value="0" selected="selected">-- Select Payment Method --</option>
+								
+								<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+									<c:choose>
+										<%-- <c:when test="${ paymentInfo[1] == '1' }"> 
+											<option selected value="${ paymentInfo[4] }__${paymentInfo[0]}"> ${ paymentInfo[3] } ${ paymentInfo[2] } </option>
+										</c:when> --%>
+										<c:when test="${ paymentInfo[4] == 'CREDIT' }">
+											<option value="${ paymentInfo[4] }__${ paymentInfo[0] }"> ${ paymentInfo[3] } ${paymentInfo[2] } ${ paymentInfo[5] }/${ paymentInfo[6] } </option>
+										</c:when>
+										<c:when test="${ paymentInfo[4] == 'ACH' }">
+											<option value="${ paymentInfo[4] }__${ paymentInfo[0] }"> ${ paymentInfo[3] } ${paymentInfo[2] } </option>
+										</c:when>
+										
+									</c:choose>
+								</c:forEach>
+								
+								<option value="PaymentMethod_Card">Add New Card</option>
+								<option value="PaymentMethod_Bank">Add New Bank Info</option>
+							
+							</select>
+						
+						</div>
+					</div>
+					
+					<input type="hidden" name="SaveTypeID" id="SaveTypeID" value="">
+					<input type="hidden" name="AccountID" id="AccountID" value="${ AccountID }">
+					
+					<!-- 	<div class="addcarddiv" style="width: 100%;">
+						</div> -->
+						
+							<div id="addcard" style="margin-top:10px; margin-bottom:10px; display:none; float: left; ">
+						  		<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;" id="fullNameLabel">Name on card</div>
+									<div><input type="text" class="k-textbox" placeholder="Full Name on Card" name="fullName" id="fullName" maxlength="40" value="" tabIndex="1"></div>
+								</div>
+								 
+								<div class="addcarddiv">
+									<div style="height:20px;">Card Number</div>
+									<div>
+									<form id="paymentForm" action="#" > 
+										<div>
+											<input type="text" class="k-textbox" placeholder="Card Number" name="cardNum" id="cardNum" maxlength="16" value="" tabIndex="2" onchange="handleCCTyping(this.form, event);" onkeyup="handleCCTyping(this.form, event);">
+											<img src="resources/img/payment_credit_cards/cards/invalid.png" name="cardimage" ID="cardimage" width="30"  height="20" align="top">
+										</div>
+									</form>
+									</div> 
+								</div>
+								
+								<div class="addcarddiv">
+									<div style="height:20px;" >Expiration date</div>
+									<div>
+										<span style="font-weight: normal;">
+											<select id="addCardExpirationMonthSelect" name="addCardExpirationMonthSelect" tabIndex="3" style="width:50px; font-weight: normal; font-size: x-small;">
+							                      <option value="01">01</option>
+							                      <option value="02">02</option>
+							                      <option value="03">03</option>
+							                      <option value="04">04</option>
+							                      <option value="05">05</option>
+							                      <option value="06">06</option>
+							                      <option value="07">07</option>
+							                      <option value="08">08</option>
+							                      <option value="09">09</option>
+							                      <option value="10">10</option>
+							                      <option value="11">11</option>
+							                      <option value="12">12</option>
+											</select>
+										</span>
+										<span>
+											<select id="addCardExpirationYearSelect" name="addCardExpirationYearSelect" tabIndex="4" style="width:50px; font-weight: normal;">																
+											</select>
+										</span>
+									</div>
+								</div>
+								
+								<div class="addcarddiv10" id="SecurityCodeDivID">
+									<div style="height:20px;">Security Code</div>
+									<div>
+										<input type="password" class="k-textbox" placeholder="Security Code" maxlength="4" style="width: 90px;" name="securityCode" id="securityCode" value="" tabIndex="5" title="CVV Help"> 
+									</div>
+								</div>
+								
+								<div class="addcarddiv10" id="questionMarkImgID">
+									<div style="height:20px;">&nbsp;</div>
+									<div>
+										<a href="#" class="tooltip_display">
+											<img src="resources/img/question-mark.png" height="20px" width="20px"></img>
+										</a>
+										<div id="large">
+											<div class="ttip">
+												<span>
+													<a class="note" style="float: right; height: 25px; width: 25px;">
+														<img src="resources/img/close.jpg" height="20px" width="20px"></img>
+													</a>
+												</span>
+												<div class="contents">
+													<span><img src="resources/img/cv_card.gif" height="130px" width="160px"></img></span>
+													<span><img src="resources/img/cv_amex_card.gif" height="130px" width="160px"></img></span>																		
+												</div>
+												<div id="background"></div>
+											</div>
+										</div> 
+									</div>
+								</div>
+							</div>
+							
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Address Line 1</div>
+									<div>
+										<input type="text" class="k-textbox" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" maxlength="30" value="" tabIndex="6">
+									</div> 
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Address Line 2</div>
+									<div><input type="text" class="k-textbox" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2" maxlength="30" value="" tabIndex="7"></div> 
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">City</div>
+									<div><input type="text" class="k-textbox" placeholder="Billing City" name="billingCity" id="billingCity" maxlength="30" value="" tabIndex="8"></div> 
+								</div>
+								<div class="addcarddiv" style="width:45px;">
+									<div style="height:20px;">State</div>
+									<div><input type="text" class="k-textbox" placeholder="State" name="billingState" id="billingState" maxlength="30" value="" style="width:45px;" tabIndex="9"></div> 
+								</div>
+								<div class="addcarddiv" style="width:60px">
+									<div style="height:20px;">Zip</div>
+									<div><input type="text" class="k-textbox" placeholder="Zip" name="billingZip" id="billingZip" maxlength="5" value="" style="width:60px;" tabIndex="10"></div> 
+								</div>
+								<div class="addcarddiv" style="display:none;">
+									 <span id="paymentTokenIdSpan"></span>
+									 <span id="paymentAmountSpan"></span>
+								</div>
+							</div>
+							
+							<div style="height:50px;">
+								<div id="nickname" class="addcarddiv" >
+									<div style="height:20px;" id="nickNameLabel">Nick Name</div>
+									<div><input type="text" class="k-textbox" placeholder="Nick Name" name="nickName" id="nickName" maxlength="20" tabIndex="11" value=""></div> 
+								</div>
+							</div>
+									
+							<div style="float: right; width: 300px;">
+							
+							</div>
+					        
+					    <!--    <div style="margin-top:30px; margin-bottom:10px;" >
+								<div class="addcarddiv" align="right">
+				        			<div align="right">
+					        			<span style="width: 100px;">
+											<button id="addCardButton" class="k-button" style="font-size: small; min-width: 80px;">Add</button>
+										</span>
+										<span style="width: 100px; margin-left: 20px;" id="removeCardInfoButtonSpan">
+											<button id="removeCardInfoButton" class="k-button" style="font-size: small; min-width: 80px;">Remove</button>
+										</span>
+				        			</div>
+				        		</div>
+				        		
+				        		<div class="addcarddiv" align="right" style="margin-left: 100px; vertical-align: bottom;"> 
+				        			<div align="right" style="vertical-align: bottom;"><a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a></div>
+				        		</div>
+					        </div>
+					         -->
+				        
+				        <div id="remove_card_payment_method_signup_list" align="center" style="width:500px; margin-top:25px; margin-bottom:10px; display:none; background-color:#FFFFFF;"> <!-- class="k-block" -->
+						        <table cellpadding="0" cellspacing="0" rules="none" style="padding-left:4px;padding-top:4px; width: 500px;" id="remove_card_payment_method_signup_list_table">
+						        	<tr align="left" style="height: 30px; padding-bottom: 5px;">
+						        		<td colspan="3"><span align="left" style="margin-left:4px; font-size: x-small;">Cannot remove payment method, beacause it has due payment for following signups.</span>
+						        		</td>
+						        	</tr>
+									<tr align="center" style="height: 30px;">
+										<td colspan="3"><span class="head" style="margin-left:4px; font-size: small; text-align: center;">Signup List</span>
+										</td>
+									</tr>
+									<tr>
+		  								<td style="padding-bottom:3px;padding-left:4px; font-weight: bold; width: 100px;" nowrap="nowrap">Signup Name</td>
+		  								<td style="padding-bottom:3px; font-weight: bold;width: 100px;" nowrap="nowrap">Signup Date</td>
+		  								<td style="padding-bottom:3px; font-weight: bold;width: 250px;" nowrap="nowrap">Reassign</td>
+									</tr>
+						        </table>
+				        
+							<!-- <div style="display: table; width: 100%"> -->
+								<!-- <div style="display: table-row; width: 100%;">
+									<span class="head" width="100%" style="margin-left:4px;">Signup List</span>
+								</div>
+								<div style="display: table-row; width: 100%;">
+									<div>Signup id jskdhshd</div>
+									<div>Signup name fdhgklgf</div>
+									<div>Signup date</div>
+								</div>
+								<div style="display: table-row; width: 100%;">
+									<div>112</div>
+									<div>Event</div>
+									<div>12/22/2015</div>
+								</div> -->
+							<!-- </div> -->
+						</div>
+						
+					        <div style="display: table; width: 100%">
+								<div style="display: table-row; width: 100%;" align="right">
+									<div align="right" style="margin-top: 30px;">
+					        			<span style="width: 100px;">
+					        				<button id="addCardButton" class="k-button" style="font-size: small; min-width: 80px;">Add</button>
+										</span>
+										<span style="width: 100px; margin-left: 20px;" id="removeCardInfoButtonSpan">
+											<button id="removeCardInfoButton" class="k-button" style="font-size: small; min-width: 80px;">Remove</button>
+										</span>
+										<span style="width: 100px; margin-left: 20px;">
+											<a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a>
+										</span>
+				        			</div>
+								</div>
+							</div>
+					        
+					        
+					        <div id="statusBlock_card" style="margin-top:30px; height:30px; margin-bottom:10px;">
+								<div align="center" class="addcarddiv">
+									<span class="k-block k-success-colored" id="tcSuccessSpan_card"></span>
+									<span class="k-block k-error-colored" id="tcErrorSpan_card"></span>
+								</div>
+								<!-- <div align="right" id="BackToPaymentInfoDivID_card" style="margin-top:20px;">
+				        			<div align="center"><a href="/ymca-web/viewPaymentInformation">Back to Payment Information111</a></div>
+				        		</div> -->
+							</div>
+						</div>
+						
+						<div id="addBank" style="margin-top:10px; margin-bottom:10px; height:100px; display:none;   float: left; ">										
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Bank Account Type</div>
+									<div>
+										<span>
+											<select id="bankAccountTypeSelect" name="bankAccountTypeSelect" tabIndex="1" style="width:130px;">
+							                      <option value="CHECKING">Checking</option>
+							                      <option value="SAVINGS">Savings</option>
+											</select>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Bank Account Number</div>
+									<div><input type="text" class="k-textbox" placeholder="Bank Account Number" name="bankAccountNumber" id="bankAccountNumber" value="" maxlength="17" style="width: 15.4em;" tabIndex="2"></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Bank Routing Number</div>
+									<div><input type="text" class="k-textbox" placeholder="Bank Routing Number" name="bankRoutingNumber" id="bankRoutingNumber" value="" maxlength="9" style="width: 15.4em;" tabIndex="3"></div>
+								</div>
+							</div>
+							
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Account Name</div>
+									<div><input type="text" class="k-textbox" placeholder="Account Name" name="bankAccountName" id="bankAccountName" value="" maxlength="40" style="width: 15.4em;" tabIndex="4"></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Nick Name</div>
+									<div><input type="text" class="k-textbox" placeholder="Nick Name" name="bankInfoNickName" id="bankInfoNickName" value="" maxlength="30" style="width: 15.4em;" tabIndex="5"></div>
+								</div>
+							</div>
+							<!-- <div style="height:50px;">
+								
+								<div class="addcarddiv">
+									<div style="height:20px;">Check Number</div>
+									<div><input type="text" class="k-textbox" placeholder="Check Number" name="checkNumber" id="checkNumber" value="" maxlength="8" style="width: 15.4em;" tabIndex="5"></div>
+								</div>
+							</div> -->
+							
+							<div style="float: right; width: 300px;">
+							
+							</div>
+							
+							<div style="margin-top:30px; margin-bottom:10px; margin-left:250px;" >
+								<div class="addcarddiv" align="center">
+				        			<div align="center">
+					        			<span class="autopaySpan" style="width: 100px;">
+											<button id="addBankInfoButton" class="k-button" style="font-size: small; min-width: 80px;">Add</button>
+										</span>
+				        			</div>
+				        		</div>
+				        		
+				        		<div class="addcarddiv" align="right">
+				        			<div align="right"><a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a></div>
+				        		</div>
+					        </div>
+					        
+					       	<div id="statusBlock_bank" style="margin-top:70px; height:50px; margin-bottom:10px;">
+								<div align="center" class="addcarddiv">
+									<span class="k-block k-success-colored" id="tcSuccessSpan_bank"></span>
+									<span class="k-block k-error-colored" id="tcErrorSpan_bank"></span>
+								</div>
+							</div>
+							
+						</div>
+						
+						<div id="statusBlock11" style="margin-top:20px; margin-bottom:10px; height:100px; display:none; float: middle;">
+							<div align="center">
+								<span class="k-block k-success-colored" id="tcSuccessSpan11"></span>
+								<span class="k-block k-error-colored" id="tcErrorSpan11"></span>
+							</div>
+							<div align="right" id="BackToPaymentInfoDivID" style="margin-top:20px;">
+			        			<div align="center"><a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a></div>
+			        		</div>
+						</div>
+						
+						<!-- <div class="addcarddiv" class="k-block" id="remove_bank_payment_method_signup_list" style="background-color:#FFFFFF; width:100%; margin-top:30px; margin-bottom:10px; height:100px; display:none;">
+							<div style="display: table; width: 100%">
+								<div style="display: table-row; width: 100%;">
+									<span class="head" width="100%" style="margin-left:4px;">Signup List</span>
+								</div>
+								<div style="display: table-row; width: 100%;">
+									<div>Signup id </div>
+									<div>Signup name </div>
+									<div>Signup date</div>
+								</div>
+								<div style="display: table-row; width: 100%;">
+									<div>112</div>
+									<div>Event</div>
+									<div>12/22/2015</div>
+								</div>
+							</div>
+						</div> -->
+						
+						<div class="addcarddiv" id="statusBlock_update_bank" style="width:100%; margin-top:30px; margin-bottom:10px; height:100px; display:none;">
+							<div style="display: table; width: 100%">
+								<div style="display: table-row;  width: 100%">
+									<span class="k-block k-success-colored" id="tcSuccessSpan_update_bank"></span>
+									<span class="k-block k-error-colored" id="tcErrorSpan_update_bank"></span>
+								</div>
+								
+								<div style="display: table-row; width: 100%;" align="right">
+									<div align="right" style="margin-top: 30px;">
+					        			<span style="width: 100px;">
+											<button id="removeBankInfoButton" class="k-button" style="font-size: small; min-width: 80px;">Remove</button>
+										</span>
+										<span style="margin-left: 20px;">
+											<a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a>
+										</span>
+				        			</div>
+								</div>
+							</div>
+						</div>
+	        	</div> 
+			</div>
+		</div>
+		
+		<script id="confirmDialogBox" type="text/x-kendo-template">
+    		<p class="delete-message">Are you sure you want to remove Payment Method?</p>
+    		<div class="confirmbutton">
+				<button class="delete-confirm k-button">Yes</button>&nbsp;&nbsp;&nbsp;
+    			<span class="delete-cancel k-button">No</span>
+			</div>
+		</script>
+		
+		<iframe src="${contextPath }/viewPaymentForm" height="1px" width="1px" id="childIframeId" style="position:absolute; bottom:-10px; left:-10px;"></iframe>
+		
+		
+<%
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+%>

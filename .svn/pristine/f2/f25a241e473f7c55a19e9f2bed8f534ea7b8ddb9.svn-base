@@ -1,0 +1,117 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "payment")
+public class Payment extends BaseObject implements Serializable {
+	private static final long serialVersionUID = -3202944701848397747L;
+
+	public Payment(){
+    }
+
+	@Id
+    private Long transactionId;
+	
+	@Column(name = "amount", nullable = false)
+	private double amount;
+	private String status;
+	private String description;
+	
+	@OneToOne(cascade={CascadeType.ALL})
+    @JoinColumn(name = "signupId")
+    private Signup signup;
+	
+	public Long getTransactionId() {
+		return transactionId;
+	}
+
+	public void setTransactionId(Long transactionId) {
+		this.transactionId = transactionId;
+	}
+
+	public double getAmount() {
+		return amount;
+	}
+
+	public void setAmount(double amount) {
+		this.amount = amount;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public Signup getSignup() {
+		return signup;
+	}
+
+	public void setSignup(Signup signup) {
+		this.signup = signup;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((transactionId == null) ? 0 : transactionId.hashCode());
+		
+		result = prime * result
+				+ ((status == null) ? 0 : status.hashCode());
+		
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Payment other = (Payment) obj;
+		if (transactionId == null) {
+			if (other.transactionId != null)
+				return false;
+		} else if (!transactionId.equals(other.transactionId))
+			return false;
+		
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
+}

@@ -1,0 +1,17 @@
+package com.ymca.web.enums;
+
+public enum ACH_AccountTypeEnum {
+	CHECKING("CH"),
+	SAVINGS("SV");
+	
+	public String value;
+	
+	private ACH_AccountTypeEnum(String str){
+		value = str;
+	}
+	
+	public String getValue(){
+		return value;
+	}
+	
+}

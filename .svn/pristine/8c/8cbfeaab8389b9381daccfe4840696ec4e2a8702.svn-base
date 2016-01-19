@@ -1,0 +1,186 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<div id="tabstrip3" class="k-block"
+	style="background-color: #FFFFFF; padding: 12px; width: 100%">
+
+	<!-- <h2>
+				Request for Cancellation
+			</h2> -->
+<span id="x" style="display:none" >${requiredInvoiceList}</span>
+<span id="y" style="display:none" >${requiredPastInvoiceList}</span>
+	<div id="formBlock">
+
+		<div id="cc_list">
+			<span class="head">List Of Current Due Invoice Records</span><br></br>
+			<div>
+				<table id="childcare_list"
+					style="table-layout: fixed; display: none;">
+					<thead>
+						<tr>
+							<th>Due Date</th>
+							<th>Balance</th>
+							<th>SignUp Name</th>
+							<th>UserName</th>
+
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach var="requiredInvoiceList"
+							items="${requiredInvoiceList}" varStatus="status">
+							<tr>
+								<td><fmt:formatDate type="date" pattern="MM/dd/yyyy"
+										value="${requiredInvoiceList.dueDate}" /></td>
+										
+										
+                                     <td>${requiredInvoiceList.balance}</td>
+														
+								<c:choose>
+									<c:when test="${(requiredInvoiceList.signup.paymentFrequency!='one-time') && (requiredInvoiceList.payer.type=='self') }">
+										<td>${requiredInvoiceList.signup.signUpName}(AUTO)</td>
+									</c:when>
+
+									<c:otherwise>
+										<td>${requiredInvoiceList.signup.signUpName}</td>
+									</c:otherwise>
+								</c:choose>
+								
+								<td>${requiredInvoiceList.signup.contactName}</td>
+								<td>&nbsp;</td>
+
+							</tr>
+						</c:forEach>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		</br>
+		<strong><span id="currentPastDueAmount">CurrentDueAmount:</span></strong>
+							<strong><span id="currentPastDueAmount">${dueAmount}</span></strong>
+		<span class="k-button" id="updProfile" onclick="location.href='payCurrentPastDue?currentDueAmount=${dueAmount}&pastDueAmount=${pastDueAmount}'" style="margin-left:920px;">Pay Current-Past Due</span></br></br>
+
+	</div>
+
+	<div id="formBlock2">
+
+		<div id="cc_list2">
+
+			<span class="head">List Of Past Due Invoice Records</span><br></br>
+			<div>
+				<table id="childcare_list2"
+					style="table-layout: fixed; display: none;">
+					<thead>
+						<tr>
+							<th>Due Date</th>
+							<th>Balance</th>
+							<th>SignUp Name</th>
+							<th>UserName</th>
+
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach var="requiredPastInvoiceList"
+							items="${requiredPastInvoiceList}" varStatus="status">
+							<tr>
+								<td><fmt:formatDate type="date" pattern="MM/dd/yyyy"
+										value="${requiredPastInvoiceList.dueDate}" /></td>
+								<td>${requiredPastInvoiceList.balance}</td>
+
+								<td>${requiredPastInvoiceList.signup.signUpName}</td>
+
+
+								<td>${requiredPastInvoiceList.signup.contactName}</td>
+								<td>&nbsp;</td>
+
+							</tr>
+						</c:forEach>
+					</tbody>
+					
+				</table>
+			</div>
+		</div>
+		</br>
+		<strong><span id="pastDuePayment">PastDueAmount:</span></strong>
+							<strong><span id="pastDueAmount">${pastDueAmount}</span></strong>
+		<span class="k-button" id="updProfile" onclick="location.href='payPastDue?pastDueAmount=${pastDueAmount}'" style="margin-left:990px;">Pay Past Due</span></br></br>
+	</div>
+
+
+
+
+</div>
+
+<script>
+
+var x=$("#x").text().length;
+var y=$("#y").text().length;
+if((x==null || x==2) &&(y==null || y==2))
+{
+	
+	$("#formBlock").html("");
+	$("#formBlock2").html("");
+		
+	$("#formBlock").html("THERE IS NO CURRENT OR PAST DUE AGAINST TO YOU, THANKS");
+}
+else if(x==null || x==2)
+{
+	$("#formBlock").html("");
+}
+
+else if(y==null || y==2)
+{
+	$("#formBlock2").html("");
+	$("#updProfile").html("Pay Current Due");
+	//$("#currentPastDueAmount").html("currentDueAmount");
+	
+}
+
+$("#tabstrip3").hide();
+
+	$(document).ready(function() {
+	//alert("here "+requiredPastInvoiceList)
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_programregistration").attr('class','');
+		$("#top_childcare").attr('class','');
+		
+		//$("#page_name").html("PAYMENT INFORMATION");
+		$("#location").kendoDropDownList();
+		$("#type").kendoDropDownList();
+		
+		$("#childcare_list").kendoGrid({
+			dataSource: {
+            	pageSize: 4
+			},
+            pageable: true,
+            selectable: "row",
+            height: 150
+		});
+		
+		$("#childcare_list2").kendoGrid({
+			dataSource: {
+            	pageSize: 4
+			},
+            pageable: true,
+            selectable: "row",
+            height: 150
+		});
+		$("#tabstrip3").show();
+        $("#childcare_list").show();
+		$("#childcare_list2").show();
+		
+		if(requiredPastInvoiceList==null)
+		{
+			$("#childcare_list2").hide();
+		}
+	});
+</script>
+
+<style>
+.k-grid  .k-grid-header  .k-header  .k-link {
+	height: auto;
+}
+
+.k-grid  .k-grid-header  .k-header {
+	white-space: normal;
+}
+</style>

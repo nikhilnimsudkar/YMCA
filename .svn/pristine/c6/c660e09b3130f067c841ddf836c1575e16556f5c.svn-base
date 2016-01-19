@@ -1,0 +1,317 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    
+<body>
+
+<div id="main">
+	<div id="content">
+		<div id="searchprogram" class="k-block">
+			<%@ include file="searchprogram.jsp" %>
+		</div>
+		<div id="program_details" class="k-block">
+			<div id="program">
+				<!-- programInformation.jsp  -->
+				<div id="program_session" style="width:666px;">
+				
+				</div>
+			</div>
+			<div id="familymembers" style="display:none;">
+				<%@ include file="familymembers.jsp" %>
+			</div>
+			<div id="purchase" style="display:none;">
+				<%@ include file="paymentcart.jsp" %> 
+			</div>
+			<div id="programsummary" style="display:none;">
+				<%@ include file="ProgramSummary.jsp" %> 
+			</div>
+			<div style="clear: both;"></div> 
+			<div id="prgcart">
+				<%@ include file="Programcart.jsp" %> 
+			</div>
+			<div style="clear: both;"></div> 
+			<div id="statusBlock">
+				<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+				<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+
+<script>
+	$(document).ready(function() {
+		$("#tcSuccessSpan").css("display", "block");		
+		$("#tcSuccessSpan" ).html("Please search for Programs on left side to enroll.");	
+		
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_programregistration").attr('class','current');
+		
+		$("#page_name").html("PROGRAM MANAGEMENT");
+	});
+	
+	function validateCheckout() {
+		 $("#tcSuccessSpan").css("display", "none");		
+		 $("#tcSuccessSpan" ).html("");	
+		 $("#tcErrorSpan").css("display", "none");		
+		 $( "#tcErrorSpan" ).html("");
+		
+		var contactData = [];
+		$('#allmembers').find('input[class="usercheck"]').each(function(){
+			if($("#user_"+this.value).is(':checked')){
+				contactData.push(this.value);
+			}
+		});
+		if(contactData==""){
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("Please select atleast one Member");
+			  return false;
+		}
+		var prodIds = $.sessionStorage.getItem('product_ids');
+		location.href = '#/product/'+prodIds+'/'+contactData.join(',');
+		return true;
+	}
+
+	function add_member() {
+		var window_add = $("#popup_add");
+		window_add.kendoWindow({
+			title : "Add Members",
+			content : "addMember",
+			modal : false,
+			width : "700px",
+			close : onClose,
+			deactivate : function(e) {
+				this.destroy();
+			}
+		}).data("kendoWindow").center().open();
+		$('[data-role="draggable"]').css('top', '20px');
+	}
+	
+	function closeAllwindow(){
+
+		 $("div.k-window1").each(function(index, element){
+	 	 	var window = $(this);
+	    	if (!window.data("kendoWindow")) {
+	            window.kendoWindow({
+	                width: "1050px"
+	        	});
+	        }
+		 	window.data("kendoWindow").close();
+		});
+	 }
+	
+	var onClose = function() {
+		this.destroy();   
+	};
+	
+	function fnGotoFamilyMember(){
+		$("#familymembers").show();
+		$("#checkout_content").hide();
+	}
+	
+	function fnApplyPromo(){
+		 $("#tcSuccessSpan").css("display", "none");		
+		 $("#tcSuccessSpan" ).html("");	
+		 $("#tcErrorSpan").css("display", "none");		
+		 $( "#tcErrorSpan" ).html("");
+		 
+		 //alert();
+		 var promocode = $( "#c_promocode" ).val();
+		 
+		 if(promocode==''){
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("Please enter Valid Promco code");
+			  return;
+		 }
+		 
+		 var cartObj = this.cart;
+		 var found = false;
+		 $.ajax({
+			  type: "GET",
+			  async: false,
+			  url:"getPromodetails?promocode="+promocode,
+			  dataType: "json",
+			  success: function( data ) {
+				  console.log(data);
+				  if(data.length==1){
+					  $.each(data, function(i,promo) {
+						  if(promo.itemDetails.length>0){
+							  
+							  for (var c = 0; c < cartObj.contents.length; c ++) {
+								  
+									  $.each(promo.itemDetails, function(j,itemInfo) {
+										  
+											  if(cartObj.contents[c].item.itemDetailsId == itemInfo.itemDetailsId){
+												  var discount = parseFloat(0);
+												  var discount_type = promo.discounttype;
+												  if(discount_type=='AMOUNT')
+													  discount = promo.discountValue;
+												  else if(discount_type=='PERCENTAGE'){
+													  discount = parseFloat(promo.discountPercentage) * parseFloat(cartObj.contents[c].item.price);
+												  	  discount = discount/100;
+												  }
+												  
+												  $( ".custom_promo" ).show();
+												  cartPreviewModel.updateCart(cartObj.contents[c],parseFloat(discount),promocode);
+												  //break;
+												  found = true;
+											  }
+											  
+									  });
+									  
+								}
+						  }
+					  });
+				  }
+				  else{
+					  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcSuccessSpan" ).html("");	
+					  $("#tcErrorSpan").css("display", "block");		
+					  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+					  return;
+				  }
+			  },
+			  error: function( xhr,status,error ){
+				  //alert("1" +status);
+				  console.log(xhr);
+				 
+			  }
+		});
+		 
+		 if (!found) {
+             $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+       	  }
+	}
+	
+	function fnUpdatePromo(){
+		 $("#tcSuccessSpan").css("display", "none");		
+		 $("#tcSuccessSpan" ).html("");	
+		 $("#tcErrorSpan").css("display", "none");		
+		 $( "#tcErrorSpan" ).html("");
+		 //alert();
+		console.log(this);
+	}
+	
+	function getFamilymembers(){
+		$.ajax({
+			  type: "GET",
+			  async: false,
+			  url:"getContacts",
+			  dataType: "json",
+			  success: function( data ) {
+				  if(data.length>0){
+					  var allContacts = "";
+					 
+					  $.each(data, function(i,member) {
+						  allContacts = allContacts + "<div style='margin: 10px;'>";
+						  allContacts = allContacts + "<span><input type='checkbox' name='user_"+member.id+"' id='user_"+member.id+"' value='"+member.id+"' class='usercheck'></span>";
+						  allContacts = allContacts + "&nbsp;&nbsp;<span class='name'>"+member.fname + " " +member.lname+"</span>";
+						  allContacts = allContacts + "</div>";
+					  });
+					  
+					  $("#familymembers").slideDown();
+					  $("#allmembers").html(allContacts);
+					  $("input[type='checkbox']").uniform();
+					 
+				  }
+			  },
+			  error: function( xhr,status,error ){
+				  //alert("1" +status);
+				  console.log(xhr);
+				 
+			  }
+		});
+	}
+	
+	function fnCheckout(){
+		 $("#tcSuccessSpan").css("display", "none");		
+		 $("#tcSuccessSpan" ).html("");	
+		 $("#tcErrorSpan").css("display", "none");		
+		 $( "#tcErrorSpan" ).html("");
+		 
+		 if(cartPreviewModel.totalPrice()=='$0.00'){
+			 $("#tcErrorSpan").css("display", "block");		
+			 $( "#tcErrorSpan" ).html("Please add some programs to signup");
+			 return;
+		 }
+		// validation start
+		$(".k-loading-mask").show();
+		$("#payment_cart").show();
+		$("#details-checkout").fadeOut("fast");
+		$("#purchase").fadeIn("slow", function(){
+				$(".k-loading-mask").show();
+				$("#pmPrimary").hide();
+				$("#autopayBtn").hide();
+				
+				var trrow = "";
+				if(cart.contents.length>0){
+					$.each(cart.contents, function(i,itemDetailsSession) {
+						var stdt = convertJsonDate(itemDetailsSession.item.start_date);
+						var enddt = convertJsonDate(itemDetailsSession.item.end_date);
+						var discount = parseInt(itemDetailsSession.item.discount) + parseInt(itemDetailsSession.discount1);
+						var itemprice = (parseInt(itemDetailsSession.item.price) - parseInt(itemDetailsSession.item.discount) - parseInt(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+						
+						trrow = trrow + "<tr>";
+			  			trrow = trrow + "<td><span><strong>" + itemDetailsSession.contact.fname + " " + itemDetailsSession.contact.lname + "<br>"  + itemDetailsSession.item.name + " [Category: " + itemDetailsSession.item.category + "]</strong></span></td>";
+			  			trrow = trrow + "<td><span>" + itemDetailsSession.item.days + "</span></td>";
+			  			trrow = trrow + "<td><span>" + stdt + " - " + enddt + "</span></td>";
+			  			trrow = trrow + "<td><span>" + itemDetailsSession.item.start_time.hours + ":" + itemDetailsSession.item.start_time.minutes + " - " + itemDetailsSession.item.end_time.hours + ":" + itemDetailsSession.item.end_time.minutes + "</span></td>";
+			  			trrow = trrow + "</tr>";
+			  			
+			  			trrow = trrow + "<tr height='10px;'>";
+			  			trrow = trrow + "<td colspan='3' align='right'>Sub Total</td>";
+			  			trrow = trrow + "<td align='center'><span>" + currencyFormat(itemDetailsSession.item.price) + "</span></td>";
+			  			trrow = trrow + "</tr>";
+			  			
+			  			trrow = trrow + "<tr height='10px;'>";
+			  			trrow = trrow + "<td colspan='3' align='right'>Discount</td>";
+			  			trrow = trrow + "<td align='center'><span>-" + currencyFormat(discount) + "</span></td>";
+			  			trrow = trrow + "</tr>";
+			  			
+			  			trrow = trrow + "<tr height='10px;'>";
+			  			trrow = trrow + "<td colspan='3' align='right'>Final amount</td>";
+			  			trrow = trrow + "<td align='center'><span>" + currencyFormat(itemprice) + "</span></td>";
+			  			trrow = trrow + "</tr>";
+			  			
+			  			trrow = trrow + "<tr height='10px;'>";
+			  			trrow = trrow + "<td></td>";
+			  			trrow = trrow + "</tr>";
+					});
+				}
+	  			//ordertotal = ordertotal + parseInt(itemDetailsSession.itemDetails.price);
+	  			
+	  			var row = $(trrow);
+			    row.prependTo("#cart_info table"); 
+			    //console.log(cartPreviewModel);
+			    //console.log(cartPreviewModel.totalPrice());
+				$("#ordertotal").text(cartPreviewModel.totalPrice());
+				
+				$(".k-loading-mask").hide();
+		});
+	}
+	
+	function convertJsonDate(dtObj){
+		var dtStr = "";
+		var sday = dtObj.date;
+		var smonth = parseInt(dtObj.month) + 1;
+		var syear = dtObj.year;
+		
+		dtStr = sday + "/" + smonth + "/" + syear;
+		return dtStr;
+	}
+	
+	function currencyFormat (num) {
+	    return "$" + num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+	}
+</script>

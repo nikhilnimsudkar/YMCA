@@ -1,0 +1,217 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    
+<div id="application"></div>
+<script type="text/x-kendo-template" id="layout-template">
+            <div id="cart-wrapper">
+				<div id="cart-header">
+                    
+                    <span id="cart-info">Your Cart: <span><span data-bind="text: cart.contentsCount"></span> items</span></span>
+                </div>
+                <div id="main-section">
+                    <section id="content"></section>
+					<section id="checkout_content"></section>
+                </div>
+            </div>
+</script>
+
+<script type="text/x-kendo-template" id="index-template">
+	<div align="center">
+		<span id="add-to-cart">
+            <!--<button class="buy" data-bind="click: addToCart">Add to cart</button>--->
+			<span class="k-button" id="addproduct">Add to Cart</span>
+		</span>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="product-template">
+	<span class="buy" data-bind="click: addToCart">Add to cart</span>
+</script>
+
+<script type="text/x-kendo-template" id="checkout-template">
+			<div id="details-checkout">
+                <h1 style="text-align:left;float:left;">Cart Details</h1>
+				<a class="emptycart" href="#" data-bind="click: emptyCart">Empty Cart</a>
+				<table class="checkouttbl">
+					<thead>
+						<tr>
+							<th>Signup Program Details</th>
+							<!--<th>Session</th>-->
+							<th></th>						
+							<th align="right">Price</th>
+						</tr>
+					</thead>
+					<tbody data-role="listview" data-bind="source: cart.contents" data-template="large-cart-item">
+					</tbody>
+				</table>
+				
+				<div style="height: 170px;">
+					<div style="width: 100%; float: right;  margin-top: 10px;">
+						<p id="total-discount"><em>Discount:</em>
+						<span class="discountpricelbl">-</span>
+						<span class="discountpricelbl" data-bind="text: totalDiscountAmount"></span></p>
+
+						<div id="promo">
+							<span>Promo Code:</span>
+							&nbsp;&nbsp;
+							<span><input id="c_promocode" type="text" class="k-textbox"></span>
+							<span id="applypromo" class="k-button" onclick="fnApplyPromo();">Apply</span>
+						</div>
+					</div>
+					<div>
+						<p id="total-checkout"><em>total:</em><span data-bind="text: totalPrice"></span></p>
+					</div>
+				</div>
+				<div style="clear: both;"></div> 
+				<div id="cartbtns">
+					<button id="backtofamily" class="k-button" onclick="fnGotoFamilyMember();" style="display:none;"><< Back</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<button id="continueshopping" class="k-button" onclick="continueshop();">Continue Shopping</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<button id="confirmBtn" class="k-button" onclick="fnCheckout();">Checkout</button>
+				</div>
+			</div>
+</script>
+
+<script type="text/x-kendo-template" id="large-cart-item">
+            <tr>
+                <td> 
+					<span data-bind="text: contact.fname"></span>
+					<span data-bind="text: contact.lname"></span>
+					<br><br>
+
+					<span  data-bind="text: item.sessionName"></span><br>
+					[<span data-bind="text: item.days"></span>]
+					
+					[<span>#= formatTime(new Date(item.start_time.time)) #</span>
+					 - 
+					<span>#= formatTime(new Date(item.end_time.time)) #</span>]
+					<br>
+
+					<span><strong>Instructor:- </strong></span>
+					<span data-bind="text: item.instructor"></span>
+					<br>
+
+					<span class="product-name" data-bind="text: item.name"></span>&nbsp;
+					[<span><strong>Category:- </strong></span>
+					<span data-bind="text: item.category"></span>]
+					<br>
+					<span data-bind="text: item.description"></span>
+					<br><br>
+				</td>
+				<td align="left" style="padding-right: 20px;">
+					<a data-bind="click: removeFromCart" class="view-selected-items" style="text-decoration: underline; cursor:pointer;">
+						<!--<img src="resources/img/blue_cross.jpg"  width="30" height="30">-->
+						Remove
+					</a>
+				</td>
+				<td align="right">
+					<p class="table-price" data-bind="text: itemPrice"><p>
+					#if (item.discount >0)  { #
+					<p class="auto_promo">
+					# } else {#
+					<p class="auto_promo" style="display:none;">	
+					# } #
+						<span class="table-price" data-bind="text: discountCode"></span>
+						<span>&nbsp;&nbsp;</span>
+						<span class="discountpricelbl">-</span>
+						<span class="table-price discountpricelbl" data-bind="text: discountPrice"><span>
+					</p>
+					#if (discount1 >0)  { #
+					<p class="custom_promo" id="custom_promo_#= uniqueId #">
+					# } else {#
+					<p class="custom_promo" style="display:none;" id="custom_promo_#= uniqueId #">
+					# } #
+						<span><input id="i_promo_#= uniqueId #" type="text" class="k-textbox" style="width:75px;" data-bind="value: discountcode1"></span>
+						<span class="tick_img" data-bind="click: updatePromoCart"><img width="40" src="resources/img/tick_cross.jpg" /></span>
+						<span class="cross_img" data-bind="click: hidePromoFromCart"><img width="40" src="resources/img/tick_cross.jpg" /></span>
+						<!--<span onclick="hidePromo();">N</span>-->
+						<span>&nbsp;&nbsp;</span>
+						<span class="discountpricelbl">-</span>
+						<span class="table-price discountpricelbl" data-bind="text: dicountpriceUSD"><span>
+					</p>
+					
+					<p>
+						<span class="table-price">FINAL AMOUNT</span>
+						<span>&nbsp;&nbsp;</span>
+						<span class="table-price" data-bind="text: finalPrice"><span>
+					</p>
+				</td>
+            </tr>
+</script>
+
+<script id="delete-confirmation" type="text/x-kendo-template">
+    <p class="delete-message">Are you sure you want to remove this item from cart?</p>
+	
+    <div class="confirmbutton"><button class="delete-confirm k-button">Yes</button>&nbsp;&nbsp;&nbsp;
+    <span class="delete-cancel k-button">No</span></div>
+</script>
+
+<script>
+	$(document).ready(function() {		
+		$( "#addproduct" ).click(function(){
+			 $("#program_details").css("border-width", "1px");	
+			 $("#program_details").css("margin-top", "20px");	
+			 
+			 $("#tcSuccessSpan").css("display", "none");		
+			 $("#tcSuccessSpan" ).html("");	
+			 $("#tcErrorSpan").css("display", "none");		
+			 $( "#tcErrorSpan" ).html("");
+			
+			 
+			var prodIds = [];
+			$('#program_session').find('input[name="selectedItemSession"]').each(function(){
+				if($("#item_"+this.value).is(':checked')){
+					prodIds.push(this.value);
+				}
+			});
+
+			if(prodIds==""){
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("Please select atleast one signup program");
+				  return;
+			}
+			
+			$("#add-to-cart").hide();
+			$("#program").fadeOut(200);
+			$("#backtofamily").show();
+			
+			$.sessionStorage.setItem('product_ids', prodIds.join(','));
+			var isUserLoggedin = "${pageContext.request.userPrincipal.isAuthenticated()}";
+			//alert(isUserLoggedin);
+			if(isUserLoggedin){
+				getFamilymembers();
+			}
+			else{
+				location.href = 'addprogramtocart';
+			}
+			
+			
+		});
+		
+		$( "#cart-info" ).click(function(){
+			 $("#program_details").css("border-width", "1px");	
+			 $("#program_details").css("margin-top", "20px");	
+			 
+			 $("#tcSuccessSpan").css("display", "none");		
+			 $("#tcSuccessSpan" ).html("");	
+			 $("#tcErrorSpan").css("display", "none");		
+			 $( "#tcErrorSpan" ).html("");
+			 
+			$("#program").hide();
+			$("#purchase").fadeOut();
+			$("#payment_cart").hide();
+			$("#familymembers").hide();
+			$("#checkout_content").show();
+			$("#details-checkout").show();
+			$("#add-to-cart").hide();
+			
+			location.href = '#/checkout';
+			$("#backtofamily").hide();
+		});
+		
+	});
+	
+</script>

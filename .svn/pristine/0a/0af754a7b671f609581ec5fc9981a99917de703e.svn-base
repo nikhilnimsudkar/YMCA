@@ -1,0 +1,16 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.Payment;
+
+
+public interface PaymentDao  extends GenericDao<Payment, Long> {
+
+	//@Query("select prod.category, p.amount, p.type, p.paymentDate, p.status, p.reason from Payment p inner join p.signup s inner join s.item prod inner join s.contact con where p.type = 'Credit' and p.status ='Failure' and con.firstName like ?1")
+	@Query("select p.amount,  p.paymentDate, p.status, p.reason, prod.category from Payment p inner join p.signup s inner join s.item prod inner join s.contact con where p.paymentType = 'Credit' and p.status ='0' and (con.firstName like %?1% or con.lastName like %?2%) and p.signup.customer.accountId = ?3 and DATE(p.paymentDate) >= DATE(?4) and DATE(p.paymentDate) <= DATE(?5)")
+	List<Object> getPaymentHistory(String firstName, String lastName, Long accountId, Date startDate, Date endDate);
+}

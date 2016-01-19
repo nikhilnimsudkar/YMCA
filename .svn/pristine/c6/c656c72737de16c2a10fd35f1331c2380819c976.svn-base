@@ -1,0 +1,25 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.Invoice;
+
+
+public interface InvoiceDao extends GenericDao<Invoice, Long> {
+	
+	@Query("select i from Invoice i inner join i.customer c where c.accountId=?1 and DATE(i.dueDate) >= DATE(?2) and DATE(i.dueDate) <= DATE(?3)")
+	List<Invoice> getInvoiceByCustomer(Long accountId,Date startDate, Date endDate);
+	
+	@Query("select i from Invoice i inner join i.customer c where c.accountId=?1 and DATE(i.dueDate)< DATE(?2)")
+	List<Invoice> getInvoicePastDueByCustomer(Long accountId,Date today);
+	
+	@Query("SELECT i FROM Invoice i INNER JOIN i.signup s inner join i.customer c inner join s.paymentMethod pm  WHERE c.accountId = ?1 AND s.status = 'ACTIVE' AND pm.paymentId = ?2")
+	List<Invoice> getInvoiceListForPaymentMethod(Long accountId, Long paymentId);
+
+	@Query("SELECT i FROM Invoice i INNER JOIN i.signup s inner join i.customer c inner join s.paymentMethod pm  WHERE s.signupId = ?1 ")
+	List<Invoice> getInvoiceListForSignup(Long signupId);
+	
+}

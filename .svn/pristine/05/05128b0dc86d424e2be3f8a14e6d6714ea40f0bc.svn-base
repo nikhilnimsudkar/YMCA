@@ -1,0 +1,115 @@
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="cc_list">
+	<div style="height: 32px;">
+		<span class="head">List (Select slots for pricing to show up) NOTE: if # of available slots = 0, you cannot select that day</span>
+		<span id="cancelsignup" class="k-button">CANCEL SIGNUP</span>
+		<span id="changesignup" class="k-button">CHANGE SIGNUP</span>
+	</div>
+	<div>
+		<table id="childcare_list"  style="table-layout: fixed; display:none">
+			<thead>
+				<tr>
+					<c:forEach var="fields" items="${gridfields}" varStatus="counter">
+						<th>${fields}</th>
+					</c:forEach>
+					<!-- 
+  						<th>Type</th>
+  						<th>Location</th>
+  						<th>Start Time</th>
+  						<th>End Time</th>
+  						<th>Age Range</th>
+  						<th>Gender</th>
+  						<th>M / # of available slots</th>
+  						<th>Tu / # of available slots</th>
+  						<th>W / # of available slots</th>
+  						<th>Th / # of available slots</th>
+  						<th>F / # of available slots</th>
+  					 -->
+  				</tr>
+ 			</thead>
+ 				
+ 			<tbody>
+ 				<c:forEach var="itemdetail" items="${childcareObj}" varStatus="counter">
+  				<tr>
+					<td>${itemdetail[0]}</td>
+					<td>${itemdetail[1]}</td>
+					<td>${itemdetail[2]}</td>
+					<td>${itemdetail[3]}</td>
+					<td>${itemdetail[4]}</td>
+					<td>${itemdetail[5]}</td>
+					<td>
+						<c:choose>
+						<c:when test="${ itemdetail[6]=='-9'}">
+							<div class="greyBox">&nbsp;</div>
+						</c:when>
+						<c:when test="${ itemdetail[6]=='0'}">
+							<input type="checkbox" disabled="disabled">&nbsp;${ itemdetail[6]}
+						</c:when>
+						<c:otherwise>
+							<input type="checkbox">&nbsp;${ itemdetail[6]}
+						</c:otherwise>
+						</c:choose>
+					</td>
+					<td>
+						<c:choose>
+						<c:when test="${ itemdetail[7]=='-9'}">
+							<div class="greyBox">&nbsp;</div>
+						</c:when>
+						<c:when test="${ itemdetail[7]=='0'}">
+							<input type="checkbox" disabled="disabled">&nbsp;${ itemdetail[7]}
+						</c:when>
+						<c:otherwise>
+							<input type="checkbox">&nbsp;${ itemdetail[7]}
+						</c:otherwise>
+						</c:choose>
+					</td>
+					<td>
+						<c:choose>
+						<c:when test="${ itemdetail[8]=='-9'}">
+							<div class="greyBox">&nbsp;</div>
+						</c:when>
+						<c:when test="${ itemdetail[8]=='0'}">
+							<input type="checkbox" disabled="disabled">&nbsp;${ itemdetail[8]}
+						</c:when>
+						<c:otherwise>
+							<input type="checkbox">&nbsp;${ itemdetail[8]}
+						</c:otherwise>
+						</c:choose>
+					</td>
+					<td>
+						<c:choose>
+						<c:when test="${ itemdetail[9]=='-9'}">
+							<div class="greyBox">&nbsp;</div>
+						</c:when>
+						<c:when test="${ itemdetail[9]=='0'}">
+							<input type="checkbox" disabled="disabled">&nbsp;${ itemdetail[9]}
+						</c:when>
+						<c:otherwise>
+							<input type="checkbox">&nbsp;${ itemdetail[9]}
+						</c:otherwise>
+						</c:choose>
+					</td>
+					<td>
+						<c:choose>
+						<c:when test="${ itemdetail[10]=='-9'}">
+							<div class="greyBox">&nbsp;</div>
+						</c:when>
+						<c:when test="${ itemdetail[10]=='0'}">
+							<input type="checkbox" disabled="disabled">&nbsp;${ itemdetail[10]}
+						</c:when>
+						<c:otherwise>
+							<input type="checkbox">&nbsp;${ itemdetail[10]}
+						</c:otherwise>
+						</c:choose>
+					</td>
+  				</tr>
+  				</c:forEach>
+ 			</tbody>
+ 		</table>
+	</div>
+</div>
+    		
+<div align="center" style="margin: 10px;">
+	<span id="ccsignup" class="k-button" style="text-shadow:none;">CONTINUE TO SIGN UP</span>
+	<span id="requestforwl" class="k-button" style="text-shadow:none;">REQUEST FOR WAITLIST</span>
+</div>

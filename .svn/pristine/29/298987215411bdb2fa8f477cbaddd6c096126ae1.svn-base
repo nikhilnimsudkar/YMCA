@@ -1,0 +1,129 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    
+<body>
+
+<div id="main">
+	
+	<div id="content">
+		<h2 style="color: #888; text-align: center;">Confirmation</h2>
+		<h4 style="color: #888; text-align: center;">Please print the Registration Information. Contact YMCA Home branch for your Membership ID </h4>
+		<div>
+		
+		<form  style="width : 600px;" id="confirmationForm" autocomplete="off" class="bootstrap-frm" onsubmit="">        
+         <h2>
+		   <span>REGISTRATION INFORMATION</span>
+		 </h2> 		     
+		 <label><input class="form-control" type="text" id="productId" maxlength="50" placeholder="Product Id" value="${account.membership.productId}"/></label>
+		 <label><input class="form-control" type="text" id="membershipPrice" maxlength="50" placeholder="Membership Price" value="${account.membership.membershipPrice}"/></label>		
+	 	 <%-- <label><input class="form-control" type="text" name="username" id="username" maxlength="50" placeholder="User Name" value="${userS[0].username}"/></label>	 --%>			
+		 <label><input class="form-control" type="text" name="firstName" id="firstName" maxlength="50" placeholder="First Name" value="${userS[0].firstName}"/></label>
+		 <label><input class="form-control" type="text" name="lastName" id="lastName" maxlength="50" placeholder="Last Name" value="${userS[0].lastName}"/></label>
+		 <label><input class="form-control" type="text" name="email" id="email" maxlength="50" placeholder="Email" value="${userS[0].email}"/></label>
+		 <label><input class="form-control" type="text" name="phoneNumber" id="phoneNumber" maxlength="50" placeholder="Phone Number" value="${userS[0].phoneNumber}"/></label>
+		
+		<h2>
+		   <span>ADDRESS</span>
+		 </h2> 
+		<label><input  class="form-control" type="text" name="addressLine1" id="addressLine1" maxlength="50" placeholder="Address 1" value="${account.addressLine1}"/></label>		
+		<label><input  class="form-control" type="text" name="addressLine1" id="addressLine1" maxlength="50" placeholder="Address 2" value="${account.addressLine2}"/></label>		
+		<label><input  class="form-control" type="text" name="city" id="city" maxlength="50" placeholder="City" value="${account.city}"/></label>
+		<label><input  class="form-control" type="text" name="state" id="state" maxlength="50" placeholder="State" value="${account.state}"/></label>
+		
+		<!-- <input style="display:none;" path="tcDescription" id="userTC" maxlength="50"/>		
+		
+		<input style="display:none;"  path="membership.productId" maxlength="50" id="memProductId"/>
+		<input style="display:none;"  path="membership.pricingRuleId" maxlength="50" id="memPricingRuleId"/>
+		<input style="display:none;"  path="membership.membershipPrice" maxlength="50" id="memMembershipPrice"/> -->		
+		</form>
+		
+			<%-- <table border="1"  id="confirmationData">
+				<thead>
+					<tr>
+						<th>Field</th>
+						<th>Value</th>									
+					</tr>
+				</thead>
+				<tbody id="confirmationDataBody" style="min-height: 300px;">
+					<tr>
+						<td width="30%">Product Id</td>
+						<td >${account.membership.productId}</td>
+					</tr>
+					<tr>
+						<td>Product Name</td>
+						<td >${}</td>
+					</tr>
+					<tr>
+						<td>ProductDesc</td>
+						<td >${}</td>
+					</tr>
+					<tr>
+						<td>Membership Price</td>
+						<td >${account.membership.membershipPrice}</td>
+					</tr>						
+					<tr>
+						<td>User Name</td>
+						<td >${userS[0].username}</td>
+					</tr>
+					
+					<tr>
+						<td>First Name</td>
+						<td >${userS[0].firstName}</td>
+					</tr>
+					<tr>
+						<td>Last Name</td>
+						<td >${userS[0].lastName}</td>
+					</tr>
+					<tr>
+						<td>Email</td>
+						<td >${userS[0].email}</td>
+					</tr>
+					<tr>
+						<td>PhoneNumber</td>
+						<td >${userS[0].phoneNumber}</td>
+					</tr>
+					<tr>
+						<td>Website</td>
+						<td >${userS[0].website}</td>
+					</tr>
+					
+					<tr>
+						<td>Address</td>
+						<td >${account.addressLine1}</td>
+					</tr>
+					<tr>
+						<td>City</td>
+						<td >${account.city}</td>
+					</tr>
+					<tr>
+						<td>State</td>
+						<td >${account.state}</td>
+					</tr>
+					
+					<tr>
+						<td>Country</td>
+						<td >${account.country}</td>
+					</tr>
+					<tr>
+						<td style="vertical-align:top;">Terms And Condition</td>
+						<td >${}</td>
+					</tr> 
+				</tbody>
+			</table> --%>
+		</div>
+	</div>
+		
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {
+		//$("#confirmationData").kendoGrid();
+		
+	});
+</script>
+
+</body>

@@ -1,0 +1,795 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Date;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+@Entity
+@Table(name = "signup")
+public class Signup extends BaseObject implements Serializable {
+	
+	private static final long serialVersionUID = -3202944701848397747L;
+	public static final Comparator<Signup> DATE_ORDER_DEC_COMPARATOR = new DateOrderComparator();
+	public Signup(){
+    }
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long signupId;
+	
+	@Column(name="sc_id")
+    private String scId;
+
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="accountId")
+	private Account customer;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="contact_id")
+	private User contact;
+	/*
+	 * dropped this table 
+	@ManyToOne
+	@JoinColumn(name="product_id")
+	private Product item;
+	
+	@ManyToOne
+	@JoinColumn(name="itemDetailsSession_id")
+	private ItemDetailsSession itemDetailsSession;
+	*/
+	
+	@ManyToOne
+	@JoinColumn(name="item_detail_id")
+	private ItemDetail itemDetail;
+	
+	private String itemDaysMapId;
+	
+	@OneToOne(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+	@JoinColumn(name="paymentmethod_id")
+	private PaymentMethod paymentMethod;
+	 
+	private Long waitlist;	
+	
+	@Column(name = "contact_name")
+	private String contactName;
+	
+	@Column(name = "type")
+	private String type;
+	
+	
+	@Column(name="status")
+	private String status;
+	
+	@OneToOne(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+	@JoinColumn(name="location")
+	private Location location;
+	
+	
+	@Column(name="final_amount")
+	private String finalAmount;
+	@Column(name="DiscountAmount_c")
+	private String discountAmount;
+	
+	@Column(name="program_end_date")
+	@Temporal(TemporalType.DATE)
+	private Date programEndDate;
+	
+
+	@Column(name = "program_start_date", nullable = false)
+	@Temporal(TemporalType.DATE)
+	private Date programStartDate;
+	
+	@Column(name = "membership_fee_next_billing__date")
+	@Temporal(TemporalType.DATE)
+	private Date membersshipFeeNextBillingDate;
+	
+	@Column(name = "signup_date")
+	@Temporal(TemporalType.DATE)
+	private Date signupDate;
+	
+	@Column(name = "cancel_date")
+	@Temporal(TemporalType.DATE)
+	private Date cancelDate;
+	
+	@Column(name="oppty_id")
+	private String opptyId;
+	
+	@Column(name="payType")
+	private String payType;
+	
+	@Column(name="signUpName")
+	private String signUpName;
+	
+	@Column(name="totalAmount")
+	private String totalAmount;
+	
+	@Column(name = "sign_up_product_type")
+    private String signUpProductType;
+	
+	@Column(name="hold_Start_Date")
+	@Temporal(TemporalType.DATE)
+	 private Date holdStartDate;
+	 
+	 @Column(name="hold_End_Date")
+	 @Temporal(TemporalType.DATE)
+	 private Date holdEndDate;
+	 
+	@Column(name = "HoldFee_c")
+	private Double holdFee;
+	
+	@Column(name = "SetUpFee", nullable = false)
+	private Double setUpFee;
+	@Column(name = "RegistrationFee", nullable = false)
+	private double registrationFee;
+	@Column(name = "Deposit", nullable = false)
+	private double deposit;
+	@Column(name = "signupPrice", nullable = false)
+	private double signupPrice;
+	
+	@Column(name = "PaymentFrequency")
+	private String paymentFrequency;
+	
+	public String getPaymentFrequency() {
+		return paymentFrequency;
+	}
+
+	public void setPaymentFrequency(String paymentFrequency) {
+		this.paymentFrequency = paymentFrequency;
+	}
+
+	private String signUpPricingOption;
+	
+	@Column(name="FApercentage_c")
+	private String FApercentage;
+	@Column(name="FAstartDate_c")
+	private String FAstartDate;
+	@Column(name="FAendDate_c")
+	private String FAendDate;
+	@Column(name="FAamount_c")
+	private String FAamount;
+	@Column(name="NoOfTickets")
+	private Integer noOfTickets;
+	
+	
+	/*
+	@OneToMany(mappedBy = "signup")
+	private List<PricingRule> pricingRuleWithSignup;
+	*/
+	public String getTotalAmount() {
+		return totalAmount;
+	}
+
+	public void setTotalAmount(String totalAmount) {
+		this.totalAmount = totalAmount;
+	}
+
+	public String getSignUpName() {
+		return signUpName;
+	}
+
+	public void setSignUpName(String signUpName) {
+		this.signUpName = signUpName;
+	}
+
+	public String getPayType() {
+		return payType;
+	}
+
+	public void setPayType(String payType) {
+		this.payType = payType;
+	}
+
+	public String getContactName() {
+		return contactName;
+	}
+
+	public void setContactName(String contactName) {
+		this.contactName = contactName;
+	}
+
+	
+	public Date getMembersshipFeeNextBillingDate() {
+		return membersshipFeeNextBillingDate;
+	}
+
+	public void setMembersshipFeeNextBillingDate(Date membersshipFeeNextBillingDate) {
+		this.membersshipFeeNextBillingDate = membersshipFeeNextBillingDate;
+	}
+
+	public Long getSignupId() {
+		return signupId;
+	}
+
+	public void setSignupId(Long signupId) {
+		this.signupId = signupId;
+	}
+
+	public Account getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Account customer) {
+		this.customer = customer;
+	}
+
+	public User getContact() {
+		return contact;
+	}
+
+	public void setContact(User contact) {
+		this.contact = contact;
+	}
+
+	public Date getCancelDate() {
+		return cancelDate;
+	}
+
+	public void setCancelDate(Date cancelDate) {
+		this.cancelDate = cancelDate;
+	}
+
+	public ItemDetail getItemDetail() {
+		return itemDetail;
+	}
+
+	public void setItemDetail(ItemDetail itemDetail) {
+		this.itemDetail = itemDetail;
+	}
+
+	public String getItemDaysMapId() {
+		return itemDaysMapId;
+	}
+
+	public void setItemDaysMapId(String itemDaysMapId) {
+		this.itemDaysMapId = itemDaysMapId;
+	}
+
+	public PaymentMethod getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(PaymentMethod paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public Long getWaitlist() {
+		return waitlist;
+	}
+
+	public void setWaitlist(Long waitlist) {
+		this.waitlist = waitlist;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		this.location = location;
+	}
+
+	public String getFinalAmount() {
+		return finalAmount;
+	}
+
+	public void setFinalAmount(String finalAmount) {
+		this.finalAmount = finalAmount;
+	}
+
+	public Date getProgramEndDate() {
+		return programEndDate;
+	}
+
+	public void setProgramEndDate(Date programEndDate) {
+		this.programEndDate = programEndDate;
+	}
+
+	public Date getProgramStartDate() {
+		return programStartDate;
+	}
+
+	public void setProgramStartDate(Date programStartDate) {
+		this.programStartDate = programStartDate;
+	}
+
+	public String getOpptyId() {
+		return opptyId;
+	}
+
+	public void setOpptyId(String opptyId) {
+		this.opptyId = opptyId;
+	}
+
+	public Date getSignupDate() {
+		return signupDate;
+	}
+
+	public void setSignupDate(Date signupDate) {
+		this.signupDate = signupDate;
+	}
+
+	public String getDiscountAmount() {
+		return discountAmount;
+	}
+
+	public void setDiscountAmount(String discountAmount) {
+		this.discountAmount = discountAmount;
+	}
+
+	
+
+	public String getSignUpProductType() {
+		return signUpProductType;
+	}
+
+	public void setSignUpProductType(String signUpProductType) {
+		this.signUpProductType = signUpProductType;
+	}
+
+	public Date getHoldStartDate() {
+		return holdStartDate;
+	}
+
+	public void setHoldStartDate(Date holdStartDate) {
+		this.holdStartDate = holdStartDate;
+	}
+
+	public Date getHoldEndDate() {
+		return holdEndDate;
+	}
+
+	public void setHoldEndDate(Date holdEndDate) {
+		this.holdEndDate = holdEndDate;
+	}
+
+	public Double getSetUpFee() {
+		return setUpFee;
+	}
+
+	public void setSetUpFee(Double setUpFee) {
+		this.setUpFee = setUpFee;
+	}
+
+	public double getRegistrationFee() {
+		return registrationFee;
+	}
+
+	public void setRegistrationFee(double registrationFee) {
+		this.registrationFee = registrationFee;
+	}
+
+	public double getDeposit() {
+		return deposit;
+	}
+
+	public void setDeposit(double deposit) {
+		this.deposit = deposit;
+	}
+
+	public double getSignupPrice() {
+		return signupPrice;
+	}
+
+	public void setSignupPrice(double signupPrice) {
+		this.signupPrice = signupPrice;
+	}
+
+	public String getSignUpPricingOption() {
+		return signUpPricingOption;
+	}
+
+	public void setSignUpPricingOption(String signUpPricingOption) {
+		this.signUpPricingOption = signUpPricingOption;
+	}
+
+	public String getFApercentage() {
+		return FApercentage;
+	}
+
+	public void setFApercentage(String fApercentage) {
+		FApercentage = fApercentage;
+	}
+
+	public String getFAstartDate() {
+		return FAstartDate;
+	}
+
+	public void setFAstartDate(String fAstartDate) {
+		FAstartDate = fAstartDate;
+	}
+
+	public String getFAendDate() {
+		return FAendDate;
+	}
+
+	public void setFAendDate(String fAendDate) {
+		FAendDate = fAendDate;
+	}
+
+	public String getFAamount() {
+		return FAamount;
+	}
+
+	public void setFAamount(String fAamount) {
+		FAamount = fAamount;
+	}
+	
+	
+
+	public String getScId() {
+		return scId;
+	}
+
+	public void setScId(String scId) {
+		this.scId = scId;
+	}
+
+	public Double getHoldFee() {
+		return holdFee;
+	}
+
+	public void setHoldFee(Double holdFee) {
+		this.holdFee = holdFee;
+	}
+
+	@Override
+	public String toString() {
+		return "Signup [signupId=" + signupId + ", scId=" + scId
+				+ ", customer=" + customer + ", contact=" + contact
+				+ ", itemDetail=" + itemDetail + ", itemDaysMapId="
+				+ itemDaysMapId + ", paymentMethod=" + paymentMethod
+				+ ", waitlist=" + waitlist + ", contactName=" + contactName
+				+ ", type=" + type + ", status=" + status + ", location="
+				+ location + ", finalAmount=" + finalAmount
+				+ ", discountAmount=" + discountAmount + ", programEndDate="
+				+ programEndDate + ", programStartDate=" + programStartDate
+				+ ", membersshipFeeNextBillingDate="
+				+ membersshipFeeNextBillingDate + ", signupDate=" + signupDate
+				+ ", cancelDate=" + cancelDate + ", opptyId=" + opptyId
+				+ ", payType=" + payType + ", signUpName=" + signUpName
+				+ ", totalAmount=" + totalAmount + ", signUpProductType="
+				+ signUpProductType + ", holdStartDate=" + holdStartDate
+				+ ", holdEndDate=" + holdEndDate + ", holdFee=" + holdFee
+				+ ", setUpFee=" + setUpFee + ", registrationFee="
+				+ registrationFee + ", deposit=" + deposit + ", signupPrice="
+				+ signupPrice + ", paymentFrequency=" + paymentFrequency
+				+ ", signUpPricingOption=" + signUpPricingOption
+				+ ", FApercentage=" + FApercentage + ", FAstartDate="
+				+ FAstartDate + ", FAendDate=" + FAendDate + ", FAamount="
+				+ FAamount + ", noOfTickets=" + noOfTickets + "]";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Signup other = (Signup) obj;
+		if (FAamount == null) {
+			if (other.FAamount != null)
+				return false;
+		} else if (!FAamount.equals(other.FAamount))
+			return false;
+		if (FAendDate == null) {
+			if (other.FAendDate != null)
+				return false;
+		} else if (!FAendDate.equals(other.FAendDate))
+			return false;
+		if (FApercentage == null) {
+			if (other.FApercentage != null)
+				return false;
+		} else if (!FApercentage.equals(other.FApercentage))
+			return false;
+		if (FAstartDate == null) {
+			if (other.FAstartDate != null)
+				return false;
+		} else if (!FAstartDate.equals(other.FAstartDate))
+			return false;
+		if (cancelDate == null) {
+			if (other.cancelDate != null)
+				return false;
+		} else if (!cancelDate.equals(other.cancelDate))
+			return false;
+		if (contact == null) {
+			if (other.contact != null)
+				return false;
+		} else if (!contact.equals(other.contact))
+			return false;
+		if (contactName == null) {
+			if (other.contactName != null)
+				return false;
+		} else if (!contactName.equals(other.contactName))
+			return false;
+		if (customer == null) {
+			if (other.customer != null)
+				return false;
+		} else if (!customer.equals(other.customer))
+			return false;
+		if (Double.doubleToLongBits(deposit) != Double
+				.doubleToLongBits(other.deposit))
+			return false;
+		if (discountAmount == null) {
+			if (other.discountAmount != null)
+				return false;
+		} else if (!discountAmount.equals(other.discountAmount))
+			return false;
+		if (finalAmount == null) {
+			if (other.finalAmount != null)
+				return false;
+		} else if (!finalAmount.equals(other.finalAmount))
+			return false;
+		if (holdEndDate == null) {
+			if (other.holdEndDate != null)
+				return false;
+		} else if (!holdEndDate.equals(other.holdEndDate))
+			return false;
+		if (holdFee == null) {
+			if (other.holdFee != null)
+				return false;
+		} else if (!holdFee.equals(other.holdFee))
+			return false;
+		if (holdStartDate == null) {
+			if (other.holdStartDate != null)
+				return false;
+		} else if (!holdStartDate.equals(other.holdStartDate))
+			return false;
+		if (itemDaysMapId == null) {
+			if (other.itemDaysMapId != null)
+				return false;
+		} else if (!itemDaysMapId.equals(other.itemDaysMapId))
+			return false;
+		if (itemDetail == null) {
+			if (other.itemDetail != null)
+				return false;
+		} else if (!itemDetail.equals(other.itemDetail))
+			return false;
+		if (location == null) {
+			if (other.location != null)
+				return false;
+		} else if (!location.equals(other.location))
+			return false;
+		if (membersshipFeeNextBillingDate == null) {
+			if (other.membersshipFeeNextBillingDate != null)
+				return false;
+		} else if (!membersshipFeeNextBillingDate
+				.equals(other.membersshipFeeNextBillingDate))
+			return false;
+		if (noOfTickets == null) {
+			if (other.noOfTickets != null)
+				return false;
+		} else if (!noOfTickets.equals(other.noOfTickets))
+			return false;
+		if (opptyId == null) {
+			if (other.opptyId != null)
+				return false;
+		} else if (!opptyId.equals(other.opptyId))
+			return false;
+		if (payType == null) {
+			if (other.payType != null)
+				return false;
+		} else if (!payType.equals(other.payType))
+			return false;
+		if (paymentFrequency == null) {
+			if (other.paymentFrequency != null)
+				return false;
+		} else if (!paymentFrequency.equals(other.paymentFrequency))
+			return false;
+		if (paymentMethod == null) {
+			if (other.paymentMethod != null)
+				return false;
+		} else if (!paymentMethod.equals(other.paymentMethod))
+			return false;
+		if (programEndDate == null) {
+			if (other.programEndDate != null)
+				return false;
+		} else if (!programEndDate.equals(other.programEndDate))
+			return false;
+		if (programStartDate == null) {
+			if (other.programStartDate != null)
+				return false;
+		} else if (!programStartDate.equals(other.programStartDate))
+			return false;
+		if (Double.doubleToLongBits(registrationFee) != Double
+				.doubleToLongBits(other.registrationFee))
+			return false;
+		if (scId == null) {
+			if (other.scId != null)
+				return false;
+		} else if (!scId.equals(other.scId))
+			return false;
+		if (setUpFee == null) {
+			if (other.setUpFee != null)
+				return false;
+		} else if (!setUpFee.equals(other.setUpFee))
+			return false;
+		if (signUpName == null) {
+			if (other.signUpName != null)
+				return false;
+		} else if (!signUpName.equals(other.signUpName))
+			return false;
+		if (signUpPricingOption == null) {
+			if (other.signUpPricingOption != null)
+				return false;
+		} else if (!signUpPricingOption.equals(other.signUpPricingOption))
+			return false;
+		if (signUpProductType == null) {
+			if (other.signUpProductType != null)
+				return false;
+		} else if (!signUpProductType.equals(other.signUpProductType))
+			return false;
+		if (signupDate == null) {
+			if (other.signupDate != null)
+				return false;
+		} else if (!signupDate.equals(other.signupDate))
+			return false;
+		if (signupId == null) {
+			if (other.signupId != null)
+				return false;
+		} else if (!signupId.equals(other.signupId))
+			return false;
+		if (Double.doubleToLongBits(signupPrice) != Double
+				.doubleToLongBits(other.signupPrice))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (totalAmount == null) {
+			if (other.totalAmount != null)
+				return false;
+		} else if (!totalAmount.equals(other.totalAmount))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		if (waitlist == null) {
+			if (other.waitlist != null)
+				return false;
+		} else if (!waitlist.equals(other.waitlist))
+			return false;
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((FAamount == null) ? 0 : FAamount.hashCode());
+		result = prime * result
+				+ ((FAendDate == null) ? 0 : FAendDate.hashCode());
+		result = prime * result
+				+ ((FApercentage == null) ? 0 : FApercentage.hashCode());
+		result = prime * result
+				+ ((FAstartDate == null) ? 0 : FAstartDate.hashCode());
+		result = prime * result
+				+ ((cancelDate == null) ? 0 : cancelDate.hashCode());
+		result = prime * result + ((contact == null) ? 0 : contact.hashCode());
+		result = prime * result
+				+ ((contactName == null) ? 0 : contactName.hashCode());
+		result = prime * result
+				+ ((customer == null) ? 0 : customer.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(deposit);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result
+				+ ((discountAmount == null) ? 0 : discountAmount.hashCode());
+		result = prime * result
+				+ ((finalAmount == null) ? 0 : finalAmount.hashCode());
+		result = prime * result
+				+ ((holdEndDate == null) ? 0 : holdEndDate.hashCode());
+		result = prime * result + ((holdFee == null) ? 0 : holdFee.hashCode());
+		result = prime * result
+				+ ((holdStartDate == null) ? 0 : holdStartDate.hashCode());
+		result = prime * result
+				+ ((itemDaysMapId == null) ? 0 : itemDaysMapId.hashCode());
+		result = prime * result
+				+ ((itemDetail == null) ? 0 : itemDetail.hashCode());
+		result = prime * result
+				+ ((location == null) ? 0 : location.hashCode());
+		result = prime
+				* result
+				+ ((membersshipFeeNextBillingDate == null) ? 0
+						: membersshipFeeNextBillingDate.hashCode());
+		result = prime * result
+				+ ((noOfTickets == null) ? 0 : noOfTickets.hashCode());
+		result = prime * result + ((opptyId == null) ? 0 : opptyId.hashCode());
+		result = prime * result + ((payType == null) ? 0 : payType.hashCode());
+		result = prime
+				* result
+				+ ((paymentFrequency == null) ? 0 : paymentFrequency.hashCode());
+		result = prime * result
+				+ ((paymentMethod == null) ? 0 : paymentMethod.hashCode());
+		result = prime * result
+				+ ((programEndDate == null) ? 0 : programEndDate.hashCode());
+		result = prime
+				* result
+				+ ((programStartDate == null) ? 0 : programStartDate.hashCode());
+		temp = Double.doubleToLongBits(registrationFee);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((scId == null) ? 0 : scId.hashCode());
+		result = prime * result
+				+ ((setUpFee == null) ? 0 : setUpFee.hashCode());
+		result = prime * result
+				+ ((signUpName == null) ? 0 : signUpName.hashCode());
+		result = prime
+				* result
+				+ ((signUpPricingOption == null) ? 0 : signUpPricingOption
+						.hashCode());
+		result = prime
+				* result
+				+ ((signUpProductType == null) ? 0 : signUpProductType
+						.hashCode());
+		result = prime * result
+				+ ((signupDate == null) ? 0 : signupDate.hashCode());
+		result = prime * result
+				+ ((signupId == null) ? 0 : signupId.hashCode());
+		temp = Double.doubleToLongBits(signupPrice);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result
+				+ ((totalAmount == null) ? 0 : totalAmount.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result
+				+ ((waitlist == null) ? 0 : waitlist.hashCode());
+		return result;
+	}
+	
+	private static final class DateOrderComparator implements Comparator<Signup> {
+		public int compare(Signup rs1, Signup rs2) {
+			if (rs1.programStartDate.before(rs2.programStartDate) )return 1;
+			if (rs1.programStartDate == rs2.programStartDate) return 0;
+			return -1;
+			
+		}
+
+		
+ 
+	}
+
+	public Integer getNoOfTickets() {
+		return noOfTickets;
+	}
+
+	public void setNoOfTickets(Integer noOfTickets) {
+		this.noOfTickets = noOfTickets;
+	}
+
+}

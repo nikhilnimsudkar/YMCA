@@ -1,0 +1,14 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import com.ymca.model.Location;
+
+public interface LocationDao  extends GenericDao<Location, Long>{
+	List<Location> getLocationsByArea(String area_c);	
+	//Location getLocationsByLocationId(Long locationId);
+	
+	List<Location> findByBranch(String branchName);
+	List<Location> findByRecordName(String recordName);
+	
+}

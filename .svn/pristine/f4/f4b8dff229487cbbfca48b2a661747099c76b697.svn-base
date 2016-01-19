@@ -1,0 +1,11 @@
+package com.ymca.dao;
+
+import com.ymca.model.Account;
+
+public interface AccountDao  extends GenericDao<Account, Long>  {
+
+	Account getByName(String accountName);
+	Account getByEmail(String accountName);
+	Account getByToken(String token);
+	Account getByAddressLine1(String address1);
+}

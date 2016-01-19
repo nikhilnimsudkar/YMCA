@@ -1,0 +1,515 @@
+/* Event registration relat ed functions */
+
+function getEventSession(){
+	//alert(" get event session ");
+	//console.log(" get event session ");
+	$("#event_details").css("border-width", "0");	
+	$("#event_details").css("margin-top", "9px");	
+	
+	var category = $("#class").val();
+	var productname = $("#subclass").val();
+	var location = $("#location").val();
+	var age_min = $("#age_min").val();
+	var age_max = $("#age_max").val();
+	
+	var datestart = $("#datepicker").val();
+	var dateend = $("#datepickerend").val();
+	$.ajax({
+		  type: "GET",
+		  url:"getEventDetails?location="+location+"&productname="+productname+"&category="+category+"&age_min="+age_min+"&age_max="+age_max+"&datestart="+datestart+"&dateend="+dateend,
+		  success: function( data ) {
+			 //console.log(data);
+		  	 //console.log(data.length);
+			  if(data.length>0){
+		  		 var itemDetailsId = "";
+			  	 var price = "";
+			  	 var days = "";
+			  	 var dspDays = "";
+			  	 //alert(" 25 "+data);
+			  	 //alert(" 28 "+data.length);
+			  	
+			  	/* var item_Details = "<table id='eventDetail' class='program_desc' width='100%'>";
+			  	 $.each(data, function(/i,itemDetailsSession) {
+			  		 	if(itemDetailsId=="" || itemDetailsId!=itemDetailsSession[11]){
+			  				itemDetailsId = itemDetailsSession[11];
+			  				
+			  				item_Details = item_Details + "<tr>";
+				  				item_Details = item_Details + "<td><span class='name boldorange' style='font-weight:bold;'>Event Name:</span></td>";
+				  				item_Details = item_Details + "<td><span class='name'><a id='eventname"+itemDetailsId+"' href='#' onclick='showEventSessionTble("+itemDetailsId+")'>"+itemDetailsSession[12]+"</a></span></td>";
+				  				item_Details = item_Details + "<td><span class='name'>"+formatDate(itemDetailsSession[9])+"</span><span class='name'> - </span><span class='name'>"+formatDate(itemDetailsSession[10])+"</span></td>";
+					  		item_Details = item_Details + "</tr>";
+			  		 	}
+			  	});
+			  	item_Details = item_Details + "</table>";
+			  	//console.log(item_Details);
+			  	$("#event_session").html(item_Details);*/
+			  	 
+			  	//alert("  item_Details >> "+item_Details); 
+			  	 
+			  	
+			  	//alert(" 48 ");	 
+			  	 var itemDetails_Id = "";
+			  	 var item_session = "";
+			  	 //var item_session = "<div style='margin-bottom: 20px;'><span class='head'>NEW PROGRAM SIGN UP</span><span id='shoppingcart1' style='float:right;'></span></div>";
+			  	 item_session = item_session + "<table id='event_signup' class='program_desc' style='table-layout: fixed; width: 782px;'>";
+			  	 item_session = item_session + "<colgroup>";
+				  	 item_session = item_session + "<col style='width: 36px' />";
+				  	 item_session = item_session + "<col style='width: 81px' />";
+				  	 item_session = item_session + "<col style='width: 85px' />";
+				  	 item_session = item_session + "<col style='width: 64px;'>";
+				  	 item_session = item_session + "<col style='width: 86px;' />";
+				  	 item_session = item_session + "<col style='width: 84px;' />";
+				  	 item_session = item_session + "<col style='width: 65px;' />";
+				  	 item_session = item_session + "<col style='width: 70px;' />";
+				  	 item_session = item_session + "<col style='width: 53px;' />";
+				  	 item_session = item_session + "<col style='width: 76px;' />";
+				  	 item_session = item_session + "<col style='width: 73px;' />";
+		         item_session = item_session + "</colgroup>";
+			  	 item_session = item_session + "<thead><tr>";
+			  		item_session = item_session + "<th data-field='randomFieldName'>&nbsp;</th>";
+			  		item_session = item_session + "<th data-field='productName'>Event Name</th>";
+			  		item_session = item_session + "<th data-field='location'>Location</th>";
+			  		item_session = item_session + "<th data-field='instructor'>Instructor</th>";
+			  		item_session = item_session + "<th data-field='startDate'>Start Date</th>";
+			  		item_session = item_session + "<th data-field='endDate'>End Date</th>";
+			  		item_session = item_session + "<th data-field='startTime'>Start Time</th>";
+			  		item_session = item_session + "<th data-field='endTime'>End Time</th>";
+			  		item_session = item_session + "<th data-field='capacity'>Capacity</th>";
+			  		item_session = item_session + "<th data-field='membershipPrice'>Membership Price</th>";
+			  		item_session = item_session + "<th data-field='nonmembershipPrice'>Non membership Price</th>";
+			  	 item_session = item_session + "</tr></thead> <tbody>";
+			  		
+			  	 $.each(data, function(i,itemDetailsSession) {
+			  		var showtbl = "false"
+			  		if(itemDetails_Id=="" || itemDetails_Id!=itemDetailsSession[11]){
+			  			itemDetails_Id = itemDetailsSession[11];
+			  			showtbl = "true";
+			  			//item_session = item_session + "<div id='session_detail"+itemDetails_Id+"' style='display:block;'><table class='program_desc' width='90%'>";
+			  			
+			  		}
+			  		//alert(" 88 ");
+				  		var stTime = new Date(itemDetailsSession[2]);
+				  		var endTime = new Date(itemDetailsSession[3]);
+				  		
+				  		item_session = item_session + "<tr>";
+				  			item_session = item_session + "<td><span><input type='hidden' id='itemDetailsSessionId"+itemDetailsSession[6]+"' value='"+itemDetailsSession[6]+"'><input type='checkbox' name='selectedItemSession' id='item_"+itemDetailsSession[6]+"' value='"+itemDetailsSession[6]+"'></span></td>";
+			  				item_session = item_session + "<td><span class='name'>"+itemDetailsSession[12]+"</span></td>";
+			  				
+			  				item_session = item_session + "<td><span class='name'>"+itemDetailsSession[14]+"</span></td>";
+
+			  				item_session = item_session + "<td><span class='name'>"+itemDetailsSession[0]+"</span></td>";
+
+			  				item_session = item_session + "<td><span class='name'>"+formatDate(itemDetailsSession[9])+"</span></td>";
+			  				item_session = item_session + "<td><span class='name'>"+formatDate(itemDetailsSession[10])+"</span></td>";
+			  				item_session = item_session + "<td><span class='name'>"+formatTime(stTime)+"</span></td>";
+			  				item_session = item_session + "<td><span class='name'>"+formatTime(endTime)+"</span></td>";
+				  		
+			  				item_session = item_session + "<td><span class='name'>"+itemDetailsSession[5]+"</span></td>";
+
+			  				item_session = item_session + "<td><span class='name'>$"+itemDetailsSession[8]+"</span></td>";
+			  				item_session = item_session + "<td><span class='name'>$"+itemDetailsSession[8]+"</span></td>";
+				  		
+				  		item_session = item_session + "</tr>";
+				  		
+				  	if(showtbl=="true"){
+				  		
+				  	}
+			  	 });
+			  	item_session = item_session + " </tbody></table><br><br>";
+
+			  	$("#event_session").html(item_session);
+			  	
+			  	$("#add-to-cart").show();
+			  	$("#familymembers").hide();
+			  	$("#purchase").hide();
+			  	$("#checkout_content").fadeOut("fast");
+			  	$(".k-loading-mask").hide();
+		  	 }
+		  	 else{
+		  		$("#event_session").html("");
+			  	$("#program_cost").text("");
+			  	 $("#tcSuccessSpan").css("display", "block");		
+				 $("#tcSuccessSpan" ).html("No Events found for searched query");	
+				 $("#tcErrorSpan").css("display", "none");		
+				 $( "#tcErrorSpan" ).html("");
+				 $("#add-to-cart").hide();
+		  	 }
+		  	
+		  	
+		  	$("#event_signup").kendoGrid({
+		  		dataSource: {
+	            	pageSize: 20
+	            	//sort: { field: "Location", dir: "asc" }
+				},
+	            sortable: true,
+	            pageable: true,
+	            resizable:true,
+	            scrollbar:false
+	            
+	           /* columns: [
+                       { field: "" },
+                       { field: "Event Name" },
+                       { field: "Location", title: "Location"},
+                       { field: "Instructor", title: "Instructor" },
+                       { field: "Start Date" },
+                       { field: "End Date" },
+                       { field: "Start Time", title: "Start Time"},
+                       { field: "End Time", title: "End Time"},
+                       { field: "Capacity", title: "End Time"},
+                       { field: "Membership Price", title: "End Time"},
+                       { field: "Non-Membership Price", title: "End Time"}
+                ]*/
+			});
+		  	
+		  	$("input[type='checkbox']").uniform();
+		  	$(".k-loading-mask").hide();
+		  },
+		  error: function( xhr,status,error ){
+			  alert("1" +status+"-"+error);
+			  console.log(xhr);
+			 
+		  }
+	});
+}	
+
+function rangeSliderOnSlide(e) {
+    //kendoConsole.log("Slide :: new slide values are: " + e.value.toString().replace(",", " - "));
+}
+
+function rangeSliderOnChange(e) {
+    //kendoConsole.log("Change :: new values are: " + e.value.toString().replace(",", " - "));
+}
+
+function getFamilymembers(){
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getContacts",
+		  dataType: "json",
+		  success: function( data ) {
+			  if(data.length>0){
+				  var allContacts = "";
+				 
+				  $.each(data, function(i,member) {
+					  allContacts = allContacts + "<div style='margin: 10px;'>";
+					  allContacts = allContacts + "<span><input type='checkbox' name='user_"+member.contactId+"' id='user_"+member.contactId+"' value='"+member.contactId+"' class='usercheck'></span>";
+					  allContacts = allContacts + "&nbsp;&nbsp;<span class='name'>"+member.fname + " " +member.lname+"</span>";
+					  allContacts = allContacts + "</div>";
+				  });
+				  
+				  $("#familymembers").slideDown();
+				  $("#allmembers").html(allContacts);
+				  $("input[type='checkbox']").uniform();
+				 
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+}
+
+function addfamilyMember(){
+	//alert("add member");
+	$.ajax({
+		  type: "GET",
+		  url:"addMember",
+		  async:false,
+		  success: function( data ) {
+			  $("#popup_add").html(data);
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(xhr);
+		  }
+	});
+}
+
+function closeAllwindow(){
+
+	 $("div.k-window1").each(function(index, element){
+	 	var window = $(this);
+  	if (!window.data("kendoWindow")) {
+          window.kendoWindow({
+              width: "1050px"
+      	});
+      }
+	 	window.data("kendoWindow").close();
+	});
+}
+
+function validateCheckout() {
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan").html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $("#tcErrorSpan").html("");
+	
+	var contactData = [];
+	$('#allmembers').find('input[class="usercheck"]').each(function(){
+		if($("#user_"+this.value).is(':checked')){
+			//console.log(" Checked family member ::   "+this.value);
+			contactData.push(this.value);
+		}
+	});
+	if(contactData==""){
+		  $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan").html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $("#tcErrorSpan").html("Please select atleast one Member");
+		  return false;
+	}
+	$.sessionStorage.setItem('event_contact_ids', contactData.join(','));
+	var prodIds = $.sessionStorage.getItem('event_product_ids');
+	//console.log(" ValidateCheckut  >>  prodIds "+prodIds);
+	location.href = '#/product/'+prodIds+'/'+contactData.join(',');
+	return true;
+}
+
+function fnGotoFamilyMember(){
+	$("#familymembers").show();
+	$("#checkout_content").hide();
+}
+
+function continueshop(){
+	$(".k-loading-mask").show();
+	
+	$("#checkout_content").fadeOut(200);
+	$("#event").fadeIn(100);
+	getEventSession();
+	//$("#details-checkout").hide();
+	//location.href = '#/';
+	
+	$(".k-loading-mask").hide();
+}
+
+function fnCheckout(){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $("#tcErrorSpan").html("");
+	 
+	 //console.log(" cartPreviewModel.totalPrice() >>> "+cartPreviewModel.totalPrice());
+	 
+	 if(cartPreviewModel.totalPrice()=='$0.00'){
+		 $("#tcErrorSpan").css("display", "block");		
+		 $( "#tcErrorSpan" ).html("Please add some events to signup");
+		 return;
+	 }
+	// validation start
+	$(".k-loading-mask").show();
+	$("#payment_cart").show();
+	$("#details-checkout").fadeOut("fast");
+	$("#purchase").fadeIn("slow", function(){
+			$(".k-loading-mask").show();
+			$("#pmPrimary").hide();
+			$("#autopayBtn").hide();
+			
+			//console.log(" event_cart.contents.length >> "+event_cart.contents.length);
+			
+			var trrow = "";
+			if(event_cart.contents.length>0){
+				$.each(event_cart.contents, function(i,itemDetailsSession) {
+					var stdt = convertJsonDate(itemDetailsSession.item.start_date);
+					var enddt = convertJsonDate(itemDetailsSession.item.end_date);
+					var stTime = new Date(itemDetailsSession.item.start_time.time);
+			  		var endTime = new Date(itemDetailsSession.item.end_time.hours);
+					//var discount = isNumber(parseFloat(itemDetailsSession.item.discount)) + isNumber(parseFloat(itemDetailsSession.discount1));
+					//var itemprice = (isNumber(parseFloat(itemDetailsSession.item.itemamount)) - isNumber(parseFloat(itemDetailsSession.item.discount)) - isNumber(parseFloat(itemDetailsSession.discount1))) * isNumber(itemDetailsSession.quantity);
+					
+					if(itemDetailsSession.contact.isMember)
+						discount = isNumber(parseFloat(itemDetailsSession.item.memberdiscount)) + isNumber(parseFloat(itemDetailsSession.discount1));
+					else
+						discount = isNumber(parseFloat(itemDetailsSession.item.nonmemberdiscount)) + isNumber(parseFloat(itemDetailsSession.discount1));
+					
+					if(itemDetailsSession.contact.isMember)
+						itemprice = (isNumber(parseFloat(itemDetailsSession.item.memberprice)) - isNumber(parseFloat(itemDetailsSession.item.memberdiscount)) - isNumber(parseFloat(itemDetailsSession.discount1))) * isNumber(itemDetailsSession.quantity);
+					else
+						itemprice = (isNumber(parseFloat(itemDetailsSession.item.nonmemberprice)) - isNumber(parseFloat(itemDetailsSession.item.nonmemberdiscount)) - isNumber(parseFloat(itemDetailsSession.discount1))) * isNumber(itemDetailsSession.quantity);
+					
+					trrow = trrow + "<table width='100%'><tr>";
+		  			trrow = trrow + "<td><span><strong>" + itemDetailsSession.contact.fname + " " + itemDetailsSession.contact.lname + "<br>"  + itemDetailsSession.item.name + " [Category: " + itemDetailsSession.item.category + "]</strong></span></td>";
+		  			trrow = trrow + "<td><span>" + itemDetailsSession.item.days + "</span></td>";
+		  			trrow = trrow + "<td><span>" + stdt + " - " + enddt + "</span></td>";
+		  			trrow = trrow + "<td><span>" + formatTime(stTime)  + " - " +  formatTime(endTime) + "</span></td>";
+		  			trrow = trrow + "</tr>";
+		  			
+		  			trrow = trrow + "<tr height='10px;'>";
+		  			trrow = trrow + "<td colspan='3' align='right'>Sub Total</td>";
+		  			if(itemDetailsSession.contact.isMember)
+						trrow = trrow + "<td align='center'><span>" + currencyFormat(isNumber(itemDetailsSession.item.memberprice)) + "</span></td>";
+					else
+						trrow = trrow + "<td align='center'><span>" + currencyFormat(isNumber(itemDetailsSession.item.nonmemberprice)) + "</span></td>";
+					trrow = trrow + "</tr>";
+		  			
+		  			trrow = trrow + "<tr height='10px;'>";
+		  			trrow = trrow + "<td colspan='3' align='right'>Discount</td>";
+		  			trrow = trrow + "<td align='center'><span class='discountpricelbl'>-" + currencyFormat(isNumber(discount)) + "</span></td>";
+		  			trrow = trrow + "</tr>";
+		  			
+		  			trrow = trrow + "<tr height='10px;'>";
+		  			trrow = trrow + "<td colspan='3' align='right'>Final amount</td>";
+		  			trrow = trrow + "<td align='center'><span>" + currencyFormat(isNumber(itemprice)) + "</span></td>";
+		  			trrow = trrow + "</tr>";
+		  			
+		  			trrow = trrow + "<tr height='10px;'>";
+		  			trrow = trrow + "<td></td>";
+		  			trrow = trrow + "</tr></table>";
+				});
+			}
+			//ordertotal = ordertotal + parseInt(itemDetailsSession.itemDetails.price);
+			//console.log(" trrow "+trrow);
+			$("#cartitem").html(trrow);
+			//var row = $(trrow);
+		   // row.prependTo("#cart_info table"); 
+		    //row.empty();
+		    //row.insertBefore('table > tbody > tr:first');
+		    //console.log(cartPreviewModel);
+		    //console.log(cartPreviewModel.totalPrice());
+			$("#ordertotal").text(cartPreviewModel.totalPrice());
+			
+			$(".k-loading-mask").hide();
+	});
+}
+
+/*function showProgramSessionTble(itemId){
+	$("#event").html("");
+	$("#event").fadeOut();
+	$("#programsessiom").fadeIn();
+	$("#eventDetail").fadeOut();
+	$("#session_detail"+itemId).fadeIn();
+
+}*/
+
+/*
+
+
+
+function populateProducts(){
+	
+	var category = $("#class").val();
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getProductsbyCategory?category="+category,
+		  dataType: "json",
+		  success: function( data ) {
+		  	 // alert(data);
+		  	 
+		  	 //$("#subclass").data("kendoDropDownList").dataSource.data(data);
+		  	 $('#subclass').data('kendoDropDownList').enable(true);
+		  	 //$("#subclass").data("kendoDropDownList").setDataSource("");
+		     $("#subclass").data("kendoDropDownList").dataSource.data(""); // clears dataSource
+		  	 $("#subclass").data("kendoDropDownList").text(""); // clears visible text
+		  	 $("#subclass").data("kendoDropDownList").value(""); // clears invisible value
+
+		  	 $.each(data, function(i,product) {
+		  		 //console.log(product);
+		  		$("#subclass").data("kendoDropDownList").dataSource.add({ text: product, value: product });
+			});
+		  	 
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+	
+	getProgramSession();
+	
+}
+
+
+
+function fnUpdatePromo(){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 //alert();
+	console.log(this);
+}
+
+
+
+
+
+function fnApplyPromo(){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 
+	 //alert();
+	 var promocode = $( "#c_promocode" ).val();
+	 
+	 if(promocode==''){
+		  $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan" ).html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $( "#tcErrorSpan" ).html("Please enter Valid Promco code");
+		  return;
+	 }
+	 
+	 var cartObj = this.cart;
+	 var found = false;
+	 $.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getPromodetails?promocode="+promocode,
+		  dataType: "json",
+		  success: function( data ) {
+			  console.log(data);
+			  if(data.length==1){
+				  $.each(data, function(i,promo) {
+					  if(promo.itemDetails.length>0){
+						  
+						  for (var c = 0; c < cartObj.contents.length; c ++) {
+							  
+								  $.each(promo.itemDetails, function(j,itemInfo) {
+									  
+										  if(cartObj.contents[c].item.itemDetailsId == itemInfo.itemDetailsId){
+											  var discount = parseFloat(0);
+											  var discount_type = promo.discounttype;
+											  if(discount_type=='AMOUNT')
+												  discount = promo.discountValue;
+											  else if(discount_type=='PERCENTAGE'){
+												  discount = parseFloat(promo.discountPercentage) * parseFloat(cartObj.contents[c].item.price);
+											  	  discount = discount/100;
+											  }
+											  
+											  $( ".custom_promo" ).show();
+											  cartPreviewModel.updateCart(cartObj.contents[c],parseFloat(discount),promocode);
+											  //break;
+											  found = true;
+										  }
+										  
+								  });
+								  
+							}
+					  }
+				  });
+			  }
+			  else{
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+				  return;
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+	 
+	 if (!found) {
+        $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan" ).html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+  	  }
+}*/

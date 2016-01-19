@@ -1,0 +1,25 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.Payment;
+
+
+public interface PaymentDao  extends GenericDao<Payment, Long> {
+
+	List<Payment> getByAmount(double amount);
+	
+	//working
+	/*@Query("select prod.category,p.amount, p.type, p.paymentDate, p.status, p.reason from Payment p inner join p.signup s inner join s.item prod inner join p.contact con where p.type = ?1 and p.status =?2 and con.firstName like ?3 and DATE(p.paymentDate) >= DATE(?4) and DATE(p.paymentDate) <= DATE(?5)")
+	List<Payment> getPaymentHistory(String type,String status,String contactFirstName,String startDate, String endDate);*/
+	
+	//working
+	/*@Query("select prod.category,p.amount, p.type, p.paymentDate, p.status, p.reason from Payment p inner join p.signup s inner join s.item prod inner join p.contact con where p.type = ?1 and p.status =?2 and (con.firstName like %?3% or con.lastName like %?4%) and p.signup.customer.accountId = ?5 and DATE(p.paymentDate) >= DATE(?6) and DATE(p.paymentDate) <= DATE(?7)")
+	List<Object> getPaymentHistory(String type,String status,String firstName, String lastName,Long accountId,Date startDate, Date endDate);*/
+	
+	@Query("select prod.category,p.amount, p.type, p.paymentDate, p.status, p.reason from Payment p inner join p.signup s inner join s.item prod inner join p.contact con where p.type = ?1 and p.status =?2 and (con.username like %?3%) and p.signup.customer.accountId = ?4 and DATE(p.paymentDate) >= DATE(?5) and DATE(p.paymentDate) <= DATE(?6)")
+	List<Object> getPaymentHistory(String type,String status,String username,Long accountId,Date startDate, Date endDate);
+}

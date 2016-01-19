@@ -1,0 +1,60 @@
+<body>
+<script type="text/javascript">
+$(document).ready(function(){
+	$( "#loginForm" ).submit(function( event ) {
+		var userName = $("#username").val();
+		var userPassword = $("#password").val();
+		if((userName == null || userName == '') && (userPassword == null || userPassword == '')){
+			 $( "#formErr" ).html("Please enter the Email and Password");
+			 event.preventDefault();
+			 return false;
+		 }
+		if(userName == null || userName == ''){
+			 $( "#formErr" ).html("Please enter the Email");
+			 event.preventDefault();
+			 return false;
+		 }
+		if(userPassword == null || userPassword == ''){
+			 $( "#formErr" ).html("Please enter the Password");
+			 event.preventDefault();
+			 return false;
+		 }			
+		 if(!validateUserName(userName)){
+		 	$( "#formErr" ).html("Please enter the correct Email");
+		 	event.preventDefault();
+		 	return false;
+		 }		  
+	});
+});
+
+function validateUserName($email) {
+	  var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+	  if( !emailReg.test( $email ) ) {
+	    return false;
+	  } else {
+	    return true;
+	  }
+}
+</script>
+<div id="main">	
+	<div id="content">
+		<div id="content">
+		<form class="bootstrap-frm" id="loginForm" method="post" action="login" style="padding: 45px;">			
+			<h2>
+				Sign in to YMCA 
+			</h2>
+			<c:if test="${not empty errMsg}">
+            <div class="alert alert-danger alert-dismissable" style="color: red; margin-bottom: 5px;">
+                <span id="formErr">${errMsg }</span><br />
+            </div>
+        	</c:if>
+        		        
+			<label><input type="text" placeholder="Email" name="username" id="username" style="height: 30px;"></label>
+			<label><input type="password" placeholder="Password" name="password" id="password" style="height: 30px;"></label>	
+			<button class="k-button" style="width: 100%; height: 38px; background-color: #eb8120; color: #ffffff; background-image:none;">Sign in</button>
+			<div style="margin-top: 12px; float:right;"><span id="forgotPW"><a href="#">Forgot Email Address or Password</a></span><span id="notMember"><a href="#" style="margin-left: 10px;">Not a Member?</a></span></div>			
+		</form>
+		</div>		
+	</div>		
+</div>
+</body>

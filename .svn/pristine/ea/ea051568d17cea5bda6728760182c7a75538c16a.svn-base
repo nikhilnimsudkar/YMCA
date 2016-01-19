@@ -1,0 +1,14 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import com.ymca.model.Donation;
+
+public interface DonationDao  extends GenericDao<Donation, Long> {
+    
+ 	List<Donation> getDonationByAccountId(Long accountId) throws Exception;
+ 	
+ 	List<Donation> getByCustomerName(String customerName) throws Exception;
+
+}
+

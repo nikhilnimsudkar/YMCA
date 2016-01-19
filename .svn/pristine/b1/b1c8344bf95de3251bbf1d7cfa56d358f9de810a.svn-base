@@ -1,0 +1,197 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+
+
+/**
+ * This class represents the basic "Membership" object in YMCA Portal that allows for Membership management.  
+ *
+ */
+@Entity
+@Table(name = "app_membership") 
+@XmlRootElement
+public class Membership extends BaseObject implements Serializable {
+    private static final long serialVersionUID = 3832626162173359411L;
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "membership_id", nullable = false)
+    private Long membershipId;					// required  PK
+    
+    @Column(name = "product_id")
+   	private Long productId;                    	// required  PK,FK2
+    
+    @Column(name = "pricing_rule_id")
+    private Long pricingRuleId;                 // required  PK,FK3
+    
+    @Column(name = "membership_number")
+    private String membershipNumber ;
+    
+    @Column(name = "contact_name")
+    private String contactName;
+    
+    @Column(name = "membership_begin_date")
+    private String membershipBeginDate;
+    
+    @Column(name = "membership_end_date")
+    private String membershipEndDate;   
+    
+    @Column(name = "contact_party_id")
+    private String contactPartyId;
+    
+    @Column(name = "customer_party_id")
+    private String customerPartyId;
+    
+    @Column(name = "membership_price")
+    private String membershipPrice;    
+    
+    @Transient
+    @OneToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private PricingRule pricingRule;
+
+    public PricingRule getPricingRule() {
+		return pricingRule;
+	}
+
+	public void setPricingRule(PricingRule pricingRule) {
+		this.pricingRule = pricingRule;
+	}
+
+	/**
+     * Default constructor - creates a new instance with no values set.
+     */
+    public Membership() {
+    }
+
+    public Long getMembershipId() {
+		return membershipId;
+	}
+    
+    public Long getProductId() {
+		return productId;
+	}
+
+	public void setProductId(Long productId) {
+		this.productId = productId;
+	}
+
+	public Long getPricingRuleId() {
+		return pricingRuleId;
+	}
+
+	public void setPricingRuleId(Long pricingRuleId) {
+		this.pricingRuleId = pricingRuleId;
+	}
+
+	public String getMembershipNumber() {
+		return membershipNumber;
+	}
+
+	public void setMembershipNumber(String membershipNumber) {
+		this.membershipNumber = membershipNumber;
+	}
+
+	public String getContactName() {
+		return contactName;
+	}
+
+	public void setContactName(String contactName) {
+		this.contactName = contactName;
+	}
+
+	public String getMembershipBeginDate() {
+		return membershipBeginDate;
+	}
+
+	public void setMembershipBeginDate(String membershipBeginDate) {
+		this.membershipBeginDate = membershipBeginDate;
+	}
+
+	public String getMembershipEndDate() {
+		return membershipEndDate;
+	}
+
+	public void setMembershipEndDate(String membershipEndDate) {
+		this.membershipEndDate = membershipEndDate;
+	}
+
+	public String getContactPartyId() {
+		return contactPartyId;
+	}
+
+	public void setContactPartyId(String contactPartyId) {
+		this.contactPartyId = contactPartyId;
+	}
+
+	public String getCustomerPartyId() {
+		return customerPartyId;
+	}
+
+	public void setCustomerPartyId(String customerPartyId) {
+		this.customerPartyId = customerPartyId;
+	}
+
+	/*@OneToOne(fetch = FetchType.EAGER)
+	@Fetch(FetchMode.SELECT)
+	@JoinTable(
+	            name = "app_pricing_rule",
+	            joinColumns = { @JoinColumn(name = "pricing_rule_id") },
+	            inverseJoinColumns = @JoinColumn(name = "pricing_rule_id")
+	)*/
+	/*@OneToOne(fetch = FetchType.EAGER)
+	@Fetch(FetchMode.SELECT)
+    @JoinTable(
+            name = "app_pricing_rule",
+            joinColumns = { @JoinColumn(name = "pricing_rule_id", referencedColumnName="pricingRuleId")})     */   
+	/*@ManyToMany(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
+    @JoinTable(
+            name = "app_pricing_rule",
+            joinColumns = { @JoinColumn(name = "pricing_rule_id") },
+            inverseJoinColumns = @JoinColumn(name = "pricingRuleId")
+    )*/ 
+
+
+	public String getMembershipPrice() {
+		return membershipPrice;
+	}
+
+	public void setMembershipPrice(String membershipPrice) {
+		this.membershipPrice = membershipPrice;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+}

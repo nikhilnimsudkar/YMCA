@@ -1,0 +1,177 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "app_contact_waivers_and_tc")
+@XmlRootElement
+public class ContactWaiversAndTC extends BaseObject implements Serializable {
+	private static final long serialVersionUID = 3832626162173359411L;
+
+    @Id
+    @GeneratedValue
+    @Column(name = "waivers_and_tc", nullable = false)
+    private Long waiversAndTC;					// required  PK
+    
+    @Column(name = "contact_party_id")
+   	private Long contactPartyId;              	// required  PK,FK1
+    
+    @Column(name = "customer_party_id")
+    private Long customerPartyId;                 // required  PK,FK2
+    
+    @Column(name = "record_name")
+    private String recordName;
+    
+    @Column(name = "tc_description", nullable = false, columnDefinition="LONGTEXT")
+    private String tcDescription;
+    
+    @ManyToOne
+	@JoinColumn(name="accountId")
+	private Account customer;
+	
+	@ManyToOne
+	@JoinColumn(name="contact_id")
+	private User contact;
+
+	public Long getContactPartyId() {
+		return contactPartyId;
+	}
+
+	public void setContactPartyId(Long contactPartyId) {
+		this.contactPartyId = contactPartyId;
+	}
+
+	public Long getCustomerPartyId() {
+		return customerPartyId;
+	}
+
+	public void setCustomerPartyId(Long customerPartyId) {
+		this.customerPartyId = customerPartyId;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String recordName) {
+		this.recordName = recordName;
+	}
+
+	public String getTcDescription() {
+		return tcDescription;
+	}
+
+	public void setTcDescription(String tcDescription) {
+		this.tcDescription = tcDescription;
+	}
+
+	public Long getWaiversAndTC() {
+		return waiversAndTC;
+	}
+
+	public Account getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Account customer) {
+		this.customer = customer;
+	}
+
+	public User getContact() {
+		return contact;
+	}
+
+	public void setContact(User contact) {
+		this.contact = contact;
+	}
+
+	public void setWaiversAndTC(Long waiversAndTC) {
+		this.waiversAndTC = waiversAndTC;
+	}
+
+	@Override
+	public String toString() {
+		return "ContactWaiversAndTC [waiversAndTC=" + waiversAndTC
+				+ ", contactPartyId=" + contactPartyId + ", customerPartyId="
+				+ customerPartyId + ", recordName=" + recordName
+				+ ", tcDescription=" + tcDescription + ", customer=" + customer
+				+ ", contact=" + contact + "]";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ContactWaiversAndTC other = (ContactWaiversAndTC) obj;
+		if (contact == null) {
+			if (other.contact != null)
+				return false;
+		} else if (!contact.equals(other.contact))
+			return false;
+		if (contactPartyId == null) {
+			if (other.contactPartyId != null)
+				return false;
+		} else if (!contactPartyId.equals(other.contactPartyId))
+			return false;
+		if (customer == null) {
+			if (other.customer != null)
+				return false;
+		} else if (!customer.equals(other.customer))
+			return false;
+		if (customerPartyId == null) {
+			if (other.customerPartyId != null)
+				return false;
+		} else if (!customerPartyId.equals(other.customerPartyId))
+			return false;
+		if (recordName == null) {
+			if (other.recordName != null)
+				return false;
+		} else if (!recordName.equals(other.recordName))
+			return false;
+		if (tcDescription == null) {
+			if (other.tcDescription != null)
+				return false;
+		} else if (!tcDescription.equals(other.tcDescription))
+			return false;
+		if (waiversAndTC == null) {
+			if (other.waiversAndTC != null)
+				return false;
+		} else if (!waiversAndTC.equals(other.waiversAndTC))
+			return false;
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((contact == null) ? 0 : contact.hashCode());
+		result = prime * result
+				+ ((contactPartyId == null) ? 0 : contactPartyId.hashCode());
+		result = prime * result
+				+ ((customer == null) ? 0 : customer.hashCode());
+		result = prime * result
+				+ ((customerPartyId == null) ? 0 : customerPartyId.hashCode());
+		result = prime * result
+				+ ((recordName == null) ? 0 : recordName.hashCode());
+		result = prime * result
+				+ ((tcDescription == null) ? 0 : tcDescription.hashCode());
+		result = prime * result
+				+ ((waiversAndTC == null) ? 0 : waiversAndTC.hashCode());
+		return result;
+	}
+
+}

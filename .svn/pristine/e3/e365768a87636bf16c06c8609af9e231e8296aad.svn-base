@@ -1,0 +1,7 @@
+package com.ymca.web.enums;
+
+public enum SignupStatusEnum {
+	Cancelled,
+	Confirmed,
+	ACTIVE
+}

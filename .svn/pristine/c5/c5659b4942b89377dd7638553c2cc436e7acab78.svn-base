@@ -1,0 +1,10 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import com.ymca.model.Payer;
+import com.ymca.model.Signup;
+
+public interface PayerDao extends GenericDao<Payer, Long> {
+	List<Payer> findBySignupAndType(Signup signup, String type);
+}

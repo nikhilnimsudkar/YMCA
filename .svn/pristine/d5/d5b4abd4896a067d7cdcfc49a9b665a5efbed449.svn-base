@@ -1,0 +1,342 @@
+package com.serene.job.model;
+
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+
+@Entity(name="BATCH_JOB_METADATA")
+@Access (AccessType.FIELD)
+public class JobSchedulerMetadata implements Serializable {
+
+
+	@Id
+	@Column(name="JOB_NAME")
+	private String jobName;
+	
+	
+	@Column(name="CRON_EXPERSSION")
+	private String cronExpression;
+	@Column(name="DB_SQL")
+	private String sql ;
+	@Column(name="FQL")
+	private String fql ;
+	@Column(name="DATA_SOURCE")
+	private String dataSource ;
+
+	@Column(name="FROM_OBJECT_NAME")
+	private String fromObjectName;
+	@Column(name="FROM_OBJECT_ID_FIELD")
+	private String fromObjectIdField;
+	
+	@Column(name="TO_OBJECT_NAME")
+	private String toObjectName;
+	@Column(name="TO_OBJECT_ID_FIELD")
+	private String toObjectIdField;
+	
+	@Column(name="INTERFACE_TYPE")
+	private String interfaceType ;
+
+	@Column(name="JOB_PARAMETERS")
+	private String jobParameters;
+	
+	@OneToMany(orphanRemoval=true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name="JOB_NAME")
+	private List<FieldMapping> fieldMapping ;
+	
+	@OneToMany(orphanRemoval=true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name="job_name")
+	private List<ChildObject> childObjects ;
+	
+	@Column(name="COMMIT_SIZE", columnDefinition="INT DEFAULT 1")
+	private Integer commitSize ;
+	
+	@Column(name="CALLBACK_UPDATE", columnDefinition="boolean DEFAULT false")
+	private Boolean callbackUpdate  ;
+	
+	@Column(name="INTERFACE_LAST_POOL_TIME")
+	private String interfaceLastPoolTime ;
+
+	@Column(name="INTERFACE_LAST_UPADTED_FIELD")
+	private String interfaceLastUpdatedField ;
+	
+	@Column(name="ACTIVE",columnDefinition="boolean DEFAULT false" )
+	private Boolean active;
+
+	@Column(name="JOB_GROUP",columnDefinition="VARCHAR(100) DEFAULT 'DEFAULT_GROUP'")
+	private String jobGroup ;
+	
+	@Column(name="DEPENDS_ON")
+	private String dependsOn ;
+	
+	@Column(name="ITEM_PROCESSOR")
+	private String itemProcessor ;
+	
+	
+	public String getJobName() {
+		return jobName;
+	}
+
+
+
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
+	}
+
+
+
+	public String getCronExpression() {
+		return cronExpression;
+	}
+
+
+
+	public void setCronExpression(String cronExpression) {
+		this.cronExpression = cronExpression;
+	}
+
+
+
+	public String getSql() {
+		return sql;
+	}
+
+
+
+	public void setSql(String sql) {
+		this.sql = sql;
+	}
+
+
+
+	public String getFql() {
+		return fql;
+	}
+
+
+
+	public void setFql(String fql) {
+		this.fql = fql;
+	}
+
+
+
+	public String getDataSource() {
+		return dataSource;
+	}
+
+
+
+	public void setDataSource(String dataSource) {
+		this.dataSource = dataSource;
+	}
+
+
+
+	public String getFromObjectName() {
+		return fromObjectName;
+	}
+
+
+
+	public void setFromObjectName(String fromObjectName) {
+		this.fromObjectName = fromObjectName;
+	}
+
+
+
+	public String getFromObjectIdField() {
+		return fromObjectIdField;
+	}
+
+
+
+	public void setFromObjectIdField(String fromObjectIdField) {
+		this.fromObjectIdField = fromObjectIdField;
+	}
+
+
+
+	public String getToObjectName() {
+		return toObjectName;
+	}
+
+
+
+	public void setToObjectName(String toObjectName) {
+		this.toObjectName = toObjectName;
+	}
+
+
+
+	public String getToObjectIdField() {
+		return toObjectIdField;
+	}
+
+
+
+	public void setToObjectIdField(String toObjectIdField) {
+		this.toObjectIdField = toObjectIdField;
+	}
+
+
+
+	public String getInterfaceType() {
+		return interfaceType;
+	}
+
+
+
+	public void setInterfaceType(String interfaceType) {
+		this.interfaceType = interfaceType;
+	}
+
+
+
+	public String getJobParameters() {
+		return jobParameters;
+	}
+
+
+
+	public void setJobParameters(String jobParameters) {
+		this.jobParameters = jobParameters;
+	}
+
+
+
+	public List<FieldMapping> getFieldMapping() {
+		return fieldMapping;
+	}
+
+
+
+	public void setFieldMapping(List<FieldMapping> fieldMapping) {
+		this.fieldMapping = fieldMapping;
+	}
+
+
+
+	public Integer getCommitSize() {
+		return commitSize;
+	}
+
+
+	public void setCommitSize(Integer commitSize) {
+		this.commitSize = commitSize;
+	}
+
+	public Boolean getCallbackUpdate() {
+		return callbackUpdate;
+	}
+
+	public void setCallbackUpdate(Boolean callbackUpdate) {
+		this.callbackUpdate = callbackUpdate;
+	}
+	
+	public String getInterfaceLastPoolTime() {
+		return interfaceLastPoolTime;
+	}
+
+	public void setInterfaceLastPoolTime(String interfaceLastPoolTime) {
+		this.interfaceLastPoolTime = interfaceLastPoolTime;
+	}
+
+	public String getInterfaceLastUpdatedField() {
+		return interfaceLastUpdatedField;
+	}
+
+	public void setInterfaceLastUpdatedField(String interfaceLastUpdatedField) {
+		this.interfaceLastUpdatedField = interfaceLastUpdatedField;
+	}
+	
+
+	public Boolean getActive() {
+		return active;
+	}
+
+
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+
+	public String getJobGroup() {
+		return jobGroup;
+	}
+
+
+
+	public void setJobGroup(String jobGroup) {
+		this.jobGroup = jobGroup;
+	}
+
+
+
+	public String getDependsOn() {
+		return dependsOn;
+	}
+
+
+
+	public void setDependsOn(String dependsOn) {
+		this.dependsOn = dependsOn;
+	}
+
+	public String getItemProcessor() {
+		return itemProcessor;
+	}
+
+	public void setItemProcessor(String itemProcessor) {
+		this.itemProcessor = itemProcessor;
+	}
+
+
+	public Map<String,String> getActiveFields(){
+		Map<String,String> fields = new LinkedHashMap<String, String>();
+		for (FieldMapping field :  fieldMapping) {
+			if (field.getStatus()) {
+				fields.put(field.getToField(), field.getFromField());
+			}
+		}
+		return fields ;
+	}
+
+	public List<ChildObject> getChildObjects() {
+		return childObjects;
+	}
+
+
+
+	public void setChildObjects(List<ChildObject> childObjects) {
+		this.childObjects = childObjects;
+	}
+
+
+
+	@Override
+	public String toString() {
+		return "JobSchedulerMetadata [jobName=" + jobName + ", cronExpression="
+				+ cronExpression + ", sql=" + sql + ", fql=" + fql
+				+ ", dataSource=" + dataSource + ", fromObjectName="
+				+ fromObjectName + ", fromObjectIdField=" + fromObjectIdField
+				+ ", toObjectName=" + toObjectName + ", toObjectIdField="
+				+ toObjectIdField + ", interfaceType=" + interfaceType
+				+ ", jobParameters=" + jobParameters + ", fieldMapping="
+				+ fieldMapping + ", commitSize=" + commitSize
+				+ ", callbackUpdate=" + callbackUpdate + ", jobGroup="
+				+ jobGroup + ", dependsOn=" + dependsOn + "]";
+	}
+}

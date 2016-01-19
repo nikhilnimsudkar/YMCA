@@ -1,0 +1,16 @@
+/**
+ * @author gpatwa
+ * Generic DAO for IntermidiateTableDao object
+ */
+package com.serene.job.dao;
+
+import org.springframework.stereotype.Repository;
+
+import com.serene.job.model.IntermediateTable;
+import com.serene.job.model.IntermediateTablePrimaryKey;
+
+
+@Repository
+public interface IntermidiateTableDao  extends GenericDao<IntermediateTable,IntermediateTablePrimaryKey > {    
+
+}

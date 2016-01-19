@@ -1,0 +1,50 @@
+package com.ymca.test.controller;
+
+import javax.annotation.Resource;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.serene.bootstrap.WebServiceBootStrap;
+import com.serene.ws.exception.WebServiceException;
+import com.serene.ws.service.GenericWebService;
+import com.ymca.WebConfig;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = WebConfig.class)
+public class HallPassIntegrationTest {
+	
+	@Resource(name="genericWebServiceImpl")
+	GenericWebService genericWebService;
+	
+	@Test
+	public void IsSOR() {
+		//GenericWebServiceImpl g = new GenericWebServiceImpl();
+		try {
+			 String strXML = new String("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+					 +"<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:sor=\"http://HallPassId.com/SORData/\">"
+			  /* +"<soap:Header>"
+			      +"<sor:UserCredential>"
+			         +"<sor:UserName>YmCaSV</sor:UserName>"
+			         +"<sor:Password>yMCa6445</sor:Password>"
+			      +"</sor:UserCredential>"
+			   +"</soap:Header>"*/
+			   +"<soap:Body>"
+			      +"<sor:IsSOR xmlns=\"http://HallPassId.com/SORData/\">"
+			         +"<sor:FirstName>Govind</sor:FirstName>"
+			         +"<sor:LastName>Patwa</sor:LastName>"
+			         +"<sor:DOB>1978-12-11</sor:DOB>"
+			      +"</sor:IsSOR>"
+			   +"</soap:Body>"
+			+"</soap:Envelope>");
+			
+			 genericWebService.invoke(strXML, "http://secure.hallpassid.com/SORServices/SORSearch.asmx?WSDL", "http://HallPassId.com/SORData/IsSOR", "YmCaSV", "yMCa6445");
+			//System.out.println(k);
+		} catch (WebServiceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}

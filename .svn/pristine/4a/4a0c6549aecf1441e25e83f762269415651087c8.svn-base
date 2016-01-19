@@ -1,0 +1,29 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    
+<body>
+
+<div id="main">
+	<div id="content">
+		<div id="myprofile">
+			<%@ include file="paymentProfile.jsp" %> 
+		</div>
+		<div id="purchase">
+			<%@ include file="purchaseInformation.jsp" %> 
+		</div>
+	</div>
+</div>
+</body>
+
+<script>
+	$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','current');
+		
+		$("#page_name").html("PAYMENT INFORMATION");
+	});
+</script>

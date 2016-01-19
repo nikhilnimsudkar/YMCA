@@ -1,0 +1,142 @@
+function getAutoPromotionMap(itemId, billingFreqency, amountMap, selectedProductTotalPrice){
+	var isRecurring = checkIfRecurring(billingFreqency);
+	
+	console.log(" itemId = "+itemId+",  isRecurring = "+isRecurring);
+	
+	var contactId = 0;
+	//var setupfee = 0;
+	var selectedStartDate = '';
+	var cartItems = [];
+	var promotionMap = {};
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getPromoMap?itemId="+itemId+"&contactId="+contactId+"&isAuto=true&isRecurring="+isRecurring+"&amountJSON="+amountMap+"&selectedStartDate="+selectedStartDate+"&lstCartItem="+cartItems.join('_AND_')+"&urlItemContactPromo=", 
+		  dataType: "json",
+		  success: function( data ) {
+			  
+			  //  console.log("  data  "+data);
+			 // console.log("  JSON.stringify(data)   ::   "+JSON.stringify(data));
+			  
+			  //var json = JSON.parse(data);
+			  if(data != null)
+				  promotionMap = data.promos;
+			  
+			  //  console.log("  promotionMap   ::::   "+promotionMap);
+			  
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(xhr);
+		  }
+	});
+	
+	var totalPriceWithoutDiscount = selectedProductTotalPrice;
+	
+	refreshPaymentInfo(promotionMap, amountMap, totalPriceWithoutDiscount);
+}
+
+function refreshPaymentInfo(promotionMap, amountMap, totalPriceWithoutDiscount){
+	promotionMap =  validatePromo('callForMembership', null, promotionMap, amountMap);
+	var totalDiscount = applyPromos(promotionMap);
+	totalPrice = parseFloat(totalPriceWithoutDiscount) - parseFloat(totalDiscount);
+	
+	//console.log("  totalPriceWithoutDiscount  "+totalPriceWithoutDiscount+"  totalDiscount  "+totalDiscount+"  totalPrice  "+totalPrice);
+	
+	$("#totalDiscountHiddenInput").val(totalDiscount);
+	$("#paymentAmountSpan").html(totalPrice);
+	$("#paymentTotalPriceTd").html(totalPrice);	
+	$("#sumTotalPriceTd").html(totalPrice); 	
+	
+	var finalAmount = parseFloat($("#sumTotalPriceTd").text());
+	
+	if($("#faAmountTD").text() != ''){
+		finalAmount = finalAmount - parseFloat($("#faAmountTD").text());
+	}  	
+	
+	$("#sumFinalAmountTd").html(finalAmount);
+	
+	$("#promotionMapInput").attr("value", convertToPromoString(promotionMap));
+}
+
+function applyPromos(promotionMap){
+	
+	var totalDiscount = 0;
+	
+	if(promotionMap != undefined){
+		
+		var signUpPromoDiscount = "", signUpPromoCount = 0;
+		var depositPromoDiscount = "", depositPromoCount = 0;
+		var setupFeePromoDiscount = "", setupFeePromoCount = 0;
+		var joinFeePromoDiscount = "", joinFeePromoCount = 0;
+		var regFeePromoDiscount = "", regFeePromoCount = 0;
+		
+		
+		for(var j=0; j < promotionMap.length; j++){
+			
+			var promo = promotionMap[j];
+			console.log("  PROMO ::  "+promo.PromoRuleType+"  "+promo.discountValue);
+			if(promo.PromoRuleType == 'Sign Up'){
+				//console.log(" Sign up :: discount value ::  "+ parseFloat(promo.discountValue));
+				signUpPromoCount++;
+				signUpPromoDiscount += "<tr><td width='60%' title="+promo.Description+">"+promo.PromoCode+"</td>";
+				signUpPromoDiscount += "<td width='40%' align='right' style='padding-right: 0px;'><span style='color: red;'>-$</span><span style='color: red;'>"+promo.discountValue+"</span></td></tr>";
+				signUpPromoDiscount += "<tr><td width='60%' >No of discount months</td>";
+				signUpPromoDiscount += "<td width='40%' align='right' style='padding-right: 0px;'><span>"+promo.noOfDiscountMonths+"</span></td></tr>";
+				totalDiscount += parseFloat(promo.discountValue);
+			}else if(promo.PromoRuleType == 'Deposit'){
+				//console.log(" Deposit :: discount value ::  "+ parseFloat(promo.discountValue));
+				depositPromoCount++;
+				depositPromoDiscount += "<tr><td width='60%'>"+promo.PromoCode+"</td>";
+				depositPromoDiscount += "<td width='40%' align='right' style='padding-right: 0px;'><span style='color: red;'>-$</span><span style='color: red;'>"+promo.discountValue+"</span></td></tr>";
+				depositPromoDiscount += "<tr><td width='60%' >No of discount months</td>";
+				depositPromoDiscount += "<td width='40%' align='right' style='padding-right: 0px;'><span>"+promo.noOfDiscountMonths+"</span></td></tr>";
+				totalDiscount += parseFloat(promo.discountValue);
+			}/*else if(promo.PromoRuleType == 'SetUpFee'){
+				//console.log(" Set up fee :: discount value ::  "+ parseFloat(promo.discountValue));
+				setupFeePromoCount++;
+				setupFeePromoDiscount += "<tr><td width='60%'>"+promo.PromoCode+"</td>";
+				setupFeePromoDiscount += "<td width='40%' align='right' style='padding-right: 0px;'><span style='color: red;'>-$</span><span style='color: red;'>"+promo.discountValue+"</span></td></tr>";
+				totalDiscount += parseFloat(promo.discountValue);
+			}*/else if(promo.PromoRuleType == 'Registration'){
+				//console.log(" Reg :: discount value ::  "+ parseFloat(promo.discountValue));
+				regFeePromoCount++;
+				regFeePromoDiscount += "<tr><td width='60%'>"+promo.PromoCode+"</td>";
+				regFeePromoDiscount += "<td width='40%' align='right' style='padding-right: 0px;'><span style='color: red;'>-$</span><span style='color: red;'>"+promo.discountValue+"</span></td></tr>";
+				regFeePromoDiscount += "<tr><td width='60%' >No of discount months</td>";
+				regFeePromoDiscount += "<td width='40%' align='right' style='padding-right: 0px;'><span>"+promo.noOfDiscountMonths+"</span></td></tr>";
+				totalDiscount += parseFloat(promo.discountValue);
+			}else if(promo.PromoRuleType == 'JoinFee'){
+				//console.log(" Join fee :: discount value ::  "+ parseFloat(promo.discountValue));
+				joinFeePromoCount++;
+				joinFeePromoDiscount += "<tr><td width='60%'>"+promo.PromoCode+"</td>";
+				joinFeePromoDiscount += "<td width='40%' align='right' style='padding-right: 0px;'><span style='color: red;'>-$</span><span style='color: red;'>"+promo.discountValue+"</span></td></tr>";
+				joinFeePromoDiscount += "<tr><td width='60%' >No of discount months</td>";
+				joinFeePromoDiscount += "<td width='40%' align='right' style='padding-right: 0px;'><span>"+promo.noOfDiscountMonths+"</span></td></tr>";
+				totalDiscount += parseFloat(promo.discountValue);
+			}
+		}
+		
+		if(signUpPromoCount > 0){
+			$("#SignUpPromoDiscount").show();
+			$("#SignUpPromoDiscountTable").html(signUpPromoDiscount);
+		}
+		if(depositPromoCount > 0){
+			$("#DepositPromoDiscount").show();
+			$("#DepositPromoDiscountTable").html(depositPromoDiscount);
+		}
+		/*if(setupFeePromoCount > 0){
+			$("#SetUpFeePromoDiscount").show();
+			$("#SetUpFeePromoDiscountTable").html(setupFeePromoDiscount);
+		}*/
+		if(regFeePromoCount > 0){
+			$("#RegFeePromoDiscount").show();
+			$("#RegFeePromoDiscountTable").html(regFeePromoDiscount);
+		}
+		if(joinFeePromoCount > 0){
+			$("#JoinFeePromoDiscount").show();
+			$("#JoinFeePromoDiscountTable").html(joinFeePromoDiscount);
+		}
+	}
+	return totalDiscount;
+}
+

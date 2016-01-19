@@ -1,0 +1,86 @@
+/**
+ * @author gpatwa
+ * Custom Invoice Item Processor for the invoice job. 
+ */
+package com.serene.job.processor;
+
+import java.util.Date;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.dao.IntermidiateTableDao;
+import com.serene.job.model.IntermediateTable;
+import com.serene.job.model.IntermediateTablePrimaryKey;
+import com.serene.job.service.InvoiceService;
+
+@Service
+public class InvoiceItemProcessor extends GenericItemProcessor implements ItemProcessor<Object,Object> {
+
+	private static final Log log = LogFactory.getLog(InvoiceItemProcessor.class);
+
+	@Resource
+	private InvoiceService invoiceService ;
+	
+	@Resource
+	private IntermidiateTableDao intermidiateTableDao ; 
+	
+	@Override
+	public Object process(Object item) throws Exception {
+		
+		Map<String,Object> data = (Map<String, Object>) item;
+		Boolean flag=false;
+		flag=invoiceService.isInvoiceRecordExist(data, batchJobContext.getJobSchedulerMetadata());
+		if(flag)
+		{
+			//log.info("InvoiceRecord Exist !!!");
+			log.info("InvoiceRecord Exist !!!");
+			
+			//
+			try {
+				IntermediateTablePrimaryKey key = new IntermediateTablePrimaryKey();
+				key.setJobName(batchJobContext.getJobSchedulerMetadata().getJobName());
+				key.setObjectName(batchJobContext.getJobSchedulerMetadata().getFromObjectName());
+				key.setObjectId(String.valueOf((Long) data.get(batchJobContext.getJobSchedulerMetadata().getFromObjectIdField())));
+				IntermediateTable intermediateTable = intermidiateTableDao.getOne(key);
+				
+				intermediateTable.setSyncState("INTERMIDIATE");
+				intermediateTable.setSyncStatus("ERROR");
+				intermediateTable.setRetryCount(intermediateTable.getRetryCount()+1);
+				intermediateTable.setErrorMessage("Duplicate Invoice");
+				intermidiateTableDao.save(intermediateTable);
+			} catch (Exception e1) {
+				log.error("Error while writing error log ",e1);
+			}
+			//
+			data=null;
+		}else{
+		
+		// call computeInvoiceAmount
+		Double invoiceAmount = invoiceService.computeInvoiceAmount(data,batchJobContext.getJobSchedulerMetadata());
+		//log.info("invoiceAmount process  "+invoiceAmount);
+		data.put("invoiceamount", invoiceAmount);
+		
+	    // call computeFAAmount
+		Double fAamount = invoiceService.computeFAAmount(data,batchJobContext.getJobSchedulerMetadata());
+		//log.info("FAMOUNT  process  "+fAamount.toString());
+		data.put("FAMOUNT", fAamount);
+		
+		//call computeDueDate
+		Date dueDate	=invoiceService.computeDueDate(data,batchJobContext.getJobSchedulerMetadata());
+		data.put("duedate",dueDate);
+		
+		//call updateSignupRecord
+		invoiceService.updateSignupRecord(data,batchJobContext.getJobSchedulerMetadata());
+		//log.info("DONE!!!!!!!!!!!!!");
+		}
+		return data;
+	}
+	
+}

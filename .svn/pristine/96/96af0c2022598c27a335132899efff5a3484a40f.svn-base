@@ -1,0 +1,253 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+   
+   <script>
+   
+	$(document).ready(function(){
+		$("select#signuppricingDD.kendodrop").kendoDropDownList();
+	});
+	
+	</script>
+<div id="application"></div>
+<script type="text/x-kendo-template" id="layout-template">
+            <div id="cart-wrapper">
+				<div id="cart-header">
+                    
+                    <span id="cart-info">Your Cart: <span><span data-bind="text: cart.contentsCount"></span> items</span></span>
+                </div>
+                <div id="main-section">
+					<span id="dspErr" class="k-block k-error-colored" data-bind="text: cart.errMsg" style="display:none; padding: 4px 30px 4px 15px;"></span>
+                    <section id="content"></section>
+					<section id="checkout_content"></section>
+                </div>
+            </div>
+</script>
+
+<script type="text/x-kendo-template" id="index-template">
+	<div align="center">
+		<span id="add-to-cart">
+            <!--<button class="buy" data-bind="click: addToCart">Add to cart</button>--->
+			<span class="k-button" id="addproduct">Add to Cart</span>
+		</span>
+	</div>
+</script>
+
+<script type="text/x-kendo-template" id="product-template">
+	<span class="buy" data-bind="click: addToCart">Add to cart</span>
+</script>
+
+<script type="text/x-kendo-template" id="checkout-template">
+			<div id="details-checkout">
+                <h1 style="text-align:left;float:left;">Cart Details</h1>
+				<a class="emptycart" href="#" data-bind="click: emptyCart">Empty Cart</a>
+
+				<div style="margin-bottom:20px; text-align: left;">
+					<span class="alertNotice">If you need to add a 3rd party payer, please stop and contact a Y agent to continue the sign up process</span>
+					<br><br>
+					<span class="alertNotice">Wait-listed items are not included in the total price, please continue with the sign up process to register for the wait-listed items.</span>
+				</div>				
+
+				<table class="checkouttbl">
+					<thead>
+						<tr>
+							<th>Signup Details</th>
+							<!--<th>Session</th>-->
+							<th></th>						
+							<th align="right">Price</th>
+						</tr>
+					</thead>
+					<tbody data-role="listview" data-bind="source: cart.contents" data-template="large-cart-item">
+					</tbody>
+				</table>
+				
+				<div style="height: 170px;">
+					<div style="width: 100%; float: right;  margin-top: 10px;">
+						<p id="total-discount"><em>Discount:</em>
+						<span class="discountpricelbl">-</span>
+						<span class="discountpricelbl" data-bind="text: totalDiscountAmount"></span></p>
+						
+						<div id="promo" style="display:none;">
+							<span>Promo Code:</span>
+							&nbsp;&nbsp;
+							<span><input id="c_promocode" type="text" class="k-textbox"></span>
+							<span id="applypromo" class="k-button" onclick="fnApplyPromo();">Apply</span>
+						</div>
+											
+					</div>		
+
+					<div>
+						<p id="total-discount"><em>Total FA:</em>
+						<span class="discountpricelbl">-</span>
+						<span class="discountpricelbl" data-bind="text: totalFAPrice"></span></p>
+					</div>		
+					<div style="clear: both;"></div> 					
+					<div>
+						<p id="total-checkout"><em>total:</em><span data-bind="text: totalPrice"></span></p>
+					</div>
+				</div>
+				<div style="clear: both;"></div> 
+				
+				<div id="cartbtns">
+					
+					<button id="backtofamily" class="k-button" onclick="fnGotoFamilyMember();" style="display:none;"><< Back</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<button id="continueshopping" class="k-button" onclick="continueshop();">Continue Shopping</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<button id="confirmBtn" class="k-button" onclick="fnCheckout();">Checkout</button>
+				</div>
+			</div>
+
+</script>
+
+<script type="text/x-kendo-template" id="large-cart-item">
+            <tr>
+                <td>
+					#if (item.subType == 'EVENT') { #
+						<span><b>Event Signup</b></span>
+					# } else {#
+						<span><b>Program Signup</b></span>
+					# } #
+					<br><br>
+					<span data-bind="text: contact.fname"></span>
+					<span data-bind="text: contact.lname"></span>
+					#if (waitlist) { #
+						<span class="alertNotice" id="waitlisted_span_#= uniqueId #"> [ Waitlisted ] </span>
+					# } else {#
+						<span class="alertNotice" id="waitlisted_span_#= uniqueId #" style="display: none;"> [ Waitlisted ] </span>
+					# } #
+					<br><br>
+
+					<span  data-bind="text: item.sessionName"></span><br>
+					[<span data-bind="text: item.days"></span>]
+					
+					[<span>#= formatTime(new Date(item.start_time.time)) #</span>
+					 - 
+					<span>#= formatTime(new Date(item.end_time.time)) #</span>]
+					<br>
+
+					<span><strong>Instructor:- </strong></span>
+					<span data-bind="text: item.instructor"></span>
+					<br>
+
+					<span class="product-name" data-bind="text: item.name"></span>&nbsp;
+					[<span><strong>Category:- </strong></span>
+					<span data-bind="text: item.category"></span>]
+					<br>
+					<span data-bind="text: item.description"></span>
+					<br><br>
+				</td>
+				<td align="left" style="padding-right: 20px;">
+					<a data-bind="click: removeFromCart" class="view-selected-items" style="text-decoration: underline; cursor:pointer;">
+						<!--<img src="resources/img/blue_cross.jpg"  width="30" height="30">-->
+						Remove
+					</a>
+				</td>
+				<td align="right">
+					<!-- signup price -->
+					<p class="signup_price" id="signup_price_#= uniqueId #">
+						<span>SIGNUP PRICE:</span>
+						#if (item.signuppriceArr.length >0) { #
+						<span>
+							<select id="signuppricingDD_#= uniqueId #" name="signuppricingDD_#= uniqueId #" class="kendodrop" data-bind="value: signupPriceOption" onchange="updateCart('#= uniqueId #', $(this), null)" style="width:150px;">
+								# for(i=0; i<item.signuppriceArr.length; i++){ #
+									# if (contact.isMember){ #
+										<option value="#=i#">#=item.signuppriceArr[i].priceoption # ($ #=item.signuppriceArr[i].memberprice#)</option>
+									# } else { #
+										<option value="#=i#">#=item.signuppriceArr[i].priceoption # ($ #=item.signuppriceArr[i].nonmemberPrice#)</option>
+									# } #
+								# } #
+							</select>
+						</span>
+						# } #
+						<!--<span class="table-price" data-bind="text: itemPrice"><span>-->
+					</p>
+					
+					<!-- setup price -->
+					#if (item.subType == 'EVENT') { #
+					<p class="setup_price" id="no_of_tickets_packages_#= uniqueId #">
+						<span id="no_of_tickets_packages_label_#= uniqueId #" data-bind="text: noOfTicketsOrPackagesLabel">NO OF TICKETS:</span>
+						<span>
+							<input name="no_of_tickets_packages_text_#= uniqueId #" id="no_of_tickets_packages_text_#= uniqueId #" class="k-textbox" maxlength="3" data-bind="value: noOfTicketsOrPackagesVal" onchange="updateCart('#= uniqueId #', null, $(this))" style="width: 40px;" onkeypress="return checkKeyPressEventIsNumeric(event)" value="">
+						<span>
+					</p>
+					# } #
+
+					<!-- setup price -->
+					#if (setupFee > 0) { #
+					<p class="setup_price" id="setup_price_#= uniqueId #">
+						<span>SETUP FEE:</span>
+						<span class="table-price cartpricedisplay" data-bind="text: setupPriceTxt"><span>
+					</p>
+					# } #
+
+					<!-- registration price -->
+					#if (registrationPrice > 0) { #
+					<p class="registration_price" id="registration_price_#= uniqueId #">
+						<span>REGISTRATION FEE:</span>
+						<span class="table-price cartpricedisplay" data-bind="text: registrationPriceTxt"><span>
+					</p>
+					# } #
+
+					<!-- deposit price -->
+					#if (depositAmount > 0) { #
+					<p class="deposit_price" id="deposit_price_#= uniqueId #">
+						<span>DEPOSIT AMOUNT:</span>
+						<span class="table-price cartpricedisplay" data-bind="text: depositAmountTxt"><span>
+					</p>
+					# } #
+
+					<!-- auto promo dsp --->
+					#if (autoDiscount >0)  { # 
+					<p class="auto_promo">
+					# } else {#
+					<p class="auto_promo" style="display:none;">	
+					# } #
+						<span class="table-price" data-bind="text: discountCode"></span>
+						<span class="cartpricedisplay">
+							<span class="discountpricelbl">-</span>
+							<span class="table-price discountpricelbl" data-bind="text: discountPrice"><span>
+						</span>
+					</p>
+
+					<!-- custom promo dsp --->
+					#if (discount1 >0)  { #
+					<p class="custom_promo" id="custom_promo_#= uniqueId #">
+					# } else {#
+					<p class="custom_promo" style="display:none;" id="custom_promo_#= uniqueId #">
+					# } #
+						<span><input id="i_promo_#= uniqueId #" type="text" class="k-textbox" style="width:75px;" data-bind="value: discountcode1"></span>
+						<span class="tick_img" data-bind="click: updatePromoCart"><img width="40" src="resources/img/tick_cross.jpg" /></span>
+						<span class="cross_img" data-bind="click: hidePromoFromCart"><img width="40" src="resources/img/tick_cross.jpg" /></span>
+						<!--<span onclick="hidePromo();">N</span>-->
+						<span class="cartpricedisplay">
+							<span class="discountpricelbl">-</span>
+							<span class="table-price discountpricelbl" data-bind="text: dicountpriceUSD"><span>
+						</span>
+					</p>
+					
+					<!-- FA Amount -->
+					#if (FAamount > 0) { #
+					<p class="FAAmount" id="FAAmount_#= uniqueId #">
+						<span>FA AMOUNT:</span>
+						<span class="cartpricedisplay">
+							<span class="discountpricelbl">-</span>
+							<span class="table-price discountpricelbl" data-bind="text: FAamountUSD"><span>
+						</span>
+					</p>
+					# } #
+
+					<!-- Final Amount dsp --->
+					<p>
+						<span class="table-price">FINAL AMOUNT:</span>
+						<span class="table-price cartpricedisplay" data-bind="text: finalPrice"><span>
+					</p>
+				</td>
+            </tr>
+</script>
+
+<script id="delete-confirmation" type="text/x-kendo-template">
+    <p class="delete-message">Are you sure you want to remove this item from cart?</p>
+	
+    <div class="confirmbutton"><button class="delete-confirm k-button">Yes</button>&nbsp;&nbsp;&nbsp;
+    <span class="delete-cancel k-button">No</span></div>
+</script>

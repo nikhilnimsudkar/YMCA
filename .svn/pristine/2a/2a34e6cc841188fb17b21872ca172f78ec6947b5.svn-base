@@ -1,0 +1,30 @@
+package com.ymca.test.common;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.ymca.CoreConfig;
+import com.ymca.dao.UserDao;
+import com.ymca.model.User;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = CoreConfig.class)
+public class ApplicationTests {
+
+
+	@Resource
+	UserDao userDao ;
+	
+	@Test
+	public void getAll() {
+		//List<User> userLst = userDao.findAll();
+		
+		//System.out.println("User List Size " + userLst.size() + "  " + userLst.get(0).getFirstName());
+	} 
+}

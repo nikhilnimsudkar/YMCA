@@ -1,0 +1,24 @@
+package com.ymca.web.enums;
+
+public enum OpportunityStatusEnum {
+	ClosedWon("Closed/Won"),
+	ClosedLost("Closed/Lost");
+	
+	public String value;
+	
+	private OpportunityStatusEnum(String str){
+		value = str;
+	}
+	
+	public String getValue(){
+		return value;
+	}
+	
+	public static OpportunityStatusEnum getEnumByString(String code){
+		for(OpportunityStatusEnum e : OpportunityStatusEnum.values()){
+			if(code.equals(e.value)) return e;
+		}
+		return null;
+	}
+}
+

@@ -1,0 +1,115 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Calendar;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "opportunity_revenue")
+public class OpportunityRevenue extends BaseObject implements Serializable 
+{
+	private static final long serialVersionUID = 1L;
+	
+	public OpportunityRevenue(){}
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private long id;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="optyId")
+	private Opportunity opportunity;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="itemDetailId")
+	private ItemDetail itemDetail;
+	
+	 @Column(name="lastUpdated")
+	    private Calendar lastUpdated;
+
+	public Calendar getLastUpdated() {
+		return lastUpdated;
+	}
+
+	public void setLastUpdated(Calendar lastUpdated) {
+		this.lastUpdated = lastUpdated;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public Opportunity getOpportunity() {
+		return opportunity;
+	}
+
+	public void setOpportunity(Opportunity opportunity) {
+		this.opportunity = opportunity;
+	}
+
+	public ItemDetail getItemDetail() {
+		return itemDetail;
+	}
+
+	public void setItemDetail(ItemDetail itemDetail) {
+		this.itemDetail = itemDetail;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result
+				+ ((itemDetail == null) ? 0 : itemDetail.hashCode());
+		result = prime * result
+				+ ((opportunity == null) ? 0 : opportunity.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OpportunityRevenue other = (OpportunityRevenue) obj;
+		if (id != other.id)
+			return false;
+		if (itemDetail == null) {
+			if (other.itemDetail != null)
+				return false;
+		} else if (!itemDetail.equals(other.itemDetail))
+			return false;
+		if (opportunity == null) {
+			if (other.opportunity != null)
+				return false;
+		} else if (!opportunity.equals(other.opportunity))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "OpportunityRevenue [id=" + id + ", opportunity=" + opportunity
+				+ ", itemDetail=" + itemDetail + "]";
+	}
+	
+	
+
+}

@@ -1,0 +1,105 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+
+<script src="http://code.jquery.com/jquery-1.8.2.js"></script> 
+<base target="_self" />
+<script type="text/javascript">
+$(document).ready(function(){
+		var currentYear1 = new Date().getFullYear();
+		currentYear1 = parseInt(currentYear1.toString().substring(2, 4));
+		for(var i=0; i<30 ; i++){
+			$('#expYr').append($('<option>', {value: currentYear1,text: currentYear1}));
+			currentYear1 = currentYear1 +1;
+		}	
+	var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+	var eventer = window[eventMethod];
+	var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+	eventer(messageEvent,function(e) {
+	    var key = e.message ? "message" : "data";
+	    var data = e[key];
+	    console.log(data.name);
+	    console.log(data.cardNum);
+		$("#name").attr("value", data.name);
+		$("#cardNum").attr("value",data.cardNum);
+		$("#cvv").attr("value",data.cscNumber);
+		$("#element_6_1").attr("value",data.AddressLine1);
+		$("#element_6_2").attr("value",data.AddressLine2);
+		$("#element_6_3").attr("value",data.City);
+		$("#element_6_4").attr("value",data.state);
+		$("#element_6_5").attr("value",data.zipcode);
+		$("#customerEmail").attr("value",data.email);
+		$("#amountDonated").attr("value",data.donationAmtOtherTxt);
+		$("#order_number").attr("value",data.paymentOrderId);
+		$("#jp_request_hash").attr("value",data.jetPayHash);	
+		$("select#expMo option").each(function() { this.selected = (this.text == data.expMonth); });
+		$("select#expYr option").each(function() { this.selected = (this.text == data.createDonationExpYr); });
+		$("select#element_6_6 option").each(function() { this.selected = (this.text == data.contry); }); 	
+		
+		$("#paymentPage").submit();
+	    //console.log(data.expMo);	    		
+	},false); 
+ }); 
+
+</script>
+
+<body>
+<form name="paymentPage" id="paymentPage" class="tcaspr"  method="post" action="https://testapp1.jetpay.com/jetdirect/post/cc/process_cc.php">    
+ <input id="name" name="name" class="element text medium" maxlength="50" value="" />
+ <input id="cardNum" name="cardNum" class="element text medium" type="text" maxlength="16" onchange="handleCCTyping(this.form, event);" onkeyup="handleCCTyping(this.form, event);" value="" autocomplete="off"/>
+  <select autocomplete="off" class="element select small" id="expMo" name="expMo"> 
+	<option value=""></option>
+	<option value="01">01</option>
+	<option value="02">02</option>
+	<option value="03">03</option>
+	<option value="04">04</option>
+	<option value="05">05</option>
+	<option value="06">06</option>
+	<option value="07">07</option>
+	<option value="08">08</option>
+	<option value="09">09</option>
+	<option value="10">10</option>
+	<option value="11">11</option>
+	<option value="12">12</option>
+</select> mo. 					
+<select autocomplete="off" class="element select small"	id="expYr" name="expYr"> 
+	<option value=""></option>
+	
+</select> yr.
+<input id="cvv" name="cvv" class="element text small" type="text" maxlength="4" value="" autocomplete="off"/>
+   <input id="element_6_1" name="billingAddress1" class="element text large" value="" type="text" />
+   <input id="element_6_2" name="billingAddress2" class="element text large" value="" type="text" />
+   <input id="element_6_3" name="billingCity" class="element text medium" value="" type="text" />
+   <input id="element_6_4" name="billingState" class="element text medium" value="" maxlength="2" type="text" />
+   <input id="element_6_5" name="billingZip" class="element text medium" maxlength="5" value="" type="text" />
+   <select class="element select medium" id="element_6_6" name="billingCountry">
+	<option value="USA" >United States</option>
+</select>
+   <input id="customerEmail" name="customerEmail" class="element text medium" maxlength="50" value="" />
+   <!-- <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" /> -->
+<input type="hidden" name="cid" value="nrc9fnu3g0e8dnfnh56qlikhu6" />
+<input type="hidden" name="jp_tid" id="jp_tid" value="TESTTERMINAL" />
+<input type="hidden" name="jp_key" id="jp_key" value="1234567890abcdefghijk" />
+<input type="hidden" name="jp_request_hash" id="jp_request_hash" value="" />
+<input type="hidden" name="order_number" id="order_number" value="" />
+<input type="hidden" name="amount" value="10.00" />
+<input type="hidden" name="trans_type" value="SALE" />
+   <input type="hidden" name="ud1" value="" />
+   <input type="hidden" name="ud2" value="" />
+   <input type="hidden" name="ud3" value="" />
+   <input type="hidden" name="merData0" value="" />
+   <input type="hidden" name="merData1" value="" />
+   <input type="hidden" name="merData2" value="" />
+   <input type="hidden" name="merData3" value="" />
+   <input type="hidden" name="merData4" value="" />
+   <input type="hidden" name="merData5" value="" />
+   <input type="hidden" name="merData6" value="" />
+   <input type="hidden" name="merData7" value="" />
+   <input type="hidden" name="merData8" value="" />
+   <input type="hidden" name="merData9" value="" />    
+<input type="hidden" name="retUrl" value="https://166.78.104.119:8443/ymca-web/redirectSuccess" />
+<input type="hidden" name="decUrl" value="https://166.78.104.119:8443/ymca-web/redirectFailure" />
+<input type="hidden" name="dataUrl" value="https://lowesinstall.serenecorp.com/ymca-web-1.1.0.RELEASE/ProcessDirectPayment" /> 				
+ </form>
+
+</body>
+</html>

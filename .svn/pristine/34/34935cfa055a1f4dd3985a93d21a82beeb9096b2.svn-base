@@ -1,0 +1,217 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+       
+<body>
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="main">
+<div id="content" style="margin-top:30px;margin-bottom:30px;">
+		<form:form commandName="paymentMethod" class="bootstrap-frm" id="updateCardInfoForm" method="post" action="updateCardInfo" style="padding:40px;">  
+			<div>
+				  <h2><span>Update Card Information</span></h2>
+				  <table>
+					<tr>
+						<td ><span><b>Full Name on Card</b></span></td>						
+						<td><span id="updCardFullName">${paymentInfo.fullName }</span></td>						
+					</tr>
+					<tr>
+						<td><span><b>Card Number</b></span></td>						 
+						<td><span id="updCardCardNo">${paymentInfo.cardNumber }</span></td>					
+					</tr>
+					<%-- <tr>
+						<td><span><b>Security Code</b></span></td>						 
+						<td><span>${paymentInfo.securityCode }</span></td>					
+					</tr> --%>
+					<tr>
+						<td>
+							<span>
+								<select id="expirationMonth" name="expirationMonth" style="width: 230px;">
+				                      <option value="" id="expirationMonthOpt0">Month</option>
+				                      <option value="01">01</option>
+				                      <option value="02">02</option>
+				                      <option value="03">03</option>
+				                      <option value="04">04</option>
+				                      <option value="05">05</option>
+				                      <option value="06">06</option>
+				                      <option value="07">07</option>
+				                      <option value="08">08</option>
+				                      <option value="09">09</option>
+				                      <option value="10">10</option>
+				                      <option value="11">11</option>
+				                      <option value="12">12</option>
+				                  </select>
+			                  </span>
+			           	</td>						 
+						<td>
+							<span>
+								<select class="span12" id="expirationYear" name="expirationYear" style="width: 230px;">
+                     				<option id="expirationYearOpt0">Year</option>
+                     			</select>
+							</span>
+						</td>					
+					</tr>										
+				</table>
+				  <!-- <input type="text" placeholder="Full Name on Card" name="fullName" id="fullName" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Card Number" name="cardNumber" id="cardNumber" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Expiration Month" name="expirationMonth" id="expirationMonth" value="" style="width: 230px;"/>
+				  <select id="expirationMonth" name="expirationMonth" style="width: 230px;">
+                      <option value="">Month</option>
+                      <option value="01">01</option>
+                      <option value="02">02</option>
+                      <option value="03">03</option>
+                      <option value="04">04</option>
+                      <option value="05">05</option>
+                      <option value="06">06</option>
+                      <option value="07">07</option>
+                      <option value="08">08</option>
+                      <option value="09">09</option>
+                      <option value="10">10</option>
+                      <option value="11">11</option>
+                      <option value="12">12</option>
+                  </select>
+				  <input type="text" placeholder="Expiration Year" name="expirationYear" id="expirationYear" value="" style="width: 230px;"/>
+				  <select class="span12" id="expirationYear" name="expirationYear" style="width: 230px;">
+                      <option>Year</option>
+                      <option>2013</option>
+                      <option>2014</option>
+                      <option>2015</option>
+                      <option>2016</option>
+                      <option>2017</option>
+                      <option>2018</option>
+                      <option>2019</option>
+                      <option>2020</option>
+                      <option>2021</option>
+                      <option>2022</option>
+                      <option>2023</option>
+                      <option>2024</option>                      
+                  </select>
+				  <input type="password" placeholder="Security Code" name="securityCode" id="securityCode" value="" style="width: 230px;"/> -->
+				  
+				  
+				  <h2><span>Billing Address Information</span></h2>
+				  <input type="text" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" value=""  style="width: 230px;"/>
+				  <input type="text" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing City" name="billingCity" id="billingCity" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing State" name="billingState" id="billingState" value="" style="width: 230px;"/><br />
+				  
+				  
+				  <!-- <label><input type="text" name="paymentId" id="paymentId" value="" style="display:none;" /></label> -->
+				  <input type="text" style="display:none;" name="paymentId" value="${paymentInfo.paymentId}" id="updCardPaymentId">
+				  <input type="text" style="display:none;" name="accountId" value="" id="updCardAccountId">
+				  <%-- <input type="text" style="display:none;" name="accountId" value="${paymentInfo.accountId}">
+				   --%>
+				  <div id="statusBlock">
+					<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+					<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+				  </div>
+				  <span>
+				  	<span id="updateCardInfoBtn" class="k-button" style="width: 150px; text-shadow: none;">Update</span>
+				  	<span id="removeCardInfoBtn" class="k-button" style="width: 150px; margin-left : 10px; text-shadow: none;">Remove</span>
+				  </span>	
+			</div>
+			<div id="PaymentInformationBackLnk" align="right">
+	        		<a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a>
+	        </div>
+		</form:form>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {	
+		var currentYear = new Date().getFullYear();
+		for(var i=0; i<30 ; i++){
+			$('#expirationYear').append($('<option>', {value: currentYear,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		
+		$( "#updateCardInfoBtn" ).click(function(){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait while the Card Information is Updated");			
+			$.ajax({
+				  type: "POST",
+				  url: $('#updateCardInfoForm').attr( "action"),
+				  data: $('#updateCardInfoForm').serialize(),
+				  success: function( data ) {				  	  
+				  	  if(data=='SUCCESS'){
+					  	  $("#tcErrorSpan").css("display", "none");		
+						  $("#tcErrorSpan" ).html("");	
+						  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+						  setTimeout(function(){$(".k-loading-text").html("Member was added successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+					  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+					  	  
+					  	  $("#tcSuccessSpan").css("display", "block");		
+						  $("#tcSuccessSpan" ).html("Card Information Updated successfully");
+					  	  
+					  	  //setTimeout(function(){location.reload();}, 7000);
+					  	  
+				  	  }else if(data == 'NOT_FOUND'){
+				  		  $("#tcSuccessSpan").css("display", "none");		
+						  $("#tcSuccessSpan" ).html("");	
+						  $("#tcErrorSpan").css("display", "block");		
+						  $( "#tcErrorSpan" ).html("Payment Information Not Found.");
+						  $(".k-loading-mask").hide();
+				  	  }else {
+				  		  $("#tcSuccessSpan").css("display", "none");		
+						  $("#tcSuccessSpan" ).html("");	
+						  $("#tcErrorSpan").css("display", "block");		
+						  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+						  $(".k-loading-mask").hide();
+				  	  }					  
+				  },
+				  error: function( xhr,status,error ){
+					  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcSuccessSpan" ).html("");	
+					  $("#tcErrorSpan").css("display", "block");		
+					  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+				  }
+			});
+			
+		});
+		
+		$( "#removeCardInfoBtn" ).click(function(){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait while the Card Information is Removed");			
+			$.ajax({
+				  type: "GET",
+				  url: "removeCardInfo/"+$("#updCardPaymentId").val(),				  
+				  success: function( data ) {				  	  
+				  	  if(data=='SUCCESS'){
+					  	  $("#tcErrorSpan").css("display", "none");		
+						  $("#tcErrorSpan" ).html("");	
+						  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+						  setTimeout(function(){$(".k-loading-text").html("Card Information Removed successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+					  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+					  	  
+					  	  $("#tcSuccessSpan").css("display", "block");		
+						  $("#tcSuccessSpan" ).html("Card Information Removed successfully");
+					  	  
+					  	  setTimeout(function(){location.reload();}, 5000);
+					  	  
+				  	  }else if(data == 'NOT_FOUND'){
+				  		  $("#tcSuccessSpan").css("display", "none");		
+						  $("#tcSuccessSpan" ).html("");	
+						  $("#tcErrorSpan").css("display", "block");		
+						  $( "#tcErrorSpan" ).html("Payment Information Not Found.");
+						  $(".k-loading-mask").hide();
+				  	  }else {
+				  		  $("#tcSuccessSpan").css("display", "none");		
+						  $("#tcSuccessSpan" ).html("");	
+						  $("#tcErrorSpan").css("display", "block");		
+						  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+						  $(".k-loading-mask").hide();
+				  	  }					  
+				  },
+				  error: function( xhr,status,error ){
+					  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcSuccessSpan" ).html("");	
+					  $("#tcErrorSpan").css("display", "block");		
+					  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+				  }
+			});
+			
+		});	
+	});
+</script>
+
+</body>

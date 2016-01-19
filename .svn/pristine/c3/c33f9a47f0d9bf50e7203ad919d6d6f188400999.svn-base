@@ -1,0 +1,209 @@
+package com.ymca.web.controller;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.DonationDao;
+import com.ymca.dao.ProgramDao;
+import com.ymca.model.Account;
+import com.ymca.model.Donation;
+import com.ymca.model.Membership;
+import com.ymca.model.Program;
+import com.ymca.model.User;
+import com.ymca.web.model.ResponseObject;
+
+@Controller
+//@RequestMapping("/donate*")
+public class DonationController extends BaseController{
+	
+	@Resource
+	private DonationDao donationDao;
+	
+	@Resource
+	private ProgramDao programDao;
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	
+	@ModelAttribute   
+    @RequestMapping(value="/createDonation",method = RequestMethod.GET)
+    public ModelAndView createDonation(final HttpServletRequest request, final HttpServletResponse response)
+            throws Exception {	  	
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+		Model model = new ExtendedModelMap();
+		Account account = null;
+		User user = new User();	
+		if (userId != null && !"".equals(userId)) {
+			account = accountDao.getByEmail(userId);	
+			user = getUserByAccount(account,user);			
+			model.addAttribute("usInfo", user);
+			model.addAttribute("donationInfo", new Donation()); 
+		} else {
+			model.addAttribute("errMsg",com.ymca.web.util.Constants.NO_RECORDS_FOUND);
+		}
+		return new ModelAndView("donationForm", model.asMap());
+	}
+	   
+    @ModelAttribute
+    @RequestMapping(value="/create",method = RequestMethod.POST)
+    protected ResponseObject createDonation(Donation donation) throws Exception {
+    	ResponseObject responseObj = new ResponseObject();
+    	//responseObj.setStatus(YMCAConstants.STATUS_SUCCESS);
+    	if(donation.getAccountId() != null){
+    		try{
+    		//	donationDao.saveDonationDetails(donation);
+    		}catch(Exception e){
+    			//responseObj.setStatus(YMCAConstants.STATUS_ERROR);
+    		}
+    	}
+    	responseObj.setMessage("Successfully created donation details");
+		return responseObj; 
+    }
+    
+    @ModelAttribute
+    @RequestMapping(value="/{donationId}",method = RequestMethod.GET)
+    protected ResponseObject getDonationById(@PathVariable Long donationId) throws Exception {
+    	Donation donation = donationDao.getOne(donationId);
+    	ResponseObject responseObject = new ResponseObject();
+    	responseObject.setData(donation);
+    	return responseObject;
+    }
+    
+    @ModelAttribute
+    @RequestMapping(value="/",method = RequestMethod.PUT)
+    protected ResponseObject updateDonationDetails(Donation donation) throws Exception {
+    	ResponseObject responseObject = new ResponseObject();
+    	if(donation.getDonationId() != null){
+    		//donationDao.updateDonationDetails(donation);
+    	}else{
+        	responseObject.setMessage("Invalid donation Id.");
+        	
+        	
+        	//responseObject.setStatus(YMCAConstants.STATUS_ERROR);
+    	}
+    	responseObject.setMessage("Successfully updated Donation details.");
+		return responseObject; 
+    }
+    
+    @ModelAttribute    
+    @RequestMapping(value="/getDonationByCustomername/{customerName}",method = RequestMethod.GET)
+    protected ModelAndView getDonationByCustomername(@PathVariable String customerName,@ModelAttribute("Donation")Donation donation) throws Exception {
+    	//ResponseObject responseObject = new ResponseObject();
+    	List<Donation> donationList = null;
+    	if(customerName != null){
+    		//donationList = getDonationService().getDonationByCustomername(customerName);
+    		donationList=donationDao.getByCustomerName(customerName);
+    	}
+    	//responseObject.setData(donationList);
+    	//return responseObject;
+    	ModelAndView mav = new ModelAndView("read", "donationList",
+    			donationList);
+		return mav;
+    }
+    
+    
+    
+    @ModelAttribute
+    @RequestMapping(value="/getDonationByAccountId/{accountId}",method = RequestMethod.GET)
+	public ResponseObject getDonationByAccountId(@PathVariable String accountId) throws Exception {
+    	ResponseObject responseObject = new ResponseObject();
+		List<Donation> donationList = null;
+		if(accountId != null){
+			//donationList = getDonationService().getDonationByAccountId(Long.valueOf(accountId));
+			
+		}
+		responseObject.setData(donationList);
+		return responseObject;
+	} 
+    
+    @ModelAttribute    
+    @RequestMapping(value="/getDonation",method = RequestMethod.GET)
+    protected ModelAndView getDonationList(@ModelAttribute("Donation")Donation donation) throws Exception {
+    	//ResponseObject responseObject = new ResponseObject();
+    	List<Donation> donationList = null;
+    	//if(customerName != null){
+    		//donationList = getDonationService().getDonationByCustomername(customerName);
+    		donationList=donationDao.findAll();
+    				//}
+    	//responseObject.setData(donationList);
+    	//return responseObject;
+    	ModelAndView mav = new ModelAndView("read", "donationList",donationList );
+		return mav;
+    }
+    
+    //@ModelAttribute    
+    //@RequestMapping(value="/getProgram",method = RequestMethod.POST, final HttpServletRequest request, final HttpServletResponse response)
+    //protected ModelAndView getProgramList(@ModelAttribute("Program")Program program) throws Exception {
+    @ModelAttribute   
+    @RequestMapping(value="/getProgram",method = RequestMethod.POST)
+    public ModelAndView getProgramList(@ModelAttribute("Program")Program program, final HttpServletRequest request, final HttpServletResponse response)
+            throws Exception {	
+    	Account account = accountDao.getByEmail(request.getParameter("Username"));
+		User user =  null;
+		Model model = new ExtendedModelMap();
+		if(account !=null && account.getUser() != null){
+			for (Iterator<User> it = account.getUser().iterator(); it.hasNext(); ) {
+	    		user = it.next();
+					        
+		    }
+			if(user != null && user.getUsername() !=null && user.getPassword() != null){
+				if(user.getPassword().equals(request.getParameter("Password"))){	    	
+			    	//ResponseObject responseObject = new ResponseObject();
+			    	List<Program> programList = null;
+			    	//if(customerName != null){
+			    		//donationList = getDonationService().getDonationByCustomername(customerName);
+			    	programList=programDao.findAll();
+			    	
+			    	List<Donation> donationList = null;
+			    	//if(customerName != null){
+			    		//donationList = getDonationService().getDonationByCustomername(customerName);
+			    		donationList=donationDao.findAll();
+			    	
+			    	//ModelAndView mav = new ModelAndView("customer_home", "programList",programList );
+			    	
+			        try {
+			            model.addAttribute("programList", programList);
+			            model.addAttribute("donationList", donationList);
+			            
+			            HttpSession session = request.getSession();			            
+			            session.setAttribute("accountInfo", account);
+			            session.setAttribute("userInfo", user);
+			            
+			            //request.setAttribute("accountInfo", account);
+			            //request.setAttribute("userInfo", user);
+			        } catch (Exception se) {
+			            System.out.println("Error occoured while querying Product");
+			            se.printStackTrace();
+			        }
+			        return new ModelAndView("customer_home", model.asMap());
+				}else{
+					model.addAttribute("errMsg", "Please enter the correct Email or password");
+					return new ModelAndView("login", model.asMap());
+				}
+			}
+		}
+		//return mav;
+		return null;
+    }   
+}

@@ -1,0 +1,14 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import com.ymca.model.PaymentMethod;
+
+
+public interface PaymentMethodDao extends GenericDao<PaymentMethod, Long> {
+    
+ 	List<PaymentMethod> getPaymentByAccountId(Long accountId);
+	
+	PaymentMethod getByFullName(String name);
+
+}

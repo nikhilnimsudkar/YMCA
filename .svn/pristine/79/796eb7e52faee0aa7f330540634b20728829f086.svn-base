@@ -1,0 +1,354 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+
+@Entity
+@Table(name = "account_contact")
+public class AccountContact extends BaseObject implements Serializable {
+	private static final long serialVersionUID = 2227174158653349487L;
+
+
+	public AccountContact(){
+    	
+    }
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)    
+    private Long accountContactId;					// required  PK
+	
+	@Column(name="ObjectPartyId")
+	private Long objectPartyId ; 			// Sales Cloud objectPartyId
+	
+	@Column(name="SubjectPartyId")
+	private Long subjectPartyId ; 			// Sales Cloud SubjectPartyId
+    
+	@Column(name = "RelationshipCode")
+   	private String relationshipCode;                    	
+    
+    @Column(name = "RelationshipType")
+    private String relationshipType;      
+    
+    @Column(name = "StartDate", columnDefinition="DATETIME")
+   	private Date startDate;
+
+    @Column(name = "EndDate", columnDefinition="DATETIME")
+   	private Date endDate;    
+   
+    @Column(name = "Comments")
+    private String comments;
+    
+    @Column(name = "Status")
+    private String status;
+    
+    @Column(name = "LastUpdateDate", columnDefinition="DATETIME")
+   	private Date lastUpdateDate;
+    
+    @Column(name = "SubjectPartyNumber")
+   	private String subjectPartyNumber;  
+    
+    @Column(name = "ObjectPartyNumber")
+    private String objectPartyNumber;  
+    
+    @Column(name = "CreatedBy")
+    private String createdBy; 
+    
+    @Column(name = "CreationDate", columnDefinition="DATETIME")
+    private Date creationDate;
+
+    @Column(name = "CreatedByModule")
+    private String createdByModule;
+
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name="accountId")
+	private Account customer;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name="contact_id")
+	private User contact;
+
+	public Long getAccountContactId() {
+		return accountContactId;
+	}
+
+	public void setAccountContactId(Long accountContactId) {
+		this.accountContactId = accountContactId;
+	}
+
+	public Long getObjectPartyId() {
+		return objectPartyId;
+	}
+
+	public void setObjectPartyId(Long objectPartyId) {
+		this.objectPartyId = objectPartyId;
+	}
+
+	public Long getSubjectPartyId() {
+		return subjectPartyId;
+	}
+
+	public void setSubjectPartyId(Long subjectPartyId) {
+		this.subjectPartyId = subjectPartyId;
+	}
+
+	public String getRelationshipCode() {
+		return relationshipCode;
+	}
+
+	public void setRelationshipCode(String relationshipCode) {
+		this.relationshipCode = relationshipCode;
+	}
+
+	public String getRelationshipType() {
+		return relationshipType;
+	}
+
+	public void setRelationshipType(String relationshipType) {
+		this.relationshipType = relationshipType;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public String getComments() {
+		return comments;
+	}
+
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Date getLastUpdateDate() {
+		return lastUpdateDate;
+	}
+
+	public void setLastUpdateDate(Date lastUpdateDate) {
+		this.lastUpdateDate = lastUpdateDate;
+	}
+
+	public String getSubjectPartyNumber() {
+		return subjectPartyNumber;
+	}
+
+	public void setSubjectPartyNumber(String subjectPartyNumber) {
+		this.subjectPartyNumber = subjectPartyNumber;
+	}
+
+	public String getObjectPartyNumber() {
+		return objectPartyNumber;
+	}
+
+	public void setObjectPartyNumber(String objectPartyNumber) {
+		this.objectPartyNumber = objectPartyNumber;
+	}
+
+	public Account getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Account customer) {
+		this.customer = customer;
+	}
+
+	public User getContact() {
+		return contact;
+	}
+
+	public void setContact(User contact) {
+		this.contact = contact;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	public String getCreatedByModule() {
+		return createdByModule;
+	}
+
+	public void setCreatedByModule(String createdByModule) {
+		this.createdByModule = createdByModule;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime
+				* result
+				+ ((accountContactId == null) ? 0 : accountContactId.hashCode());
+		result = prime * result
+				+ ((comments == null) ? 0 : comments.hashCode());
+		result = prime * result + ((contact == null) ? 0 : contact.hashCode());
+		result = prime * result
+				+ ((customer == null) ? 0 : customer.hashCode());
+		result = prime * result + ((endDate == null) ? 0 : endDate.hashCode());
+		result = prime * result
+				+ ((lastUpdateDate == null) ? 0 : lastUpdateDate.hashCode());
+		result = prime * result
+				+ ((objectPartyId == null) ? 0 : objectPartyId.hashCode());
+		result = prime
+				* result
+				+ ((objectPartyNumber == null) ? 0 : objectPartyNumber
+						.hashCode());
+		result = prime
+				* result
+				+ ((relationshipCode == null) ? 0 : relationshipCode.hashCode());
+		result = prime
+				* result
+				+ ((relationshipType == null) ? 0 : relationshipType.hashCode());
+		result = prime * result
+				+ ((startDate == null) ? 0 : startDate.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result
+				+ ((subjectPartyId == null) ? 0 : subjectPartyId.hashCode());
+		result = prime
+				* result
+				+ ((subjectPartyNumber == null) ? 0 : subjectPartyNumber
+						.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AccountContact other = (AccountContact) obj;
+		if (accountContactId == null) {
+			if (other.accountContactId != null)
+				return false;
+		} else if (!accountContactId.equals(other.accountContactId))
+			return false;
+		if (comments == null) {
+			if (other.comments != null)
+				return false;
+		} else if (!comments.equals(other.comments))
+			return false;
+		if (contact == null) {
+			if (other.contact != null)
+				return false;
+		} else if (!contact.equals(other.contact))
+			return false;
+		if (customer == null) {
+			if (other.customer != null)
+				return false;
+		} else if (!customer.equals(other.customer))
+			return false;
+		if (endDate == null) {
+			if (other.endDate != null)
+				return false;
+		} else if (!endDate.equals(other.endDate))
+			return false;
+		if (lastUpdateDate == null) {
+			if (other.lastUpdateDate != null)
+				return false;
+		} else if (!lastUpdateDate.equals(other.lastUpdateDate))
+			return false;
+		if (objectPartyId == null) {
+			if (other.objectPartyId != null)
+				return false;
+		} else if (!objectPartyId.equals(other.objectPartyId))
+			return false;
+		if (objectPartyNumber == null) {
+			if (other.objectPartyNumber != null)
+				return false;
+		} else if (!objectPartyNumber.equals(other.objectPartyNumber))
+			return false;
+		if (relationshipCode == null) {
+			if (other.relationshipCode != null)
+				return false;
+		} else if (!relationshipCode.equals(other.relationshipCode))
+			return false;
+		if (relationshipType == null) {
+			if (other.relationshipType != null)
+				return false;
+		} else if (!relationshipType.equals(other.relationshipType))
+			return false;
+		if (startDate == null) {
+			if (other.startDate != null)
+				return false;
+		} else if (!startDate.equals(other.startDate))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (subjectPartyId == null) {
+			if (other.subjectPartyId != null)
+				return false;
+		} else if (!subjectPartyId.equals(other.subjectPartyId))
+			return false;
+		if (subjectPartyNumber == null) {
+			if (other.subjectPartyNumber != null)
+				return false;
+		} else if (!subjectPartyNumber.equals(other.subjectPartyNumber))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "AccountContact [accountContactId=" + accountContactId
+				+ ", objectPartyId=" + objectPartyId + ", subjectPartyId="
+				+ subjectPartyId + ", relationshipCode=" + relationshipCode
+				+ ", relationshipType=" + relationshipType + ", startDate="
+				+ startDate + ", endDate=" + endDate + ", comments=" + comments
+				+ ", status=" + status + ", lastUpdateDate=" + lastUpdateDate
+				+ ", subjectPartyNumber=" + subjectPartyNumber
+				+ ", objectPartyNumber=" + objectPartyNumber + ", createdBy="
+				+ createdBy + ", creationDate=" + creationDate
+				+ ", createdByModule=" + createdByModule + ", customer="
+				+ customer + ", contact=" + contact + "]";
+	}	
+}
+

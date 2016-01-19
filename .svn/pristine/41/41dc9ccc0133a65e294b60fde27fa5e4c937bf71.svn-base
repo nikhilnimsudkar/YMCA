@@ -1,0 +1,102 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+
+
+/**
+ * This class represents the basic "Membership" object in YMCA Portal that allows for Membership management.  
+ *
+ */
+@Entity
+@Table(name = "opportunity")
+public class Opportunity extends BaseObject implements Serializable {
+    private static final long serialVersionUID = 3832626162173359411L;
+    
+    @Id
+    private String optyId;
+
+    @Column(name="Name")
+    private String name;
+
+    @Column(name="Contact_c")
+    private String contact_c;
+
+    @Column(name="CustomerAccountId_c")
+    private String customerAccountId_c;
+
+    @Column(name="EffectiveDate")
+    private String effectiveDate;
+
+    @Column(name="ExpectAmount")
+    private String expectAmount;
+    
+    @Column(name="OptyNumber")
+    private String optyNumber;
+    
+    @Column(name="OwnerResourcePartyId")
+    private String ownerResourcePartyId;
+
+    @Column(name="Revenue")
+    private String revenue;
+
+    @Column(name="SalesMethod")
+    private String salesMethod;
+    
+    @Column(name="SalesMethodId")
+    private String salesMethodId;
+    
+    @Column(name="SalesStage")
+    private String salesStage;
+
+    @Column(name="SalesStageId")
+    private String salesStageId;
+    
+    @Column(name="TargetPartyId")
+    private String targetPartyId;
+
+    @Column(name="Type")
+    private String type;
+
+    @Column(name="PaymentMode_c")
+    private String paymentMode_c;
+
+    @Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+    
+}

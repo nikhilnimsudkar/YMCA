@@ -1,0 +1,73 @@
+/**
+ * @author gpatwa
+ * This class dynamically initialize the database to Sales Cloud Integration
+ * The class will create new Spring Job and Spring Scheduler beans based on the Job Scheduler metadata 
+ * The loadJob method is called to set job parameter
+ */
+package com.serene.job.scheduler;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.common.Constants;
+import com.serene.job.common.CustomJobBuilderFactory;
+
+@Service
+@Lazy(true)
+@Scope("prototype")
+public class GenericDbToSCJobScheduler extends AbstractJobScheduler implements InitializingBean {
+
+	public static final String LAST_UPDATED_DATE = "#{jobParameters['lastUpdatedDate']";
+
+	public static final String JDBC_ITEM_READER = "customJdbcItemReader"; //customJdbcWriter
+
+	private static Logger log = LoggerFactory.getLogger(GenericDbToSCJobScheduler.class);
+	
+	@Resource
+	private CustomJobBuilderFactory customJobBuilderFactory ;  
+	
+	
+	/**
+	 * @throws Exception 
+	 * 
+	 */
+	@SuppressWarnings("rawtypes")
+	public void loadJob() throws Exception {
+
+		// build the job
+		job = customJobBuilderFactory.buildDbToScJob(jobSchedulerMetadata, job);
+		customJobBuilderFactory.loadScheduler(jobSchedulerMetadata, this);
+	}
+	
+	@Override
+	public void run() {
+		try {
+			JobParametersBuilder parametersBuilder = new JobParametersBuilder();
+			parametersBuilder.addLong("time",System.currentTimeMillis());
+			parametersBuilder.addString(Constants.OBJECT_NAME,jobSchedulerMetadata.getFromObjectName());
+			parametersBuilder.addString(Constants.OBJECT_ID_FIELD,jobSchedulerMetadata.getFromObjectIdField());
+			
+			JobExecution execution = jobLauncher.run(job, parametersBuilder.toJobParameters());
+			log.info("Exit Status : " + execution.getStatus());
+		} catch (Exception e) {
+			log.error("Error while running the job " + jobSchedulerMetadata.getJobName(), e);
+		}
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		//Assert.notNull(jobName, "A job name is required");
+		//Assert.notNull(sql, "A sourceSql is required");
+		//Assert.notNull(scObjectName, "A scObjectName is required");
+		//Assert.notNull(cronExpression, "A valid cronExpression is required");
+		//Assert.notNull(dataSource, "A datasource is required");
+	}
+}

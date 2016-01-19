@@ -1,0 +1,46 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+  
+<link rel="stylesheet" href="<%=contextPath %>/resources/css/style1.css" type="text/css" media="screen"/>
+<script src="<%=contextPath %>/resources/js/app/payment.js"></script>
+    
+<body>
+
+	<div id="content">
+		<div id="myprofile">
+			<%@ include file="PaymentProfile.jsp" %> 
+		</div>
+		<div id="paymentDetailDiv">
+			<div id="purchase" style="margin-left:83px; width: 320px;">
+				<%@ include file="PaymentMethodInfo.jsp" %>
+			</div>
+			<div id="editPaymentMethodInfoDiv" style="display:none; ">
+				<%@ include file="../../views/payment/PaymentMethodInfoEdit.jsp" %>
+			</div>
+			
+			<%-- <div id="updateCardInfoDiv" style="display:none; margin-left: 425px; margin-top: -10px;">
+				<%@ include file="../../views/payment/updateCardInfo.jsp" %> 
+			</div> 
+			<div id="updateBankInfoDiv" style="display:none; margin-left: 425px;  margin-top: -10px;">
+				<%@ include file="../../views/payment/updateBankDetailInfo.jsp" %> 
+			</div>
+			<div id="addBankCardInfoDiv" style="display:none; ">
+				<%@ include file="../../views/payment/AddBank_CardInfo.jsp" %> 
+			</div> --%>		
+				 
+		</div>
+	</div>
+</body>
+
+<script>
+	$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','current');
+		
+		$("#page_name").html("PAYMENT INFORMATION");
+	});
+</script>

@@ -1,0 +1,56 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.ItemDetails;
+import com.ymca.model.ItemDetailsSession;
+import com.ymca.model.Locations;
+import com.ymca.model.Product;
+
+public interface ProductDao extends GenericDao<Product, Long> {
+	
+	/*
+	@Query("select distinct category from Product")
+	List<Product> getProductCategories();
+
+	@Query("select distinct productName from Product where category = ?1")
+	List<Product> getProductsbyCategories(String strCategory);
+	
+	@Query("select distinct productName from Product where productType = ?1")
+	List<Product> getProductsCategoriesByProductType(String strProductType);
+
+	@Query("select ids.instructorName, ids.sessionName, ids.starttime, ids.endtime, ids.days, ids.capacity, ids.itemDetailsSessionId, ids.itemDetails.id, ids.itemDetails.price, ids.itemDetails.startdate, ids.itemDetails.enddate, ids.item.productId, ids.item.productName, ids.item.description, ids.itemDetails.locations.branchName from ItemDetailsSession ids inner join ids.itemDetails i inner join ids.item p where p.productType='MEMBERSHIP' and DATE(i.startdate) >= DATE(?1) and DATE(i.enddate) <= DATE(?2) and p.category=?3 and p.productName like ?4 and i.locations=?5 GROUP BY ids.days, ids.sessionName")
+	List<ItemDetailsSession> getMembershipProgramSession(Date startDate, Date endDate, String category, String productname, Locations location);
+	
+	@Query("select ids.instructorName, ids.sessionName, ids.starttime, ids.endtime, ids.days, ids.capacity, ids.itemDetailsSessionId, ids.itemDetails.id, ids.itemDetails.price, ids.itemDetails.startdate, ids.itemDetails.enddate, ids.item.productId, ids.item.productName, ids.item.description, ids.itemDetails.locations.branchName from ItemDetailsSession ids inner join ids.itemDetails i inner join ids.item p where p.productType='MEMBERSHIP' and DATE(i.startdate) >= DATE(?1) and DATE(i.enddate) <= DATE(?2) and p.category=?3 and i.locations=?4 GROUP BY ids.days, ids.sessionName")
+	List<ItemDetailsSession> getMembershipProgramSession(Date startDate, Date endDate, String category, Locations location);
+	
+	@Query("select i from ItemDetails i inner join i.product p where p.productType='MEMBERSHIP' and i.startdate >=?1 and i.enddate <=?2 and p.category=?3 and p.productName=?4 and i.locations=?5")
+	List<ItemDetails> getMembershipProgram(Date startDate, Date endDate, String category, String productname, Locations location);
+	
+	//@Query("select p from ItemDetails i inner join i.product p where p.productType='MEMBERSHIP' and i.locations.locationId =?1")
+	//@Query("select p.productId, p.productName, p.description, p.productType, p.duration, p.pricingRule.tierPrice from ItemDetails i inner join i.product p where p.productType='MEMBERSHIP' and i.locations.locationId =?1")
+	@Query("select  p.productId, p.productName, p.description, p.productType, p.duration, p.waiversAndTC.tcDescription, l.tier, i.id from ItemDetails i inner join i.locations l inner join i.product p where l.locationId =?1 and p.productType='MEMBERSHIP'")	
+	List<Object[]> getMembershipProgramByLocation(Long locationId);
+	
+	@Query("select  p from Product p where p.productId =?1")	
+	Product getItemDetailsByProductId(Long productId);
+
+	List<Product> findByProductType(String productType);
+	
+	@Query("select s, i from Signup s inner join s.item i inner join i.itemDetails ids where i.status='Active' and DATE(ids.startdate) <= CURRENT_DATE and DATE(ids.enddate) >= CURRENT_DATE and s.status = ?1")
+	List<Object[]> getCurrentActiveSignupProgram(String signupStatus);
+	
+	@Query("select s, i from Signup s inner join s.item i inner join i.itemDetails ids where i.status='Active' and DATE(ids.startdate) > CURRENT_DATE and DATE(ids.enddate) > CURRENT_DATE and s.status = ?1")
+	List<Object[]> getUpcomingActiveSignupProgram(String signupStatus);
+	
+	@Query("select s, i from Signup s inner join s.item i inner join i.itemDetails ids where i.status='Active' and DATE(ids.startdate) < CURRENT_DATE and DATE(ids.enddate) < CURRENT_DATE and s.status = ?1")
+	List<Object[]> getPastActiveSignupProgram(String signupStatus);
+	
+	@Query("select s, i from Signup s inner join s.item i inner join i.itemDetails ids where s.status = ?1")
+	List<Object[]> getCancelledSignupProgram(String signupStatus);
+	*/
+}

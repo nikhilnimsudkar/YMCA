@@ -1,0 +1,226 @@
+package com.ymca.web.controller;
+
+import java.io.StringBufferInputStream;
+import java.io.StringReader;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.stereotype.Controller;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+
+import com.ymca.dao.ItemDetailDao;
+import com.ymca.dao.JetPayPaymentDao;
+import com.ymca.dao.VolunteerActivityDao;
+import com.ymca.model.Account;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.JetPayPayment;
+import com.ymca.model.User;
+import com.ymca.model.VolunteerActivity;
+import com.ymca.web.enums.JetpayTransactionTypeEnum;
+import com.ymca.web.util.Constants;
+
+@Controller
+public class BaseController {
+	
+	@Resource
+	private VolunteerActivityDao volunteerActivityDao;
+	
+	@Resource
+	private JetPayPaymentDao jetPayPaymentDao;
+	
+	@Resource
+	private ItemDetailDao itemDetailDao;
+	
+	protected User getUserByAccount(Account account, User user) {
+		if(account !=null && account.getUser() != null && account.getUser().size()>0){
+			if(account.getUser().size()==1){
+				for(User u: account.getUser()){
+					user = u;
+				}
+			}
+			else{
+				boolean primaryUserFound = false;
+				for(User u: account.getUser()){
+					if(u.isPrimary()){
+						primaryUserFound = true;
+						user = u;
+						break;
+					}
+				}
+				if(user==null && !primaryUserFound){
+					user = account.getUser().iterator().next();
+				}
+			}
+		}
+		return user;
+	}
+	
+	protected List<VolunteerActivity> getVolunteerActivity() {
+		return volunteerActivityDao.findAll();
+	}
+	
+	protected Long convertNullToZero(Long val){
+		if(val==null)
+			 val = 0L;
+		
+		return val;
+	}
+	
+	protected JetPayPayment processACHjetPayTransaction(String token,
+			String totalAmount, String checkNumber, String cardName) {
+		// New ACH Transaction
+		PostMethod post = new PostMethod(Constants.JETPAY_XML_SCHEMA_URL);    
+
+		StringBuffer inputXMLStrBuffer = new StringBuffer("<JetPay>");
+		inputXMLStrBuffer.append("<TransactionID>"+RandomStringUtils.randomAlphanumeric(18)+"</TransactionID>");
+		inputXMLStrBuffer.append("<TransactionType>"+ JetpayTransactionTypeEnum.CHECK +"</TransactionType>");
+		inputXMLStrBuffer.append("<TerminalID>"+ Constants.JETPAY_TERMINAL_ID +"</TerminalID>");
+		inputXMLStrBuffer.append("<Origin> INTERNET </Origin>");
+		inputXMLStrBuffer.append("<TotalAmount> "+ totalAmount +" </TotalAmount>");
+		//inputXMLStrBuffer.append("<FeeAmount>100</FeeAmount>");
+		inputXMLStrBuffer.append("<CardName> " + cardName +" </CardName>");
+		inputXMLStrBuffer.append("<Token> " +token+ "</Token>");
+		inputXMLStrBuffer.append("<ACH>");
+		inputXMLStrBuffer.append("<CheckNumber> "+ checkNumber +" </CheckNumber>");
+		inputXMLStrBuffer.append("</ACH>");
+		inputXMLStrBuffer.append("</JetPay>");
+		post.setRequestEntity(new InputStreamRequestEntity(new StringBufferInputStream(inputXMLStrBuffer.toString())));
+		post.setRequestHeader("Content-type", "text/xml; charset=ISO-8859-1");
+
+		// Get HTTP client
+		HttpClient httpclient = new HttpClient();
+
+		// Execute request
+		JetPayPayment jetPayPayment =  new JetPayPayment();
+		try {
+
+			int result = httpclient.executeMethod(post);
+
+			// Display status code
+			//System.out.println("Response status code: " + result);
+
+			// Display response
+			//System.out.println("Response body: ");
+			//System.out.println(post.getResponseBodyAsString());
+			
+			String xml = post.getResponseBodyAsString();           
+			InputSource source = new InputSource(new StringReader(xml));
+
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document document = db.parse(source);
+
+			XPathFactory xpathFactory = XPathFactory.newInstance();
+			XPath xpath = xpathFactory.newXPath();
+
+			jetPayPayment.setTransId(xpath.evaluate("/JetPayResponse/TransactionID", document));
+			jetPayPayment.setOrderNumber(xpath.evaluate("/JetPayResponse/TransactionID", document));
+            jetPayPayment.setActCode(xpath.evaluate("/JetPayResponse/ActionCode", document));
+            jetPayPayment.setResponseText(xpath.evaluate("/JetPayResponse/ResponseText", document));
+            
+            jetPayPayment.setAmount(Double.parseDouble(totalAmount));
+            jetPayPaymentDao.save(jetPayPayment);
+            
+		} catch(Exception e){
+			e.printStackTrace();
+			
+		} finally {
+			post.releaseConnection();
+		}
+		
+		return jetPayPayment;
+	}	
+	
+	protected JetPayPayment processCCjetPayTransaction(String token, String totalAmount) {
+		// Prepare HTTP post
+	    PostMethod post = new PostMethod(Constants.JETPAY_XML_SCHEMA_URL);	    
+	    StringBuffer inputXMLStrBuffer = new StringBuffer("<JetPay>");
+	    inputXMLStrBuffer.append("<TransactionID>"+RandomStringUtils.randomAlphanumeric(18)+"</TransactionID>");	
+	    inputXMLStrBuffer.append("<TransactionType>"+JetpayTransactionTypeEnum.SALE+"</TransactionType>");       
+	    inputXMLStrBuffer.append("<Token>"+token+"</Token>");
+	    inputXMLStrBuffer.append("<TotalAmount>"+totalAmount+"</TotalAmount>");
+	    inputXMLStrBuffer.append("<TerminalID>"+ Constants.JETPAY_TERMINAL_ID +"</TerminalID>");
+	    inputXMLStrBuffer.append("</JetPay>");	    
+	    post.setRequestEntity(new InputStreamRequestEntity(new StringBufferInputStream(inputXMLStrBuffer.toString())));
+	    post.setRequestHeader("Content-type", "text/xml; charset=ISO-8859-1");
+	    // Get HTTP client
+	    HttpClient httpclient = new HttpClient();
+	    // Execute request
+	    JetPayPayment jetPayPayment =  new JetPayPayment();
+	    try {
+	    	httpclient.executeMethod(post);
+	        String xml = post.getResponseBodyAsString();  
+	        if(xml != null){
+	        	
+            InputSource source = new InputSource(new StringReader(xml));
+
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document document = db.parse(source);
+
+            XPathFactory xpathFactory = XPathFactory.newInstance();
+            XPath xpath = xpathFactory.newXPath();  
+            
+            jetPayPayment.setTransId(xpath.evaluate("/JetPayResponse/TransactionID", document));
+            jetPayPayment.setOrderNumber(xpath.evaluate("/JetPayResponse/TransactionID", document));
+            jetPayPayment.setActCode(xpath.evaluate("/JetPayResponse/ActionCode", document));
+            jetPayPayment.setResponseText(xpath.evaluate("/JetPayResponse/ResponseText", document));
+            jetPayPayment.setAmount(Double.parseDouble(totalAmount));
+            jetPayPaymentDao.save(jetPayPayment);
+	        }
+	    } catch(Exception e){
+	    	e.printStackTrace();
+	    	
+	    } finally {
+	        post.releaseConnection();
+	    }
+		return jetPayPayment;
+	}
+	
+	protected synchronized void updateCapacity(ItemDetail itemDetail, Integer noOfTickets) {
+		if(itemDetail!=null && noOfTickets!=null){
+			Long remainingCapacity = convertNullToZero(itemDetail.getRemainingCapacity());
+			Long actualRemainingCapacity = convertNullToZero(itemDetail.getActualRemainingCapacity());
+			Long waitListCounter = convertNullToZero(itemDetail.getWaitlistCounter());
+			
+			if(remainingCapacity.compareTo(0L)<=0 || remainingCapacity < noOfTickets){
+				//remaining capacity is less than 0
+				waitListCounter = waitListCounter+1;
+			}
+			else{
+				// remaining capacity is greater than 0
+				remainingCapacity = remainingCapacity-noOfTickets;
+				actualRemainingCapacity = actualRemainingCapacity-noOfTickets;
+			}
+			
+			itemDetail.setRemainingCapacity(remainingCapacity);
+			itemDetail.setActualRemainingCapacity(actualRemainingCapacity);
+			itemDetail.setWaitlistCounter(waitListCounter);
+			
+			populateAndSaveItemDetail(itemDetail);
+		}
+	}
+	
+	protected ItemDetail populateAndSaveItemDetail(ItemDetail itemDetail){
+		
+		ItemDetail ids = new ItemDetail();
+		ids.setId(itemDetail.getId());
+		ids.setRemainingCapacity(itemDetail.getRemainingCapacity());
+		ids.setActualRemainingCapacity(itemDetail.getActualRemainingCapacity());
+		ids.setWaitlistCounter(itemDetail.getWaitlistCounter());
+		
+		itemDetailDao.save(itemDetail);
+		
+		return ids;
+	}
+}

@@ -1,0 +1,7 @@
+package com.ymca.dao;
+
+import com.ymca.model.ItemPromoDetails;
+
+public interface ItemPromoDetailsDao extends GenericDao<ItemPromoDetails, Long> {
+
+}

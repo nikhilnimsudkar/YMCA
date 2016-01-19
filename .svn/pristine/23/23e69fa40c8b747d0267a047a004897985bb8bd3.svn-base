@@ -1,0 +1,100 @@
+package com.ymca;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
+import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
+import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter.XFrameOptionsMode;
+
+import com.ymca.web.service.UserService;
+
+@Configuration
+@EnableWebMvcSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+	@Autowired
+    private UserService userService;
+	
+	@Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userService).passwordEncoder(encoder());
+    }
+
+    @Bean
+    public PasswordEncoder encoder() {
+        return new BCryptPasswordEncoder();
+    }
+	
+	@Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.userDetailsService(userService)
+            .authorizeRequests()
+                .antMatchers("/resources/**").permitAll()
+                .antMatchers("/recovery/**").permitAll()
+                .antMatchers("/location/**").permitAll()
+                .antMatchers("/passRegistration/**").permitAll()
+                .antMatchers("/signup/**").permitAll()     
+                .antMatchers("/register/**").permitAll()     
+                .antMatchers("/view_membership/**").permitAll()     
+                .antMatchers("/trialPass/**").permitAll()      
+                .antMatchers("/trialPassRegister/**").permitAll()
+                .antMatchers("/viewTandC").permitAll()
+                .antMatchers("/isEmailExists/**").permitAll()  
+                .antMatchers("/ProcessDirectPayment/**").permitAll()
+                .antMatchers("/shopping/**").permitAll()
+                .antMatchers("/cart/**").permitAll()
+                .antMatchers("/getItems").permitAll()
+                .antMatchers("/getContacts").permitAll()
+                .antMatchers("/programRegistration").permitAll()
+                .antMatchers("/getProgramDetails").permitAll()
+                .antMatchers("/getProductDetailsByLocation/**").permitAll()
+                .antMatchers("/loginpop").permitAll()
+                .antMatchers("/auth").permitAll()
+                .antMatchers("/memberAuth").permitAll()
+                .antMatchers("/viewPaymentForm").permitAll()  
+                .antMatchers("/becomeMember").permitAll()
+                .antMatchers("/becomeMemberRegister").permitAll()  
+                .antMatchers("/redirectSuccess").permitAll()  
+                .antMatchers("/redirectFailure").permitAll()  
+                .anyRequest().authenticated();
+        
+        http.csrf().disable();
+       /* http
+        .antMatcher("/becomeMember/**")
+        .csrf().disable();*/
+        
+        
+        /*.antMatcher("/viewPaymentForm/**")
+        .antMatcher("/processPaymentByTokenId/**")
+        .antMatcher("/memberAuth/**")
+        .antMatcher("/viewPaymentInformationByLoggedInUser/**")
+        .antMatcher("/getAccountDetailsByEmail/**")        */
+        
+        //.httpBasic();
+        //http.headers().frameOptions().addHeaderWriter(new StaticHeadersWriter("X-Frame-Options","SAMEORIGIN"));
+        //http.headers().frameOptions().disable();
+        
+        
+       // http.headers()
+       //   .addHeaderWriter(new StaticHeaderWriter("X-Content-Security-Policy","default-src 'self'"))
+        //  .addHeaderWriter(new StaticHeaderWriter("X-WebKit-CSP","default-src 'self'"));
+        http.headers()
+        .addHeaderWriter(new XFrameOptionsHeaderWriter(XFrameOptionsMode.SAMEORIGIN));
+        
+        http
+            .formLogin()
+                .loginPage("/login")
+                .defaultSuccessUrl(userService.getSuccessUrl(),true)
+                .permitAll()
+                .and()
+            .logout()
+                .permitAll();
+    }
+}

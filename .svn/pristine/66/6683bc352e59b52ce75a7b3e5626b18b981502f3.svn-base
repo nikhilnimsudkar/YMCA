@@ -1,0 +1,285 @@
+package com.ymca.web.service;
+
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+
+import com.ymca.dao.ActivityDao;
+import com.ymca.dao.ItemDetailDao;
+import com.ymca.dao.ItemDetailDaysDao;
+import com.ymca.dao.JetPayPaymentDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.dao.SetpUpFeeDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.ItemDetailDays;
+import com.ymca.model.JetPayPayment;
+import com.ymca.web.enums.JetpayTransactionTypeEnum;
+import com.ymca.web.util.Constants;
+
+@Service
+public class BaseService {
+	
+	private Logger log = LoggerFactory.getLogger(BaseService.class);
+	
+	@Resource
+	protected SignupDao signupDao ;
+	
+	@Resource
+	protected ItemDetailDao itemDetailDao ;
+	
+	@Resource
+	protected ActivityDao activityDao ;
+	
+	@Resource
+	protected SetpUpFeeDao setpUpFeeDao ;
+	
+	@PersistenceContext
+	protected EntityManager em; 
+	
+	@Resource
+	protected JetPayPaymentDao jetPayPaymentDao ;
+	
+	@Resource
+	protected ItemDetailDaysDao  itemDetailDaysDao ; 
+	
+	@Resource
+	protected LocationDao locationDao ; 
+	
+	protected List<String> daysArr = Arrays.asList("Sun","Mon","Tues","Wed","Thurs","Fri","Sat");
+	
+	public JetPayPayment processACHjetPayTransaction(String token,String totalAmount, String checkNumber, String cardName) throws Exception {
+		HttpPost post = new HttpPost(Constants.JETPAY_XML_SCHEMA_URL);    
+
+		int amtToJetPay = (int) (Float.parseFloat(totalAmount) * 100);
+		
+		StringBuffer inputXMLStrBuffer = new StringBuffer("<JetPay>");
+		inputXMLStrBuffer.append("<TransactionID>"+RandomStringUtils.randomAlphanumeric(18)+"</TransactionID>");
+		inputXMLStrBuffer.append("<TransactionType>"+ JetpayTransactionTypeEnum.CHECK +"</TransactionType>");
+		inputXMLStrBuffer.append("<TerminalID>"+ Constants.JETPAY_TERMINAL_ID +"</TerminalID>");
+		inputXMLStrBuffer.append("<Origin> INTERNET </Origin>");
+		inputXMLStrBuffer.append("<TotalAmount> "+ amtToJetPay +" </TotalAmount>");
+		//inputXMLStrBuffer.append("<FeeAmount>100</FeeAmount>");
+		inputXMLStrBuffer.append("<CardName> " + cardName +" </CardName>");
+		inputXMLStrBuffer.append("<Token> " +token+ "</Token>");
+		inputXMLStrBuffer.append("<ACH>");
+		inputXMLStrBuffer.append("<CheckNumber> "+ checkNumber +" </CheckNumber>");
+		inputXMLStrBuffer.append("</ACH>");
+		inputXMLStrBuffer.append("</JetPay>");
+		post.setEntity(new StringEntity(inputXMLStrBuffer.toString()));
+		post.addHeader("Content-type", "text/xml; charset=ISO-8859-1");
+
+		// Get HTTP client
+		HttpClient httpclient = HttpClients.createDefault();
+
+		// Execute request
+		JetPayPayment jetPayPayment =  new JetPayPayment();
+		try {
+
+			HttpResponse httpResponse =  httpclient.execute(post);
+			
+			// Display status code
+			//System.out.println("Response status code: " + result);
+
+			// Display response
+			//System.out.println("Response body: ");
+			//System.out.println(post.getResponseBodyAsString());
+			
+			String xml = EntityUtils.toString(httpResponse.getEntity());           
+			InputSource source = new InputSource(new StringReader(xml));
+
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document document = db.parse(source);
+
+			XPathFactory xpathFactory = XPathFactory.newInstance();
+			XPath xpath = xpathFactory.newXPath();
+
+			jetPayPayment.setTransId(xpath.evaluate("/JetPayResponse/TransactionID", document));
+			jetPayPayment.setOrderNumber(xpath.evaluate("/JetPayResponse/TransactionID", document));
+            jetPayPayment.setActCode(xpath.evaluate("/JetPayResponse/ActionCode", document));
+            jetPayPayment.setResponseText(xpath.evaluate("/JetPayResponse/ResponseText", document));
+            
+            jetPayPayment.setAmount(amtToJetPay);
+            jetPayPaymentDao.save(jetPayPayment);
+            
+		} catch(Exception e){
+			log.error("Errror while processing ACH JeyPay ",e);
+			
+		} finally {
+			post.releaseConnection();
+		}
+		
+		return jetPayPayment;
+	}	
+	
+	public JetPayPayment processCCjetPayTransaction(String token, String totalAmount) throws Exception {
+		int amtToJetPay = (int) (Float.parseFloat(totalAmount) * 100);
+		// Prepare HTTP post
+	    HttpPost post = new HttpPost(Constants.JETPAY_XML_SCHEMA_URL);	    
+	    StringBuffer inputXMLStrBuffer = new StringBuffer("<JetPay>");
+	    inputXMLStrBuffer.append("<TransactionID>"+RandomStringUtils.randomAlphanumeric(18)+"</TransactionID>");	
+	    inputXMLStrBuffer.append("<TransactionType>"+JetpayTransactionTypeEnum.SALE+"</TransactionType>");       
+	    inputXMLStrBuffer.append("<Token>"+token+"</Token>");
+	    inputXMLStrBuffer.append("<TotalAmount>"+amtToJetPay+"</TotalAmount>");
+	    inputXMLStrBuffer.append("<TerminalID>"+ Constants.JETPAY_TERMINAL_ID +"</TerminalID>");
+	    inputXMLStrBuffer.append("</JetPay>");	    
+	    post.setEntity(new StringEntity(inputXMLStrBuffer.toString()));
+	    post.addHeader("Content-type", "text/xml; charset=ISO-8859-1");
+	    // Get HTTP client
+	    HttpClient httpclient = HttpClients.createDefault();
+	    // Execute request
+	    JetPayPayment jetPayPayment =  new JetPayPayment();
+	    try {
+	    	HttpResponse httpResponse =  httpclient.execute(post);
+	        String xml = EntityUtils.toString(httpResponse.getEntity());  
+	        if(xml != null){
+	        	
+            InputSource source = new InputSource(new StringReader(xml));
+
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document document = db.parse(source);
+
+            XPathFactory xpathFactory = XPathFactory.newInstance();
+            XPath xpath = xpathFactory.newXPath();  
+            
+            jetPayPayment.setTransId(xpath.evaluate("/JetPayResponse/TransactionID", document));
+            jetPayPayment.setOrderNumber(xpath.evaluate("/JetPayResponse/TransactionID", document));
+            jetPayPayment.setActCode(xpath.evaluate("/JetPayResponse/ActionCode", document));
+            jetPayPayment.setResponseText(xpath.evaluate("/JetPayResponse/ResponseText", document));
+            jetPayPayment.setAmount(amtToJetPay);
+            jetPayPaymentDao.save(jetPayPayment);
+	        }
+	    } catch(Exception e){
+	    	log.error("Error  ",e);
+	    	
+	    } finally {
+	        post.releaseConnection();
+	    }
+		return jetPayPayment;
+	}
+	
+		public synchronized void updateCapacity(ItemDetail itemDetail, Integer noOfTickets) {
+		if(itemDetail!=null && noOfTickets!=null){
+			Long remainingCapacity = convertNullToZero(itemDetail.getRemainingCapacity());
+			Long actualRemainingCapacity = convertNullToZero(itemDetail.getActualRemainingCapacity());
+			Long waitListCounter = convertNullToZero(itemDetail.getWaitlistCounter());
+			
+			if(remainingCapacity.compareTo(0L)<=0 || remainingCapacity < noOfTickets){
+				//remaining capacity is less than 0
+				waitListCounter = waitListCounter+1;
+			}
+			else{
+				// remaining capacity is greater than 0
+				remainingCapacity = remainingCapacity-noOfTickets;
+				//actualRemainingCapacity = actualRemainingCapacity-noOfTickets;
+			}
+			if(actualRemainingCapacity.compareTo(0L)<=0 || actualRemainingCapacity < noOfTickets){
+				//remaining capacity is less than 0
+				waitListCounter = waitListCounter+1;
+			}
+			else{
+				// remaining capacity is greater than 0
+				//remainingCapacity = remainingCapacity-noOfTickets;
+				actualRemainingCapacity = actualRemainingCapacity-noOfTickets;
+			}
+			
+			itemDetail.setRemainingCapacity(remainingCapacity);
+			itemDetail.setActualRemainingCapacity(actualRemainingCapacity);
+			itemDetail.setWaitlistCounter(waitListCounter);
+			
+			populateAndSaveItemDetail(itemDetail);
+		}
+	}
+
+	
+	public synchronized void updateCapacityforDays(ItemDetail itemDetail, String dayId) {
+		if(itemDetail!=null && dayId!=null){
+			ItemDetailDays itemDetailDays = itemDetailDaysDao.getByItemDetailAndDay(itemDetail, dayId);
+			
+			if(itemDetailDays!=null){
+				if(itemDetailDays.getStopConfirmedSignUps() == null || itemDetailDays.getStopConfirmedSignUps().equalsIgnoreCase("No")){
+						
+					Long remainingCapacity = convertNullToZero(itemDetailDays.getRemainingCapacity());
+					Long actualRemainingCapacity = convertNullToZero(itemDetailDays.getActualRemainingCapacity());
+					Long waitListCounter = convertNullToZero(itemDetailDays.getWaitlistCounter());
+					
+					if(remainingCapacity.compareTo(0L)<=0 ){
+						//remaining capacity is less than 0
+						//waitListCounter = waitListCounter+1;
+					}
+					else{
+						// remaining capacity is greater than 0
+						remainingCapacity = remainingCapacity-1;
+						actualRemainingCapacity = actualRemainingCapacity-1;
+					}
+					
+					itemDetailDays.setRemainingCapacity(remainingCapacity);
+					itemDetailDays.setActualRemainingCapacity(actualRemainingCapacity);
+					itemDetailDays.setWaitlistCounter(waitListCounter);
+					
+					populateAndSaveItemDetailDays(itemDetailDays);
+				}
+			}
+		}
+	}
+	
+	public ItemDetail populateAndSaveItemDetail(ItemDetail itemDetail){
+		
+		ItemDetail ids = new ItemDetail();
+		ids.setId(itemDetail.getId());
+		ids.setRemainingCapacity(itemDetail.getRemainingCapacity());
+		ids.setActualRemainingCapacity(itemDetail.getActualRemainingCapacity());
+		ids.setWaitlistCounter(itemDetail.getWaitlistCounter());
+		Calendar cal = Calendar.getInstance();
+		ids.setLastUpdated(cal);
+		itemDetailDao.save(itemDetail);
+		
+		return ids;
+	}	
+	
+	public ItemDetailDays populateAndSaveItemDetailDays(ItemDetailDays itemDetailDays){
+		
+		ItemDetailDays ids = new ItemDetailDays();
+		ids.setId(itemDetailDays.getId());
+		ids.setRemainingCapacity(itemDetailDays.getRemainingCapacity());
+		ids.setActualRemainingCapacity(itemDetailDays.getActualRemainingCapacity());
+		ids.setWaitlistCounter(itemDetailDays.getWaitlistCounter());
+		Calendar cal = Calendar.getInstance();
+		//ids.setLastUpdated(cal);
+		itemDetailDaysDao.save(itemDetailDays);
+		
+		return ids;
+	}	
+
+	public Long convertNullToZero(Long val){
+		if(val==null)
+			 val = 0L;
+		
+		return val;
+	}
+	
+}

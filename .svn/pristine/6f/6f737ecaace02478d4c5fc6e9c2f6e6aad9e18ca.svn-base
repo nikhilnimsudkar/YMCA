@@ -1,0 +1,15 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.SetpUpFee;
+import com.ymca.model.User;
+
+public interface SetpUpFeeDao extends GenericDao<SetpUpFee,Long>{
+	
+	@Query("select s from SetpUpFee s where s.contact =?1 and DATE(s.setUpFeeEndDate)>=DATE(?2)")
+	List<SetpUpFee> findByContactIfActiveSetupFee(User user, Date itemEndDate );
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+  <definition name="home" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/payment/list.jsp" />
+  </definition>
+
+	<definition name="home" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/payment/view.jsp" />
+  </definition>
+
+  <definition name="addcard" extends="sc_default">
+    <put-attribute name="body" value="/WEB-INF/views/payment/AddBank_CardInfo.jsp" />
+  </definition>
+  
+  <definition name="viewPaymentInformation" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/payment/PaymentInfo.jsp" />
+  </definition>
+	
+</tiles-definitions>

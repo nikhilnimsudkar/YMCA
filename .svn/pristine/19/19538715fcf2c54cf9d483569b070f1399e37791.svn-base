@@ -1,0 +1,696 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
+/**
+ * This class represents the basic "user" object in YMCA Portal that allows for authentication
+ * and user management.  It implements Acegi Security's UserDetails interface.
+ *
+ * @author <a href="mailto:matt@raibledesigns.com">Matt Raible</a>
+ *         Updated by Dan Kibler (dan@getrolling.com)
+ *         Extended to implement Acegi UserDetails interface
+ *         by David Carter david@carter.net
+ */
+@Entity
+@Table(name = "contact")
+public class User extends BaseObject implements Serializable {
+    private static final long serialVersionUID = 3832626162173359411L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    
+    @Column(length = 50)
+    private String username;                    // required
+    
+    @Column(nullable = false)
+    private String password;                    // required
+    
+    @Transient
+    private String confirmPassword;
+    
+    @Column(name = "password_hint")
+    @XmlTransient
+    private String passwordHint;
+
+    @Column(name = "first_name", nullable = false, length = 50)
+    private String firstName;                   // required
+    
+    @Column(name = "last_name", nullable = false, length = 50)
+    private String lastName;                    // required
+    
+    @Column(nullable = false, unique = true)
+    private String email;                       // required; unique
+    
+    @Column(name = "phone_number")
+    private String phoneNumber;
+    @Column(name = "work_number")
+    private String workNumber;
+    @Column(name = "home_number")
+    private String homeNumber;
+    
+    @Column(name = "date_of_birth", nullable = false)
+    private Date dateOfBirth;
+    
+    @Column(name = "relationships")
+    private String relationships;
+    
+    @Column(name = "area_of_interest")
+    private String areaOfInterest;
+    
+    private String website;
+    @Column(name = "is_active", columnDefinition="boolean default true")
+   	private boolean isActive;  
+    
+    @Embedded
+    private Address address = new Address();
+    
+    @Version
+    private Integer version;
+    
+    @ManyToMany(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
+    @JoinTable(
+            name = "user_role",
+            joinColumns = { @JoinColumn(name = "user_id") },
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<Role>();
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "id")
+    private List<Interaction> interactions = new ArrayList<>();
+    
+    @Column(name = "account_enabled")
+    private boolean enabled;
+    
+    @Column(name = "account_expired", nullable = false)
+    private boolean accountExpired;
+    
+    @Column(name = "account_locked", nullable = false)
+    private boolean accountLocked;
+    
+    @Column(name = "credentials_expired", nullable = false)
+    private boolean credentialsExpired;
+    
+    @Column(name = "profile_image")
+    private String profileImage;
+    
+    @Column(name = "is_primary", nullable = false, columnDefinition="boolean default false")
+    private boolean isPrimary;
+    
+    @Column(name = "fcrm_contact_id")
+    private String fcrmContactId;
+    
+    //@OneToOne(cascade={CascadeType.ALL})  
+    //@JoinColumn(name="waivers_and_tc_id_FK")
+    @OneToMany(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+	@JoinColumn(name="id")
+    private Set<ContactWaiversAndTC> contactWaiversAndTC = new HashSet<ContactWaiversAndTC>(0);
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "id")
+    private List<Donation> donation = new ArrayList<Donation>();
+   
+    /**
+     * Default constructor - creates a new instance with no values set.
+     */
+    public User() {
+    }
+
+    /**
+     * Create a new instance and set the username.
+     *
+     * @param username login name for user.
+     */
+    public User(final String username) {
+        this.username = username;
+    }
+
+    
+    public Long getId() {
+        return id;
+    }
+
+   
+    public String getUsername() {
+        return username;
+    }
+
+    
+    public String getPassword() {
+        return password;
+    }
+
+    
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+   
+    public String getPasswordHint() {
+        return passwordHint;
+    }
+
+    
+    public String getFirstName() {
+        return firstName;
+    }
+
+   
+    public String getLastName() {
+        return lastName;
+    }
+
+    
+    public String getEmail() {
+        return email;
+    }
+
+    
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+   
+    public String getWorkNumber() {
+		return workNumber;
+	}
+
+	public void setWorkNumber(String workNumber) {
+		this.workNumber = workNumber;
+	}
+
+	public String getHomeNumber() {
+		return homeNumber;
+	}
+
+	public void setHomeNumber(String homeNumber) {
+		this.homeNumber = homeNumber;
+	}
+
+	public List<Interaction> getInteractions() {
+		return interactions;
+	}
+
+	public void setInteractions(List<Interaction> interactions) {
+		this.interactions = interactions;
+	}
+
+	public String getWebsite() {
+        return website;
+    }
+
+    public boolean isActive() {
+		return isActive;
+	}
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
+
+	/**
+     * Returns the full name.
+     *
+     * @return firstName + ' ' + lastName
+     */
+    @Transient
+    public String getFullName() {
+        return firstName + ' ' + lastName;
+    }
+
+   
+    public Address getAddress() {
+        return address;
+    }
+
+   
+    public Set<Role> getRoles() {
+        return roles;
+    }
+    
+
+    /**
+     * Convert user roles to LabelValue objects for convenience.
+     *
+     * @return a list of LabelValue objects with role information
+     */
+    @Transient
+    public List<LabelValue> getRoleList() {
+        List<LabelValue> userRoles = new ArrayList<LabelValue>();
+
+        if (this.roles != null) {
+            for (Role role : roles) {
+                // convert the user's roles to LabelValue Objects
+                userRoles.add(new LabelValue(role.getName(), role.getName()));
+            }
+        }
+
+        return userRoles;
+    }
+
+    /**
+     * Adds a role for the user
+     *
+     * @param role the fully instantiated role
+     */
+    public void addRole(Role role) {
+        getRoles().add(role);
+    }
+
+   
+	/**
+     * @return GrantedAuthority[] an array of roles.
+     * @see org.springframework.security.core.userdetails.UserDetails#getAuthorities()
+     */
+    @Transient
+    public Set<Role> getAuthorities() {
+        Set<Role> authorities = new LinkedHashSet<Role>();
+        authorities.addAll(roles);
+        return authorities;
+    }
+
+    
+    public Integer getVersion() {
+        return version;
+    }
+
+   
+    public Set<ContactWaiversAndTC> getContactWaiversAndTC() {
+		return contactWaiversAndTC;
+	}
+
+	public void setContactWaiversAndTC(Set<ContactWaiversAndTC> contactWaiversAndTC) {
+		this.contactWaiversAndTC = contactWaiversAndTC;
+	}
+
+	public Date getDateOfBirth() {
+		return dateOfBirth;
+	}
+
+	public void setDateOfBirth(Date dateOfBirth) {
+		this.dateOfBirth = dateOfBirth;
+	}
+
+	public String getRelationships() {
+		return relationships;
+	}
+
+	public void setRelationships(String relationships) {
+		this.relationships = relationships;
+	}
+
+	public String getAreaOfInterest() {
+		return areaOfInterest;
+	}
+
+	public void setAreaOfInterest(String areaOfInterest) {
+		this.areaOfInterest = areaOfInterest;
+	}
+
+	public boolean isEnabled() {
+        return enabled;
+    }
+
+   
+    public boolean isAccountExpired() {
+        return accountExpired;
+    }
+
+    /**
+     * @see org.springframework.security.core.userdetails.UserDetails#isAccountNonExpired()
+     * @return true if account is still active
+     */
+    @Transient
+    public boolean isAccountNonExpired() {
+        return !isAccountExpired();
+    }
+
+   
+    public boolean isAccountLocked() {
+        return accountLocked;
+    }
+
+    /**
+     * @see org.springframework.security.core.userdetails.UserDetails#isAccountNonLocked()
+     * @return false if account is locked
+     */
+    @Transient
+    public boolean isAccountNonLocked() {
+        return !isAccountLocked();
+    }
+
+    
+    public boolean isCredentialsExpired() {
+        return credentialsExpired;
+    }
+
+    /**
+     * @see org.springframework.security.core.userdetails.UserDetails#isCredentialsNonExpired()
+     * @return true if credentials haven't expired
+     */
+    @Transient
+    public boolean isCredentialsNonExpired() {
+        return !credentialsExpired;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
+    public void setPasswordHint(String passwordHint) {
+        this.passwordHint = passwordHint;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void setAccountExpired(boolean accountExpired) {
+        this.accountExpired = accountExpired;
+    }
+
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
+    }
+
+    public void setCredentialsExpired(boolean credentialsExpired) {
+        this.credentialsExpired = credentialsExpired;
+    }
+
+	public String getProfileImage() {
+		return profileImage;
+	}
+
+	public void setProfileImage(String profileImage) {
+		this.profileImage = profileImage;
+	}
+
+	public boolean isPrimary() {
+		return isPrimary;
+	}
+
+	public String getFcrmContactId() {
+		return fcrmContactId;
+	}
+
+	public void setFcrmContactId(String fcrmContactId) {
+		this.fcrmContactId = fcrmContactId;
+	}
+
+	public void setPrimary(boolean isPrimary) {
+		this.isPrimary = isPrimary;
+	}
+
+	public List<Donation> getDonation() {
+		return donation;
+	}
+
+	public void setDonation(List<Donation> donation) {
+		this.donation = donation;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		User other = (User) obj;
+		if (accountExpired != other.accountExpired)
+			return false;
+		if (accountLocked != other.accountLocked)
+			return false;
+		if (address == null) {
+			if (other.address != null)
+				return false;
+		} else if (!address.equals(other.address))
+			return false;
+		if (areaOfInterest == null) {
+			if (other.areaOfInterest != null)
+				return false;
+		} else if (!areaOfInterest.equals(other.areaOfInterest))
+			return false;
+		if (confirmPassword == null) {
+			if (other.confirmPassword != null)
+				return false;
+		} else if (!confirmPassword.equals(other.confirmPassword))
+			return false;
+		if (contactWaiversAndTC == null) {
+			if (other.contactWaiversAndTC != null)
+				return false;
+		} else if (!contactWaiversAndTC.equals(other.contactWaiversAndTC))
+			return false;
+		if (credentialsExpired != other.credentialsExpired)
+			return false;
+		if (dateOfBirth == null) {
+			if (other.dateOfBirth != null)
+				return false;
+		} else if (!dateOfBirth.equals(other.dateOfBirth))
+			return false;
+		if (donation == null) {
+			if (other.donation != null)
+				return false;
+		} else if (!donation.equals(other.donation))
+			return false;
+		if (email == null) {
+			if (other.email != null)
+				return false;
+		} else if (!email.equals(other.email))
+			return false;
+		if (enabled != other.enabled)
+			return false;
+		if (fcrmContactId == null) {
+			if (other.fcrmContactId != null)
+				return false;
+		} else if (!fcrmContactId.equals(other.fcrmContactId))
+			return false;
+		if (firstName == null) {
+			if (other.firstName != null)
+				return false;
+		} else if (!firstName.equals(other.firstName))
+			return false;
+		if (homeNumber == null) {
+			if (other.homeNumber != null)
+				return false;
+		} else if (!homeNumber.equals(other.homeNumber))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (interactions == null) {
+			if (other.interactions != null)
+				return false;
+		} else if (!interactions.equals(other.interactions))
+			return false;
+		if (isActive != other.isActive)
+			return false;
+		if (isPrimary != other.isPrimary)
+			return false;
+		if (lastName == null) {
+			if (other.lastName != null)
+				return false;
+		} else if (!lastName.equals(other.lastName))
+			return false;
+		if (password == null) {
+			if (other.password != null)
+				return false;
+		} else if (!password.equals(other.password))
+			return false;
+		if (passwordHint == null) {
+			if (other.passwordHint != null)
+				return false;
+		} else if (!passwordHint.equals(other.passwordHint))
+			return false;
+		if (phoneNumber == null) {
+			if (other.phoneNumber != null)
+				return false;
+		} else if (!phoneNumber.equals(other.phoneNumber))
+			return false;
+		if (profileImage == null) {
+			if (other.profileImage != null)
+				return false;
+		} else if (!profileImage.equals(other.profileImage))
+			return false;
+		if (relationships == null) {
+			if (other.relationships != null)
+				return false;
+		} else if (!relationships.equals(other.relationships))
+			return false;
+		if (roles == null) {
+			if (other.roles != null)
+				return false;
+		} else if (!roles.equals(other.roles))
+			return false;
+		if (username == null) {
+			if (other.username != null)
+				return false;
+		} else if (!username.equals(other.username))
+			return false;
+		if (version == null) {
+			if (other.version != null)
+				return false;
+		} else if (!version.equals(other.version))
+			return false;
+		if (website == null) {
+			if (other.website != null)
+				return false;
+		} else if (!website.equals(other.website))
+			return false;
+		if (workNumber == null) {
+			if (other.workNumber != null)
+				return false;
+		} else if (!workNumber.equals(other.workNumber))
+			return false;
+		return true;
+	}
+
+    @Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (accountExpired ? 1231 : 1237);
+		result = prime * result + (accountLocked ? 1231 : 1237);
+		result = prime * result + ((address == null) ? 0 : address.hashCode());
+		result = prime * result
+				+ ((areaOfInterest == null) ? 0 : areaOfInterest.hashCode());
+		result = prime * result
+				+ ((confirmPassword == null) ? 0 : confirmPassword.hashCode());
+		result = prime
+				* result
+				+ ((contactWaiversAndTC == null) ? 0 : contactWaiversAndTC
+						.hashCode());
+		result = prime * result + (credentialsExpired ? 1231 : 1237);
+		result = prime * result
+				+ ((dateOfBirth == null) ? 0 : dateOfBirth.hashCode());
+		result = prime * result
+				+ ((donation == null) ? 0 : donation.hashCode());
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
+		result = prime * result + (enabled ? 1231 : 1237);
+		result = prime * result
+				+ ((fcrmContactId == null) ? 0 : fcrmContactId.hashCode());
+		result = prime * result
+				+ ((firstName == null) ? 0 : firstName.hashCode());
+		result = prime * result
+				+ ((homeNumber == null) ? 0 : homeNumber.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((interactions == null) ? 0 : interactions.hashCode());
+		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + (isPrimary ? 1231 : 1237);
+		result = prime * result
+				+ ((lastName == null) ? 0 : lastName.hashCode());
+		result = prime * result
+				+ ((password == null) ? 0 : password.hashCode());
+		result = prime * result
+				+ ((passwordHint == null) ? 0 : passwordHint.hashCode());
+		result = prime * result
+				+ ((phoneNumber == null) ? 0 : phoneNumber.hashCode());
+		result = prime * result
+				+ ((profileImage == null) ? 0 : profileImage.hashCode());
+		result = prime * result
+				+ ((relationships == null) ? 0 : relationships.hashCode());
+		result = prime * result + ((roles == null) ? 0 : roles.hashCode());
+		result = prime * result
+				+ ((username == null) ? 0 : username.hashCode());
+		result = prime * result + ((version == null) ? 0 : version.hashCode());
+		result = prime * result + ((website == null) ? 0 : website.hashCode());
+		result = prime * result
+				+ ((workNumber == null) ? 0 : workNumber.hashCode());
+		return result;
+	}
+
+    @Override
+	public String toString() {
+		return "User [id=" + id + ", username=" + username + ", password="
+				+ password + ", confirmPassword=" + confirmPassword
+				+ ", passwordHint=" + passwordHint + ", firstName=" + firstName
+				+ ", lastName=" + lastName + ", email=" + email
+				+ ", phoneNumber=" + phoneNumber + ", workNumber=" + workNumber
+				+ ", homeNumber=" + homeNumber + ", dateOfBirth=" + dateOfBirth
+				+ ", relationships=" + relationships + ", areaOfInterest="
+				+ areaOfInterest + ", website=" + website + ", isActive="
+				+ isActive + ", address=" + address + ", version=" + version
+				+ ", roles=" + roles + ", interactions=" + interactions
+				+ ", enabled=" + enabled + ", accountExpired=" + accountExpired
+				+ ", accountLocked=" + accountLocked + ", credentialsExpired="
+				+ credentialsExpired + ", profileImage=" + profileImage
+				+ ", isPrimary=" + isPrimary + ", fcrmContactId="
+				+ fcrmContactId + ", contactWaiversAndTC="
+				+ contactWaiversAndTC + ", donation=" + donation + "]";
+	}
+}

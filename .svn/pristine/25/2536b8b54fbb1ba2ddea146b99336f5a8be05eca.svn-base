@@ -1,0 +1,141 @@
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="tabstrip3" class="k-block" style=" background-color:#FFFFFF; padding:12px; width:100%">	
+				
+			<!-- <h2>
+				Request for Cancellation
+			</h2> -->
+        	
+        	<div id="formBlock">
+        		       		
+        		<div id="cc_list">
+        			<span class="head">List Of Current Due Invoice Records</span>
+        			<div>
+        				<table id="childcare_list"  style="table-layout: fixed; display:none;">
+        					<thead>
+	        					<tr>
+	        						<th>Due Date</th>
+	        						<th>Balance</th>
+	        						<th>SignUp Name</th>
+	        						<th>UserName</th>
+	        						
+	        					</tr>
+        					</thead>
+        					<tbody>
+							<c:forEach var="requiredInvoiceList" items="${requiredInvoiceList}" varStatus="status">
+	        					<tr>
+	        						<td>
+								<fmt:formatDate
+										type="date" pattern="MM/dd/yyyy"
+										value="${requiredInvoiceList.dueDate}" /></td>
+								<td>${requiredInvoiceList.balance}</td>
+		<c:choose>
+	         <c:when test="${requiredInvoiceList.signup.payType==null}">
+								<td>${requiredInvoiceList.signup.signUpName}</td>
+			 </c:when>
+
+             <c:otherwise>
+								<td>${requiredInvoiceList.signup.signUpName}(${requiredInvoiceList.signup.payType})</td>
+			 </c:otherwise>	
+		</c:choose>
+								<td>${requiredInvoiceList.signup.contactName}</td>
+	        						<td>&nbsp;</td>
+	        						
+	        					</tr>
+								</c:forEach>
+        					</tbody>
+        				</table>
+        			</div>
+        		</div>
+        	</div>
+        	
+        		<div id="formBlock2">
+        		       		
+        		<div id="cc_list2">
+				
+        			<span class="head">List Of Past Due Invoice Records</span>
+        			<div>
+        				<table id="childcare_list2"  style="table-layout: fixed; display:none;">
+        					<thead>
+	        					<tr>
+	        						<th>Due Date</th>
+	        						<th>Balance</th>
+	        						<th>SignUp Name</th>
+	        						<th>UserName</th>
+	        						
+	        					</tr>
+        					</thead>
+        					<tbody>
+	        					<c:forEach var="requiredPastInvoiceList" items="${requiredPastInvoiceList}" varStatus="status">
+	        					<tr>
+	        						<td>
+								<fmt:formatDate
+										type="date" pattern="MM/dd/yyyy"
+										value="${requiredPastInvoiceList.dueDate}" /></td>
+								<td>${requiredPastInvoiceList.balance}</td>
+		
+								<td>${requiredPastInvoiceList.signup.signUpName}</td>
+				
+		
+								<td>${requiredPastInvoiceList.signup.contactName}</td>
+	        						<td>&nbsp;</td>
+	        						
+	        					</tr>
+								</c:forEach>
+        					</tbody>
+        				</table>
+        			</div>
+        		</div>
+        	</div>
+        	
+        	
+        	
+		
+</div>
+
+<script>
+$("#tabstrip3").hide();
+
+	$(document).ready(function() {
+	
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_programregistration").attr('class','');
+		$("#top_childcare").attr('class','');
+		
+		//$("#page_name").html("PAYMENT INFORMATION");
+		$("#location").kendoDropDownList();
+		$("#type").kendoDropDownList();
+		
+		$("#childcare_list").kendoGrid({
+			dataSource: {
+            	pageSize: 4
+			},
+            pageable: true,
+            selectable: "row",
+            height: 200
+		});
+		
+		$("#childcare_list2").kendoGrid({
+			dataSource: {
+            	pageSize: 4
+			},
+            pageable: true,
+            selectable: "row",
+            height: 200
+		});
+		$("#tabstrip3").show();
+        $("#childcare_list").show();
+		$("#childcare_list2").show();
+	});
+</script>
+
+<style>
+.k-grid  .k-grid-header  .k-header  .k-link {
+    height: auto;
+}
+  
+.k-grid  .k-grid-header  .k-header {
+    white-space: normal;
+}
+</style>

@@ -1,0 +1,560 @@
+/* CSS Document */
+body{
+	width:80%;
+	height:auto;
+	min-height:400px;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:13px;
+	margin-left:10%;
+}
+#wrapper{
+	width:100%;
+}
+#main{
+	width:100%;
+	height:auto;
+	min-height:400px;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:13px;
+	margin-top:5px;
+}
+
+#header {
+	height:150px;
+	border:0px solid;
+}
+
+#content {
+	height:auto;
+	border:0px solid;
+	overflow:auto;
+	width:100%
+}
+
+#footer {
+	height:80px;
+	border:0px solid;
+}
+
+#member{
+	height:auto;
+	min-height:400px;
+	float:left;
+	width:31%;
+	border:0px solid;
+	padding-left:0px;
+}
+
+#profile{
+	height:auto;
+	min-height:400px;
+	float:left;
+	width:31%;
+	border:0px solid;
+	margin-left:77px;
+	margin-right:0px;
+	margin-top:20px;
+}
+
+#update{
+	height:auto;
+	min-height:400px;
+	float:right;
+	width:30%;
+	border:0px solid;
+	padding-right:0px;
+	margin-top:20px;
+}#myprofile{
+	height:auto;
+	min-height:400px;
+	float:left;
+	width:30%;
+	border:0px solid;
+	padding-left:0px;
+}
+
+#programs{
+	height:auto;
+	min-height:400px;
+	float:left;
+	width:47%;
+	border:0px solid;
+	margin-left:77px;
+	margin-right:0px;
+	margin-top:20px;
+}
+
+#donation{
+	height:auto;
+	min-height:400px;
+	float:right;
+	width:15%;
+	border:0px solid;
+	padding-right:0px;
+	margin-top:20px;
+}
+
+
+
+
+
+#tabstrip, #tabstrip1, #tabstrip2 {
+	width: 404px;
+	margin: 20px auto;
+}
+
+#tabstrip3{
+	width: 500px;
+	margin: 20px auto;
+}
+#tabstrip4{
+	width: 160px;
+	margin: 20px auto;
+}
+
+#tabstrip5 {
+	width: 384px;
+	margin: 20px auto;
+}
+
+.profilepic {
+	display: inline-block;
+	margin: 10px 0 10px 0px;
+	width: 100px;
+	height: 140px;	
+	border:0px solid;
+}
+
+#team {
+	width: 265px;
+	padding: 5px 0 0 0;
+	float: right;
+	border:0px solid;
+}
+
+#tabstrip h2, #tabstrip1 h2, #tabstrip2 h2, #tabstrip3 h2, #tabstrip4 h2,#tabstrip5 h2 {
+	font-weight: lighter;
+	font-size: 5em;
+	padding: 0;
+	margin: 0;
+}
+
+#tabstrip h2 span, #tabstrip1 h2 span, #tabstrip2 h2 span,#tabstrip3 h2 span, #tabstrip4 h2 span,#tabstrip5 h2 span {
+	background: none;
+	padding-left: 5px;
+	font-size: .5em;
+	vertical-align: top;
+}
+
+#tabstrip p, #tabstrip1 p, #tabstrip2 p, #tabstrip3 p, #tabstrip4 p,#tabstrip5 p {
+	margin: 0;
+	padding: 0;
+}
+
+#tabstrip span.head, #tabstrip1 span.head, #tabstrip2 span.head, #tabstrip3 span.head, #tabstrip4 span.head,#tabstrip5 span.head {
+	color:#006B6B;
+}
+
+#tabstrip span, #tabstrip1 span, #tabstrip2 span, #tabstrip3 span, #tabstrip4 span,#tabstrip5 span {
+	font-weight:bold;
+}
+
+
+#headname
+{color:#006B6B;
+}
+
+div.moreinfo{
+	font-size: 14px;
+	color:#F78F1E;
+	font-weight: bold;
+	padding-bottom:5px;
+	padding-left:3px;
+}
+div.moreinfoenrolled{
+	font-size: 14px;
+	color:#14AE96;
+	font-weight: bold;
+	padding-bottom:5px;
+	padding-left:3px;
+}
+span.viewmore{
+	color:#999999;
+	font-size: 12px;
+	cursor: pointer
+}
+
+h2 span{
+	font-weight:bold;
+	color:#006B6B;
+	font-size:16px;
+}
+
+#logo{
+	float:left;
+	margin-left:36px;
+	width:15%;
+	height:80px;
+	background: url('../img/logo.png') transparent no-repeat;
+	background-size: 100px 80px;
+}
+
+#right_menu{
+	width:80%;
+	float:right;
+}
+
+#page_name{
+	text-align: right;
+	margin-right: 60px;
+	color: #F37418;
+	font-weight:bold;
+	font-size: 30px;
+}
+#top{
+	height:100px;
+	margin-top:15px;
+}
+br { clear:left }
+
+.nav {
+    width: 100%;
+    background-color: #01A490;
+}
+
+.nav ul {
+    margin: 0; padding: 0;
+    float: left;
+}
+
+.nav ul li {
+    display: inline;
+}
+
+.nav ul li a {
+    float: left; text-decoration: none;
+    color: white; 
+    padding: 5px 24px;
+    background-color:  #01A490;
+    font-size: 15px;
+    font-weight: bold;
+}
+ 
+.nav ul li a:visited {
+    color: white;
+}
+ 
+.nav ul li a:hover, .nav ul li .current {
+    color: white;
+    background-color: #FCAF17;
+}
+#top_nav{
+	
+	height:40px;
+	margin-right:62px;
+	border:0px solid;
+}
+#top_nav ul {
+    margin: 0; padding: 0;
+    float: right;
+}
+#top_nav ul li {
+    display: inline;
+}
+#top_nav ul li a {
+    float: left; 
+    text-decoration: none;
+    color: #CBCBCB; 
+    padding: 9px 10px;
+    font-size: 11px;
+    font-weight: bold;
+}
+#footer_main{
+	height:30px;
+}
+#footer_main ul{
+	margin: 0; padding: 0;
+    float: left;
+}
+#footer_main ul li {
+    display: inline;
+}
+#footer_main ul li a {
+    float: left; 
+    text-decoration: none;
+    color: #CBCBCB; 
+    padding: 9px 18px;
+    font-size: 14px;
+}
+
+.copyright{
+	font-size: 11px;
+	 text-decoration: none;
+    color: #CBCBCB; 
+    margin: 9px 18px;
+    float:left;
+}
+#tcErrorSpan, #bankErrorSpan, #addCardErrorSpan, #addbankErrorSpan, #pmPrimaryError{
+	display:none;
+	margin-left:8px;
+	padding:9px;
+	text-align:left;
+}
+
+#updateProfInfo{
+	display:none;
+	margin-left:8px;
+	padding:9px;
+}
+#tcSuccessSpan, #bankSuccessSpan, #addCardSuccessSpan, #addBankSuccessSpan, #pmPrimarySuccess{
+	display:none;
+	padding:9px;
+	margin-left:-2px;
+}
+#statusBlock{
+	height:auto;
+	min-height:30px;
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
+#recoveryblock{
+	margin-top: 18px; 
+	float:right;
+}
+form#loginForm{
+	padding: 45px;
+}
+form#cancellationFrm{
+	padding: 45px;
+	max-width:85%;
+}
+button#loginbutton, span#generatePassBtn, span#ymcabutton, button#tandcbutton, button.confirm-product-select, 
+button.confirm-terms-conditions, span#addmemberBtn, span#updateCardInfoBtn, span#updateBankInfoBtn, 
+span#addBankInfoButton, span#addCardInfoButton, span#addmemberBtn, span#removeCardInfoBtn, span#removeBankInfoBtn {
+	width: 100%; 
+	height: 38px; 
+	background-color: #eb8120; 
+	color: #ffffff; 
+	background-image:none;
+	font-weight:bold;
+	font-size:16px;
+}
+
+#formBlock{
+	margin-top:15px;
+}
+form#loginForm #tcErrorSpan{
+	margin-left:-2px;
+}
+button#cancellation, span#cancellation{
+	margin-top:30px; 
+	padding: 5px 40px; 
+	background-color: #eb8120; 
+	color: #ffffff; 
+	background-image:none;
+}
+span#backbutton, span#updMembership{
+	/*margin-left:30px;*/
+	padding: 5px 40px; 
+	background-color: #eb8120; 
+	color: #ffffff; 
+	background-image:none;
+}
+span#addmemberBtn{
+	/*margin-left:30px;*/
+	padding: 5px 40px; 
+	background-color: #eb8120; 
+	color: #ffffff; 
+	background-image:none;
+	width:100px;
+}
+span#updProfile{
+	margin-left:0px; 
+	background-color: #eb8120; 
+	color: #ffffff; 
+	background-image:none;
+}
+
+.cancelblock{
+	width:60%;
+	margin:15px;
+}
+#cancellationFrm div#formBlock{
+	height:820px;
+}
+span#ymcabutton{
+	margin-top:15px;
+	margin:0px;
+	width: 100%;
+}
+#cancellation textarea{
+	width: 400px; 
+	height: 80px;
+	margin-left:48px;
+}
+
+#cancellationreason div{
+	margin-bottom:5px;
+}
+#cancellationreason div div{
+	margin-top:5px;
+	margin-left:40px;
+	
+}
+#cancellationreason div div span{
+	margin-left:5px;
+	margin-right:5px;
+}
+.delete-message{
+	font-size: 17px;
+    padding-left: 20px;
+}
+.confirmbutton{
+	margin:20px;
+}
+
+.i-question{display:inline-block; vertical-align:middle; width:16px; height:16px; background:url(../img/icon-search.png) 0 0 no-repeat;}
+.location-search {
+	width: 17px; 
+	border-radius: 4px;
+	height: 16px; 
+	padding: 7px;
+	float:right
+}
+
+.ui-dialog > .ui-widget-header {
+	background-image: none;
+	background-color: #ff3111;
+	color: #ffffff; 
+}
+
+
+.k-grid-content {
+   max-height: 315px;
+}
+
+#signupForm input {
+    width: 430px;
+}
+
+.error-message-p {
+    text-align: center;
+}
+
+
+.k-window-titlebar{
+	background: red !important;
+	color: white !important;
+}
+
+
+
+span.k-loading-text{
+	
+    font-size: 22px;
+    font-weight: bold;
+    text-indent: 0;
+    top: 130px;
+    width: 100%;
+}
+#tabstrip5{
+	padding:8px;
+}
+.pname{
+	font-size: 17px; 
+	color:#f78f1e;
+}
+.name{
+	font-size: 11px; 
+}
+.pay_header{
+	margin-top:20px;
+	margin-bottom:10px;
+}
+#tabstrip5 td span, #tabstrip3 td span{
+	font-weight: normal;
+}
+
+div#purchaseinfoPg div#tabstrip3, div#programinfoPg div#tabstrip3{
+	 background-color:#FFFFFF; 
+	 min-height:300px;
+	 height:auto;
+	 margin:0px;
+	 margin-left:20px;
+	 width:640px;
+}
+div #bill_info, div #purchase_info, div #cart_info{
+	font-size: 10px;
+	margin:20px;
+	font-weight:normal;
+}
+div #bill_info span{
+	font-weight:normal;
+}
+table tr td{
+	padding-right:12px;
+}
+
+button#placeorderBtn, button#editcartBtn, button#editcardBtn, button#autopayBtn, button#addCardBankDetail, span#payBtn, span#SearchProgramBtn, button#pmPrimary{
+	background-color: #eb8120; 
+	color: #ffffff; 
+	background-image:none;
+	font-weight:bold;
+}
+#purchase{
+	height:auto;
+	min-height:400px;
+	float:left;
+	width:47%;
+	border:0px solid;
+	margin-left:87px;
+	margin-right:0px;
+	margin-top:20px;
+}
+
+.autopaySpan{
+	float: right; 
+	width: 40%; 
+	margin-top: -4px;
+}
+#tabstrip3 td span.head{
+	font-weight: bold;
+}
+
+div#programinfoPg div#tabstrip3{
+	 margin-left:-19px; 
+	 min-height:450px;
+	 width:686px;
+}
+
+table.program_desc tr {
+	border-bottom:1px solid;
+}
+.program_desc td span.boldorange{
+	font-weight: bold;
+	color: #f78f1e;
+}
+#donationRightSection{
+	height:auto;
+	min-height:400px;
+	float:left;	
+	border:0px solid;
+	margin-left:87px;
+	margin-right:0px;
+	margin-top:20px;
+}
+.bootstrapBorder{
+	border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-left: 440px;
+    margin-top: 20px;
+    
+}
+
+.bootstrapRadio{
+	opacity: 0;
+    
+}
+
+

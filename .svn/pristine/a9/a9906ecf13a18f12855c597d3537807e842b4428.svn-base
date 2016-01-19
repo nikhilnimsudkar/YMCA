@@ -1,0 +1,97 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    
+<body>
+
+<div id="main">
+	
+	<div id="content" class="bootstrap-frm" style="border: 1px solid #DDD;">
+		<h2 style="color: #888; text-align: center;">Confirmation</h2>
+		<h4 style="color: #888; text-align: center;">Please print the Registration Information.</h4>
+			<table width="100%">
+				
+				<tbody id="confirmationDataBody" style="min-height: 300px;">
+				<tr>
+						<td width="50%"><h2>
+		   <span>REGISTRATION INFO</span>
+		 </h2></td>
+						<td ></td>
+					</tr>
+				
+					<tr>
+						<td width="50%"><span><b>First Name</b></span></td>
+						<td >${userS[0].personFirstName}</td>
+					</tr>
+					<tr>
+						<td><span><b>Last Name</b></span></td>
+						<td >${userS[0].personLastName}</td>
+					</tr>
+					<tr>
+						<td><span><b>Date Of Birth</b></span></td>
+						<td >${userS[0].dateOfBirth}</td>
+					</tr>
+					<tr>
+						<td><span><b>Phone Number</b></span></td>
+						<td >${userS[0].primaryFormattedPhoneNumber}</td>
+					</tr>
+					<tr>
+						<td><span><b>Email</b></span></td>
+						<td >${userS[0].primaryEmailAddress}</td>
+					</tr>
+					<tr>
+						<td><span><b>Gender</b></span></td>
+						<td >${userS[0].gender}</td>
+					</tr>	
+										
+					<tr>
+						<td><h2>
+		   <span>ADDRESS</span>
+		 </h2> </td>
+						<td ></td>
+					</tr>
+					
+					
+					<tr>
+						<td><span><b>Address Line 1</b></span></td>
+						<td >${account.addressLine1}</td>
+					</tr>
+					<tr>
+						<td><span><b>Address Line 2</b></span></td>
+						<td >${account.addressLine2}</td>
+					</tr>
+					<tr>
+						<td><span><b>City</b></span></td>
+						<td >${account.city}</td>
+					</tr>
+					<tr>
+						<td><span><b>State</b></span></td>
+						<td >${account.state}</td>
+					</tr>
+					<tr>
+						<td><span><b>Postal Code</b></span></td>
+						<td >${account.postalCode}</td>
+					</tr>
+					<tr>
+						<td></td>
+						<td ><span id="" style="float:right; margin-top:10px;"><a href="/ymca-web/login">Go to Login Page</a></span></td>
+					</tr>
+					
+				</tbody>
+			</table> 
+		</div>		
+	</div>
+		
+	</div>
+
+
+<script>
+	$(document).ready(function() {
+		//$("#confirmationData").kendoGrid();
+		
+	});
+</script>
+
+</body>

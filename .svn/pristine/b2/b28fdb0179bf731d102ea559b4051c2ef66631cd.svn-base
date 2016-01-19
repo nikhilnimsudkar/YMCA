@@ -1,0 +1,58 @@
+package com.ymca;
+
+import java.net.PasswordAuthentication;
+import java.util.logging.Logger;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.web.servlet.view.UrlBasedViewResolver;
+import org.springframework.web.servlet.view.tiles3.TilesConfigurer;
+import org.springframework.web.servlet.view.tiles3.TilesView;
+
+@Configuration
+@Import({CoreConfig.class, WebSecurityConfig.class})
+@ComponentScan(basePackages={"com.ymca.web"})
+@EnableAutoConfiguration
+//@PropertySource("classpath:mail.properties")
+//@ImportResource({"classpath:/applicationContext-service.xml"})
+public class WebConfig {
+
+	private Logger log = Logger.getLogger(WebConfig.class.getName());
+    public static void main(String[] args) {
+        SpringApplication.run(WebConfig.class, args);
+    }
+    
+    /*
+    @Bean
+    public MessageSource messageSource(){
+
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasenames("classpath:META-INF/i18n/messages");
+        messageSource.setFallbackToSystemLocale(false);
+        return messageSource;
+    }
+    */
+    
+    @Bean
+    public UrlBasedViewResolver viewResolver(){
+        log.info("Entering tiles configurer");
+        UrlBasedViewResolver viewResolver = new UrlBasedViewResolver();
+        viewResolver.setViewClass(TilesView.class);
+        return viewResolver;
+    }
+    
+    @Bean
+    public TilesConfigurer tilesConfigurer(){
+    	log.info("Entering tiles configurer");
+        String[] defs = {"/WEB-INF/layouts/layouts.xml","/WEB-INF/views/**/views.xml" };
+        TilesConfigurer tilesConfigurer = new TilesConfigurer();
+        tilesConfigurer.setDefinitions(defs);
+        return tilesConfigurer;
+    }
+}

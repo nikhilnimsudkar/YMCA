@@ -1,0 +1,6 @@
+package com.ymca.dao;
+
+import com.ymca.model.SignupAssociatedItemDetail;
+
+public interface SignUpAssociatedItemDetailDao extends GenericDao<SignupAssociatedItemDetail, Long>  {
+}

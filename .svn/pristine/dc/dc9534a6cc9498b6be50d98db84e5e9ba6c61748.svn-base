@@ -1,0 +1,33 @@
+<%-- <div id="main">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+	<div id="contentas" style="margin-bottom:30px;" class="bootstrap-frm donation-right-sec-block">
+			<div id="contentFormDiv" >
+				<a href="<%=contextPath %>/donationRegisterAndDonate">Register and donate</a><br /><br />
+				<a href="<%=contextPath %>/donateAsGuest">Donate as a guest</a>
+			</div>
+	</div>
+</div> --%>
+<%@ include file="../../layouts/include_taglib.jsp" %>
+
+<div id="tabstrip4" class="k-block"
+	style="background-color: #FFFFFF; margin-left: -71px; padding: 10px;">	
+			<span class="k-button" id="updProfile"	onclick="location.href='donationDonate'" style="margin-left: 5px;">Give	to the Y</span></br></br>
+			<table cellpadding="0" cellspacing="0" width="95%" rules="none"	style="padding-left: 4px; padding-top: 4px;">
+				<span class="head" width="100%" style="margin-left: 4px;">MY RECENT DONATIONS</span>
+				<c:forEach var="donation" items="${donationList}" varStatus="status">
+					<tr style="outline: thin solid; padding-left: 4px;   border-radius: 4px;">
+						<td style="color: red; padding-left: 4px; padding: 3px;"><fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${donation.signupDate}" /></td>
+						<td style="color: red;">$${donation.finalAmount}</td>
+					</tr>
+					<tr>
+						<td>&nbsp; <!--you just need a space in a row-->
+						</td>
+					</tr>						
+				</c:forEach>
+			</table>
+</div>

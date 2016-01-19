@@ -1,0 +1,37 @@
+package com.ymca;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
+
+import com.ymca.web.service.UserService;
+
+@Configuration
+@EnableWebMvcSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+	@Autowired
+    private UserService userService;
+	
+	@Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.userDetailsService(userService)
+            .authorizeRequests()
+                .antMatchers("/resources/**").permitAll()
+                .antMatchers("/recovery/**").permitAll()
+                .antMatchers("/viewTandC").permitAll()
+                .anyRequest().authenticated();
+        http
+        	.csrf().disable();
+        http
+            .formLogin()
+                .loginPage("/login")
+                .defaultSuccessUrl("/view_membership")
+                .permitAll()
+                .and()
+            .logout()
+                .permitAll();
+    }
+}

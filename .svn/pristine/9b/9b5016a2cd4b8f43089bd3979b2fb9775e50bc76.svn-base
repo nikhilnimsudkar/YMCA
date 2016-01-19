@@ -1,0 +1,10 @@
+package com.ymca.web.service;
+
+import java.util.Date;
+
+
+public interface InvoiceService {
+	
+	public String generateInvoiceNumber(Long accountId, Long signupId, Long payerId, Date nextBillDate);
+
+}

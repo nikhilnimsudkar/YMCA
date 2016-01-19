@@ -1,0 +1,64 @@
+package com.ymca.core.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.ymca.dao.ChildCareDao;
+import com.ymca.model.ChildCare;
+
+@Service
+@ComponentScan("com.ymca.dao")
+public class ChildCareServiceImpl implements ChildCareService {
+	@Autowired(required = true)
+	private ChildCareDao childCareDao;
+
+	@Override
+	@Transactional
+	public ChildCare create(ChildCare childCare) {
+		ChildCare childCareCreated = childCare;
+		return childCareDao.save(childCareCreated);
+	}
+
+	@Override
+	@Transactional
+	public ChildCare findById(Long accountId) {
+		return childCareDao.findOne(accountId);
+	}
+
+	@Override
+	@Transactional
+	public ChildCare delete(Long accountId) {
+		ChildCare deletedChildCare = childCareDao.findOne(accountId);
+
+		if (deletedChildCare == null)
+			// throw new ChildCareNotFound();
+
+			childCareDao.delete(deletedChildCare);
+		return deletedChildCare;
+	}
+
+	@Override
+	@Transactional
+	public List<ChildCare> findAll() {
+		return childCareDao.findAll();
+	}
+
+	@Override
+	@Transactional
+	public ChildCare update(ChildCare ChildCare) {
+		ChildCare updatedChildCare = childCareDao.findOne(ChildCare
+				.getAccountId());
+
+		if (updatedChildCare != null)
+		// throw new ChildCareNotFound();
+		{
+			updatedChildCare.setName(ChildCare.getName());
+			updatedChildCare.setChildCareNumber(ChildCare.getChildCareNumber());
+		}
+		return updatedChildCare;
+	}
+
+}

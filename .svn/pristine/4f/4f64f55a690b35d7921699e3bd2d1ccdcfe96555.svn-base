@@ -1,0 +1,250 @@
+<%@ include file="../../layouts/include_taglib.jsp" %> 
+<script>
+$(document).ready(function() {	
+	$("#ethnicitySelectId").kendoDropDownList();
+	var ethnicityDropdownlist = $("#ethnicitySelectId").data("kendoDropDownList");  
+	ethnicityDropdownlist.search("${usInfo.ethnicity}");
+	/*$("#ethnicityTxt").attr("value", ethnicityDropdownlist.text());
+	$("#ethnicitySelectId").on('change',function(e){  
+		if(ethnicityDropdownlist.text() == 'Other'){
+			$("#ethnicityTxt").attr("value", "");
+			$("#ethnicityTxt").css("display", "");
+		}else{
+			$("#ethnicityTxt").css("display", "none");
+			$("#ethnicityTxt").attr("value", ethnicityDropdownlist.text());
+		}
+	}); 
+	var ethnicityFlag = false;
+	$(document).find('#ethnicitySelectId option').each(function(i, obj) {			
+		if("${usInfo.ethnicity}" == $(obj).text()){
+			ethnicityFlag = true;			
+		}		
+	});
+	if(ethnicityFlag){
+		ethnicityDropdownlist.search("${usInfo.ethnicity}");
+		$("#ethnicityTxt").css("display", "none");
+		$("#ethnicityTxt").attr("value", ethnicityDropdownlist.text());
+	}else{
+		ethnicityDropdownlist.search("Other");
+		$("#ethnicityTxt").css("display", "");
+		$("#ethnicityTxt").attr("value", "${usInfo.ethnicity}");
+	}*/
+	updateDOBForm();
+	$(document).on('change', '#dobMonthForm, #dobDateForm, #dobYearForm', function(){		
+		updateDOBForm();
+	});
+	
+	
+});
+
+function updateDOBForm(){
+	var dobMonth = $("#dobMonthForm").val();
+	var dobDate = $("#dobDateForm").val();
+	var dobYear = $("#dobYearForm").val();
+	
+	//var dob = new Date(dobYear,dobMonth - 1,dobDate);	
+	var age =  18;
+	var kidAge =  23;
+	var mydate = new Date();
+	mydate.setFullYear(dobYear, dobMonth-1, dobDate);	
+    var currdate = new Date();
+    currdate.setFullYear(currdate.getFullYear() - age);
+    
+    var currChilddate = new Date();
+    currChilddate.setFullYear(currChilddate.getFullYear() - kidAge);
+
+    if(currChilddate <= mydate){    	
+    	$(document).find("#isAdultFormInputId").attr("value","false");
+    }else{    	
+    	$(document).find("#isAdultFormInputId").attr("value","true");
+    }
+}
+
+</script>
+
+<spring:bind path="account.*">
+    <c:if test="${not empty status.errorMessages}">
+        <div class="alert alert-danger alert-dismissable">
+            <a href="#" data-dismiss="alert" class="close">&times;</a>
+            <c:forEach var="error" items="${status.errorMessages}">
+                <c:out value="${error}" escapeXml="false"/><br/>
+            </c:forEach>
+        </div>
+    </c:if>
+</spring:bind>
+ 
+ <div id="form" class="bootstrap-frm">
+ <div id="profileinfo">
+ 
+	  <h2>
+	   <span>PROFILE INFORMATION</span>
+	  </h2>
+	  
+	  <form:input type="hidden" path="usrId" placeholder="First Name" name="usrId" id="usrId" value="${usInfo.contactId}" /> 
+	  <!-- 
+	  <label><form:input type="text" path="username" placeholder="Username" name="Username" id="Username" value="${usInfo.username}" /></label>
+	  <label><form:input type="password" path="password" placeholder="Password" style="" name="Password" id="Password" value="${usInfo.password}" /></label> -->
+	  <label><form:input type="text" path="firstName" placeholder="First Name" name="firstName" id="firstName" value="${usInfo.firstName}" /></label>
+	  <label><form:input type="text" path="lastName" placeholder="Last Name" name="lastName" id="lastName" value="${usInfo.lastName}" /></label>
+	  <%-- <label><form:input type="text" path="workNumber" placeholder="Work Number"  id="workNumber" value="" /></label> --%>
+	  <label><form:input type="text" path="phoneNumber"  placeholder="Cell Number" name="phoneNumber" id="phoneNumber" value="${usInfo.formattedPhoneNumber}" /></label>
+	  <%-- <label><form:input type="text" path="homeNumber" placeholder="Home Number"  id="homeNumber" value="" /></label> --%>
+	  <label><form:input type="text"  path="email" placeholder="Email" name="Email" id="Email" value="${usInfo.emailAddress}" /></label>  
+	  <fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${usInfo.dateOfBirth}" var="primaryUserDOB"/>
+	  <fmt:formatDate type="date" pattern="MM" value="${usInfo.dateOfBirth}" var="primaryUserDOBMonth"/>
+	  <fmt:formatDate type="date" pattern="dd" value="${usInfo.dateOfBirth}" var="primaryUserDOBDate"/>
+	  <fmt:formatDate type="date" pattern="yyyy" value="${usInfo.dateOfBirth}" var="primaryUserDOBYear"/>
+	  <label style="display:none;"><form:input type="text" style="width: 310px; height: 30px;  margin: 0; padding: 0;" path="dateOfBirth" placeholder="Date Of Birth" name="dateOfBirth" id="dateOfBirth" value="${primaryUserDOB}" /></label>
+	  <span id="employerSpan">
+	   <c:if test="${usInfo.age >= 18 }">
+	  		<label><form:input type="text" path="employer" placeholder="Employer" name="employer" id="employer" value="${usInfo.employer}" /></label>
+	  	</c:if>
+	  	<c:if test="${usInfo.age < 18 }">
+	  		<label><form:input type="text" path="employer" placeholder="Employer" name="employer" id="employer" value="${usInfo.employer}" style="display:none;"/></label>
+	  	</c:if> 	  	
+	  </span>
+	  <span>
+	  		<%-- <label><form:input type="text" path="ethnicity" placeholder="Ethnicity" name="ethnicity" id="ethnicity" value="${usInfo.ethnicity}" /></label> --%>
+	  		<span>Ethnicity : </span>
+	  		<select name="ethnicity" id="ethnicitySelectId" style="width : 82%">													
+				<c:forEach var="ethnicity" items="${ethnicityLst}" varStatus="count">
+					<c:if test="${ethnicity != null}">
+						<option value="${ethnicity.keyValue }">${ethnicity.keyValue }</option>
+					</c:if>	
+				</c:forEach>
+				<option value="Other">Other</option>
+			</select>
+	  </span><br /><br />
+	  <!-- <label><input type="text" placeholder="Other Ethnicity" name="ethnicity" id="ethnicityTxt" style="display : none;" /></label> -->
+	  <span class="">Date of Birth : </span> &nbsp;&nbsp;
+		<span>
+			<select name="dobMonth" id="dobMonthForm" style="width :90px;">													
+				<option value="1">January</option>
+				<option value="2">February</option>
+				<option value="3">March</option>
+				<option value="4">April</option>
+				<option value="5">May</option>
+				<option value="6">June</option>
+				<option value="7">July</option>
+				<option value="8">August</option>
+				<option value="9">September</option>
+				<option value="10">October</option>
+				<option value="11">November</option>
+				<option value="12">December</option>
+			</select>
+		</span>
+		<span>
+			<select name="dobDate" id="dobDateForm" style="width :45px;">													
+				<option value="01">1</option>
+				<option value="02">2</option>
+				<option value="03">3</option>
+				<option value="04">4</option>
+				<option value="05">5</option>
+				<option value="06">6</option>
+				<option value="07">7</option>
+				<option value="08">8</option>
+				<option value="09">9</option>
+				<option value="10">10</option>
+				<option value="11">11</option>
+				<option value="12">12</option>
+				<option value="13">13</option>
+				<option value="14">14</option>
+				<option value="15">15</option>
+				<option value="16">16</option>
+				<option value="17">17</option>
+				<option value="18">18</option>
+				<option value="19">19</option>
+				<option value="20">20</option>
+				<option value="21">21</option>
+				<option value="22">22</option>
+				<option value="23">23</option>
+				<option value="24">24</option>
+				<option value="25">25</option>
+				<option value="26">26</option>
+				<option value="27">27</option>
+				<option value="28">28</option>
+				<option value="29">29</option>
+				<option value="30">30</option>
+				<option value="31">31</option>
+			</select>
+		</span>
+		<span>
+			<select name="dobYear" id="dobYearForm" style="width :70px;">
+			</select>
+		</span>
+		  
+	  <table border="0">
+	  	<tr>
+	  		<td>Gender :</td>
+	  		<td>
+	  			  <c:set var="genderStr">${usInfo.gender }</c:set>	  
+				  <span id="formGenderRadio">	  
+				  	<c:if test="${genderStr eq 'Female' }">	
+				  		<span><span><form:radiobutton cssClass="form-control primary-user-gender" path="gender" style="width : 15px;" value="Male" id="genderMale" title="Please select gender"/></span><span style="margin-left : 5px;">Male</span></span>
+						<span><span><form:radiobutton cssClass="form-control primary-user-gender" path="gender" checked="checked"  style="width : 15px;" value="Female" id="genderFemale" title="Please select gender" /></span><span style="margin-left : 5px;">Female</span></span><br />
+				  	</c:if>
+				  	<c:if test="${genderStr eq 'Male' }">
+				  		<span><span><form:radiobutton cssClass="form-control primary-user-gender" path="gender" checked="checked" style="width : 15px;" value="Male" id="genderMale" title="Please select gender"/></span><span style="margin-left : 5px;">Male</span></span>
+						<span><span><form:radiobutton cssClass="form-control primary-user-gender" path="gender"  style="width : 15px;" value="Female" id="genderFemale" title="Please select gender" /></span><span style="margin-left : 5px;">Female</span></span><br />
+				  	</c:if>
+				  </span>
+			</td>
+	  		
+	  	</tr>
+	  	<tr id="addKidMemberSpan" style="display : none;">
+	  		<td ><span >Is a Member:&nbsp;</span></td>
+	  		<td>
+	  			<span>
+					<form:radiobutton cssClass="form-control isMember" path="addToMembership"  value="Yes" id="Yes" title="Please select Membership option"/>&nbsp;Yes&nbsp;
+					<form:radiobutton cssClass="form-control isMember" path="addToMembership"  value="No" id="No" title="Please select Membership option"/>&nbsp;No&nbsp; 
+				  </span>
+	  		</td>  		
+	  	</tr>
+	  </table> 
+	 <%--  <select name="location" id="location" style="width: 315px;" ><br />
+			<option value="0">--Select Preferred Location--</option>
+			<c:forEach var="location" items="${locations}" varStatus="count">				
+				<option value="${location.id }">${location.branch }</option>				
+			</c:forEach>
+	 </select>  --%>
+	 <%-- <c:if test="${ location.branch != 'All Branches' && location.branch != 'Bay Area' }">
+	 </c:if> --%>
+	 </div> <br />
+	  <div id="customerAddress">
+	  <h2>
+	   <span>ADDRESS</span>
+	  </h2>
+	  
+	  <label><form:input type="text" path="addressLine1" placeholder="Number/Street" name="addressLine1" id="addressLine1" value="${accInfo.addressLine1}" /></label>
+	  <label><form:input type="text" path="addressLine2"  placeholder="Address 2" name="addressLine2" id="addressLine2" value="${accInfo.addressLine2}" /></label> 
+	  <label><form:input type="text" path="city" placeholder="City" name="city" id="city" value="${accInfo.city}" /></label>
+	  <label><form:input type="text" path="state" placeholder="State" name="state" id="state" value="${accInfo.state}" /></label>
+	  <label><form:input type="text" path="country" placeholder="Zip Code" name="postalCode" id="postalCode" value="${accInfo.country}" /></label>
+	 <input style="display:none;" name="isAdult" id="isAdultFormInputId" value=""/>
+	 </div> 
+	  </div>
+	  
+	  <div id="enrolled_programs" class="k-block" style=" width:668px;background-color:#FFFFFF; padding:5px;">
+	  	   <h2>
+	  <span class="head" width="100%" style="margin-top:1px;">ENROLLED PROGRAMS</span></br>
+	  	  </h2>
+<table id="countrytable"  cellpadding="0" cellspacing="0" width="100%"  rules="none" style="margin-left:0px;padding-left:4px;padding-top:4px;"> 
+    
+        <tr id ="countryrow" style="outline: hidden;"> 
+		<td style="padding-bottom:2px;padding-left:20px;">FinalAmount</td>
+		<td style="padding-bottom:2px;padding-left:29px;">Location</td>
+		<td style="padding-bottom:2px;padding-left:29px;">StartDATE</td>
+		<td style="padding-bottom:2px;padding-left:29px;">EndDate</td>
+		<td style="padding-bottom:2px;padding-left:29px;">Status</td>
+
+    <td>
+        &nbsp;
+        <!--you just need a space in a row-->
+    </td>
+</tr>
+
+
+ </table>
+ 
+		
+</div>

@@ -1,0 +1,141 @@
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+
+<div id"x">
+
+<div id="tabstrip4" class="k-block" style=" background-color:#FFFFFF;margin-left:-71px;">
+
+
+
+ 
+		<span class="head" style="padding-left:5px;">CURRENT DUE</span>	
+		<table cellpadding="0" cellspacing="0" width="95%"  rules="none" style="padding-left:4px;padding-top:4px;">
+<td style="color: red;"><strong><span id="dueAmount">$${dueAmount}0</span></strong></td>
+</table>
+
+</br><span class="head" style="padding-left:5px;">PAST DUE</span>
+<table cellpadding="0" cellspacing="0" width="95%"  rules="none" style="padding-left:4px;padding-top:4px;">	
+<td style="color: red;"><strong><span id="pastDueAmount">$${pastDueAmount}0</span></strong></td></br>
+</table>
+</br>
+<c:choose>
+									<c:when test="${(pastDueAmount!='0') || (dueAmount!='0') }">
+<span class="k-button" id="updProfile" onclick="location.href='payNow'" style="margin-left:5px;">PAY NOW</span>
+</c:when>
+<c:otherwise>
+<span class="k-button" id="updProfile" onclick='return false;' style="margin-left:5px;" >PAY NOW</span>
+</c:otherwise>
+</c:choose>
+	</br>	</br>	
+
+					
+					
+
+</div>
+<c:if test="${fn:length(donationOpptyLst)>0}">
+	<div id="tabstrip4" class="k-block" style=" background-color:#FFFFFF;margin-left:-71px;">
+		<span class="head" style="padding-left:5px;">DONATION DRIVE</span>
+		<c:if test="${fn:length(donationOpptyLst)>=5}">
+						<a style="margin-left:6px;" href="fullDonationsList" target="_self" >view more</a>				
+		 </c:if>
+		<br />
+		<table cellpadding="0" cellspacing="0" width="100%"  rules="none" style="padding-left:4px;padding-top:4px; border : thin 1px solid grey; margin-top : 8px;">					
+			<c:forEach var="opportunity" items="${donationOpptyLst}" varStatus="statusOpp">
+				<c:if test="${statusOpp.count<='5'}">
+				<c:forEach var="opptyRevenue" items="${opportunity.opptyRevenue}" varStatus="status">				
+					<c:if test="${status.count<='1' && opptyRevenue != null && opptyRevenue.itemDetail != null}">															
+						<tr style="background-color: #f5f5f5;">	
+							<%-- <td style="border: 1px solid white;"><input type="radio" name="oppDonationRadio"><span style="display:none;" class="opptyIdCls">${opportunity.id }</span></td> --%>											
+		 					<td style="color: blue;padding-left:4px;padding:3px; border: 1px solid white;">
+		 						<a href="annualDonationDonate?opptyId=${opportunity.optyId }" >${opptyRevenue.itemDetail.recordName}</a>
+		 					</td>
+		 				</tr>
+					</c:if>	
+								
+				</c:forEach>
+				</c:if>		
+ 			</c:forEach>
+ 			
+ 		</table>
+		<!-- <span class="k-button" id="opptyDonateNow" style="margin-left:5px; margin-top: 8px;">Donate Now!</span><br> -->
+	</div>
+</c:if>
+
+<div id="tabstrip4" class="k-block" style=" background-color:#FFFFFF;margin-left:-71px;">
+	<c:choose>
+	<c:when test="${fn:length(donationList) <= 0}">
+     
+	  <!--  </br></br>
+	 	<span class="k-button" id="updProfile" onclick="location.href='donationDonate'"style="margin-left:5px;">Give to the Y</span></br></br> -->
+	 
+	  
+      </c:when>
+
+      <c:otherwise>
+	   <table cellpadding="0" cellspacing="0" width="95%"  rules="none" style="padding-left:4px;padding-top:4px;">
+					
+					<span class="head" width="100%"style="margin-left:4px;" >MY RECENT DONATIONS</span>		
+
+						<c:forEach var="donation" items="${donationList}" varStatus="status">
+						
+						<c:choose>
+      <c:when test="${status.count<='4'}">
+
+							<tr style="outline:thin solid; padding-left:4px;">
+								<%-- <td style="color: red;padding-left:4px;padding:3px;"><fmt:formatDate
+										type="date" pattern="MM/dd/yyyy"
+										value="${donation.donationDate}" /></td> 
+ <td style="color: red;">$${donation.donationAmount}0</td>--%>
+ <td style="color: blue;padding-left:4px;padding:3px;"><fmt:formatDate type="date" pattern="MM/dd/yyyy" value="${donation.paymentDate}" /></td>
+<td style="color: blue;">$${donation.amount}0</td>
+							</tr>
+							<tr>
+    <td>
+        &nbsp;
+        <!--you just need a space in a row-->
+    </td>
+</tr>
+</c:when>
+
+       
+	  
+	  
+</c:choose>	
+						</c:forEach><br />
+	<c:if test="${fn:length(donationList)>4}">
+		 <tr>  
+		<td><a style="margin-left:9px;" href="donationHome" target="_self" id="addmemberLink" >view more</a></td><td>&nbsp;</td>
+		</tr> 
+		
+	 </c:if>
+						
+					
+				</table>
+      </c:otherwise>
+      
+</c:choose><br />
+<span class="k-button" id="updProfile" onclick="location.href='donationDonate'"style="margin-left:5px;">Give to the Y</span><br>
+</div>
+</div>
+
+	
+<!-- <script>
+$(document).ready(function(){
+	 $(document).on('click', '#opptyDonateNow', function(){
+		if($("input:radio[name=oppDonationRadio]" ).is(":checked")){    	
+		    var opptyId = $("input:radio[name=oppDonationRadio]:checked" ).parent().find(".opptyIdCls").text();
+		    location.href='donationDonate?opptyId='+opptyId;
+		    //alert(opptyId);
+		}
+	 });
+});
+</script> -->
+		
+
+		
+		
+
+	

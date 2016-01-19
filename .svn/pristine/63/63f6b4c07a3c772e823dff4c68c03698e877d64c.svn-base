@@ -1,0 +1,34 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.Account;
+import com.ymca.model.User;
+
+public interface AccountDao  extends GenericDao<Account, Long>  {
+	Account findByAccountId(Long accountId);
+	Account getByName(String accountName);
+	@Transactional
+	Account getByEmail(String email);
+	Account getByToken(String token);
+	Account getByAddressLine1IgnoringCase(String address1);
+
+	@Query("select a from Account a inner join a.user u where u.firstName =?1 and u.lastName =?2 and u.dateOfBirth =?3 and a.addressLine1 =?4 and a.postalCode =?5")
+	List<Account> getByFirstNameAndLastNameAndAddressLine1AndPostalCodeAndDOB(String firstName, String lastName, Date dateOfBirth, String addressLine1, String postalCode);
+	
+	//@Query("select p.productId, p.productName, p.description, p.productType, p.duration, p.pricingRule.tierPrice, p.waiversAndTC.tcDescription from ItemDetails i inner join i.product p where p.productType='MEMBERSHIP' and i.locations.locationId =?1")")" +
+	//@Query("select a.addressLine1, a.addressLine2, a.city, a.state, a.postalCode, u.firstName, u.lastName, u.dateOfBirth, u.formattedPhoneNumber, u.emailAddress from Account a inner join a.user u where u.emailAddress =?1")
+	//List<Account> getAccountByEmail(String email);
+	
+	@Query("select a, u from Account a inner join a.user u where u.firstName =?1 and u.lastName =?2 and u.emailAddress  =?3 and u.dateOfBirth =?4")
+	List<Object[]> getByFirstNameAndLastNameAndEmailAddressAndDateOfBirth(String firstName, String lastName, String emailAddress, Date dateOfBirth);
+	
+	@Query("select a, u from Account a inner join a.user u where u.firstName =?1 and u.lastName =?2 and u.dateOfBirth =?3")
+	List<Object[]> getByFirstNameAndLastNameAndDateOfBirth(String firstName, String lastName, Date dateOfBirth);
+	
+}

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definations>
+	<ws wsdlUrl="http://secure.hallpassid.com/SORServices/SORSearch.asmx?WSDL" module="common">
+		<operation>
+			<soapAction>http://HallPassId.com/SORData/IsSOR</soapAction>
+			<namespaces>
+				<namespace prefix="sor" uri="http://HallPassId.com/SORData/">
+					<tags>IsSOR</tags>
+				</namespace>
+			</namespaces>
+		</operation>
+		<operation>
+			<soapAction>http://HallPassId.com/SORData/FetchSORDetails</soapAction>
+			<namespaces>
+				<namespace prefix="sor" uri="http://HallPassId.com/SORData/">
+					<tags>FetchSORDetails</tags>
+				</namespace>
+			</namespaces>
+		</operation>
+		<operation>
+			<soapAction>http://HallPassId.com/SORData/FetchSORIndividualDetails</soapAction>
+			<namespaces>
+				<namespace prefix="sor" uri="http://HallPassId.com/SORData/">
+					<tags>FetchSORIndividualDetails</tags>
+				</namespace>
+			</namespaces>
+		</operation>
+		<operation>
+			<soapAction>http://HallPassId.com/SORData/FetchSORIndividualOffenses</soapAction>
+			<namespaces>
+				<namespace prefix="sor" uri="http://HallPassId.com/SORData/">
+					<tags>FetchSORIndividualOffenses</tags>
+				</namespace>
+			</namespaces>
+		</operation>
+	</ws>	
+</definations>

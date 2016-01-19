@@ -1,0 +1,330 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<div id="purchaseinfoPg" style="margin:0">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+	<div id="tabstrip3" style="width:685px;margin:0">
+		<div id="payment_cart">
+			<div class="pay_header">
+				<span class="head" style="margin-left:3px;">PURCHASE INFORMATION</span>
+				<span class="autopaySpan">
+					<button id="pmPrimary" class="k-button" style="margin-right: 10px; text-shadow: none;">Make Primary</button>
+					<button id="autopayBtn" class="k-button">AUTOPAY</button>
+				</span>
+				
+				<div id="purchase_info" >
+					<table width="100%">
+						
+						<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+							<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'Credit' }">
+								<tr>
+									<c:if test="${ paymentInfo.isPrimary == '1' }">
+										<td><input type="radio" name="paymentInfoRadio" checked="checked" class="bootstrapRadio"></td>
+									</c:if>
+									<c:if test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null}">
+										<td><input type="radio" name="paymentInfoRadio" class="bootstrapRadio"></td>
+									</c:if>	
+									<td><span>Credit & Debit Cards</span></td>
+									<!-- <td><span>XXXX-XXXX-XXXX-1234</span></td> -->
+									<td><span>${paymentInfo.cardNumber }</span><span class="pmMakePrimaryPaymentId" style="display:none;">${paymentInfo.paymentId }</span></td>
+									<td></td>
+									<td>Expiration Date</td>
+									<!-- <td>07/20</td> -->
+									<td>${paymentInfo.expirationMonth }/${paymentInfo.expirationYear }</td>
+								</tr>
+							</c:if>
+						</c:forEach>
+						<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+							<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'EFT' }">
+								<tr>
+									<c:if test="${ paymentInfo.isPrimary == '1' }">
+										<td><input type="radio" name="paymentInfoRadio" checked="checked" class="bootstrapRadio"></td>
+									</c:if>
+									<c:if test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null }">
+										<td><input type="radio" name="paymentInfoRadio" class="bootstrapRadio"></td>
+									</c:if>	
+															
+									<td><span>Bank Details</span></td>
+									<!-- <td><span>XXXXX-XXXXX</span></td> -->
+									<td><span>${paymentInfo.bankRoutingNumber }</span><span class="pmMakePrimaryPaymentId" style="display:none;">${paymentInfo.paymentId }</span></td>
+									<td></td>
+									<td></td>
+									<td></td>
+								</tr>
+							</c:if>
+						</c:forEach>
+						<tr>
+							<td width="20px"><input type="radio" name="paymentInfoRadio" class="bootstrapRadio" value="New"></td>
+							<td width="150px"><span>New Card</span></td>
+							<td width="120px"></td>
+							<td width="10px"></td>
+							<td width="100px"></td>
+							<td width="100px"></td>
+						</tr>
+						<tr>
+							<td></td>
+							<td colspan="5">
+								<form:form commandName="paymentMethod" id="addCardInfoForm" method="post" action="addCardInfo">  
+								<div id="addcard" style="margin-top:10px; margin-bottom:10px; height:44px; display:none;">
+									<div style="height:50px;">
+										<div class="addcarddiv">
+											<div style="height:20px;">Name on card</div>
+											<div><input type="text" class="k-textbox" placeholder="Full Name on Card" name="fullName" id="fullName" value=""></div>
+										</div>
+										<div class="addcarddiv">
+											<div style="height:20px;">Card Number</div>
+											<div><input type="text" class="k-textbox" placeholder="Card Number" name="cardNumber" id="cardNumber" value=""></div>
+										</div>
+										<div class="addcarddiv">
+											<div style="height:20px;">Expiration date</div>
+											<div>
+												<span>
+													<select id="expirationMonth" name="expirationMonth" style="width:50px;">
+									                      <option value="01">01</option>
+									                      <option value="02">02</option>
+									                      <option value="03">03</option>
+									                      <option value="04">04</option>
+									                      <option value="05">05</option>
+									                      <option value="06">06</option>
+									                      <option value="07">07</option>
+									                      <option value="08">08</option>
+									                      <option value="09">09</option>
+									                      <option value="10">10</option>
+									                      <option value="11">11</option>
+									                      <option value="12">12</option>
+													</select>
+												</span>
+												<span>
+													<select id="addCardExpirationYear" name="expirationYear" style="width:70px;">
+													</select>
+												</span>
+											</div>
+										</div>
+										<div class="addcarddiv">
+											<div style="height:20px;">Security Code</div>
+											<div><input type="password" class="k-textbox" placeholder="Security Code" name="securityCode" id="securityCode" value=""></div>
+										</div>
+									</div>
+									
+									<div style="height:50px;">
+										<div class="addcarddiv">
+											<div style="height:20px;">Address Line 1</div>
+											<div><!-- <textarea placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" class="k-textbox" style="width: 279px; height: 46px;"></textarea> -->
+												<input type="text" class="k-textbox" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" value="">
+											</div> 
+										</div>
+										<div class="addcarddiv">
+											<div style="height:20px;">Address Line 2</div>
+											<div><input type="text" class="k-textbox" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2" value=""></div> 
+										</div>
+										<div class="addcarddiv">
+											<div style="height:20px;">City</div>
+											<div><input type="text" class="k-textbox" placeholder="Billing City" name="billingCity" id="billingCity" value=""></div> 
+										</div>
+										<div class="addcarddiv">
+											<div style="height:20px;">State</div>
+											<div><input type="text" class="k-textbox" placeholder="Billing State" name="billingState" id="billingState" value=""></div> 
+										</div>
+										
+									</div>
+									
+									<div style="height:50px;">
+										<div id="savecardcheckbox" class="addcarddiv">
+											<div><input type="checkbox" name="SaveCard" id="SaveCard">&nbsp;&nbsp;Save Card</div>
+										</div>
+									</div>
+								</div>
+								</form:form>
+							</td>
+						</tr>			
+					</table>
+					<div >
+						<span class="k-block k-success-colored" id="pmPrimarySuccess"></span>
+						<span class="k-block k-error-colored" id="pmPrimaryError"></span>
+					</div>
+				</div>
+			</div>
+			
+			<!-- 
+			<div class="pay_header">
+				<span class="head" style="margin-left:3px;">BILLING INFORMATION</span>
+				<div id="bill_info">
+					<%-- <span id="address1">${accInfo.addressLine1}</span>
+					<span id="address2">${accInfo.addressLine2}</span><br>
+					<span id="city">${accInfo.city}</span>
+					<span id="state">${accInfo.state}</span><br>
+					<span id="zip">${accInfo.postalCode}</span> --%>
+					<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+						<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.isPrimary == '1' }">
+							<span id="address1">${paymentInfo.billingAddressLine1}</span>
+							<span id="address2">${paymentInfo.billingAddressLine2}</span><br>
+							<span id="city">${paymentInfo.billingCity}</span>
+							<span id="state">${paymentInfo.billingState}</span><br>					
+						</c:if>
+					</c:forEach>
+					
+					<%-- <span id="zip">${paymentInfo.postalCode}</span> --%>
+				</div>
+			</div>
+			 -->
+			
+			<div class="pay_header">
+				<span class="head" style="margin-left:3px;">CART ITEMS</span>
+				<div id="cart_info">
+					<table width="100%">
+						
+						<tr height="40px">
+							<td></td>
+						</tr>
+						<tr>
+							<td colspan="3" align="right" style="padding-right:20px;"><span><strong>Order Total <span id="ordertotal"></span></strong></span></td>
+							<td align="right" style="padding-right:10px;"><button id="placeorderBtn" class="k-button">PLACE ORDER</button></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			
+			
+		</div>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {
+		var currentYear = new Date().getFullYear();
+		for(var i=0; i<30 ; i++){
+			$('#addCardExpirationYear').append($('<option>', {value: currentYear,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		
+		$("#expirationMonth").kendoDropDownList({
+			width:50
+		});
+		$("#addCardExpirationYear").kendoDropDownList();
+		
+		$("input[name=paymentInfoRadio]").click(function(){      
+			if($("input[name=paymentInfoRadio]:checked").val()=='New'){
+				$('#addcard').slideDown();
+			}
+			else{
+				$('#addcard').slideUp();
+			}
+		});
+		
+		$( "#placeorderBtn" ).click(function(){
+			
+			if($("input[name=paymentInfoRadio]:checked").val()=='New'){
+
+				if($('#SaveCard').is(":checked")){
+					addcccard();
+				}
+				else{
+					var paymentId = "0"
+				}
+			} else {
+				
+				var paymentId = $('input[name=paymentInfoRadio]:checked').parent().parent().parent().parent().find('.pmMakePrimaryPaymentId').html();  
+				console.log(paymentId);
+				//alert(paymentId);
+				
+				if(paymentId=='' || typeof paymentId === "undefined"){
+						//alert($("#statusBlock").html());
+					  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcSuccessSpan" ).html("");	
+					  $("#tcErrorSpan1").css("display", "block");		
+					  $( "#tcErrorSpan1" ).html("Please select mode of payment");
+					  return;
+				}
+			}
+			
+			//return;
+			$(".k-loading-mask").show();
+			var sessionData = [],
+			    data = $('form').find('input:not([name="selectedItemSession"])').serialize();
+			
+			/*
+			$('form').find('input[name="selectedItemSession"]').each(function(){
+				if($("#item_"+this.value).is(':checked')){
+					sessionData.push(this.value);
+				}
+			});
+			data += '&paymentId='+paymentId+'&selectedItemSession='+sessionData.join(',');
+			console.log(data);
+			*/
+			
+			if(cart.contents.length>0){
+				$.each(cart.contents, function(i,itemDetailsSession) {
+					sessionData.push(itemDetailsSession.id);
+				});
+			}
+			data += '&paymentId='+paymentId+'&selectedItemSession='+sessionData.join(',');
+			console.log(data);
+			
+			$.ajax({
+				  type: "POST",
+				  url: $('#signupFrm').attr( "action"),
+				  data: data,
+				  success: function( data ) {
+				  	  //alert(data);
+				  	  $.sessionStorage.clear();
+				  	  $(".k-loading-mask").hide();
+				  	  $("#payment_cart").html("");
+				  	  $("#payment_cart").html('<div id="statusBlock" class="k-block k-success-colored" style="width: 90%;margin: 20px; padding: 10px;">Thank you for enrolling to the Program</div>');
+				  },
+				  error: function( xhr,status,error ){
+					  //alert("1" +status);
+					  console.log(xhr);
+					  $(".k-loading-mask").hide();
+				  }
+			});
+			
+		});
+
+	});
+	
+	function addcccard (){
+		//alert($('#addCardInfoForm').serialize());
+		$.ajax({
+			  type: "POST",
+			  url: $('#addCardInfoForm').attr( "action"),
+			  data: $('#addCardInfoForm').serialize(),
+			  success: function( data ) {				  	  
+			  	  if(data=='SUCCESS'){
+				  	  $("#addCardErrorSpan").css("display", "none");		
+					  $("#addCardErrorSpan" ).html("");	
+					  //setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+					 // setTimeout(function(){$(".k-loading-text").html("Card Information Added successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+				  	 // setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+				  	  
+				  	  $("#addCardSuccessSpan").css("display", "block");		
+					  $("#addCardSuccessSpan" ).html("Card Information Added successfully");
+					  $(".k-loading-mask").hide();
+				  	  //setTimeout(function(){location.reload();}, 7000);
+				  	  
+			  	  }else if(data == 'NOT_FOUND'){
+			  		  $("#addCardSuccessSpan").css("display", "none");		
+					  $("#addCardSuccessSpan" ).html("");	
+					  $("#addCardErrorSpan").css("display", "block");		
+					  $( "#addCardErrorSpan" ).html("Payment Information Not Found.");
+					  $(".k-loading-mask").hide();
+			  	  }else {
+			  		  $("#addCardSuccessSpan").css("display", "none");		
+					  $("#addCardSuccessSpan" ).html("");	
+					  $("#addCardErrorSpan").css("display", "block");		
+					  $( "#addCardErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+			  	  }					  
+			  },
+			  error: function( xhr,status,error ){
+				  $("#addCardSuccessSpan").css("display", "none");		
+				  $("#addCardSuccessSpan" ).html("");	
+				  $("#addCardErrorSpan").css("display", "block");		
+				  $( "#addCardErrorSpan" ).html("There was some error. Please try again later");
+				  $(".k-loading-mask").hide();
+			  }
+		});
+	}
+</script>

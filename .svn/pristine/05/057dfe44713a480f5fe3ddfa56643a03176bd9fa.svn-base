@@ -1,0 +1,120 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "SetUpFee") 
+@XmlRootElement
+public class SetpUpFee extends BaseObject implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long Id;
+	
+	private Double SetUpFee;
+	
+	@Column(name = "SetUpFeeStartDate", columnDefinition="DATE")
+	private Date setUpFeeStartDate;
+	
+	@Column(name = "SetUpFeeEndDate", columnDefinition="DATE")
+	private Date setUpFeeEndDate;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="contact_id")
+	private User contact;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="accountId")
+	private Account customer;
+	
+	private Calendar lastUpdated;
+	
+	public Long getId() {
+		return Id;
+	}
+
+	public void setId(Long id) {
+		Id = id;
+	}
+
+	public double getSetUpFee() {
+		return SetUpFee;
+	}
+
+	public void setSetUpFee(double setUpFee) {
+		SetUpFee = setUpFee;
+	}
+
+	public Date getSetUpFeeStartDate() {
+		return setUpFeeStartDate;
+	}
+
+	public void setSetUpFeeStartDate(Date setUpFeeStartDate) {
+		this.setUpFeeStartDate = setUpFeeStartDate;
+	}
+
+	public Date getSetUpFeeEndDate() {
+		return setUpFeeEndDate;
+	}
+
+	public void setSetUpFeeEndDate(Date setUpFeeEndDate) {
+		this.setUpFeeEndDate = setUpFeeEndDate;
+	}
+
+	public User getContact() {
+		return contact;
+	}
+
+	public void setContact(User contact) {
+		this.contact = contact;
+	}
+
+	public Account getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Account customer) {
+		this.customer = customer;
+	}
+
+	public Calendar getLastUpdated() {
+		return lastUpdated;
+	}
+
+	public void setLastUpdated(Calendar lastUpdated) {
+		this.lastUpdated = lastUpdated;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+}

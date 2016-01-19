@@ -1,0 +1,252 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "location") 
+@XmlRootElement
+public class Location extends BaseObject implements Serializable {
+	private static final long serialVersionUID = 1509107180210371903L;
+	
+	public Location(){
+		
+	}
+
+	@Id
+	@Column(name="Id")
+	private Long id;
+
+	@Column(name="RecordName")
+    private String recordName;
+
+	@Column(name="Area_c")
+	private String area;
+	
+	@Column(name="Branch_c")
+	private String branch;
+
+	@Column(name="AddressLine1_c")
+	private String addressLine1;
+	
+	@Column(name="AddressLine2_c")
+	private String addressLine2;
+	
+	@Column(name="City_c")
+	private String city;	
+	
+	@Column(name="State_c")
+	private String state;
+	
+	
+	@Column(name="Zip_c")
+	private String zip;
+	
+	@Column(name="Telephone_c")
+	private String telephone;
+	
+	@Column(name="Tier_c")
+	private String tier;
+	
+	@Column(name="Manager_c")
+	private String manager;
+	
+	@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+	@JoinColumn(name = "locationId")	
+	private List<PricingRule> pricingRule ;
+	
+	@OneToMany(fetch=FetchType.LAZY, mappedBy = "location", cascade = CascadeType.ALL)
+	private List<ItemDetail> itemDetails;
+	
+	@Column(name="LocationId_c")
+	private String locationId;
+	
+	@Column(name="Status_c")
+	private String status;
+	
+	@Transient
+	private Long itemId;
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String recordName) {
+		this.recordName = recordName;
+	}
+
+	public String getArea() {
+		return area;
+	}
+
+	public void setArea(String area) {
+		this.area = area;
+	}
+
+	public String getBranch() {
+		return branch;
+	}
+
+	public void setBranch(String branch) {
+		this.branch = branch;
+	}
+
+	public String getAddressLine1() {
+		return addressLine1;
+	}
+
+	public void setAddressLine1(String addressLine1) {
+		this.addressLine1 = addressLine1;
+	}
+
+	public String getAddressLine2() {
+		return addressLine2;
+	}
+
+	public void setAddressLine2(String addressLine2) {
+		this.addressLine2 = addressLine2;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public String getZip() {
+		return zip;
+	}
+
+	public void setZip(String zip) {
+		this.zip = zip;
+	}
+
+	public String getTelephone() {
+		return telephone;
+	}
+
+	public void setTelephone(String telephone) {
+		this.telephone = telephone;
+	}
+
+	public String getTier() {
+		return tier;
+	}
+
+	public void setTier(String tier) {
+		this.tier = tier;
+	}
+
+	public String getManager() {
+		return manager;
+	}
+
+	public void setManager(String manager) {
+		this.manager = manager;
+	}
+
+	public List<PricingRule> getPricingRule() {
+		return pricingRule;
+	}
+
+	public void setPricingRule(List<PricingRule> pricingRule) {
+		this.pricingRule = pricingRule;
+	}
+
+	public List<ItemDetail> getItemDetails() {
+		return itemDetails;
+	}
+
+	public void setItemDetails(List<ItemDetail> itemDetails) {
+		this.itemDetails = itemDetails;
+	}
+
+	public String getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(String locationId) {
+		this.locationId = locationId;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Location other = (Location) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "Location [Id=" + id + ", RecordName=" + recordName
+				+ ", Branch_c=" + branch + ", AddressLine1_c="
+				+ addressLine1 + ", AddressLine2_c=" + addressLine2
+				+ ", City_c=" + city + ", State_c=" + state + ", Zip_c="
+				+ zip + ", Telephone_c=" + telephone + ", Tier_c=" + tier
+				+ ", Manager_c=" + manager + ", pricingRule=" + pricingRule
+				+ ", ]";
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Long getItemId() {
+		return itemId;
+	}
+
+	public void setItemId(Long itemId) {
+		this.itemId = itemId;
+	}
+}

@@ -1,0 +1,175 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
+/**
+ * This class is used to represent an address with address,
+ * city, province and postal-code information.
+ *
+ * @author <a href="mailto:matt@raibledesigns.com">Matt Raible</a>
+ */
+@Embeddable
+public class Address extends BaseObject implements Serializable {
+    private static final long serialVersionUID = 3617859655330969141L;
+    
+    @Column(name="PrimaryAddressLine1")
+    private String primaryAddressLine1;
+    
+    @Column(name="PrimaryAddressLine2")
+    private String primaryAddressLine2;
+    
+    @Column(name="PrimaryAddressCity")
+    private String primaryAddressCity;
+    
+    @Column(name="PrimaryAddressProvince")
+    private String primaryAddressProvince;
+    
+    @Column(name="PrimaryAddressCountry")
+    private String primaryAddressCountry;
+        
+    @Column(name="PrimaryAddressPostalCode")
+    private String primaryAddressPostalCode;
+
+    
+    public String getPrimaryAddressLine1() {
+        return primaryAddressLine1;
+    }
+
+   
+    public String getPrimaryAddressCity() {
+        return primaryAddressCity;
+    }
+
+    
+    public String getPrimaryAddressProvince() {
+        return primaryAddressProvince;
+    }
+
+   
+    public String getPrimaryAddressCountry() {
+        return primaryAddressCountry;
+    }
+
+   
+    public String getPrimaryAddressPostalCode() {
+        return primaryAddressPostalCode;
+    }
+
+    public void setPrimaryAddressLine1(String primaryAddressLine1) {
+        this.primaryAddressLine1 = primaryAddressLine1;
+    }
+
+    public void setPrimaryAddressCity(String primaryAddressCity) {
+        this.primaryAddressCity = primaryAddressCity;
+    }
+
+    public void setPrimaryAddressCountry(String primaryAddressCountry) {
+        this.primaryAddressCountry = primaryAddressCountry;
+    }
+
+    public void setPrimaryAddressPostalCode(String primaryAddressPostalCode) {
+        this.primaryAddressPostalCode = primaryAddressPostalCode;
+    }
+
+    public void setPrimaryAddressProvince(String primaryAddressProvince) {
+        this.primaryAddressProvince = primaryAddressProvince;
+    }
+
+    public String getPrimaryAddressLine2() {
+		return primaryAddressLine2;
+	}
+
+
+	public void setPrimaryAddressLine2(String primaryAddressLine2) {
+		this.primaryAddressLine2 = primaryAddressLine2;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Address other = (Address) obj;
+		if (primaryAddressCity == null) {
+			if (other.primaryAddressCity != null)
+				return false;
+		} else if (!primaryAddressCity.equals(other.primaryAddressCity))
+			return false;
+		if (primaryAddressCountry == null) {
+			if (other.primaryAddressCountry != null)
+				return false;
+		} else if (!primaryAddressCountry.equals(other.primaryAddressCountry))
+			return false;
+		if (primaryAddressLine1 == null) {
+			if (other.primaryAddressLine1 != null)
+				return false;
+		} else if (!primaryAddressLine1.equals(other.primaryAddressLine1))
+			return false;
+		if (primaryAddressLine2 == null) {
+			if (other.primaryAddressLine2 != null)
+				return false;
+		} else if (!primaryAddressLine2.equals(other.primaryAddressLine2))
+			return false;
+		if (primaryAddressPostalCode == null) {
+			if (other.primaryAddressPostalCode != null)
+				return false;
+		} else if (!primaryAddressPostalCode
+				.equals(other.primaryAddressPostalCode))
+			return false;
+		if (primaryAddressProvince == null) {
+			if (other.primaryAddressProvince != null)
+				return false;
+		} else if (!primaryAddressProvince.equals(other.primaryAddressProvince))
+			return false;
+		return true;
+	}
+
+    @Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime
+				* result
+				+ ((primaryAddressCity == null) ? 0 : primaryAddressCity
+						.hashCode());
+		result = prime
+				* result
+				+ ((primaryAddressCountry == null) ? 0 : primaryAddressCountry
+						.hashCode());
+		result = prime
+				* result
+				+ ((primaryAddressLine1 == null) ? 0 : primaryAddressLine1
+						.hashCode());
+		result = prime
+				* result
+				+ ((primaryAddressLine2 == null) ? 0 : primaryAddressLine2
+						.hashCode());
+		result = prime
+				* result
+				+ ((primaryAddressPostalCode == null) ? 0
+						: primaryAddressPostalCode.hashCode());
+		result = prime
+				* result
+				+ ((primaryAddressProvince == null) ? 0
+						: primaryAddressProvince.hashCode());
+		return result;
+	}
+
+    @Override
+	public String toString() {
+		return "Address [primaryAddressLine1=" + primaryAddressLine1
+				+ ", primaryAddressLine2=" + primaryAddressLine2
+				+ ", primaryAddressCity=" + primaryAddressCity
+				+ ", primaryAddressProvince=" + primaryAddressProvince
+				+ ", primaryAddressCountry=" + primaryAddressCountry
+				+ ", primaryAddressPostalCode=" + primaryAddressPostalCode
+				+ "]";
+	}
+}

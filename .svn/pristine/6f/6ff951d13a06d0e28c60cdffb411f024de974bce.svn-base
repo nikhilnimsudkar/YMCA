@@ -1,0 +1,82 @@
+<%@ include file="../../layouts/include_taglib.jsp" %> 
+<script type="text/javascript">
+$(document).ready(function(){	
+	$( "#updMembership" ).click(function(){
+		if($("#tcCheckbox").is(':checked')){
+			$("#tcErrorSpan").css("display", "none");		
+			$( "#tcErrorSpan" ).html("");	
+			//$( "#updateMembershipForm" ).submit();	
+			updateMember();
+		} else {
+			$("#updateProfInfo").css("display", "none");		
+			  $("#updateProfInfo" ).html("");	
+			$("#tcErrorSpan").css("display", "block");		
+			$( "#tcErrorSpan" ).html("You must Agree the Terms and Conditions.");
+			return false;
+		}		
+	});		   
+});
+
+function updateMember(){
+	//alert($('#updateMembershipForm').serialize());
+	$.ajax({
+		  type: "POST",
+		  url: $('#updateMembershipForm').attr( "action"),
+		  data: $('#updateMembershipForm').serialize(),
+		  success: function( data ) {
+		  	  //alert(data);
+		  	  $("#tcErrorSpan").css("display", "none");		
+			  $("#tcErrorSpan" ).html("");	
+			  $("#updateProfInfo").css("display", "block");		
+			  $("#updateProfInfo" ).html("Profile Information Updated successfully.");
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			  $("#updateProfInfo").css("display", "none");		
+			  $("#updateProfInfo" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+		  }
+	});
+}
+</script>
+	<div>
+		<div class="bootstrap-frm">
+			<h2><span>I (WE) WAS (WERE) REFERRED BY</span></h2><span>We would like to send them a thank you.</span><br />
+			<div style="margin-top:5px; margin-bottom:5px;">
+				<a href="#">Click here</a> to learn more about our Friends & Family and loyalty programs.
+			</div>
+			<label><input type="text" placeholder="Member Name" name="memberName" id="memberName"></label>
+		</div>		
+	</div><br />
+	
+	<div>
+		<div class="bootstrap-frm">
+			<h2><span>NEWS & UPDATES</span></h2>			
+			<label><input type="radio" name="news_upd" > Please send me information regarding [my] areas of interest </label>
+			<label><input type="radio" name="news_upd" > Send me regular Y updates, including my Branch newsletter </label>
+			<label><input type="radio" name="news_upd" > Show programs on my page </label>
+		</div>		
+	</div>
+	<div id="cancellation">
+		<c:choose>
+			<c:when test="${cancelled_Member=='true'}">
+				<span id="cancellation" class="k-button" style="width:316px;">Membership cancellation in Process</span>
+			</c:when>
+			<c:otherwise>
+				<span id="cancellation" class="k-button" onclick="location.href='requestcancellation'">Request for Cancellation</span>
+			</c:otherwise>
+		</c:choose>
+	</div>
+	<div id="statusBlock">
+		<span class="k-block k-success-colored" id="updateProfInfo"></span><br />
+		<span class="k-block k-error-colored" id="tcErrorSpan"></span><br />
+	</div>
+	<div>
+		<span class="k-button" id="updMembership">Update</span>	
+		<span id="backbutton" class="k-button" onclick="location.href='home'">Back</span>
+				
+	</div>	
+	<span style="font-size:8px;">Privacy Policy: <input type="checkbox" id="tcCheckbox"/> <span>I have read and agreed to the terms and conditions of usage of this site.</span> </span>
+	

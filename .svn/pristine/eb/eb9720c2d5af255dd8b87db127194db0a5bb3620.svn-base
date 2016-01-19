@@ -1,0 +1,528 @@
+package com.ymca.web.service;
+
+import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.ParameterExpression;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.stereotype.Service;
+
+import com.ymca.dao.ActivityDao;
+import com.ymca.dao.ItemDetailDao;
+import com.ymca.dao.ItemDetailDaysDao;
+import com.ymca.dao.ItemDetailPricingRuleDao;
+import com.ymca.dao.PayerDao;
+import com.ymca.dao.PaymentDao;
+import com.ymca.dao.SetpUpFeeDao;
+import com.ymca.dao.SignUpDaysDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.model.Account;
+import com.ymca.model.Activity;
+import com.ymca.model.Invoice;
+import com.ymca.model.ItemDetail;
+import com.ymca.model.ItemDetailDays;
+import com.ymca.model.ItemDetailPricingRule;
+import com.ymca.model.JetPayPayment;
+import com.ymca.model.Payer;
+import com.ymca.model.Payment;
+import com.ymca.model.PaymentMethod;
+import com.ymca.model.SetpUpFee;
+import com.ymca.model.SignUpDays;
+import com.ymca.model.Signup;
+import com.ymca.model.User;
+import com.ymca.web.enums.PaymentMethodTypeEnum;
+import com.ymca.web.enums.PortalStatusEnum;
+import com.ymca.web.enums.ProductTypeEnum;
+import com.ymca.web.util.Constants;
+
+@Service
+public class SignUpService extends BaseService {
+	
+	private static Logger log = LoggerFactory.getLogger(SignUpService.class);
+
+	@Resource
+	private SignupDao signupDao ;
+	
+	@Resource
+	private ItemDetailDao itemDetailDao ;
+	
+	@Resource
+	private ActivityDao activityDao ;
+	
+	@Resource
+	private SetpUpFeeDao setpUpFeeDao ;
+	
+	@Resource
+	private PayerDao payerDao ;
+	
+	@Resource
+	private PaymentDao paymentDao ;
+	
+	@Resource
+	private PaymentService paymentService ;
+	
+	@Resource
+	private ItemDetailPricingRuleDao itemDetailPricingRuleDao ;
+	
+	@Resource
+	private SignUpDaysDao signUpDaysDao ;
+	
+	@Resource
+	private ItemDetailDaysDao itemDetailDaysDao;
+
+	
+	
+	public synchronized void signupCapacityManagement(ItemDetail itemDetail, Signup signup, boolean update) {
+		String signupStatus = Constants.CONFIRMED;
+		Long waitListPriority = 0L;
+		Integer noofTickets = 1;
+		
+		if(itemDetail!=null){
+			Long remainingCapacity = convertNullToZero(itemDetail.getRemainingCapacity());
+			//Long actualRemainingCapacity = convertNullToZero(itemDetail.getActualRemainingCapacity());
+			//Long waitListCounter = convertNullToZero(itemDetail.getWaitlistCounter());
+			
+			if(signup.getNoOfTickets()!=null){
+				noofTickets = signup.getNoOfTickets();
+			}
+			
+			if(update)
+				updateCapacity(itemDetail,noofTickets);
+			
+			if(remainingCapacity.compareTo(0L)<=0 || remainingCapacity < noofTickets){
+				//remaining capacity is less than 0
+				signupStatus = Constants.WAITLISTED;
+				Object sObj = signupDao.getMaxWaitlistPriorityByItemDetail(itemDetail);
+				if(sObj!=null)
+					waitListPriority = convertNullToZero(Long.parseLong(sObj.toString()));
+				waitListPriority = waitListPriority+1;
+				//waitListCounter = waitListCounter+1;
+			}
+		}
+		
+		if(update)
+			signup.setStatus(signupStatus);
+			signup.setWaitlist(waitListPriority);
+			Calendar cal = Calendar.getInstance();
+			signup.setLastUpdated(cal);
+			signupDao.save(signup);
+		}
+	
+	public void saveActivity(Account customer, User u, Signup signupprogram) {
+		if(signupprogram!=null){
+			// create interaction record
+			Activity activity = new Activity();
+			activity.setCustomer(customer);
+			activity.setContact(u);
+			activity.setCreatedDate(new Date());
+			if(Constants.CONFIRMED.equalsIgnoreCase(signupprogram.getStatus()))
+				activity.setType(Constants.PROGRAM_SIGNUP);
+			else
+				activity.setType(Constants.PROGRAM_WAITLIST);
+			
+			Calendar cal = Calendar.getInstance();
+			activity.setLastUpdated(cal);
+			activityDao.save(activity);
+		}
+	}
+
+	public void saveSetupFee(Double amount, User u) {
+		SetpUpFee s = new SetpUpFee();
+		s.setContact(u);
+		s.setSetUpFee(amount);
+		s.setSetUpFeeStartDate(new Date());
+		
+		Calendar cal = Calendar.getInstance();    		
+		cal.add(Calendar.YEAR, 1); // to get previous year add -1
+		Date nextYear = cal.getTime();
+		s.setSetUpFeeEndDate(nextYear);
+		s.setLastUpdated(cal);
+		
+		s.setType(Constants.SETUPFEE);
+		setpUpFeeDao.save(s);
+	}
+	
+	public void saveRegistrationFee(Double amount, User u, Object selectedStartDate) {
+		Calendar cal = Calendar.getInstance();    	
+		SetpUpFee s = new SetpUpFee();
+		s.setContact(u);
+		s.setSetUpFee(amount);
+		
+		if(selectedStartDate != null && !selectedStartDate.toString().equals("")){
+			s.setSetUpFeeStartDate(new Date(selectedStartDate.toString()));
+			s.setSetUpFeeEndDate(new Date(selectedStartDate.toString()));
+		}else{
+			s.setSetUpFeeStartDate(new Date());
+			s.setSetUpFeeEndDate(new Date());
+		}
+		
+		s.setLastUpdated(cal);
+		
+		s.setType(Constants.REGISTRATION);
+		setpUpFeeDao.save(s);
+	}
+	
+	public void cancelCapacityManagement(ItemDetail program, Signup signup) {
+		Long webCapacity = convertNullToZero(program.getWebCapacity());
+		Long actualCapacity = convertNullToZero(program.getActualCapacity());
+		Long remainingCapacity = convertNullToZero(program.getRemainingCapacity());
+		Long actualRemainingCapacity = convertNullToZero(program.getActualRemainingCapacity());
+		//Long waitListCounter = 0L;
+		Long totalConfirmedSignup = 0L;
+		
+		List<Signup> lstConfirmedSignup = signupDao.getByItemDetailAndStatus(program,Constants.CONFIRMED);
+		
+		if(lstConfirmedSignup!=null && lstConfirmedSignup.size()>0){
+			totalConfirmedSignup = (long) lstConfirmedSignup.size();
+		}
+		
+		if(ProductTypeEnum.PROGRAM.toString().equalsIgnoreCase(program.getCategory())){
+			remainingCapacity = webCapacity - totalConfirmedSignup;
+			actualRemainingCapacity = actualCapacity - totalConfirmedSignup;
+		} 
+		else if(ProductTypeEnum.EVENT.toString().equalsIgnoreCase(program.getCategory())){
+			remainingCapacity = remainingCapacity + signup.getNoOfTickets();
+			actualRemainingCapacity = actualRemainingCapacity + signup.getNoOfTickets();
+		}
+		
+		program.setRemainingCapacity(remainingCapacity);
+		program.setActualRemainingCapacity(actualRemainingCapacity);
+		//program.setWaitlistCounter(waitListCounter);
+		populateAndSaveItemDetail(program);
+	}
+	
+	public void automaticWaitListProcessing(ItemDetail itemDetail) throws Exception {
+		if(itemDetail!=null){
+			List<Signup> lstWLSignup = signupDao.getByItemDetailAndStatusOrderByWaitlistAsc(itemDetail,Constants.WAITLISTED); // get WL signup associated to program
+			if(lstWLSignup!=null && lstWLSignup.size()>0){
+				Long remainingCapacity = convertNullToZero(itemDetail.getRemainingCapacity());
+
+				if(itemDetail.getAutomatedWaitlist() && remainingCapacity>0){ // automated waitlist is true and remaining capacity is > 0
+					for(Signup WLsignp : lstWLSignup){
+						if((WLsignp.getNoOfTickets() !=null && WLsignp.getNoOfTickets() < remainingCapacity) || WLsignp.getNoOfTickets()==null){
+							List<Payer> lstPayer = payerDao.findBySignupAndType(WLsignp,Constants.SELF);
+							
+							// process payment block
+							if(lstPayer!=null && lstPayer.size()>0){
+								Payer payer = lstPayer.get(0);
+								if(payer!=null){
+									String paymentMode = payer.getPaymentMode();
+									PaymentMethod paymentMethod = payer.getPaymentMethod();
+									if(paymentMethod!=null && paymentMode!=null && !"".equals(paymentMode)){
+										String payAmount = WLsignp.getFinalAmount();
+										JetPayPayment jp = null;
+										
+										// comment this line
+										//payAmount = "10";
+										if(Double.parseDouble(payAmount)>0){
+											if(Constants.ACH.equalsIgnoreCase(paymentMode)){
+												// process ACH payment
+												jp = processACHjetPayTransaction(paymentMethod.getTokenNumber(),payAmount,paymentMethod.getCheckNumber(),paymentMethod.getFullName());
+											}
+											else if(Constants.CREDIT.equalsIgnoreCase(paymentMode)){
+												// process CC payment
+												jp = processCCjetPayTransaction(paymentMethod.getTokenNumber(),payAmount);
+											}
+										}
+										
+										if(jp==null){
+											Signup s = new Signup();
+											s.setStatus(Constants.REJECTED);
+											Calendar cal = Calendar.getInstance();
+											s.setLastUpdated(cal);
+											s.setSignupId(WLsignp.getSignupId());
+											signupDao.save(s);
+										} else {
+											signupCapacityManagement(itemDetail,WLsignp, true);
+											Invoice invoice = paymentService.saveinvoice(WLsignp.getCustomer(), WLsignp.getFAamount().toString(), WLsignp.getContact(), WLsignp, payer);
+							    			JetPayPayment jetpay = paymentService.savepayment(paymentMethod.getId().toString(), jp.getJpReturnHash(), jp.getOrderNumber(), WLsignp.getCustomer(), WLsignp.getContact(), WLsignp, payer, invoice, paymentMode, invoice.getAmount());
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public void savePayment(Double reimbursedAmount, Payment p) {
+		Payment refundPayment = new Payment();
+		refundPayment.setPaymentMode(p.getPaymentMode());
+		refundPayment.setTransactionId(p.getTransactionId());
+		refundPayment.setContact(p.getContact());
+		refundPayment.setCustomer(p.getCustomer());
+		refundPayment.setSignup(p.getSignup());
+		refundPayment.setInvoice(p.getInvoice());
+		refundPayment.setStatus(Constants.INPROGRESS);
+		refundPayment.setType(Constants.CREDITMEMOREFUND);
+		refundPayment.setAmount(reimbursedAmount);
+		refundPayment.setPaymentDate(new Date());
+		refundPayment.setPayer(p.getPayer());
+		
+		Calendar cal = Calendar.getInstance();
+		refundPayment.setLastUpdated(cal);
+		paymentDao.save(refundPayment);
+	}
+	
+	public List<Object[]> getSignupPrograms(Account acct, String strProgramTime, String programstatus, String signupstatus, String itemType, String contactName, String programStDt, String programEndDt) {
+		Date today = new Date();
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");  
+		DateFormat inputsdf = new SimpleDateFormat("M/d/yyyy");  
+		
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = builder.createQuery(Object[].class);
+
+		Root<Signup> s = query.from(Signup.class);
+		Join<Signup, ItemDetail> i = s.join("itemDetail",JoinType.INNER);
+		
+		ParameterExpression<Account> account = builder.parameter(Account.class);
+		ParameterExpression<String> pTime = builder.parameter(String.class);
+		ParameterExpression<String> pStatus = builder.parameter(String.class);
+		ParameterExpression<String> sStatus = builder.parameter(String.class);
+		ParameterExpression<String> iType = builder.parameter(String.class);
+		ParameterExpression<String> cName = builder.parameter(String.class);
+		ParameterExpression<Date> sd = builder.parameter(Date.class);
+		ParameterExpression<Date> ed = builder.parameter(Date.class);
+		ParameterExpression<Date> currentDate = builder.parameter(Date.class);
+		
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		predicates.add(
+				builder.and(
+						builder.equal(s.get("customer"), account),
+						builder.equal(s.get("status"), sStatus)
+				)
+		);
+		
+		
+		if(!"".equals(programstatus.trim())){
+			predicates.add(builder.and(builder.equal(i.<String>get("status"), pStatus)));
+		}
+		
+		if(itemType!=null && !"".equals(itemType.trim())){
+			predicates.add(builder.and(builder.equal(i.<String>get("subType"), iType)));
+		}
+		
+		if(contactName!=null && !"".equals(contactName.trim())){
+			predicates.add(builder.and(builder.equal(s.<String>get("contactName"), cName)));
+		}
+		
+		if(programStDt!=null && !"".equals(programStDt) && programEndDt!=null && !"".equals(programEndDt)){
+			predicates.add(builder.and(builder.greaterThanOrEqualTo(i.<Date>get("startDate"), sd)));
+			predicates.add(builder.and(builder.lessThanOrEqualTo(i.<Date>get("startDate"), ed)));
+		}
+		
+		if(strProgramTime.equalsIgnoreCase(Constants.CURRENT)){
+			predicates.add(builder.and(builder.lessThanOrEqualTo(i.<Date>get("startDate"), currentDate)));
+			predicates.add(builder.and(builder.greaterThanOrEqualTo(i.<Date>get("endDate"), currentDate)));
+		}
+		else if(strProgramTime.equalsIgnoreCase(Constants.UPCOMING)){
+			predicates.add(builder.and(builder.greaterThan(i.<Date>get("startDate"), currentDate)));
+			predicates.add(builder.and(builder.greaterThan(i.<Date>get("endDate"), currentDate)));
+		}
+		else if(strProgramTime.equalsIgnoreCase(Constants.PAST)){
+			predicates.add(builder.and(builder.lessThan(i.<Date>get("startDate"), currentDate)));
+			predicates.add(builder.and(builder.lessThan(i.<Date>get("endDate"), currentDate)));
+		}
+		else if(strProgramTime.equalsIgnoreCase(Constants.SCHEDULED)){
+			predicates.add(builder.and(builder.greaterThanOrEqualTo(i.<Date>get("endDate"), currentDate)));
+		}
+		
+		query.multiselect(s,i);
+		query.where(predicates.toArray(new Predicate[]{}));
+
+		TypedQuery<Object[]> typequery = em.createQuery(query);
+		typequery.setParameter(account, acct);
+		typequery.setParameter(sStatus, signupstatus);
+		
+		if(!"".equals(programstatus.trim())){
+			typequery.setParameter(pStatus, programstatus);
+		}
+		if(itemType!=null && !"".equals(itemType.trim())){
+			typequery.setParameter(iType, itemType);
+		}
+		if(contactName!=null && !"".equals(contactName.trim())){
+			typequery.setParameter(cName, contactName);
+		}
+		
+		if(programStDt!=null && !"".equals(programStDt) && programEndDt!=null && !"".equals(programEndDt)){
+			
+			Date startDate;
+	        Date endDate;
+
+			try {
+				startDate = sdf.parse(sdf.format(inputsdf.parse(programStDt)));
+		        endDate = sdf.parse(sdf.format(inputsdf.parse(programEndDt)));
+		        
+		        typequery.setParameter(sd, startDate);
+				typequery.setParameter(ed, endDate);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				//log.error("Error  ",e);
+				//return null;
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				//log.error("Error  ",e1);
+				//return null;
+			}
+		}
+		
+		
+		try {
+			typequery.setParameter(currentDate, sdf.parse(sdf.format(today)));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			//log.error("Error  ",e);
+			//return null;
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			//log.error("Error  ",e1);
+			//return null;
+		}
+		
+		List<Object[]> lstObj = typequery.getResultList();
+		return lstObj;
+	}
+	
+	public double evaluateRefundExpressionAndReturnReimbursedAmount(
+			Signup signup, double cancellationPrice) {
+		
+		double reimbursedAmount = 0D;
+		
+		List<ItemDetailPricingRule> refundRules = itemDetailPricingRuleDao.findByItemDetailIdAndPricingRule_Type(signup.getItemDetail().getId(), Constants.REFUND);
+		if(refundRules.size()>0){
+			for(ItemDetailPricingRule pr: refundRules){
+				String refundExpression = pr.getPricingRule().getRefundExpression();
+				
+				StandardEvaluationContext signupContext = new StandardEvaluationContext(signup);  
+				ExpressionParser parser = new SpelExpressionParser(); 
+				org.springframework.expression.Expression exp = parser.parseExpression(refundExpression);
+				
+				Boolean match = exp.getValue(signupContext,Boolean.class);
+				//System.out.println(match);
+				
+				if(match){
+					BigDecimal refundPercentage = pr.getPricingRule().getRefundPercent();
+					BigDecimal refundAmount = refundPercentage.multiply(BigDecimal.valueOf(Double.parseDouble(signup.getFinalAmount())));
+					refundAmount = refundAmount.divide(new BigDecimal(100));
+					
+					reimbursedAmount = (refundAmount.subtract(BigDecimal.valueOf(cancellationPrice))).doubleValue();
+					break;
+				}
+			}
+		}
+		return reimbursedAmount;
+	}
+	
+	 public PaymentMethod populatePaymentMethodData(Account account, String orderNumber) {
+	    	JetPayPayment jetPayPayment = null;
+			if(!"".equals(orderNumber)){
+				//jetPayPayment = jetPayPaymentDao.getByJpReturnHash(jp_request_hash);
+				//jetPayPayment = jetPayPaymentDao.getByOrderNumber("254657884038");
+				jetPayPayment = jetPayPaymentDao.getByOrderNumber(orderNumber);
+			}
+	    	PaymentMethod paymentMethod = new PaymentMethod();
+	    	paymentMethod.setPaymentMethodType(PaymentMethodTypeEnum.CREDIT.toString());
+	    	paymentMethod.setPortalStatus(PortalStatusEnum.ACTIVE.toString());
+	    	paymentMethod.setTransId(jetPayPayment.getTransId());
+	    	paymentMethod.setCardNumber(Constants.CARD_MASKED_FIRST_DIGITS+jetPayPayment.getCardNum());
+	    	paymentMethod.setCardType(jetPayPayment.getCard());    	
+	    	paymentMethod.setFullName(jetPayPayment.getName());
+	    	paymentMethod.setTokenNumber(jetPayPayment.getCcToken());
+	    	paymentMethod.setOldToken(jetPayPayment.getOldToken());
+	    	paymentMethod.setOrderNumber(jetPayPayment.getOrderNumber());
+	    	paymentMethod.setBillingAddressLine1(jetPayPayment.getBillingAddress1());
+	    	paymentMethod.setBillingAddressLine2(jetPayPayment.getBillingAddress2());
+	    	paymentMethod.setBillingCity(jetPayPayment.getBillingCity());
+	    	paymentMethod.setBillingState(jetPayPayment.getBillingState());
+	    	paymentMethod.setBillingZip(jetPayPayment.getBillingZip());
+	    	
+	    	paymentMethod.setBillingCountry(jetPayPayment.getBillingCountry());    	
+	    	paymentMethod.setExpirationMonth(account.getExpirationMonth());
+	    	paymentMethod.setExpirationYear(account.getExpirationYear());
+	    	paymentMethod.setNickName(account.getNickName());
+	    	paymentMethod.setCustomer(account);
+	    	
+			return paymentMethod;
+		}
+
+	public Long convertNullToZero(Long val){
+		if(val==null)
+			 val = 0L;
+		
+		return val;
+	}
+	
+	public void updateCancelInfo(String cancelDt, boolean isFutureCancelDate,Signup signup) {
+		Calendar cal = Calendar.getInstance();
+		//signup.setPortalLastModifiedBy(getPortalLastModifiedBy());
+		if(!isFutureCancelDate){
+			signup.setStatus(Constants.CANCELLED);
+			signup.setCancelDate(new Date());
+		}else{
+			signup.setCancelDate(new Date(cancelDt));
+		}
+		signup.setLastUpdated(cal);
+		signupDao.save(signup);
+	}
+	
+	public void saveSignupDays(ItemDetail itemDetail, Signup WLsignupprogram, String k) {
+		SignUpDays signupDays = new SignUpDays();
+		signupDays.setSignup(WLsignupprogram);
+		signupDays.setItemDetail(itemDetail);
+		signupDays.setStatus_c(Constants.ACTIVE);
+		
+		Integer selDaysId;
+		try {
+			selDaysId = Integer.parseInt(k);
+			signupDays.setDay(daysArr.get(selDaysId));
+		}
+		catch(Exception e){
+			selDaysId = daysArr.indexOf(k);
+			signupDays.setDay(k);
+		}
+		ItemDetailDays itemDetailDays = itemDetailDaysDao.getByItemDetailAndDay(itemDetail,selDaysId.toString());
+		if(itemDetailDays!=null && itemDetailDays.getDate_c()!=null)
+			signupDays.setSignupDate(itemDetailDays.getDate_c());
+		
+		signUpDaysDao.save(signupDays);
+	}
+
+	public void assignParentSignUp(String parentSignUpItem,Signup signupprogram) {
+		try {
+			if (StringUtils.isNoneBlank(parentSignUpItem)) {
+				String ids[] = parentSignUpItem.split("#");
+				Signup parentSignUp =  signupDao.findFirst1ByContactIdAndItemDetailIdAndStatusOrderBySignupIdDesc(Long.parseLong(ids[0]),Long.parseLong(ids[1]), Constants.CONFIRMED);
+				if (parentSignUp != null) {
+					signupprogram.setParentSignUp(parentSignUp);
+					signupDao.save(signupprogram);
+				}
+			}
+		} catch (Exception e1) {
+			log.error("Error while associating parent sign up",e1);
+		}
+	}
+}
+
+

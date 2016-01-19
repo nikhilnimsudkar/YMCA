@@ -1,0 +1,685 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<!-- <script src="src/main/webapp/resources/js/kendo/kendo.web.min.js" type="text/javascript"></script>  -->
+<script>
+	$(document).ready(function() {	
+		
+		var today = kendo.date.today();
+        var start = $("#start").kendoDatePicker({
+        	value: new Date(new Date().getTime() - 24 * 30 * 60 * 60 * 1000),
+        	format: "yyyy-MM-dd",               
+            parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+        });
+        var end = $("#end").kendoDatePicker({
+            format: "yyyy-MM-dd",
+            value: today,                
+            parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+        });
+        var type = $('#type').kendoDropDownList({
+        	dataTextField: "text",
+            dataValueField: "value",
+            dataSource:
+            	[
+				 { text: "All", value:"All" },
+                 { text: "Credit", value:"Credit" },
+                 { text: "EFT", value:"EFT" }
+             ]
+        });
+        var status = $('#status').kendoDropDownList({
+        	dataTextField: "text",
+            dataValueField: "value",
+            dataSource: 
+            	[
+				 { text: "All", value:"All" },
+                 { text: "Success", value:"Success" },
+                 { text: "Failure", value:"Failure" },
+                 { text: "Pending", value:"Pending" }
+             ]
+        });
+      	
+        function initGrid(){
+        	$("#kgrid").kendoGrid({
+        	// toolbar: ["excel"],
+	           //excel: {
+	                //fileName: "PaymentHistoryExport.xlsx",
+	                //allPages: true,
+	                //proxyURL: "http://demos.telerik.com/kendo-ui/service/export",
+	                //filterable: true
+	           // },
+        
+     		  dataSource: GetRemoteData($("#start").val(),$("#end").val(),$('#type').data('kendoDropDownList').value(),
+     				  $('#status').data('kendoDropDownList').value(),$('#contact').val()),    	
+     				 /* toolbar: ["excel"],
+     	            excel: {
+     	                //fileName: "PaymentHistoryExport.xlsx",
+     	                allPages: true,
+     	                proxyURL: "http://demos.telerik.com/kendo-ui/service/export",
+     	                filterable: true
+     	            }, */
+     	           // excelExport: function(e) {
+     	        	 //   e.workbook.fileName = "Grid.xslx";
+     	        	 // }, 
+     		 //dataSource: {pageSize: 5},
+     		        height: 300,
+     		        filterable: false,
+     		        sortable: true,
+     		        pageable: true,
+     		       resizable: true,
+     		       // dataBound: resizeGrid,
+     		        columns: 
+     					[{field: "contact", title: "Person",width:"90px"},
+     					 {field: "program", title: "Program",width:"85px"},
+        				 {field: "amount", title: "Amount",width:"80px"},
+        				 {field: "type", title: "Type",width:"75px"},
+       					 {field: "paymentDate", title: "Date",width:"80px"}, 
+        				 {field: "status", title: "Status"}]
+     		});
+        	
+        }
+        
+        function setfailurecolor(){
+        	var gridData = $("#kgrid").data("kendoGrid");
+        	var data = gridData.dataSource.data();
+			
+        	//alert();
+        	gridData.tbody.find('>tr').each(function () {
+                var dataItem = gridData.dataItem(this);
+               // console.log(dataItem.status);
+                if (dataItem.status != null && dataItem.status.indexOf("Failure")!=-1) {
+                    $(this).css('color', 'red');
+                }
+
+                
+            });
+        	
+        	setTimeout(function(){setfailurecolor();}, 1000);
+        	
+        }
+     	function GetRemoteData(stDate,eDate,pType,pStatus,username) { 
+     		var  source = new kendo.data.DataSource({
+     	        autoSync: true,
+     	        transport: {
+     	            read: {
+     	                type: "GET",
+     	                url: "getPaymentHistoryBySearchCriteria",
+     	                data: {"stDate" : $("#start").val(),"eDate" : $("#end").val(),"pType" : $('#type').data('kendoDropDownList').value(),
+     	                	"pStatus" : $('#status').data('kendoDropDownList').value(),"username":$('#contact').val()},
+     	                dataType: "json",                
+     	                cache: false,
+     	            }    	            
+     	        },
+     	        pageSize: 5
+     	    });
+     	    source.fetch(function () {
+     	        var data = this.data();
+     	    });
+     	    return source;
+     	}
+     	
+     	function resizeGrid(d) {
+     	     var gridElement = $("#kgrid");
+     	     var dataArea = gridElement.find(".k-grid-content");
+     	     var newHeight = gridElement.parent().innerHeight() - 2;
+     	     var diff = gridElement.innerHeight() - dataArea.innerHeight();
+     	     gridElement.height(newHeight);
+     	     dataArea.height(newHeight - diff);
+     	     return d;
+     	 }
+     	$("#kgrid").hide();
+     	
+     	$('#getPaymentHistoryBtn').click(function(e){
+     		initGrid();
+     		var stDate=$("#start").val();
+         	var eDate=$("#end").val();
+         	var pType= $('#type').data('kendoDropDownList').value();
+         	var pStatus= $('#status').data('kendoDropDownList').value();
+         	var username= $('#contact').val();
+     		//alert('stDate : '+stDate+' eDate : '+eDate+' pType : '+pType+' pStatus : '+pStatus+' username : '+username);
+     		//var furl;
+     		//furl ="getPaymentHistoryBySearchCriteria?pType="+pType+"&pStatus="+pStatus+"&username="+username+"&stDate="+stDate+"&eDate="+eDate;
+			/* if(username!=null && username.length>0){
+				//alert('getPaymentHistoryBySearchCriteria');
+        		furl ="getPaymentHistoryBySearchCriteria?pType="+pType+"&pStatus="+pStatus+"&username="+username+"&stDate="+stDate+"&eDate="+eDate;
+        	}else{
+        		//alert('getPaymentHistoryBySearchCriteriaExcludingName');
+        		furl ="getPaymentHistoryBySearchCriteriaExcludingName?pType="+pType+"&pStatus="+pStatus+"&stDate="+stDate+"&eDate="+eDate;
+        	} */
+        	
+        	//var kendogrid = $('#kgrid').data('kendoGrid')
+     		//kendogrid.dataSource.read({"stDate" : $("#start").val(),"eDate" : $("#end").val(),
+     		//"pType" : $('#type').data('kendoDropDownList').value(),"pStatus" : $('#status').data('kendoDropDownList').value(),"username":$('#contact').val()}); 
+        	//kendogrid.refresh();
+        	
+        	
+        	setTimeout(function(){setfailurecolor(); $("#kgrid").show(); $("#btns").show();}, 500);
+        	
+     		/*
+        	$.ajax({
+				  type: "GET",
+				  url:furl,
+				  success: function( data ) {	
+					 //alert('in success & data.length : '+data.length+' & Data: '+data);
+					  // if ($.isEmptyObject(data)) { alert("I am empty");} else {alert(x); } 
+					  // if (!data[0]) {alert("JSON empty");} 
+					 
+					  // if(data != null && data.length > 2 && data.equals('[]')){
+					  if(data.length > 2){
+						  //alert('data found');
+						  $("#msg").html('Payment history found for matching criteria.');
+					  }else{
+						  $("#msg").html('No payment history found for matching criteria.');
+						  //alert('No payment history found for matching criteria.'); 
+					  } 
+				  },
+				  error: function( xhr,status,error ){					  
+					  $("#msg").html('Error occcured while fetching data');  
+				  }
+     		});*/
+       }); 
+      
+     	 $('#exportToExcel').click(function() {	
+        	//alert("exporting payment history to downloads/Export.xls");
+			
+        	//var grid = $("#kgrid").data("kendoGrid");
+        	//grid.dataSource.read({"stDate" : $("#start").val(),"eDate" : $("#end").val(),
+          		//"pType" : $('#type').data('kendoDropDownList').value(),"pStatus" : $('#status').data('kendoDropDownList').value(),"username":$('#contact').val()});  
+        	//grid.refresh();
+        	//var datasource = grid.dataSource;
+        	
+        	/*
+        	var datasource = $("#kgrid").data("kendoGrid").dataSource;
+        	console.log(datasource);
+        	 $("#excelgrid").kendoGrid({
+        		 dataSource: datasource
+        	 });*/
+        	 if($("#kgrid").data("kendoGrid"))
+        	 	$("#kgrid").data("kendoGrid").saveAsExcel();
+        	 
+        	//grid.saveAsExcel();
+        	//console.log('size : '+grid.length);
+        	//alert('size : '+grid.length);
+        	//console.log(grid);
+        	//alert(grid);
+        	//console.log(grid);
+            //kgrid.saveAsExcel();
+			
+          // var kengrid = $("#kgrid").data("kendoGrid");
+          // kengrid.setDataSource(datasource);
+           //$("#kgrid").data("kendoGrid").saveAsExcel();
+    	}); 
+     	
+     	function printGrid() {
+     	    
+     		var gridData = $('#kgrid').data("kendoGrid").dataSource;
+     		var gridElement = $('<div></div>').kendoGrid({
+     			dataSource: gridData.data()
+     		});
+     		
+     		 var
+     	        printableContent = '',
+     	        win = window.open('', '', 'width=800, height=500'),
+     	        doc = win.document.open();
+
+     	    var htmlStart =
+     	            '<!DOCTYPE html>' +
+     	            '<html>' +
+     	            '<head>' +
+     	            '<meta charset="utf-8" />' +
+     	            '<title>Payment History</title>' +
+     	            '<link href="http://cdn.kendostatic.com/' + kendo.version + '/styles/kendo.common.min.css" rel="stylesheet" /> ' +
+     	            '<style>' +
+     	            'html { font: 11pt sans-serif; }' +
+     	            '.k-grid { border-top-width: 0; }' +
+     	            '.k-grid, .k-grid-content { height: auto !important; }' +
+     	            '.k-grid-content { overflow: visible !important; }' +
+     	            'div.k-grid table { table-layout: auto; width: 100% !important; }' +
+     	            '.k-grid .k-grid-header th { border-top: 1px solid; }' +
+     	            '.k-grid-toolbar, .k-grid-pager > .k-link { display: none; }' +
+     	            '</style>' +
+     	            '</head>' +
+     	            '<body>';
+
+     	    var htmlEnd =
+     	            '</body>' +
+     	            '</html>';
+
+     	    var gridHeader = gridElement.children('.k-grid-header');
+     	    if (gridHeader[0]) {	
+     	        var thead = gridHeader.find('thead').clone().addClass('k-grid-header');
+     	        printableContent = gridElement
+     	            .clone()
+     	                .children('.k-grid-header').remove()
+     	            .end()
+     	                .children('.k-grid-content')
+     	                    .find('table')
+     	                        .first()
+     	                            .children('tbody').before(thead)
+     	                        .end()
+     	                    .end()
+     	                .end()
+     	            .end()[0].outerHTML;
+     	    } else { 
+     	        printableContent = gridElement.clone()[0].outerHTML;
+     	    } 
+     	   doc.write(htmlStart + printableContent + htmlEnd);
+     	   doc.close();
+     	   win.print();
+     	}
+     	
+     	$('#print').click(function() {	
+     		printGrid();
+     	});
+      	/* var grid = $("#kgrid").data("kendoGrid");
+     	console.log(grid);
+         grid.saveAsExcel(); */
+         
+     	/*  $('#print').click(function() {	
+        	alert("printing payment history to downloads/Export.pdf");
+        	var grid = $("#kgrid").data("kendoGrid");
+        	console.log(grid);
+            grid.saveAsPDF();
+    	});  */
+     	
+     	/*  $("#grid").kendoGrid({
+             toolbar: ["excel"],
+             excel: {
+                 fileName: "Kendo UI Grid Export.xlsx",
+                 proxyURL: "http://demos.telerik.com/kendo-ui/service/export",
+                 filterable: true
+             },
+             dataSource: {
+                 type: "odata",
+                 transport: {
+                     read: "http://demos.telerik.com/kendo-ui/service/Northwind.svc/Products"
+                 },
+                 schema:{
+                     model: {
+                         fields: {
+                             UnitsInStock: { type: "number" },
+                             ProductName: { type: "string" },
+                             UnitPrice: { type: "number" },
+                             UnitsOnOrder: { type: "number" },
+                             UnitsInStock: { type: "number" }
+                         }
+                     }
+                 },
+                 pageSize: 7,
+                 group: {
+                     field: "UnitsInStock", aggregates: [
+                         { field: "ProductName", aggregate: "count" },
+                         { field: "UnitPrice", aggregate: "sum"},
+                         { field: "UnitsOnOrder", aggregate: "average" },
+                         { field: "UnitsInStock", aggregate: "count" }
+                     ]
+                 },
+                 aggregate: [
+                     { field: "ProductName", aggregate: "count" },
+                     { field: "UnitPrice", aggregate: "sum" },
+                     { field: "UnitsOnOrder", aggregate: "average" },
+                     { field: "UnitsInStock", aggregate: "min" },
+                     { field: "UnitsInStock", aggregate: "max" }
+                 ]
+             },
+             sortable: true,
+             pageable: true,
+             groupable: true,
+             filterable: true,
+             columnMenu: true,
+             reorderable: true,
+             resizable: true,
+             columns: [
+                 { width: 300, locked: true, field: "ProductName", title: "Product Name", aggregates: ["count"], footerTemplate: "Total Count: #=count#", groupFooterTemplate: "Count: #=count#" },
+                 { width: 300, field: "UnitPrice", title: "Unit Price", aggregates: ["sum"] },
+                 { width: 300, field: "UnitsOnOrder", title: "Units On Order", aggregates: ["average"], footerTemplate: "Average: #=average#",
+                     groupFooterTemplate: "Average: #=average#" },
+                 { width: 300, field: "UnitsInStock", title: "Units In Stock", aggregates: ["min", "max", "count"], footerTemplate: "Min: #= min # Max: #= max #",
+                 groupHeaderTemplate: "Units In Stock: #= value # (Count: #= count#)" }
+             ]
+         }); */
+    	
+     	/* $("#grid").kendoGrid({
+       	sortable:true,
+           columns: [{field: "program", title: "Program",width:"85px"},
+                     {field: "amount", title: "Amount",width:"80px"},
+                     {field: "type", title: "Type",width:"80px"},
+                     {field: "paymentDate", title: "Payment Date",width:"120px"}, 
+                     {field: "status", title: "Status"}] ,
+           dataSource: {
+           	pageSize: 5
+           },
+           pageable: true
+       });
+	$("#grid").hide();
+	$(".k-grid").hide(); */
+     	
+     	 /*   $('#getPaymentHistoryBtn').click(function(e){
+   	 $("#gridData").html("Processing...");
+    	 $("#grid").show();
+   	 $(".k-grid").show();
+   	//$(".k-loading-mask").show();
+   	var stDate=$("#start").val();
+   	var eDate=$("#end").val();
+   	var pType= $('#type').data('kendoDropDownList').value();
+   	var pStatus= $('#status').data('kendoDropDownList').value();
+   	var username= $('#contact').val();
+   	//var furl = 'getPaymentHistoryBySearchCriteria?pType='+pType+'&pStatus='+pStatus+'&username='+username+'&stDate='+stDate+'&eDate='+eDate;
+   	var furl;
+		if(username!=null && username.length>0){
+   		furl ="getPaymentHistoryBySearchCriteria?pType="+pType+"&pStatus="+pStatus+"&username="+username+"&stDate="+stDate+"&eDate="+eDate;
+   	}else{
+   		furl ="getPaymentHistoryBySearchCriteriaExcludingName?pType="+pType+"&pStatus="+pStatus+"&stDate="+stDate+"&eDate="+eDate;
+   	} 
+   	var paymentHtmlData = ''; 
+   	$.ajax({
+			  type: "GET",
+			 // url: 'getPaymentHistoryBySearchCriteria/'+pType+'/'+pStatus+'/'+username+'/'+stDate+'/'+eDate,	
+			 url:furl,
+			  success: function( data ) {					  
+				  if(data != null && data.length > 0){
+				      for(var i = 0; i<data.length; i++){        
+				       var dataArr = data[i];
+				       var d=new Date(dataArr[3]);
+				        var curr_date = d.getDate();
+				        var curr_month = d.getMonth();
+				        var curr_year = d.getFullYear();
+				        var pDate=curr_year+"-"+curr_month+"-"+curr_date;
+				        paymentHtmlData += '<tr>';
+				        paymentHtmlData += '<td>'+ dataArr[0] +'</td>';
+				        paymentHtmlData += '<td>$'+ Number(dataArr[1]).toFixed(2) +'</td>';
+				        paymentHtmlData += '<td>'+ dataArr[2] +'</td>';
+				        paymentHtmlData += '<td>'+pDate +'</td>';
+				        if(dataArr[5] != null){
+				        	paymentHtmlData += '<td>'+ dataArr[4] +'(<span style="color:red">'+dataArr[5]+'</span>)</td>';
+				        }else{
+				        	paymentHtmlData += '<td>'+ dataArr[4] +'</td>';
+				        }					        
+				        paymentHtmlData += '</tr>'; 
+				      }
+				      $("#gridData").html(paymentHtmlData);
+					 } else if(data != null && data.length == 0){
+						 paymentHtmlData += '<tr>';
+					     paymentHtmlData += '<td colspan="5">No payment history found for matching criteria. </td>';
+					     paymentHtmlData += '</tr>';
+					     $("#gridData").html(paymentHtmlData);
+				  	 }
+			  },
+			  error: function( xhr,status,error ){
+				  paymentHtmlData += '<tr>';
+				  paymentHtmlData += '<td colspan="5">Error occured while fetching data from database. </td>';
+				  paymentHtmlData += '</tr>';
+				  $("#gridData").html(paymentHtmlData);
+			  }
+   	});  
+   });  */ 
+   
+       /*  $('#exportToExcel').click(function() {	
+        	alert("exporting payment history to location:d:/exportToExcel.xls");
+        	var furl = "export?"+'&pType='+pType+'&pStatus='+pStatus+'&username='+username+'&stDate='+stDate+'&eDate='+eDate;
+    		$.ajax({
+    			  url: furl,
+    			  context: document.body,
+    			  type:"POST",
+    		});
+    	}); */        
+	});
+</script>
+            
+<div id="purchaseinfoPg">
+<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+	<span class="k-loading-text">Loading... Please wait</span>
+	<div class="k-loading-image">
+		<div class="k-loading-color"></div>
+	</div>
+</div>
+<!-- <div id="tabstrip3" class="k-block" style="margin-right:0px;"> -->
+<div id="tabstrip3" class="k-block" style="margin-top: 20px; padding: 10px;">
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">PURCHASE INFORMATION</span>
+		<span class="autopaySpan" style="width: 300px;">
+			<!-- <button id="pmPrimary" class="k-button" style="margin-right: 10px; text-shadow: none;">Make Primary</button> -->
+			<!-- <button id="pmPrimary" class="k-button" style="margin-right: 10px; text-shadow: none;">Make Primary</button> -->
+			<button id="addCardBankDetail" class="k-button">Add Card/Bank Info</button>
+		</span>
+		
+		<div id="purchase_info" >
+			<table>
+				<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'Credit' }">
+						<tr>
+							<c:if test="${ paymentInfo.isPrimary == '1' }">
+								<td><input type="radio" name="paymentInfoRadio" checked="checked" class="bootstrapRadio"></td>
+							</c:if>
+							<c:if test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null}">
+								<td><input type="radio" name="paymentInfoRadio" class="bootstrapRadio"></td>
+							</c:if>	
+							<td><span>Credit & Debit Cards</span></td>
+							<!-- <td><span>XXXX-XXXX-XXXX-1234</span></td> -->
+							<td><span>${paymentInfo.cardNumber }</span><span class="pmMakePrimaryPaymentId" style="display:none;">${paymentInfo.paymentId }</span></td>
+							<td></td>
+							<td>Expiration Date</td>
+							<!-- <td>07/20</td> -->
+							<td>${paymentInfo.expirationMonth }/${paymentInfo.expirationYear }</td>
+							<td><button id="editcardBtn" style="width: 100px; text-shadow: none; margin-left: 10px;" class="k-button editcardBtn">Edit card Info</button></td>
+							<!-- <td><span  class="k-button updatePaymentMethod" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit card Info</span></td> -->
+						</tr>
+					</c:if>
+				</c:forEach>
+				<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'EFT' }">
+						<tr>
+							<c:if test="${ paymentInfo.isPrimary == '1' }">
+								<td><input type="radio" name="paymentInfoRadio" checked="checked" class="bootstrapRadio"></td>
+							</c:if>
+							<c:if test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null }">
+								<td><input type="radio" name="paymentInfoRadio" class="bootstrapRadio"></td>
+							</c:if>	
+													
+							<td><span>Bank Details</span></td>
+							<!-- <td><span>XXXXX-XXXXX</span></td> -->
+							<td><span>${paymentInfo.bankRoutingNumber }</span><span class="pmMakePrimaryPaymentId" style="display:none;">${paymentInfo.paymentId }</span></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td><button id="editcartBtn" class="k-button editBankBtn" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit Bank Info</button></td>
+						<!-- 	<td><span  class="k-button updatePaymentMethod" style="width: 100px; text-shadow: none; margin-left: 10px;">Edit Bank Info</span></td> -->
+						</tr>
+					</c:if>
+				</c:forEach>			
+			</table>
+			<div >
+				<span class="k-block k-success-colored" id="pmPrimarySuccess"></span>
+				<span class="k-block k-error-colored" id="pmPrimaryError"></span>
+			</div>
+		</div>
+	</div>
+	
+	<%-- <div class="pay_header">
+		<span class="head" style="margin-left:3px;">BILLING ADDRESS</span>
+		<div id="bill_info">
+			<span id="address1">${accInfo.addressLine1}</span>
+			<span id="address2">${accInfo.addressLine2}</span><br>
+			<span id="city">${accInfo.city}</span>
+			<span id="state">${accInfo.state}</span><br>
+			<span id="zip">${accInfo.postalCode}</span>
+			<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+				<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.isPrimary == '1' }">
+					<span id="address1">${paymentInfo.billingAddressLine1}</span>
+					<span id="address2">${paymentInfo.billingAddressLine2}</span><br>
+					<span id="city">${paymentInfo.billingCity}</span>
+					<span id="state">${paymentInfo.billingState}</span><br>					
+				</c:if>
+			</c:forEach>
+			
+			<span id="zip">${paymentInfo.postalCode}</span>
+		</div>
+	</div> --%>
+	
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">VIEW PAYMENT HISTORY</span>
+		<div id="bill_info">
+			<table>
+				<tr>
+					<td>Start Date</td>
+					<td>:</td>
+					<td><input type="text" id="start" name="startDate"></td>
+					<td>End Date</td>
+					<td>:</td>
+					<td><input type="text" id="end" name="endDate"></td>
+					<td>Type</td>
+					<td>:</td>
+					<td><input type="text" id="type" name="type" style="width:100px;"></td>
+				</tr>
+				<tr>
+					<td>Status</td>
+					<td>:</td>
+					<td><input type="text" id="status" name="status" ></td>
+					<td>Contact</td>
+					<td>:</td>
+					<td><input type="text" id="contact" name="contact" placeholder="Enter username" style="width: 95%;"></td>
+					<td></td>
+					<td></td>
+					<td><span id="getPaymentHistoryBtn" class="k-button"  style="width: 70px; text-shadow: none;">Go</span></td>
+				</tr>
+			</table>
+			<br/>
+			<div id="msg" style="color: blue"></div>
+			<br/>
+			<!--  <div id="grid"  style="margin-top:12px;margin-bottom:10px;" ></div>  -->
+			<div id="btns" style="display:none; margin-bottom:10px;" align="right">
+				<button id="exportToExcel" class="k-button" style="margin-right: 10px">Export</button>
+				<button id="print" class="k-button" style="margin-right: 8px">Print</button>
+			</div>
+			<div id="kgrid"></div>
+			<div id="pgrid"></div>
+			<!-- <span >
+				<table id="grid">
+               		<tbody id="gridData"></tbody>
+				</table>
+			</span> -->			
+		</div>
+	</div>
+	
+	<!-- test -->
+	<!-- <button data-bind="click:saveGridCsv">Download to CSV</button>
+	<div id="test-grid" data-role="grid"  data-bind="source: remoteSource" 
+         data-columns='[
+                { 
+					field: "user.screen_name",
+					title: "User"
+				} , 
+				{ 
+					field: "text", 
+					title: "Text"
+				}
+            ]'></div>
+    <script>
+        (function () {
+    var log = (function (el) {
+        return function (text) {
+            el.html(el.html() + '<br/>' + text);
+        };
+    })($('#log'));
+
+    var viewModel = kendo.observable({
+        
+    saveGridCsv: function () {
+        viewModel.exportCsv('test-grid', 'testdata.csv');
+        },
+
+    // the remote datasource    
+    remoteSource: new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        dataType: "jsonp",
+                        url:"http://demos.kendoui.com/service/Twitter/Search?q=kendoui",
+                        data: function (response) {
+                            return [response];
+                        }
+                    }
+                },
+                schema: { 
+					data: function(data) { 
+						return data.statuses || [];
+					},			
+				},
+            }),
+        
+        exportCsv: function (gridId, fileName) {
+             var grid = $("#" + gridId).data("kendoGrid");
+                var originalPageSize = grid.dataSource.pageSize();
+                var csv = '';
+                fileName = fileName || 'download.csv';
+
+                // Increase page size to cover all the data and get a reference to that data
+                grid.dataSource.pageSize(grid.dataSource.view().length);
+                var data = grid.dataSource.view();
+
+                //add the header row
+                for (var i = 0; i < grid.columns.length; i++) {
+                    var field = grid.columns[i].field;
+                    var title = grid.columns[i].title || field;
+
+                    //NO DATA
+                    if (!field) continue;
+
+                    title = title.replace(/"/g, '""');
+                    csv += '"' + title + '"';
+                    if (i < grid.columns.length - 1) {
+                        csv += ',';
+                    }
+                }
+                csv += '\n';
+
+                //add each row of data
+                for (var row in data) {
+                    for (var i = 0; i < grid.columns.length; i++) {
+                        var fieldName = grid.columns[i].field;
+                        var template = grid.columns[i].template;
+                        var exportFormat = grid.columns[i].exportFormat;
+
+                        //VALIDATE COLUMN
+                        if (!fieldName) continue;
+                        var value = '';
+                        if (fieldName.indexOf('.') >= 0)
+                        {
+                        var properties = fieldName.split('.');
+                        var value = data[row] || '';
+                        for (var j = 0; j < properties.length; j++) {
+                            var prop = properties[j];
+                            value = value[prop] || '';
+                        }
+                        }
+                        else{
+                            
+                       value = data[row][fieldName] || '';
+                        }
+                        if (value && template && exportFormat !== false) {
+                            value = _.isFunction(template)
+                                ? template(data[row])
+                                : kendo.template(template)(data[row]);
+                        }
+
+                        value = value.toString().replace(/"/g, '""');
+                        csv += '"' + value + '"';
+                        if (i < grid.columns.length - 1) {
+                            csv += ',';
+                        }
+                    }
+                    csv += '\n';
+                }
+
+                // Reset datasource
+                grid.dataSource.pageSize(originalPageSize);
+
+                //EXPORT TO BROWSER
+                var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' }); //Blob.js
+                saveAs(blob, fileName); //FileSaver.js
+        }
+    })
+    // Kendo MVVM binding    
+    kendo.bind('body', viewModel);
+
+})() -->
+
+    </script>
+</div>
+</div>

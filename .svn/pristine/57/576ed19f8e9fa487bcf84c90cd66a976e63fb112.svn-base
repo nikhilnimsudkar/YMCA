@@ -1,0 +1,45 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.Invoice;
+import com.ymca.model.Payer;
+import com.ymca.model.Signup;
+
+
+public interface InvoiceDao extends GenericDao<Invoice, Long> {
+	
+	@Query("select i from Invoice i inner join i.customer c inner join i.signup s inner join i.payer p  where c.accountId=?1 and DATE(i.dueDate) >= DATE(?2) and DATE(i.dueDate) <= DATE(?3) AND s.status = 'Active' AND p.type='Self'")
+	List<Invoice> getInvoiceByCustomer(Long accountId,Date startDate, Date endDate);
+	
+	@Query("select i from Invoice i inner join i.customer c inner join i.signup s where c.accountId=?1 and DATE(i.dueDate)< DATE(?2) AND s.status = 'Active'")
+	List<Invoice> getInvoicePastDueByCustomer(Long accountId,Date today);
+	
+	@Query("SELECT i FROM Invoice i INNER JOIN i.signup s inner join i.customer c inner join s.paymentMethod pm  WHERE c.accountId = ?1 AND s.status = 'Active' AND pm.id = ?2")
+	List<Invoice> getInvoiceListForPaymentMethod(Long accountId, Long paymentId);
+
+	@Query("select i from Invoice i INNER JOIN i.signup s inner join i.payer p where s.signupId =?1 and p.id =?2")
+	List<Invoice> getBySignupPayer(Long signupId, Long payerId);
+	
+	List<Invoice> findByPayer(Payer payer);
+	
+	@Query("select i from Invoice i inner join i.payer p inner join p.signup s where s.signupId =?1 ")
+	List<Invoice> getInvoiceListForSignup(Long signupId);
+	
+	@Query("select i from Invoice i inner join i.signup s where s.signupId =?1 ")
+	List<Invoice> getInvoiceListForDonationSignup(Long signupId);
+	
+	// Used by getPastDueAmountBySignup on InvoiceServiceImpl
+	@Query("select i from Invoice i inner join i.signup s where s.signupId=?1 and DATE(i.dueDate)< DATE(now()) AND s.status = 'Active'")
+	List<Invoice> getPastInvoiceByActiveSignup(Long signupId);
+	
+	//used by getAllInvoiceByBilldate on InvoiceServiceImpl
+	@Query("select i from Invoice i where i.signup = ?1 AND DATE(i.billDate)>=DATE(?2) AND DATE(i.billDate)<DATE(?3) order by billDate asc")
+	List<Invoice> findBySignupAndBillDateOrderByBillDateAscending(Signup signUp, Date billDate, Date nextBillDate);
+	
+	@Query("select i from Invoice i where i.signup = ?1 AND DATE(i.billDate)>=DATE(?2) order by billDate asc")
+	List<Invoice> findBySignupAndBillDateOrderByBillDateAscending(Signup signUp, Date billDate);
+}

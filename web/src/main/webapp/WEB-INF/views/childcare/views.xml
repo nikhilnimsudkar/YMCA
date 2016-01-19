@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+  <definition name="home" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/body.jsp" />
+  </definition>
+  <definition name="viewChildcare" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/childcare/childcare.jsp" />
+  </definition>
+  <definition name="searchchildcare" extends="page_default">
+    <put-attribute name="body" value="/WEB-INF/views/childcare/searchccresult.jsp" />
+  </definition>
+  <definition name="searchinservice" extends="page_default">
+    <put-attribute name="body" value="/WEB-INF/views/childcare/searchinserviceresult.jsp" />
+  </definition>
+  <definition name="searchafterschool" extends="page_default">
+    <put-attribute name="body" value="/WEB-INF/views/childcare/searchafterschoolresult.jsp" />
+  </definition>
+</tiles-definitions>

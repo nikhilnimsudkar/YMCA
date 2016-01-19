@@ -1,0 +1,79 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<div id="purchaseinfoPg">
+<div id="tabstrip3" class="k-block">
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">PURCHASE INFORMATION</span>
+		<span class="autopaySpan"><button id="autopayBtn" class="k-button">AUTOPAY</button></span>
+		<div id="purchase_info">
+			<table>
+				<tr>
+					<td><input type="checkbox"></td>
+					<td><span>Credit & Debit Cards</span></td>
+					<!-- <td><span>XXXX-XXXX-XXXX-1234</span></td> -->
+					<td><span>${paymentInfo.cardNumber }</span></td>
+					<td></td>
+					<td>Expiration Date</td>
+					<!-- <td>07/20</td> -->
+					<td>${paymentInfo.expirationMonth }/${paymentInfo.expirationYear }</td>
+				</tr>
+				<tr>
+					<td><input type="checkbox"></td>
+					<td><span>Bank Details</span></td>
+					<!-- <td><span>XXXXX-XXXXX</span></td> -->
+					<td><span>${paymentInfo.bankRoutingNumber }</span></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">BILLING INFORMATION</span>
+		<div id="bill_info">
+			<%-- <span id="address1">${accInfo.addressLine1}</span>
+			<span id="address2">${accInfo.addressLine2}</span><br>
+			<span id="city">${accInfo.city}</span>
+			<span id="state">${accInfo.state}</span><br>
+			<span id="zip">${accInfo.postalCode}</span> --%>
+			
+			<span id="address1">${paymentInfo.billingAddressLine1}</span>
+			<span id="address2">${paymentInfo.billingAddressLine2}</span><br>
+			<span id="city">${paymentInfo.billingCity}</span>
+			<span id="state">${paymentInfo.billingState}</span><br>
+			<%-- <span id="zip">${paymentInfo.postalCode}</span> --%>
+		</div>
+	</div>
+	
+	<div class="pay_header">
+		<span class="head" style="margin-left:3px;">CART ITEMS</span>
+		<div id="cart_info">
+			<table>
+				<tr>
+					<td><span><strong>Swim Class / Youth Swim Team</strong></span></td>
+					<td><span>Monday Wednesday Friday</span></td>
+					<td><span>8/01- 9/31</span></td>
+					<td><span>10:00 am - 12:00 pm</span></td>
+				</tr>
+				<tr>
+					<td><span>Sub Total: $200</span></td>
+				</tr>
+				<tr>
+					<td><span><strong>Zumba Class</strong></span></td>
+					<td><span>Tuesday Thursday</span></td>
+					<td><span>9/15 - 10/30</span></td>
+					<td><span>10:00 am - 12:00 pm</span></td>
+				</tr>
+				<tr>
+					<td><span>Sub Total: $200</span></td>
+				</tr>
+				<tr>
+					<td colspan="3" align="right" style="padding-right:20px;"><span><strong>Order Total $400</strong></span></td>
+					<td align="right" style="padding-right:10px;"><button id="placeorderBtn" class="k-button">PLACE ORDER</button></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div>
+</div>

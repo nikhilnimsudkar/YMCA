@@ -1,0 +1,58 @@
+package com.ymca.web.util;
+
+import java.util.Enumeration;
+
+public class Constants {
+	public static enum  INTERACTION_TYPE  {Request_Reset_Password,PASSWORD_RESET,Request_Membership_Cancellation, TrialPass_Request};
+	
+	public static final String Request_Reset_Password = "Request Reset Password";
+	public static final String Request_Membership_Cancellation = "Request Membership Cancellation";
+	public static final String PASSWORD_RESET = "Password Reset";
+	
+	public static final String FORGET_PASSWORD_SUCCESS = "An email has been sent with reset password link";
+	public static final String INVALID_EMAIL = "Please enter the correct Email";
+	public static final String BLANK_EMAIL = "Please enter Email";
+	public static final String NO_EMAIL_RECORD_FOUND = "Email Address does not exists in our record!";
+	public static final String NO_RECORDS_FOUND = "No entry found based on your entered information. Please contact YMCA location";
+	public static final String INVALID_TOKEN = "Invalid token or your token has been expired. Please contact YMCA Silicon valley";
+	public static final String NO_TOKEN = "The link is not valid.. Please contact system Administrator";
+	public static final String EXPIRED_LINK = "This link is expired";
+	public static final String ALL_REQUIRED_FIELD = "Please fill all the Required fields below";
+	public static final String FORGET_USERNAME_SUCCESS = "We have retrieve your username as: $USR_NAME$.";
+	public static final String PASSWORD_DONT_MATCH = "Password did not match";
+	public static final String RESET_PASSWORD_SUCCESS = "You password was changed successfully!";
+	public static final String RESET_LINK_EXPIRY_HOURS = "reset_link_expiry_hours";
+	
+	public static final String INTERNAL_ERROR = "An error has occured Please try after some time.";
+	public static final String REQUEST_MEMBERSHIP_SUCCESS = "Your request for Cancellation has been recieved.";
+	
+	public static final String Request_Trial_Pass = "Request Trial Pass";
+	public static final String REQUEST_RESET_PASSWORD = "REQUEST RESET PASSWORD";
+	public static final String NEW_MEMBERSHIP_REQUEST = "NEW MEMBERSHIP REQUEST";
+	public static final String NEW_TRIAL_PASS_REQUEST = "NEW TRIAL PASS REQUEST";
+	public static final String NEW_MEMBERSHIP_REQUEST_INTERACTION_DESCTIPTION = "REQUEST FOR NEW MEMBERSHIP DESCTIPTION";
+	public static final String NEW_TRIAL_PASS_REQUEST_INTERACTION_DESCTIPTION = "REQUEST FOR TRIAL PASS DESCTIPTION";
+	public static final String Interaction_URL = "https://eaag-test.crm.us2.oraclecloud.com:443/appCmmnCompInteractions/InteractionService";
+	public static final String Fcrm_Username = "iuser";
+	public static final String Fcrm_Password = "Serene123";
+	public static final String PARTICIPANT_TYPE_CODE = "CONTACT";
+	public static final String ACTIVE = "ACTIVE";
+	//public static final String REQUEST_RESET_PASSWORD = "PHONE CALL";
+	public static final String PAYMENT_METHOD_PORTAL_STATUS = "Active";
+	public static final String PAYMENT_METHOD_PORTAL_STATUS_REMOVE = "Remove";
+	public static final String PAYMENT_METHOD_PAYMENT_METHOD_CREDIT = "Credit";
+	public static final String PAYMENT_METHOD_PAYMENT_METHOD_EFT = "EFT";
+	
+	public static final String LABEL_ITEM_DISCOUNT_VALUE = "AMOUNT";
+	public static final String LABEL_ITEM_DISCOUNT_PERCENTAGE = "PERCENTAGE";
+	public static final String WAIVERS_TC_TYPE_COMMON = "Common";
+	public static final String CC_MASKED_FIRST_12_DIGIT = "XXXX-XXXX-XXXX-";
+	
+	public static final String PAYMENT_METHOD_PICKLIST_NAME = "PAYMENT_METHOD";
+	public static final String PROGRAM_PAGENAME_LABEL = "Program Registration";
+	
+	public static final String USERNAME_LBL = "username";
+	public static final String PASSWORD_LBL = "password";
+	public static final String LOCATION_BAYAREA = "Bay Area";
+	public static final String PROGRAM_TYPE = "MEMBERSHIP";
+}

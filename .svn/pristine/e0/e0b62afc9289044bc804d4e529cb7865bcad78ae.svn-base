@@ -1,0 +1,44 @@
+package com.serene.job;
+
+import java.io.IOException;
+
+import org.springframework.batch.core.configuration.support.AutomaticJobRegistrar;
+import org.springframework.batch.core.configuration.support.GenericApplicationContextFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.stereotype.Component;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.web.SpringBootServletInitializer;
+@Component
+//@DependsOn({"automaticJobRegistrar"})
+public class ModularBatchContext  extends SpringBootServletInitializer implements ApplicationContextAware {
+	
+	//@Autowired
+	private AutomaticJobRegistrar automaticJobRegistrar; 
+	
+	public static ApplicationContext parentContext ;
+	
+	//@PostConstruct
+    public void init() throws IOException{
+    	ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
+		Resource[] xmlConfigurations = resourcePatternResolver.getResources("classpath:/META-INF/spring/batch/jobs/**/*.xml");
+		for (Resource resource : xmlConfigurations) {
+			GenericApplicationContextFactory g = new GenericApplicationContextFactory(resource);
+			automaticJobRegistrar.addApplicationContextFactory(new GenericApplicationContextFactory(resource));
+		}
+    }
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		ModularBatchContext.parentContext  = applicationContext;
+	}
+	
+	@Override
+	    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+	        return application.sources(JobBootLoader.class);
+	    }
+}

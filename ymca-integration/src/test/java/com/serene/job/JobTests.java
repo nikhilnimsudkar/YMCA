@@ -1,0 +1,373 @@
+package com.serene.job;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import javax.annotation.Resource;
+import javax.transaction.Transactional;
+
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.context.ApplicationContext;
+import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.namedparam.EmptySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
+import org.springframework.jdbc.core.namedparam.ParsedSql;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.serene.job.dao.JobSchedulerMetadataDao;
+import com.serene.job.model.JobSchedulerMetadata;
+import com.serene.job.scheduler.AbstractJobScheduler;
+import com.serene.job.scheduler.GenericDbToSCJobScheduler;
+import com.serene.job.scheduler.GenericFileToSCJobScheduler;
+import com.serene.job.scheduler.GenericSCToDbJobScheduler;
+import com.serene.job.scheduler.InitializeJobFromDbMetadata;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = JobBootLoader.class)
+public class JobTests {
+
+	private static Logger log = Logger.getLogger(JobTests.class.getName()); 
+	
+    @Autowired
+    private JobLauncher jobLauncher;
+	
+	@Autowired
+	private JobOperator jobOperator;
+
+	@Autowired
+	private JobRepository jobRepository;
+
+	@Autowired
+	private JobExplorer jobExplorer ;
+
+	//@Resource(name="scToDbAccountJobScheduler")
+	private GenericSCToDbJobScheduler genericSCToDbJobScheduler;
+	
+	//@Resource(name="scToDbLocationJobScheduler")
+	private GenericSCToDbJobScheduler scToDbLocationJobScheduler;
+	
+	//@Resource(name="scToDbItemDetailsJobScheduler")
+	private GenericSCToDbJobScheduler scToDbItemDetailsJobScheduler;
+	
+	//@Resource(name="scToDbItemJobScheduler")
+	private GenericSCToDbJobScheduler scToDbItemJobScheduler;
+	
+	//@Resource(name="scToDbSignUpJobScheduler")
+	private GenericSCToDbJobScheduler scToDbSignUpJobScheduler;
+	
+	//@Resource(name="scToDbPaymentJobScheduler")
+	private GenericSCToDbJobScheduler scToDbPaymentJobScheduler;
+	
+	
+	//@Resource(name="scToDbPaymentMethodJobScheduler")
+	private GenericSCToDbJobScheduler scToDbPaymentMethodJobScheduler;
+	
+	//DBtoSC
+	
+	//@Resource(name="dbToScAccountJobScheduler")
+	private GenericDbToSCJobScheduler dbToScAccountJobScheduler;
+	
+	//@Resource(name="dbToScSignUpJobScheduler")
+	private GenericDbToSCJobScheduler dbToScSignUpJobScheduler;
+	
+	//@Resource(name="dbToScPaymentJobScheduler")
+	private GenericDbToSCJobScheduler dbToScPaymentJobScheduler;
+	
+	//@Resource(name="dbToScPaymentMethodJobScheduler")
+	private GenericDbToSCJobScheduler dbToScPaymentMethodJobScheduler;
+	
+	//@Resource(name="fileToScContactJobScheduler")
+	private GenericFileToSCJobScheduler fileToScContactJobScheduler;
+	
+	//PaymentMethod object flow
+	
+	@Resource
+	private InitializeJobFromDbMetadata initializeJobFromDbMetadata ;
+	
+	@Resource
+	private JobSchedulerMetadataDao jobSchedulerMetadataDao ;  
+	
+	@Resource
+	protected ApplicationContext applicationContext;
+	
+	
+	@Test
+	public void runScToDBPaymentMethod() {
+		try {
+			log.info("start");
+			scToDbPaymentMethodJobScheduler.run();
+		} catch (Exception e) {
+		
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void runDBtoSCPaymentMethod() {
+		try {
+			log.info("start");
+			dbToScPaymentMethodJobScheduler.run();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
+	}
+	
+	
+	//Payment object flow
+	
+	@Test
+	public void runScToDBPayment() {
+		try {
+			log.info("start");
+			scToDbPaymentJobScheduler.run();
+		} catch (Exception e) {
+		
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void runDBtoSCPayment() {
+		try {
+			log.info("start");
+			dbToScPaymentJobScheduler.run();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
+	}
+	
+	//SignUp  object flow
+	@Test
+	public void runScToDBSignup() {
+		try {
+			log.info("start");
+			scToDbSignUpJobScheduler.run();
+		} catch (Exception e) {
+		
+			e.printStackTrace();
+		}
+	}
+	
+	
+	@Test
+	public void runDBtoSCSignup() {
+		try {
+			log.info("start");
+			dbToScSignUpJobScheduler.run();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+	//Item  object flow
+	
+	@Test
+	public void runScToDBItem() {
+		try {
+			log.info("start");
+			scToDbItemJobScheduler.run();
+		} catch (Exception e) {
+		
+			e.printStackTrace();
+		}
+	}
+	
+	//ItemDetails  object flow
+	@Test
+	public void runScToDBItemDetails() {
+		try {
+			log.info("start");
+			scToDbItemDetailsJobScheduler.run();
+		} catch (Exception e) {
+		
+			e.printStackTrace();
+		}
+	}
+	
+	
+	//Location  object flow
+	@Test
+	public void runScToDbLocation() {
+		try {
+			log.info("start");
+			scToDbLocationJobScheduler.run();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	//Account  object flow
+	@Test
+	public void runScToDbAccount() {
+		try {
+			log.info("start");
+			genericSCToDbJobScheduler.run();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void runDBtoScAccount() {
+		try {
+			log.info("start");
+			dbToScAccountJobScheduler.run();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void runCSVtoScContact() {
+		try {
+			log.info("start");
+			fileToScContactJobScheduler.run();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
+	}
+
+	
+	
+	@Test
+	public void runJob2() {
+		try {
+			log.info("start");
+			String jobName = "opptortunityJob";
+			String lastPoolTimestamp = "lastPoolTimestamp="+System.currentTimeMillis() + "";
+			Long jodId = jobOperator.start(jobName,lastPoolTimestamp);
+			log.info(jodId.toString());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void runDbToScAccountJob() {
+		try {
+			log.info("start");
+			String jobName = "dbToScAccountJob";
+			String lastPoolTimestamp = "lastPoolTimestamp="+System.currentTimeMillis() + "";
+			Long jodId = jobOperator.start(jobName,lastPoolTimestamp);
+			log.info(jodId.toString());
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void runGenericJobScheduler() {
+		try {
+			while (true) {
+				Thread.sleep(1000);
+				Set<JobExecution> jobExecutions =  jobExplorer.findRunningJobExecutions("dbToScAccountJob");
+				boolean exist = false ;
+				for (JobExecution execution : jobExecutions ) {
+					if (StringUtils.equalsIgnoreCase(execution.getExitStatus().getExitCode(), "COMPLETED"))
+					 exist = true ; 
+				}
+				if(exist) break ;
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testParameterList() {
+		String sql ="select e from afa where ada = :NameParamed and avc = 12312 order by asv limit 2";
+		ParsedSql parsedSql  = NamedParameterUtils.parseSqlStatement(sql );
+		SqlParameterSource paramSource = new EmptySqlParameterSource();
+		List<SqlParameter>  ss = NamedParameterUtils.buildSqlParameterList(parsedSql, paramSource);
+		for(SqlParameter p : ss) {
+			System.out.println(p.getName());
+		}
+	}
+	
+	@Test
+	public void jXpath() {
+		Map<String, Object> item = new HashMap<String, Object>(); 
+		Map<String, String> child1= new HashMap<String, String>();
+		Map<String, String> child2= new HashMap<String, String>();
+		
+		child1.put("name", "name1");
+		child1.put("owner", "true");
+
+		child2.put("name", "name2");
+		child2.put("owner", "false");
+		
+		item.put("p1", "p1");
+		List<Map<String, String>> childs = new ArrayList<Map<String,String>>();
+		childs.add(child1);
+		childs.add(child2);
+		item.put("child", childs);
+		
+		JXPathContext context = JXPathContext.newContext(item);
+		System.out.println(context.getValue("p1"));
+		System.out.println(context.getValue("/child[owner='false']/name"));
+		
+	}
+	
+	@Test
+	public void testSctoDbJob(){
+		genericSCToDbJobScheduler.run();
+	}
+	
+	@Test
+	public void loadJobsFromDb(){
+		//initializeJobFromDbMetadata.postProcessBeanDefinitionRegistry(null);
+		log.info("Testing");
+		
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void runJobByName() throws Exception{
+		JobSchedulerMetadata j = jobSchedulerMetadataDao.findOne("SC_TO_DB_RESOURCE_SYNC") ;
+		
+		AbstractJobScheduler jobScheduler =  (AbstractJobScheduler) applicationContext.getBean(InitializeJobFromDbMetadata.interfaceTypes.get(j.getInterfaceType()));
+		jobScheduler.setJobName(j.getJobName());
+		jobScheduler.loadJob();
+		jobScheduler.run();
+/*		while (true) {
+			Thread.sleep(1000);
+			Set<JobExecution> jobExecutions =  jobExplorer.findRunningJobExecutions("DB_TO_SC_ACCOUNT_SYNC");
+			boolean exist = false ;
+			for (JobExecution execution : jobExecutions ) {
+				if (StringUtils.equalsIgnoreCase(execution.getExitStatus().getExitCode(), "COMPLETED"))
+				 exist = true ; 
+			}
+			if(exist) break ;
+		}*/
+	}
+	
+}

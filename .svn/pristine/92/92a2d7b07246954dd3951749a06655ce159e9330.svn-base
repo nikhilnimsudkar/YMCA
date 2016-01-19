@@ -1,0 +1,1288 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+
+       
+<body>
+
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<script src="<%=contextPath %>/resources/js/sha512.js"></script>
+<script src="<%=contextPath %>/resources/js/payment/luhn.js"></script>
+<script src="<%=contextPath %>/resources/js/payment/view.js"></script>
+<script src="<%=contextPath %>/resources/js/jquery.validate.min.js"></script>
+<script src="<%=contextPath %>/resources/js/maskedinput.min.js"></script>
+<script src="<%=contextPath %>/resources/js/app/payment_new.js"></script>
+
+<script id="terms-conditions-ErrorBox" type="text/x-kendo-template">
+    <p class="error-message-p">Please agree the terms and conditions before Proceding</p>
+	
+    <div class="confirmbutton" align="center"><button class="confirm-terms-conditions k-button" style=" width: 35%;">Ok</button>   
+</script>
+
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="main">
+<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+	<span class="k-loading-text">Loading... Please wait</span>
+	<div class="k-loading-image">
+		<div class="k-loading-color"></div>
+	</div>
+</div>
+<div id="content" style="margin-bottom:30px; margin-top: -5px;">
+		<div id="contentFormDiv" >
+		<form:form commandName="signup" class="bootstrap-frm cmxform" id="createDonationForm" method="post" action="donationDonate" style="padding:20px; max-width: 800px;">  
+			<div>
+				  <!-- <h2 style="margin-left:270px; ">
+				  		<span>Every gift makes a difference.<br /></span>
+				  		<span>Every one has role to play.<br /></span>
+				  		<span>Together, we can achieve so much more.<br /></span>					  		  		
+				  </h2> -->
+				  <h4><span style="float:right;"><span style="color:red">*</span> Required Fields.<br></span></h4>
+				  <h3><span>My Donation<br /></span></h3>	
+				  
+				  <span class="label-header1">Donation Amount<span style="color:red">*</span><br /></span>		
+				  <input type="radio" name="finalAmountRadio" value="1500" > $1,500
+				  <input type="radio" name="finalAmountRadio" value="500"> $500 
+				  <input type="radio" name="finalAmountRadio" value="250"> $250
+				  <input type="radio" name="finalAmountRadio" value="50"> $50
+				  <input type="radio" name="finalAmountRadio" id="donationAmtOther"   value="Other" > Other: 
+				  <%-- <form:input cssClass="form-control" path="finalAmountRadio" title="Please enter your First Name" name="finalAmountRadio" id="firstName" maxlength="50" placeholder="First Name" value="" /> --%>
+				  <input type="text" name="finalAmountRadio" id="donationAmtOtherTxt" style="width: 250px;">
+				  <span id="donationAmtErr" style="margin-left : 8px; font-style: italic; color: red; display:none;"></span>				  
+				  <input type="text" name="itemDetailId" id="donationTCItemDetailId" value="${donationTAndC.id }" style="width: 250px;display : none;">
+				  
+				  <br />				  								
+				  <span class="label-header1">Payment Frequency<span style="color:red">*</span><br /></span>
+				  <input type="radio" name="signUpPricingOption" class="donationFrequencyStr" value="One Time"> One Time
+				  <input type="radio" name="signUpPricingOption" class="donationFrequencyStr" value="Monthly"> Monthly
+				  <select id="donationFrequencyMonthsSel" name="paymentFrequency" style="width : 170px; display : none; margin-left : 142px;">
+				  		<option value="0">--Select No of Months--</option>
+				  		<option selected="selected">12</option>
+				  		<option>6</option>
+				  </select>
+				  <span id="donationFreqErr" style="margin-left : 8px; font-style: italic; color: red;display:none; "></span>
+				  <input type="text" style="display:none;" name="finalAmount" id="donationAmtStr" value="">
+				  <input type="text" style="display:none;" name="donationFrequency" id="donationFreq" value="">
+				  <br /><br />		
+				  <span id="donationFreqMonthlySelMsgSpan" style="color : blue; display : none;">
+				  	<span>Note : i) Your card information will be stored in your profile.</span>&nbsp;&nbsp;&nbsp;
+				  	<span id="amtChanrgedNoteSpan"></span>&nbsp;&nbsp;&nbsp;
+				  	<span id="amtPledgingNoteSpan"></span>
+				  	<br /><br />
+				  </span>	  	  
+				  <span>Apply my gift to the following YMCA branch: </span> 
+				  <select name="specialRequest" id="donationBranch" style="width:260px; margin-left : 55px;" ><br />
+						<option value="0">--Select Location--</option>
+						<c:forEach var="location" items="${locations}" varStatus="count">
+							<c:if test="${ location.recordName != 'All Branches' && location.recordName != 'Bay Area' && location.branch == 'true' }">
+								<option value="${location.recordName }">${location.recordName }</option>
+							</c:if>
+						</c:forEach>						
+				</select>				
+				  <!-- <select name="donationBranch" size="1" onchange="" id="donationBranch" style="width: 260px; margin-left : 55px;">
+					<option value="Central YMCA">Central YMCA</option>
+					<option value="East Palo Alto Family YMCA">East Palo Alto Family YMCA</option>
+					<option value="East Valley Family YMCA">East Valley Family YMCA</option>
+					<option value="El Camino YMCA">El Camino YMCA</option>
+					<option value="Mt. Madonna YMCA">Mt. Madonna YMCA</option>
+					<option value="Northwest YMCA">Northwest YMCA</option>
+					<option value="Page Mill YMCA">Page Mill YMCA</option>
+					<option value="Palo Alto Family YMCA">Palo Alto Family YMCA</option>
+					<option value="YMCA Camp Campbell">YMCA Camp Campbell</option>
+					<option value="Sequoia YMCA">Sequoia YMCA</option>
+					<option value="South Valley Family YMCA">South Valley Family YMCA</option>
+					<option value="Southwest YMCA">Southwest YMCA</option>
+					<option value="YMCA of Silicon Valley">YMCA of Silicon Valley</option>
+					<option value="Project Cornerstone">Project Cornerstone</option>
+					<option value="Select" selected="">---Select a branch---</option>
+				</select>  -->
+				<br /><br />
+				  <span>
+				  		<span>If a YMCA campaigner asked you to make this donation, please enter his/her name here:</span>
+				  		<input type="text" name="campaigner" style="width : 50%">
+				   </span><br />
+				   
+				   <!-- <span style="float : left;"><span style="float : left;"><input type="checkbox" autocomplete="off" name="donationGiftChk"></span><span> Would you like to make this gift in honor or in memory of someone? If so, please check this box. You will be asked for the appropriate information on the next screen.</span></span><br /><br /> -->
+				   <span style="float : left;"><span><input type="checkbox" name="contact.doNotEmail" checked=""></span><span>Please add me to your e-mail distribution list.</span></span><br /><br />
+				   <span style="float : left;">
+				   		<span><input type="checkbox" name="employerMatching" value="Yes"></span><span>Employer matching</span>
+				   		<span style="margin-left : 145px;">
+				   			<select id="employerMatchingSelect" name="employer" style="width : 260px; margin-left : 20px;">
+				   				<option value="-1">--Select Employer--</option>
+							  <c:forEach var="employer" items="${employerLst}" varStatus="count">
+							  		<option value="${employer.accountId }">${employer.name }</option>
+							  </c:forEach>	
+							  <option value="0">Other</option>	
+							</select>
+				   		</span>
+				   	</span>
+				   	<span id="donationEmpMatchErr" style="margin-left : 8px; font-style: italic; color: red; display:none;"></span>
+				   	<br /><br />
+				   	<div id="employerMatchInfoDiv" style="display:none;">
+						<div>
+							 <table border="0" width="100%" id="employerMatchInfoTable">
+								<tr>
+									<td><input type="text" maxlength="20" size="15" value="" id="companyName" name="companyName" placeholder="Company name" style="width: 200px;"></td>
+									<td >&nbsp;</td>
+									<td><input type="text" maxlength="50" size="15" value="" id="companyAddress" name="companyAddress" placeholder="Company Address" style="width: 200px;"></td>
+									<td >&nbsp;</td>					 		
+								</tr>
+								<tr>
+									<td><input type="text" placeholder="Company Phone" name="companyPhone" id="companyPhone" value=""  style="width: 200px;"/></td>
+									<td >&nbsp;</td>
+									<td><input type="text" placeholder="Employee email Id" name="employeeEmailId" id="employeeEmailId" value="" style="width: 200px;"/></td>
+									<td >&nbsp;</td>					 		
+								</tr>
+							</table>
+							
+						</div>
+					</div>
+				   
+				   <h2><span>My Information</span></h2>		
+				  <!--  <span><input type="radio"  value="" name="recognizeAsRadioInput">&nbsp;<span class="recognizedAsSpanCls">Anonymous</span></span>				   			
+				   <span><input type="radio"  value="" name="recognizeAsRadioInput" id="recognizedAsName"><span class="recognizedAsSpanCls"><span id="recognisedAsFName"></span>&nbsp;<span id="recognisedAsLName"></span></span></span> -->
+				   <span id="recognizedAsSpan" style="display : none;">
+				   		<span class="label-header1">Recognized as<span style="color:red">*</span> : </span>
+				   		<span>				   			
+				   			<span><input type="radio"  value="Anonymous" name="recognizeAsRadioInput">&nbsp;<span class="recognizedAsSpanCls">Anonymous</span></span>				   			
+				   			<span><input type="radio"  value="" name="recognizeAsRadioInput" id="recognizedAsName"><span class="recognizedAsSpanCls"><span id="recognisedAsFName"></span>&nbsp;<span id="recognisedAsLName"></span></span></span>
+				   			<c:if test="${pageContext.request.userPrincipal.isAuthenticated()}">
+				   				<span><input type="radio" value="" name="recognizeAsRadioInput" id="recognizedAsContactName"></span>&nbsp;
+				   			</c:if>				   			
+				   		</span>
+				   		<c:if test="${pageContext.request.userPrincipal.isAuthenticated()}">					   		
+					   		<select id="contactLstSelect"  style="width : 200px;">
+					   			<option>--Select Contact--</option>
+								  <c:forEach var="contact" items="${contactLst}" varStatus="count">
+								  		<option value="${contact.contactId }">${contact.firstName }&nbsp;${contact.lastName }</option>
+								  </c:forEach>
+								  <option value="2">Other</option>		
+							</select><input type="text" placeholder="Contact Name" name="recognizeAsTextName" id="recognizeAsOtherTxt" style="width: 100px; display: none; margin-left : 5px;" />
+						</c:if> 
+						<span id="donationContactSelErr" style="margin-left : 8px; font-style: italic; color: red; display:none;"></span>
+						<input type="text" id="recognizedAsHidInput" name="recognizeAs" value="" style="display: none;" />	
+				   </span><br />	
+				   <!-- <table border="0">
+								<tr>
+									<td>
+										<input type="text" placeholder="Contact Name" name="recognizeAs" id="recognizeAsOtherTxt" value="" style="width: 100px; display: none;" />
+									</td>
+									<td></td>
+								</tr>
+							</table> 
+							 <input type="text" id="recognizedAsHidInput" name="recognizeAs" value="" style="display: none;" /> -->
+				   
+				   	   
+				   <table border="0" width="100%" id="billingInfoTable">
+						<tr>
+							<td><input type="text" maxlength="20" size="15" value="${usInfo.firstName}" id="donerFirstName" name="donerFirstName" placeholder="First Name" style="width: 200px;"></td>
+							<td >&nbsp;</td>
+							<td><input type="text" maxlength="50" size="15" value="${usInfo.lastName}" id="donerLastName" name="donerLastName" placeholder="Last Name" style="width: 200px;"></td>
+							<td >&nbsp;</td>					 		
+						</tr>
+						
+						<c:if test="${!pageContext.request.userPrincipal.isAuthenticated()}">
+				   			<tr>
+								<td><input type="text" maxlength="20" size="15" id="dateOfBirth" name="dateOfBirth" style="width: 200px;"></td>
+								<td >&nbsp;</td>
+								<td>
+									<span >
+										<span><span><input type="radio" name="gender" style="width : 15px;" value="Male" id="genderM" title="Please select gender"/></span><span style="margin-left : 5px;">Male</span></span>
+										<span><span><input type="radio" name="gender" style="width : 15px;" value="Female" id="genderF" title="Please select gender" /></span><span style="margin-left : 5px;">Female</span></span>
+									</span>								
+								</td>
+								<td >&nbsp;</td>					 		
+							</tr>
+				   		</c:if>
+						<!-- <tr>
+							<td><input type="text" placeholder="AddressLine1" name="addressLine1" id="AddressLine1" value=""  style="width: 200px;"/></td>
+							<td >&nbsp;</td>
+							<td><input type="text" placeholder="AddressLine2" name="addressLine2" id="AddressLine2" value="" style="width: 200px;"/></td>
+							<td >&nbsp;</td>					 		
+						</tr>
+						<tr>
+							<td><input type="text" placeholder="City" name="city" id="City" value="" style="width: 200px;"/></td>
+							<td >&nbsp;</td>
+							<td>
+								<select size="1" id="state" name="state" style="width: 210px;">
+									<option value="">--Select State/Province--</option>
+									<option value="ZZ">Not USA or Canada</option>
+									<option value="AA">APO AA</option>
+									<option value="AE">APO AE</option>
+									<option value="AP">APO AP</option>
+									<option value="AL">Alabama</option>
+									<option value="AK">Alaska</option>
+									<option value="AB">Alberta</option>
+									<option value="AS">American Samoa</option>
+									<option value="AZ">Arizona</option>
+									<option value="AR">Arkansas</option>
+									<option value="BC">British Columbia</option>
+									<option value="CA" selected="">California</option>
+									<option value="CO">Colorado</option>
+									<option value="CT">Connecticut</option>
+									<option value="DE">Delaware</option>
+									<option value="DC">District of Columbia</option>
+									<option value="FL">Florida</option>
+									<option value="GA">Georgia</option>
+									<option value="GU">Guam</option>
+									<option value="HI">Hawaii</option>
+									<option value="ID">Idaho</option>
+									<option value="IL">Illinois</option>
+									<option value="IN">Indiana</option>
+									<option value="IA">Iowa</option>
+									<option value="KS">Kansas</option>
+									<option value="KY">Kentucky</option>
+									<option value="LA">Louisiana</option>
+									<option value="ME">Maine</option>
+									<option value="MB">Manitoba</option>
+									<option value="MD">Maryland</option>
+									<option value="MA">Massachusetts</option>
+									<option value="MI">Michigan</option>
+									<option value="MN">Minnesota</option>
+									<option value="MS">Mississippi</option>
+									<option value="MO">Missouri</option>
+									<option value="MT">Montana</option>
+									<option value="NE">Nebraska</option>
+									<option value="NV">Nevada</option>
+									<option value="NB">New Brunswick</option>
+									<option value="NH">New Hampshire</option>
+									<option value="NJ">New Jersey</option>
+									<option value="NM">New Mexico</option>
+									<option value="NY">New York</option>
+									<option value="NL">Newfoundland and Labrador</option>
+									<option value="NC">North Carolina</option>
+									<option value="ND">North Dakota</option>
+									<option value="MP">Northern Mariana Islands</option>
+									<option value="NT">Northwest Territories</option>
+									<option value="NS">Nova Scotia</option>
+									<option value="NU">Nunavut</option>
+									<option value="OH">Ohio</option>
+									<option value="OK">Oklahoma</option>
+									<option value="ON">Ontario</option>
+									<option value="OR">Oregon</option>
+									<option value="PA">Pennsylvania</option>
+									<option value="PE">Prince Edward Island</option>
+									<option value="PR">Puerto Rico</option>
+									<option value="QC">Quebec</option>
+									<option value="RI">Rhode Island</option>
+									<option value="SK">Saskatchewan</option>
+									<option value="SC">South Carolina</option>
+									<option value="SD">South Dakota</option>
+									<option value="TN">Tennessee</option>
+									<option value="TX">Texas</option>
+									<option value="UM">US Minor Outlying Islands</option>
+									<option value="UT">Utah</option>
+									<option value="VT">Vermont</option>
+									<option value="VI">Virgin Islands, US</option>
+									<option value="VA">Virginia</option>
+									<option value="WA">Washington</option>
+									<option value="WV">West Virginia</option>
+									<option value="WI">Wisconsin</option>
+									<option value="WY">Wyoming</option>
+									<option value="YT">Yukon Territory</option>
+								</select>
+							</td>
+							<td >&nbsp;</td>					 		
+						</tr>	
+						<tr>
+							<td><input type="text" placeholder="Zip/Postal Code" name="zipcode" id="zipcode" value="" style="width: 200px;"/></td>
+							<td >&nbsp;</td>
+							<td>
+								<select id="contry" name="contry" size="1" style="width: 210px;">
+									<option value="">--Select Country--</option>
+									<option value="AF">AFGHANISTAN</option>
+									<option value="AL">ALBANIA</option>
+									<option value="DZ">ALGERIA</option>
+									<option value="AS">AMERICAN SAMOA</option>
+									<option value="AD">ANDORRA</option>
+									<option value="AO">ANGOLA</option>
+									<option value="AI">ANGUILLA</option>
+									<option value="AQ">ANTARCTICA</option>
+									<option value="AG">ANTIGUA AND BARBUDA</option>
+									<option value="AR">ARGENTINA</option>
+									<option value="AM">ARMENIA</option>
+									<option value="AW">ARUBA</option>
+									<option value="AU">AUSTRALIA</option>
+									<option value="AT">AUSTRIA</option>
+									<option value="AZ">AZERBAIJAN</option>
+									<option value="BS">BAHAMAS</option>
+									<option value="BH">BAHRAIN</option>
+									<option value="BD">BANGLADESH</option>
+									<option value="BB">BARBADOS</option>
+									<option value="BY">BELARUS</option>
+									<option value="BE">BELGIUM</option>
+									<option value="BZ">BELIZE</option>
+									<option value="BJ">BENIN</option>
+									<option value="BM">BERMUDA</option>
+									<option value="BT">BHUTAN</option>
+									<option value="BO">BOLIVIA</option>
+									<option value="BA">BOSNIA AND HERZEGOVINA</option>
+									<option value="BW">BOTSWANA</option>
+									<option value="BV">BOUVET ISLAND</option>
+									<option value="BR">BRAZIL</option>
+									<option value="IO">BRITISH INDIAN OCEAN TERRITORY</option>
+									<option value="BN">BRUNEI DARUSSALAM</option>
+									<option value="BG">BULGARIA</option>
+									<option value="BF">BURKINA FASO</option>
+									<option value="BI">BURUNDI</option>
+									<option value="KH">CAMBODIA</option>
+									<option value="CM">CAMEROON</option>
+									<option value="CA">CANADA</option>
+									<option value="CV">CAPE VERDE</option>
+									<option value="KY">CAYMAN ISLANDS</option>
+									<option value="CF">CENTRAL AFRICAN REPUBLIC</option>
+									<option value="TD">CHAD</option>
+									<option value="CL">CHILE</option>
+									<option value="CN">CHINA</option>
+									<option value="CX">CHRISTMAS ISLAND</option>
+									<option value="CC">COCOS (KEELING) ISLANDS</option>
+									<option value="CO">COLOMBIA</option>
+									<option value="KM">COMOROS</option>
+									<option value="CG">CONGO (BRAZZAVILLE)</option>
+									<option value="CD">CONGO (KINSHASA)</option>
+									<option value="CK">COOK ISLANDS</option>
+									<option value="CR">COSTA RICA</option>
+									<option value="HR">CROATIA</option>
+									<option value="CU">CUBA</option>
+									<option value="CY">CYPRUS</option>
+									<option value="CZ">CZECH REPUBLIC</option>
+									<option value="CI">CÔTE D'IVOIRE</option>
+									<option value="DK">DENMARK</option>
+									<option value="DJ">DJIBOUTI</option>
+									<option value="DM">DOMINICA</option>
+									<option value="DO">DOMINICAN REPUBLIC</option>
+									<option value="EC">ECUADOR</option>
+									<option value="EG">EGYPT</option>
+									<option value="SV">EL SALVADOR</option>
+									<option value="GQ">EQUATORIAL GUINEA</option>
+									<option value="ER">ERITREA</option>
+									<option value="EE">ESTONIA</option>
+									<option value="ET">ETHIOPIA</option>
+									<option value="FK">FALKLAND ISLANDS (MALVINAS)</option>
+									<option value="FO">FAROE ISLANDS</option>
+									<option value="FJ">FIJI</option>
+									<option value="FI">FINLAND</option>
+									<option value="FR">FRANCE</option>
+									<option value="GF">FRENCH GUIANA</option>
+									<option value="TF">FRENCH SOUTHERN TERRITORIES</option>
+									<option value="GA">GABON</option>
+									<option value="GM">GAMBIA</option>
+									<option value="GE">GEORGIA</option>
+									<option value="DE">GERMANY</option>
+									<option value="GH">GHANA</option>
+									<option value="GI">GIBRALTAR</option>
+									<option value="GR">GREECE</option>
+									<option value="GL">GREENLAND/GROENLAND</option>
+									<option value="GD">GRENADA</option>
+									<option value="GP">GUADELOUPE</option>
+									<option value="GU">GUAM</option>
+									<option value="GT">GUATEMALA</option>
+									<option value="GN">GUINEA</option>
+									<option value="GW">GUINEA BISSAU</option>
+									<option value="GY">GUYANA</option>
+									<option value="HT">HAITI</option>
+									<option value="HM">HEARD ISLAND AND MCDONALD ISLANDS</option>
+									<option value="VA">HOLY SEE (VATICAN CITY STATE)</option>
+									<option value="HN">HONDURAS</option>
+									<option value="HK">HONG KONG</option>
+									<option value="HU">HUNGARY</option>
+									<option value="IS">ICELAND</option>
+									<option value="IN">INDIA</option>
+									<option value="ID">INDONESIA</option>
+									<option value="IR">IRAN (ISLAMIC REPUBLIC OF)</option>
+									<option value="IQ">IRAQ</option>
+									<option value="IE">IRELAND</option>
+									<option value="IL">ISRAEL</option>
+									<option value="IT">ITALY</option>
+									<option value="JM">JAMAICA</option>
+									<option value="JP">JAPAN</option>
+									<option value="JO">JORDAN</option>
+									<option value="KZ">KAZAKHSTAN</option>
+									<option value="KE">KENYA</option>
+									<option value="KI">KIRIBATI</option>
+									<option value="KP">KOREA, DEMOCRATIC PEOPLE'S REPUBLIC OF</option>
+									<option value="KR">KOREA, REPUBLIC OF</option>
+									<option value="KW">KUWAIT</option>
+									<option value="KG">KYRGYZSTAN</option>
+									<option value="LA">LAO PEOPLE'S DEMOCRATIC REPUBLIC</option>
+									<option value="LV">LATVIA</option>
+									<option value="LB">LEBANON</option>
+									<option value="LS">LESOTHO</option>
+									<option value="LR">LIBERIA</option>
+									<option value="LY">LIBYAN ARAB JAMAHIRIYA</option>
+									<option value="LI">LIECHTENSTEIN</option>
+									<option value="LT">LITHUANIA</option>
+									<option value="LU">LUXEMBOURG</option>
+									<option value="MO">MACAO</option>
+									<option value="MK">MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF</option>
+									<option value="MG">MADAGASCAR</option>
+									<option value="MW">MALAWI</option>
+									<option value="MY">MALAYSIA</option>
+									<option value="MV">MALDIVES</option>
+									<option value="ML">MALI</option>
+									<option value="MT">MALTA</option>
+									<option value="MH">MARSHALL ISLANDS</option>
+									<option value="MQ">MARTINIQUE</option>
+									<option value="MR">MAURITANIA</option>
+									<option value="MU">MAURITIUS</option>
+									<option value="YT">MAYOTTE</option>
+									<option value="MX">MEXICO</option>
+									<option value="FM">MICRONESIA (FEDERATED STATES OF)</option>
+									<option value="MD">MOLDOVA, REPUPLIC OF</option>
+									<option value="MC">MONACO</option>
+									<option value="MN">MONGOLIA</option>
+									<option value="MS">MONTSERRAT</option>
+									<option value="MA">MOROCCO</option>
+									<option value="MZ">MOZAMBIQUE</option>
+									<option value="MM">MYANMAR</option>
+									<option value="NA">NAMIBIA</option>
+									<option value="NR">NAURU</option>
+									<option value="NP">NEPAL</option>
+									<option value="NL">NETHERLANDS</option>
+									<option value="AN">NETHERLANDS ANTILLES</option>
+									<option value="NZ">NEW ZEALAND</option>
+									<option value="NI">NICARAGUA</option>
+									<option value="NE">NIGER</option>
+									<option value="NG">NIGERIA</option>
+									<option value="NU">NIUE</option>
+									<option value="NF">NORFOLK ISLAND</option>
+									<option value="MP">NORTHERN MARIANA ISLANDS</option>
+									<option value="NO">NORWAY</option>
+									<option value="OM">OMAN</option>
+									<option value="PK">PAKISTAN</option>
+									<option value="PS">PALESTINIAN TERRITORY</option>
+									<option value="PA">PANAMA</option>
+									<option value="PG">PAPUA NEW GUINEA</option>
+									<option value="PY">PARAGUAY</option>
+									<option value="PE">PERU</option>
+									<option value="PH">PHILIPPINES</option>
+									<option value="PN">PITCAIRN</option>
+									<option value="PL">POLAND</option>
+									<option value="PT">PORTUGAL</option>
+									<option value="PR">PUERTO RICO</option>
+									<option value="QA">QATAR</option>
+									<option value="RO">ROMANIA</option>
+									<option value="RU">RUSSIA</option>
+									<option value="RW">RWANDA</option>
+									<option value="SH">SAINT HELENA</option>
+									<option value="KN">SAINT KITTS AND NEVIS</option>
+									<option value="LC">SAINT LUCIA</option>
+									<option value="PM">SAINT PIERRE AND MIQUELON</option>
+									<option value="VC">SAINT VINCENT AND THE GRENADINES</option>
+									<option value="WS">SAMOA</option>
+									<option value="ST">SAO TOME AND PRINCIPE</option>
+									<option value="SA">SAUDI ARABIA</option>
+									<option value="SN">SENEGAL</option>
+									<option value="CS">SERBIA AND MONTENEGRO</option>
+									<option value="SC">SEYCHELLES</option>
+									<option value="SL">SIERRA LEONE</option>
+									<option value="SG">SINGAPORE</option>
+									<option value="SK">SLOVAKIA</option>
+									<option value="SI">SLOVENIA</option>
+									<option value="SB">SOLOMON ISLANDS</option>
+									<option value="SO">SOMALIA</option>
+									<option value="ZA">SOUTH AFRICA</option>
+									<option value="GS">SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS</option>
+									<option value="ES">SPAIN</option>
+									<option value="LK">SRI LANKA</option>
+									<option value="SD">SUDAN</option>
+									<option value="SR">SURINAME</option>
+									<option value="SJ">SVALBARD AND JAN MAYEN</option>
+									<option value="SZ">SWAZILAND</option>
+									<option value="SE">SWEDEN</option>
+									<option value="CH">SWITZERLAND</option>
+									<option value="SY">SYRIAN ARAB REPUBLIC</option>
+									<option value="TW">TAIWAN</option>
+									<option value="TJ">TAJIKISTAN</option>
+									<option value="TZ">TANZANIA, UNITED REPUBLIC OF</option>
+									<option value="TH">THAILAND</option>
+									<option value="TL">TIMOR-LESTE</option>
+									<option value="TG">TOGO</option>
+									<option value="TK">TOKELAU</option>
+									<option value="TT">TRINIDAD AND TOBAGO</option>
+									<option value="TN">TUNISIA</option>
+									<option value="TR">TURKEY</option>
+									<option value="TM">TURKMENISTAN</option>
+									<option value="TC">TURKS AND CAICOS ISLANDS</option>
+									<option value="TV">TUVALU</option>
+									<option value="UG">UGANDA</option>
+									<option value="UA">UKRAINE</option>
+									<option value="AE">UNITED ARAB EMIRATES</option>
+									<option value="GB">UNITED KINGDOM</option>
+									<option value="USA" selected="">UNITED STATES</option>
+									<option value="UM">UNITED STATES MINOR OUTLYING ISLANDS</option>
+									<option value="UY">URUGUAY</option>
+									<option value="UZ">UZBEKISTAN</option>
+									<option value="VU">VANUATU</option>
+									<option value="VE">VENEZUELA</option>
+									<option value="VN">VIETNAM</option>
+									<option value="VG">VIRGIN ISLANDS, BRITISH</option>
+									<option value="VI">VIRGIN ISLANDS, U.S.</option>
+									<option value="WF">WALLIS AND FUTUNA</option>
+									<option value="EH">WESTERN SAHARA</option>
+									<option value="YE">YEMEN</option>
+									<option value="ZM">ZAMBIA</option>
+									<option value="ZW">ZIMBABWE</option>
+								</select>
+							</td>
+							<td >&nbsp;</td>					 		
+						</tr> -->
+						<tr>
+							<td><input type="text" placeholder="Preferred Phone" name="preferredPhone" id="preferredPhone" value="${usInfo.formattedPhoneNumber}" style="width: 200px;"/></td>
+							<td >&nbsp;</td>
+							<td><input type="text" placeholder="E-mail Address" name="email" id="email" value="${usInfo.emailAddress}" style="width: 200px;"/><br /></td>
+							<td >&nbsp;</td>					 		
+						</tr>
+					</table>
+				  <!-- <span>
+				  		<input type="radio" value="MC" name="cardTypeStr" autocomplete="off"> MasterCard&nbsp;
+				  		<input type="radio" value="VS" name="cardTypeStr" autocomplete="off"> Visa&nbsp;
+				  		<input type="radio" value="DC" name="cardTypeStr" autocomplete="off"> Discover&nbsp;	<br />	
+				  		<input type="text" style="display:none;" name="cardType" id="cardType" value="">				
+						<input type="text" autocomplete="off" maxlength="20" size="16" value="" id="cardNumber" name="cardNumber" placeholder="Credit Card Number" style="width: 230px;">
+						<input type="password" autocomplete="off" maxlength="5" size="4" value="" id="cscNumber" name="cscNumber" placeholder="CSC" style="width: 230px;">
+						<select size="1" id="expMonth" name="expMonth" style="width: 237px;" >
+							<option value="0">--Exp Mo--</option>
+							<option value="01">01</option>
+							<option value="02">02</option>
+							<option value="03">03</option>
+							<option value="04">04</option>
+							<option value="05">05</option>
+							<option value="06">06</option>
+							<option value="07">07</option>
+							<option value="08">08</option>
+							<option value="09">09</option>
+							<option value="10">10</option>
+							<option value="11">11</option>
+							<option value="12">12</option>
+						</select>						
+						<select size="1" name="expYear" id="createDonationExpYr" style="width: 237px;">
+							<option value="0">--Exp Yr--</option>							
+						</select><br />
+						<input type="text" maxlength="50" size="30" value="" id="nameOnCard" name="nameOnCard" placeholder="Name (as it appears on card)">
+				</span> -->
+				<div id="purchase_info" >
+					<div style="  margin-left: -18px; margin-bottom: 8px; font-weight: bold;" class="label-header1">
+						<label >Payment Method :</label>
+					</div>
+					<div>
+						<select id="paymentInfoRadio" name="paymentInfoRadio" style="width:350px;  margin-left: -18px;">
+							
+							<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+								<c:choose>
+								<c:when test="${ paymentInfo[4] == 'CREDIT' }">
+									<option value="${ paymentInfo[4] }__${ paymentInfo[0] }__${ paymentInfo[8] }"> ${ paymentInfo[3] } ${paymentInfo[2] } ${ paymentInfo[5] }/${ paymentInfo[6] } </option>
+								</c:when>
+								<c:when test="${ paymentInfo[4] == 'ACH' }">
+									<option value="${ paymentInfo[4] }__${ paymentInfo[0] }__${ paymentInfo[8] }"> ${ paymentInfo[3] }, ${paymentInfo[2] } </option>
+								</c:when>
+								</c:choose>								
+							</c:forEach>							
+							<option value="New">Add New Card</option>						
+						</select>
+					</div>
+						
+					<div id="addcard" style="margin-top:10px; margin-bottom:10px; height:44px; display:none;">
+						  
+							
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Name on card</div>
+									<div><input type="text" style="height:25px;" class="k-textbox" placeholder="Full Name on Card" name="fullName" id="fullName" value="" tabIndex="1" maxlength="50" ></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px; ">Card Number</div>
+									<div>
+										<input autocomplete="off" type="text" style="height:25px; width: 130px;" class="k-textbox" placeholder="Card Number" name="cardNum" id="cardNum" value="" tabIndex="2" maxlength="16" onchange="handleCCTyping(this.form, event);" onkeyup="handleCCTyping(this.form, event);">
+										<img src="resources/img/payment_credit_cards/cards/invalid.png" name="cardimage" ID="cardimage" width="40"  height="22" align="top">
+									</div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Expiration date</div>
+									<div>
+										<span>
+											<select id="addCardExpirationMonthSelect" name="addCardExpirationMonthSelect" style="width:50px;">
+							                      <option value="01">01</option>
+							                      <option value="02">02</option>
+							                      <option value="03">03</option>
+							                      <option value="04">04</option>
+							                      <option value="05">05</option>
+							                      <option value="06">06</option>
+							                      <option value="07">07</option>
+							                      <option value="08">08</option>
+							                      <option value="09">09</option>
+							                      <option value="10">10</option>
+							                      <option value="11">11</option>
+							                      <option value="12">12</option>
+											</select>
+										</span>
+										<span>
+											<select id="addCardExpirationYearSelect" name="addCardExpirationYearSelect" style="width:70px;">
+											</select>
+										</span>										 
+									</div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Security Code</div>
+									<div><input  autocomplete="off" type="password" style="height:25px;" class="k-textbox" placeholder="Security Code" name="securityCode" id="securityCode" value="" tabIndex="3" maxlength="4"></div>
+								</div>
+							</div><br />
+							
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Address Line 1</div>
+									<div><!-- <textarea placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" class="k-textbox" style="width: 279px; height: 46px;"></textarea> -->
+										<input type="text" class="k-textbox" style="height:25px;" placeholder="AddressLine1" name="billingAddressLine1" id="billingAddressLine1" value="" tabIndex="4">
+									</div> 
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Address Line 2</div>
+									<div><input type="text" class="k-textbox" style="height:25px;" placeholder="AddressLine2" name="billingAddressLine2" id="billingAddressLine2" value="" tabIndex="5"></div> 
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">City</div>
+									<div><input type="text" class="k-textbox" style="height:25px;" placeholder="City" name="billingCity" id="billingCity" value="" tabIndex="6"></div> 
+								</div>
+								<div class="addcarddiv" style="width:45px;">
+									<div style="height:20px;">State</div>
+									<div><input type="text" class="k-textbox" style="height:25px;" placeholder="State" name="billingState" id="billingState" value="" style="width:45px;" tabIndex="7"></div> 
+								</div>
+								<div class="addcarddiv" style="width:60px">
+									<div style="height:20px;">Zip</div>
+									<div><input type="text" class="k-textbox" style="height:25px;" placeholder="ZipCode" name="billingZip" id="billingZip" value="" style="width:60px;" tabIndex="8"></div> 
+								</div>
+								
+							</div><br />
+							
+							<div style="height:50px;">
+								
+								<div id="savecardcheckbox" class="addcarddiv" style="width:124px">
+									<div><input type="checkbox" name="SaveCard" id="SaveCard">&nbsp;&nbsp;Save Card</div>
+								</div>
+								<div id="nicknamediv" class="addcarddiv" style="display:none;">
+									<div style="height:20px;">Nick Name</div>
+									<div><input type="text" style="height:25px;" class="k-textbox" placeholder="Nick Name" name="nickName" id="nickName" value="" tabIndex="9"></div> 
+								</div>
+							</div>
+						
+					</div>
+				</div>
+				
+				
+				
+				<br /><br />
+				<c:if test="${donationTAndC != null && donationTAndC.waiversAndTC != null && not empty donationTAndC.waiversAndTC.tcDescription}">
+					<div id="TAndCHoldMembershipDiv" class="termsAndConditionParentDiv" style="width : auto !important;">
+						<div class="termsAndConditionContent" style="padding: 25px;">
+							
+						</div>									
+					</div>
+					<input type="checkbox" name="chkTermsAndCondition" style="margin-top: 10px;">&nbsp;I accept terms and conditions
+					<span style="display : none;" id="commonTAncHidden">${donationTAndC.waiversAndTC.tcDescription }</span>
+				</c:if>
+				  <div id="statusBlock">
+					<span class="k-block k-success-colored" id="addDonationSuccessSpan"></span>
+					<span class="k-block k-error-colored" id="addDonationErrorSpan"></span>
+				  </div>
+					
+				  <span id="createDonationButton" class="k-button" style="width: 150px; text-shadow: none;">Donate Now ></span>
+			</div>
+			<div id="PaymentInformationBackLnk" align="right">
+	        		<a href="/ymca-web/donationHome">Back to Donation Information</a>
+	        </div>
+		</form:form>
+		<iframe src="<%=contextPath %>/viewPaymentForm" height="1px" width="1px" id="childIframeId" style=" position:absolute; bottom:-10px; left:-10px;"></iframe>
+		<div id="form_container" >
+			<!-- <iframe>			
+			<form name="paymentPage" id="paymentPage" class="tcaspr"  method="post" action="https://testapp1.jetpay.com/jetdirect/post/cc/process_cc.php">    
+			   <input id="name" name="name" class="element text medium" maxlength="50" value="" />
+			   <input id="cardNum" name="cardNum" class="element text medium" type="text" maxlength="16" onchange="handleCCTyping(this.form, event);" onkeyup="handleCCTyping(this.form, event);" value="" autocomplete="off"/>
+			   <select autocomplete="off" class="element select small" id="expMo" name="expMo"> 
+					<option value=""></option>
+					<option value="01">01</option>
+					<option value="02">02</option>
+					<option value="03">03</option>
+					<option value="04">04</option>
+					<option value="05">05</option>
+					<option value="06">06</option>
+					<option value="07">07</option>
+					<option value="08">08</option>
+					<option value="09">09</option>
+					<option value="10">10</option>
+					<option value="11">11</option>
+					<option value="12">12</option>
+				</select> mo. 					
+				<select autocomplete="off" class="element select small"	id="expYr" name="expYr"> 
+					<option value=""></option>
+					<option value="12">2011</option>
+					<option value="12">2012</option>
+					<option value="13">2013</option>
+					<option value="14">2014</option>
+					<option value="15">2015</option>
+					<option value="16">2016</option>
+					<option value="17">2017</option>
+					<option value="18">2018</option>
+					<option value="19">2019</option>
+					<option value="20">2020</option>
+					<option value="21">2021</option>
+				</select> yr.
+				<input id="cvv" name="cvv" class="element text small" type="text" maxlength="4" value="" autocomplete="off"/>
+			    <input id="element_6_1" name="billingAddress1" class="element text large" value="" type="text" />
+			    <input id="element_6_2" name="billingAddress2" class="element text large" value="" type="text" />
+			    <input id="element_6_3" name="billingCity" class="element text medium" value="" type="text" />
+			    <input id="element_6_4" name="billingState" class="element text medium" value="" maxlength="2" type="text" />
+			    <input id="element_6_5" name="billingZip" class="element text medium" maxlength="5" value="" type="text" />
+			    <select class="element select medium" id="element_6_6" name="billingCountry">
+					<option value="USA" >United States</option>
+				</select>
+			    <input id="customerEmail" name="customerEmail" class="element text medium" maxlength="50" value="" />
+			    <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+				<input type="hidden" name="cid" value="nrc9fnu3g0e8dnfnh56qlikhu6" />
+				<input type="hidden" name="jp_tid" id="jp_tid" value="TESTTERMINAL" />
+				<input type="hidden" name="jp_key" id="jp_key" value="1234567890abcdefghijk" />
+				<input type="hidden" name="jp_request_hash" id="jp_request_hash" value="" />
+				<input type="hidden" name="order_number" id="order_number" value="" />
+				<input type="hidden" name="amount" value="10.00" />
+				<input type="hidden" name="trans_type" value="SALE" />
+			    <input type="hidden" name="ud1" value="" />
+			    <input type="hidden" name="ud2" value="" />
+			    <input type="hidden" name="ud3" value="" />
+			    <input type="hidden" name="merData0" value="" />
+			    <input type="hidden" name="merData1" value="" />
+			    <input type="hidden" name="merData2" value="" />
+			    <input type="hidden" name="merData3" value="" />
+			    <input type="hidden" name="merData4" value="" />
+			    <input type="hidden" name="merData5" value="" />
+			    <input type="hidden" name="merData6" value="" />
+			    <input type="hidden" name="merData7" value="" />
+			    <input type="hidden" name="merData8" value="" />
+			    <input type="hidden" name="merData9" value="" />    
+				<input type="hidden" name="retUrl" value="https://lowesinstall.serenecorp.com/ymca-web-1.1.0.RELEASE/redirectSuccess" />
+				<input type="hidden" name="decUrl" value="https://lowesinstall.serenecorp.com/ymca-web-1.1.0.RELEASE/redirectFailure" />
+				<input type="hidden" name="dataUrl" value="https://lowesinstall.serenecorp.com/ymca-web-1.1.0.RELEASE/ProcessDirectPayment" /> 				
+			  </form>			
+		</iframe> -->
+			</div> 
+			
+		</div> 
+		<div class="bootstrap-frm" id="paymentSuccessDiv" style="display:none">
+			<h2><span>Payment Process Completed Successfully.</span></h2>
+		</div>
+		<div class="bootstrap-frm" id="paymentFailuresDiv" style="display:none">
+			<h2><span>Payment process Failed. Please try after sometime. </span></h2>
+		</div>
+	</div>
+	
+	
+</div>
+
+<script>
+
+	$(document).ready(function() {		
+		var currentYear = new Date().getFullYear();
+		currentYear = parseInt(currentYear.toString());
+		for(var i=0; i<30 ; i++){
+			$('#addCardExpirationYearSelect').append($('<option>', {value: currentYear,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		$("#addCardExpirationYearSelect").kendoDropDownList();    
+	    $("#addCardExpirationMonthSelect").kendoDropDownList();
+		
+		<c:if test="${pageContext.request.userPrincipal.isAuthenticated()}">		
+			$("#donerFirstName").attr("disabled","disabled");
+			$("#donerLastName").attr("disabled","disabled");
+			$("#email").attr("disabled","disabled");			
+		</c:if>
+	
+		$(".termsAndConditionContent").html($("#commonTAncHidden").html());
+		$("#preferredPhone").mask("(999) 999-9999");
+		$("#companyPhone").mask("(999) 999-9999");	
+		$("#dateOfBirth").kendoDatePicker();
+		var currentYear = new Date().getFullYear();
+		currentYear = parseInt(currentYear.toString());
+		for(var i=0; i<30 ; i++){
+			$('#addCardExpirationYear').append($('<option>', {value: currentYear,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		$('#employerMatchingSelect').kendoDropDownList();		
+		var employerMatchingSelect = $("#employerMatchingSelect").data("kendoDropDownList");
+		employerMatchingSelect.select(0);
+	    
+		$('#donationFrequencyMonthsSel').kendoDropDownList();
+		var donationFrequencyMonthsSel = $("#donationFrequencyMonthsSel").data("kendoDropDownList");
+		donationFrequencyMonthsSel.select(0);
+		
+		var url = "isEmailExists";
+		var validator1 = $("#createDonationForm").validate({
+			debug: true,
+			errorElement: "em",			
+			errorPlacement: function(error, element) {
+				$element = $(element);			
+				//console.log($element.hasClass("dateOfBirth"));
+				if($element.attr("id") == "dateOfBirth"){
+					$element.parent().parent().parent().next("td").html("");
+					element.addClass("inputErrorr");
+					error.appendTo(element.parent().parent().parent().next("td"));
+					element.parent().parent().parent().next("td").addClass("textMsgError");
+					$element.parent().parent().parent().next("td").css("color","red");
+				}else{ 
+					element.addClass("inputErrorr");
+					error.appendTo(element.parent("td").next("td"));
+					element.parent("td").next("td").addClass("textMsgError");
+					$element.parent("td").next("td").css("color","red");
+				}
+				//$("#wizard"). smartWizard("fixHeight");
+				/* element.addClass("inputErrorr");
+				error.appendTo(element.parent("td").next("td"));
+				element.parent("td").next("td").addClass("textMsgError"); */
+			},
+			success: function(label, element) {
+				//alert("success");
+				//label.text("ok!").addClass("success");
+				var $element = $(element);
+				var $label = $(label);
+		       	$element.removeClass("inputErrorr");
+				$element.removeClass("error");
+				$element.addClass("success");
+				
+				$label.removeClass("textMsgError");
+				$label.removeClass("error");
+				$label.addClass("success");
+				//$("#wizard"). smartWizard("fixHeight");
+				
+			},
+			rules: {
+				"donerFirstName": {
+					required: true,
+					minlength: 2,
+					maxlength: 20
+				},
+				"donerLastName": {
+					required: true,
+					minlength: 2,
+					maxlength: 20
+				},
+				"dateOfBirth" : "required",		
+				"preferredPhone" : "required",				
+				"addressLine1" : "required",			
+				"city" : "required",
+				"zipcode" : {
+					required: true,
+					number: true,
+					minlength: 5
+				},
+				"state" : "required",
+				"companyName": "required",
+				"companyAddress" : "required",
+				"companyPhone" : {
+					required: true,
+					//number: true,
+					minlength: 4
+				},
+				"employeeEmailId" :  {
+					required: true,
+					email: true
+				},
+				"email" :  {
+					required: true,
+					email: true
+				}
+				
+				
+			},
+			messages: {
+				"donerFirstName": {				
+					required: "Please enter your First Name",
+					minlength: "First Name must consist of at least 2 characters"
+				},
+				
+				"donerLastName": {				
+					required: "Please enter your Last Name",
+					minlength: "Last Name must consist of at least 2 characters"
+				},
+				"dateOfBirth" : "Please enter your Date of Birth",				
+				"preferredPhone" : "Please enter your Phone Number",			
+				"zipcode" : {
+					required: "Please enter Postal Code",
+					number: "Please enter numbers only",
+					minlength: "Postal Code must consist of at least 5 characters"
+				},
+				"addressLine1" : "Please enter address line 1",			
+				"city" : "Please enter yout City",
+				"state" : "Please enter your State",
+				agree: "Please accept our policy",
+				"companyName": "Please enter your Company Name",
+				"companyAddress" : "Please enter your Company Address",
+				"companyPhone" : {
+					required: "Please enter Company Phone",
+					//number: "Please enter numbers only",
+					minlength: "Phone must consist of at least 4 characters"
+				},
+				"employeeEmailId" :  {
+					required: "Please enter your Employee Email address",
+					email : "Please enter valid email address"
+				},
+				"email" :  {
+					required: "Please enter your Email address",
+					email : "Please enter valid email address"
+				}
+				
+			}
+		});	
+		
+		var paymentFreq = $("#paymentInfoRadio").data("kendoDropDownList");
+		/* $("#paymentFrequencySelect").on('change',function(e){   	
+		    	if(paymentFreq.text() == 'Annual'){
+		    		
+		    	}
+		 } */
+		if($("#paymentInfoRadio").val()=='New'){
+			$('#addBank').hide();	
+			$('#addcard').show();				
+		}else if($("#paymentInfoRadio").val()=='NewBank'){
+			$('#addcard').hide();
+			$('#addBank').show();						
+		} else{
+			$('#addcard').hide();
+			$('#addBank').hide();				
+		}	
+		 $('body').on( "change", "#employerMatchingSelect", function() {
+			 if(employerMatchingSelect.text() == '-1'){
+			    	$("#donationEmpMatchErr").css("display", "");
+		    		$("#donationEmpMatchErr").text("Please select the Employer");	
+			    }else{
+			    	$("#donationEmpMatchErr").css("display", "none");
+		    		$("#donationEmpMatchErr").text("");	
+			    }
+				if(employerMatchingSelect.text()=='Other'){
+					$("#employerMatchInfoDiv").css("display", "");
+				}else{
+					$("#employerMatchInfoDiv").css("display", "none");
+				}
+		 });
+		 
+		$('body').on( "change", "#paymentInfoRadio", function() {			
+			if($("#paymentInfoRadio").val()=='New'){
+				$('#addBank').hide();	
+				$('#addcard').show();				
+   				var fName = $(document).find("#donerFirstName").val();
+   				var lName = $(document).find("#donerLastName").val();   				
+   				$("#fullName").attr("value", fName + " " + lName);    		
+							
+			}else if($("#paymentInfoRadio").val()=='NewBank'){
+				$('#addcard').hide();
+				$('#addBank').show();							
+			} else{
+				$('#addcard').hide();
+				$('#addBank').hide();	
+				$("#fullName").attr("value", "");
+			}
+		});
+		
+		$('input[name=recognizeAsRadioInput]').change(function () {	
+			//alert($(this).val());
+			var recognizedAsTxt = $(this).parent().find(".recognizedAsSpanCls").text();
+			$("#recognizedAsHidInput").attr("value", recognizedAsTxt);
+			$("#donationContactSelErr").css("display", "none");
+    		$("#donationContactSelErr").text("");				
+	    });
+		
+		var fName = $(document).find("#donerFirstName").val();
+		var lName = $(document).find("#donerLastName").val();
+		if(fName && lName){
+			$("#recognizedAsSpan").css("display", "");
+			$(document).find("#recognisedAsFName").html(fName);
+			$(document).find("#recognisedAsLName").html(lName);		
+			///$("#recognizedAsName").attr("value", fName + " " +lName);			  				
+			$("#fullName").attr("value", fName + " " + lName);
+		}else{
+			$("#recognizedAsSpan").css("display", "none");
+			$(document).find("#recognisedAsFName").html("");
+			$(document).find("#recognisedAsLName").html("");
+			//$("#recognizedAsName").attr("value", "");
+			$("#fullName").attr("value", "");
+		}
+		
+		$(document).find("#donerFirstName, #donerLastName").on('blur mouseup',function(){
+			var fName = $(document).find("#donerFirstName").val();
+			var lName = $(document).find("#donerLastName").val();
+			if(fName && lName){
+				$("#recognizedAsSpan").css("display", "");
+				$(document).find("#recognisedAsFName").html(fName);
+				$(document).find("#recognisedAsLName").html(lName);		
+				//$("#recognizedAsName").attr("value", fName + " " +lName);
+				$("#fullName").attr("value", fName + " " + lName);
+			}else{
+				$("#recognizedAsSpan").css("display", "none");
+				$(document).find("#recognisedAsFName").html("");
+				$(document).find("#recognisedAsLName").html("");
+				//$("#recognizedAsName").attr("value", "");
+				$("#fullName").attr("value", "");
+			}
+		});
+		
+		
+		$('#donationBranch').kendoDropDownList();
+		$('#paymentInfoRadio').kendoDropDownList();	
+		var donationFrequencyMonthsSel = $("#donationFrequencyMonthsSel").data("kendoDropDownList");
+		$("#donationFrequencyMonthsSel").closest(".k-widget").hide();
+		$(".donationFrequencyStr").on('change',function(e){
+			$("#donationFreqErr").css("display", "none");
+    		$("#donationFreqErr").text("");
+			var donationFreqVal = $(this).val();
+			if(donationFreqVal == "One Time"){
+				$("#donationFrequencyMonthsSel").closest(".k-widget").hide();	
+				donationFrequencyMonthsSel.select(0);
+				$("#donationFreqMonthlySelMsgSpan").css("display", "none");
+			}
+			if(donationFreqVal == "Monthly"){
+				$("#donationFrequencyMonthsSel").closest(".k-widget").show();
+				$("#donationFreqMonthlySelMsgSpan").css("display", "");
+			}
+		});
+		
+		$('#contactLstSelect').kendoDropDownList();
+		
+		var contactLst = $("#contactLstSelect").data("kendoDropDownList");
+		
+		$("#donationFrequencyMonthsSel").on('change',function(e){    	
+			 var donationFrequency = donationFrequencyMonthsSel.text();
+		     if(donationFrequency && donationFrequency == '--Select No of Months--'){
+		    	 $("#donationFreqErr").css("display", "");
+		    	 $("#donationFreqErr").text("Please select the number of Months");
+		    	 $("#amtPledgingNoteSpan").html("");
+		     }else{
+		    	 $("#donationFreqErr").css("display", "none");
+		    	 $("#donationFreqErr").text("");
+		    	 var donationAmt = $("#donationAmtStr").val();
+		    	 if(donationAmt && donationFrequency && donationAmt != 0){
+		    		 var amount = parseFloat(donationAmt);
+		    		 var frequency = parseFloat(donationFrequency);
+		    		 $("#amtPledgingNoteSpan").html("iii) You are pledging $"+ amount * frequency);	
+		    	 }
+		    	 	    	 
+		     }
+		});
+
+		 $("#contactLstSelect").on('change',function(e){    	
+				var selectedContact = contactLst.text();
+			    if(selectedContact && selectedContact == 'Other'){		    	
+					$("#recognizeAsOtherTxt").css("display", "inline");						
+			    }else{
+			    	$("#recognizeAsOtherTxt").css("display", "none");
+			    	$("#recognizedAsHidInput").attr("value",  $("#contactLstSelect").val());
+			    }
+		    	var fName = $(document).find("#donerFirstName").val();
+				var lName = $(document).find("#donerLastName").val();
+				//$(document).find("#recognisedAsFName").html(fName);
+				//$(document).find("#recognisedAsLName").html(lName);	
+				$("#recognizedAsContactName").attr("value",  $("#contactLstSelect").val());						
+				$("#donationContactSelErr").css("display", "none");
+	    		$("#donationContactSelErr").text("");
+		 });
+		 
+		 $('#contry').kendoDropDownList();
+		 $('#state').kendoDropDownList();
+		
+		var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+		var eventer = window[eventMethod];
+		var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+		eventer(messageEvent,function(e) {
+			var key = e.message ? "message" : "data";
+			var data = e[key];
+			$("#contentFormDiv").css("display", "none");			
+			if(data.view.toString() == "Success"){
+				$("#paymentSuccessDiv").css("display", "block");
+			}
+			if(data.view.toString() == "Failure"){
+				$("#paymentFailuresDiv").css("display", "block");
+			}
+			//$("#form_container").html("Success Redirection " + data.view);			
+		},false);
+				
+		//$("#jp_request_hash").val(hash.toString());
+		//$("#order_number").val(paymentOrderId.toString());
+		
+		var currentYear = new Date().getFullYear();
+		currentYear = parseInt(currentYear.toString().substring(2, 4));
+		for(var i=0; i<30 ; i++){
+			$('#createDonationExpYr').append($('<option>', {value: currentYear,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		
+		$('input[name=finalAmountRadio]').change(function () {			
+			if($(this).val() == 'Other'){
+				$("#donationAmtStr").attr("value", $("#donationAmtOtherTxt").val());				
+    		}else{
+    			$("#donationAmtStr").attr("value", $(this).val());	    		
+    		}		
+	        //alert($(this).val()); 
+	        //$("#donationAmtStr").attr("value", $(this).val());	
+	        $("#donationAmtErr").css("display", "none");
+			$("#donationAmtErr").text("");			
+			if($(this).val() == 'Other' && $("#donationAmtOtherTxt").html().trim() == ''){
+				$("#amtChanrgedNoteSpan").html("");
+			}else if($(this).val() == 'Other'){
+				$("#amtChanrgedNoteSpan").html("ii) You will be charged $" + $("#donationAmtOtherTxt").html() +" per month");
+			}else{
+				$("#amtChanrgedNoteSpan").html("ii) You will be charged $" + $(this).val() +" per month");
+			}
+	    });
+		
+		$('input[name=donationFrequencyStr]').change(function () {
+	        //alert($(this).val());
+	        $("#donationFreq").attr("value", $(this).val());
+	    });
+		
+		$('input[name=cardTypeStr]').change(function () {
+	        //alert($(this).val());
+	        $("#cardType").attr("value", $(this).val());
+	    });
+		/* $( "#createDonationButton" ).click(function(){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait while the Donation Information created...");			
+			$.ajax({
+				  type: "POST",
+				  url: $('#createDonationForm').attr( "action"),
+				  data: $('#createDonationForm').serialize(),
+				  success: function( data ) {				  	  
+				  	  if(data=='SUCCESS'){
+					  	  $("#addDonationErrorSpan").css("display", "none");		
+						  $("#addDonationErrorSpan" ).html("");	
+						  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+						  setTimeout(function(){$(".k-loading-text").html("Donation Information Added successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+					  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+					  	  
+					  	  $("#addDonationSuccessSpan").css("display", "block");		
+						  $("#addDonationSuccessSpan" ).html("Donation Information Added successfully");
+					  	  
+					  	  //setTimeout(function(){location.reload();}, 7000);
+					  	  
+				  	  }else if(data == 'NOT_FOUND'){
+				  		  $("#addDonationSuccessSpan").css("display", "none");		
+						  $("#addDonationSuccessSpan" ).html("");	
+						  $("#addDonationErrorSpan").css("display", "block");		
+						  $( "#addDonationErrorSpan" ).html("Customer Information Not Found.");
+						  $(".k-loading-mask").hide();
+				  	  }else {
+				  		  $("#addDonationSuccessSpan").css("display", "none");		
+						  $("#addDonationSuccessSpan" ).html("");	
+						  $("#addDonationErrorSpan").css("display", "block");		
+						  $( "#addDonationErrorSpan" ).html("There was some error. Please try again later");
+						  $(".k-loading-mask").hide();
+				  	  }					  
+				  },
+				  error: function( xhr,status,error ){
+					  $("#addDonationSuccessSpan").css("display", "none");		
+					  $("#addDonationSuccessSpan" ).html("");	
+					  $("#addDonationErrorSpan").css("display", "block");		
+					  $( "#addDonationErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+				  }
+			});
+			
+		}); */	
+		
+		
+		$("#createDonationButton").click(function(){
+			console.log("createDonationButton click");
+			 var jsonData = {
+					name : $("#nameOnCard").val(),
+					cardNum : $("#cardNumber").val(),
+					cscNumber : $("#cscNumber").val(),
+					AddressLine1 : $("#AddressLine1").val(),
+					AddressLine2 : $("#AddressLine2").val(),
+					City : $("#City").val(),
+					state : $("#state").val(),
+					zipcode : $("#zipcode").val(),
+					email : $("#email").val(),
+					amount : $("#donationAmtOtherTxt").val(),
+					expMonth : $("#expMonth").val(),
+					expYr : $("#createDonationExpYr").val(),
+					contry : $("#contry").val()
+					
+			 };
+			 //console.log(jsonData);
+			 var win = document.getElementById("childIframeId").contentWindow;
+			 //win.postMessage(jsonData, '*');
+			 if(!$("#createDonationForm").valid()) {
+	    		console.log("Validation failed");
+	    	} else if(!$(document).find( "input:radio[name=finalAmountRadio]" ).is(":checked")){	    		
+	    		$("#donationAmtErr").css("display", "");
+	    		$("#donationAmtErr").text("Please select the Donation Amount");	    		
+	    	} else if(!$(document).find( "input:radio[name=signUpPricingOption]" ).is(":checked")){	    		
+	    		$("#donationFreqErr").css("display", "");
+	    		$("#donationFreqErr").text("Please select the Donation Frequency");	    		
+	    	} else if($("input:checkbox[name=employerMatching]" ).is(":checked") && employerMatchingSelect.text() == '-1'){	    		
+	    		$("#donationEmpMatchErr").css("display", "");
+	    		$("#donationEmpMatchErr").text("Please select the Employer");	    		
+	    	} else if(!$(document).find( "input:radio[name=recognizeAsRadioInput]" ).is(":checked")){	
+	    		$("#donationContactSelErr").css("display", "");
+	    		$("#donationContactSelErr").text("Please select Recognized As option");
+	    	} else {	  
+	    		/* if($('input:radio[name=finalAmountRadio]:checked').val() == 'Other' && $("#donationAmtOtherTxt").val() == ''){
+	    			$("#donationAmtErr").css("display", "");
+		    		$("#donationAmtErr").text("Please enter the Donation Amount");
+	    		}else  */
+	    		if($('input:radio[name=donationFrequencyStr]:checked').val() == 'Monthly' && donationFrequencyMonthsSel.text() == '--Select No of Months--'){	    			
+	    			$("#donationFreqErr").css("display", "");
+		    		$("#donationFreqErr").text("Please select the number of Months");
+	    		} else if($('#recognizedAsContactName').is(':checked') && contactLst.text() == '--Select Contact--'){
+	    			$("#donationContactSelErr").css("display", "");
+		    		$("#donationContactSelErr").text("Please select the contact");
+	    		} else if($('#recognizedAsContactName').is(':checked') && contactLst.text() == 'Other' && $("#recognizeAsOtherTxt").val().trim() == ""){
+	    			$("#donationContactSelErr").css("display", "");
+		    		$("#donationContactSelErr").text("Please enter contact name");
+	    		} 
+	    		<c:if test="${donationTAndC != null && donationTAndC.waiversAndTC != null && not empty donationTAndC.waiversAndTC.tcDescription}">
+		    		else if(!$("input[name='chkTermsAndCondition']:checked").val()){ 
+		    			
+		    			var kendoWindow = $("<div />").kendoWindow({
+		    				title: "Error",
+		    				resizable: false,
+		    				modal: true,
+		    				width:400
+		    			});
+	
+		    			kendoWindow.data("kendoWindow")
+		    			 .content($("#terms-conditions-ErrorBox").html())
+		    			 .center().open();
+	
+		    			kendoWindow
+		    			.find(".confirm-terms-conditions")
+		    			.click(function() {
+		    				if ($(this).hasClass("confirm-terms-conditions")) {         		
+		    					kendoWindow.data("kendoWindow").close();
+		    				}
+		    			})
+		    			.end();
+		    		}
+	    		</c:if>
+		    	else{
+	    			// alert(contactLst.text());
+	    			if($('#recognizedAsContactName').is(':checked') && contactLst.text() == 'Other'){
+	    				$("#recognizedAsHidInput").attr("value",  $("#recognizeAsOtherTxt").val());	    				
+		    		}  
+	    			console.log("Valication Success");
+	    			document.forms["createDonationForm"].submit();
+	    		}
+	    		
+	    	}
+		});		
+		$("#donationAmtOtherTxt").on('blur mouseup',function(){
+			//alert($("#donationAmtOtherTxt").text());
+			if($('input:radio[name=finalAmountRadio]:checked').val() == 'Other' && $("#donationAmtOtherTxt").html().trim() == ''){
+    			$("#donationAmtErr").css("display", "");
+	    		$("#donationAmtErr").text("Please enter the Donation Amount");
+    		}else{
+    			$("#donationAmtErr").css("display", "none");
+	    		$("#donationAmtErr").text("");
+    		}			
+		});		
+		
+		/* $(document).on('change', 'input:[name=donationAmtString]', function(){
+			$("#donationAmtErr").css("display", "none");
+			$("#donationAmtErr").text("");	
+		}); */
+	});
+</script>
+
+</body>

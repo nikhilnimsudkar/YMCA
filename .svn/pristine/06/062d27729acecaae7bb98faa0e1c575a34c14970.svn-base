@@ -1,0 +1,20 @@
+/**
+ * @author gpatwa
+ * This interface define high level Invoice calculation method. The known implementation of this class is InvoiceServiceImpl 
+*/
+
+package com.serene.job.service;
+
+import java.util.Map;
+
+import com.serene.job.model.JobSchedulerMetadata;
+
+public interface InvoiceService {
+
+	public Double computeFAAmount(Map<String, Object> signUp,JobSchedulerMetadata jobSchedulerMetadata);
+	
+	public Double computeInvoiceAmount(Map<String, Object> signUp,JobSchedulerMetadata jobSchedulerMetadata);
+	
+	public Double computePromoAmount(Map<String, Object> signUp,JobSchedulerMetadata jobSchedulerMetadata);
+
+}

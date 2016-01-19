@@ -1,0 +1,19 @@
+/**
+ * @author gpatwa
+ * This class is used to define all the constants in jobs
+ */
+package com.serene.job.common;
+
+public class Constants {
+
+	public static final String OBJECT_ID_FIELD = "ObjectIdField";
+	public static final String OBJECT_NAME = "ObjectName";
+	
+	public static final String JDBC_ITEM_READER = "jdbcItemReader";
+	public static final String LAST_UPDATED_DATE = "#lastUpdatedDate";
+	
+	public static int FUSION_FETCH_SIZE  = 50;
+	public static int DB_FETCH_SIZE  = 50;
+	public static final String PickListName_SIGNUP_PRICING_OPTION = "SIGNUP_PRICING_OPTION";
+	public static final String PickListName_ITEM_DETAIL_DUE_DATE_C = "ITEM_DETAIL_DUE_DATE_C";
+}

@@ -1,0 +1,114 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+
+<%
+	String contextPath = request.getContextPath();
+%>
+
+<style>
+	.k-grid  .k-grid-header  .k-header {
+	    white-space: normal;
+	    word-wrap: break-word;
+	}.
+</style>
+
+<script src="<%=contextPath %>/resources/js/app/common.js"></script>
+<script src="<%=contextPath %>/resources/js/app/event-registration.js"></script>
+<script src="<%=contextPath %>/resources/js/app/event-cart.js"></script>
+<script src="<%=contextPath %>/resources/js/app/payment.js"></script>
+
+<script>
+	$(document).ready(function() {
+		var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+		var eventer = window[eventMethod];
+		var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+		eventer(messageEvent,function(e) {
+			var key = e.message ? "message" : "data";
+			var data = e[key];
+			
+			var jp_request_hash = hash;
+			var payment_method_id = 0;
+			
+			if(data.view.toString() == "Success"){
+				$("#tcSuccessSpan").css("display", "block");
+				$("#tcSuccessSpan").html("Success");
+				proceedtosignup(payment_method_id, jp_request_hash);
+			}
+			if(data.view.toString() == "Failure"){
+				$("#tcErrorSpan").css("display", "block");
+				$("#tcErrorSpan").html("Failed");
+			}
+		},false);
+		
+		$("#tcSuccessSpan").css("display", "block");		
+		$("#tcSuccessSpan" ).html("Please search for Events on left side to enroll.");	
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_programregistration").attr('class','current');
+		$("#page_name").html("EVENT MANAGEMENT");
+		
+		var gotocontact = '${gottocontact}';
+		var prodIds = $.sessionStorage.getItem('event_product_ids');
+		var isUserLoggedin = "${pageContext.request.userPrincipal.isAuthenticated()}";
+		
+		if(!isUserLoggedin)
+			$("#cart-header").hide();
+		
+		if(gotocontact=="true" && prodIds!=null && isUserLoggedin){
+			 $("#event_details").css("border-width", "1px");	
+			 $("#event_details").css("margin-top", "20px");	
+			 
+			 $("#tcSuccessSpan").css("display", "none");		
+			 $("#tcSuccessSpan" ).html("");	
+			 $("#tcErrorSpan").css("display", "none");		
+			 $("#tcErrorSpan").html("");
+			 
+			 $("#cart-header").show();
+			 $("#add-to-cart").hide();
+			 $("#event").fadeOut(200);
+			 $("#backtofamily").show();
+			 $("#cart-header").show();
+			 
+			 getFamilymembers();
+		}
+	});
+</script>
+
+<body>
+
+<div id="main">
+	<div id="content">
+		<div id="searchevent" class="k-block">
+			<%@ include file="EventSearch.jsp" %> 
+		</div>
+		<div id="event_details" class="k-block">
+			<div id="event">
+				<div id="event_session">
+				
+				</div>
+			</div>
+			<div id="familymembers" style="display:none;">
+				<%@ include file="EventFamilyMembers.jsp" %>
+			</div>
+			<div id="purchase" style="display:none;">
+				<%@ include file="paymentcart.jsp" %> 
+			</div>
+			<div id="programsummary" style="display:none;">
+				<%@ include file="ProgramSummary.jsp" %> 
+			</div>
+			<div style="clear: both;"></div> 
+			<div id="prgcart">
+				<%@ include file="EventCart.jsp" %> 
+			</div>
+			<div style="clear: both;"></div> 
+			<div id="statusBlock">
+				<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+				<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<iframe src="<%=contextPath %>/viewPaymentForm" height="1px" width="1px" id="childIframeId" style="position:absolute; bottom:-10px; left:-10px;"></iframe>
+
+</body>

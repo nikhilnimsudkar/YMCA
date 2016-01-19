@@ -1,0 +1,38 @@
+<%@ include file="../layouts/include_taglib.jsp" %>
+<div id="main">		
+	<div id="editor">
+		<form:form commandName="TandC" name="" action="viewTandC" method="post">
+			<input type="hidden" name="scId" id="scId" value="${scid }">
+			<textarea name="tandc" id="tandc" rows="10" cols="30" style="height:440px">
+				${tandc.tandc }
+			</textarea>
+			<br><br>
+			<div id="statusBlock">
+				<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+				<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+			</div>
+			<button id="tandcbutton" class="k-button">Save</button>
+		</form:form>
+	</div>
+			
+	
+	
+	<script>
+		$(document).ready(function() {
+			// create Editor from textarea HTML element with default set of tools
+			$("#tandc").kendoEditor();
+			
+			if('${errMsg }'!=""){
+				$("#editor").css("display", "none");	
+				$("#editor").html("");
+				$("#tcErrorSpan").css("display", "block");	
+				$( "#tcErrorSpan" ).html('${errMsg }');
+			}
+			if('${successMsg }'!=""){
+				$("#tcSuccessSpan").css("display", "block");	
+				$( "#tcSuccessSpan" ).html('${successMsg }');
+			}
+		});
+	</script>		
+		
+</div>

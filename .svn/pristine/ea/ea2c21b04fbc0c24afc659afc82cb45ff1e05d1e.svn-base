@@ -1,0 +1,111 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+   <%@ include file="../../layouts/include_taglib.jsp" %>
+   <head>
+   <script src="<%=contextPath %>/resources/js/maskedinput.min.js"></script>
+<style type="text/css">
+.input-Width{
+	width: 250px !important;
+}
+#userInfoTb tr td {
+	width : 50% !important;
+}
+
+</style>
+
+<script>
+	$(document).ready(function() {			
+		var url = "isEmailExists";
+		$("#phoneNumber").mask("(999) 999-9999");
+		
+		$("#dateOfBirthAdd").kendoDatePicker({
+			format: "MM/dd/yyyy"
+		});
+	});
+	
+	
+</script>
+
+</head>
+
+<div id="main">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+	<div id="content" style="margin-top:30px;margin-bottom:30px;">
+		<form:form commandName="account" class="bootstrap-frm cmxform" id="addMembershipForm" method="post" action="addMember" style="padding:40px;">  
+			<div style="" id="addAdultForm">
+				  <h2><span>ADD FAMILY CONTACT</span></h2>
+				  <div style="margin: 5px 0 5px 0; display : none; color : blue;" id="contact-validation-txt">Note : You are adding a contact, not a member</div>
+				  <table border="0" width="100%" id="userInfoTb">
+					<tr>
+						<td><form:input cssClass="form-control input-Width" path="firstName" title="Please enter your First Name" name="firstName" id="firstName" maxlength="50" placeholder="First Name"  /></td>
+															
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td><form:input cssClass="form-control input-Width" path="lastName" title="Please enter your Last Name" name="lastName" id="lastName" maxlength="50" placeholder="Last Name" /></td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+					<tr>		 		
+						<td style="padding-bottom: 8px;"><form:input  path="dateOfBirth"  name="dob" id="dateOfBirthAdd" maxlength="50" placeholder="D.O.B"  style="width: 250px;" /></td>		
+						<td id="dop-er"></td>
+					</tr>
+					<tr>
+						<td><form:input cssClass="form-control input-Width" path="phoneNumber" title="Please enter your Phone Number" name="phoneNumber" id="phoneNumber" maxlength="50" placeholder="Phone Number" /></td>
+						<td></td>
+					</tr>
+					<tr>		 		
+						<td><form:input cssClass="form-control input-Width" path="Email"   id="Email"  maxlength="50" placeholder="Email"  /></td>			 							 		
+						<td></td>
+					</tr>
+					
+					<tr>
+						<td>
+						
+							<span >
+								<span><span><form:radiobutton cssClass="form-control primary-user-gender" path="gender" style="width : 15px;" value="Male" id="genderM" title="Please select gender"/></span><span style="margin-left : 5px;">Male</span></span>
+								<span><span><form:radiobutton cssClass="form-control primary-user-gender" path="gender"  style="width : 15px;" value="Female" id="genderF" title="Please select gender" /></span><span style="margin-left : 5px;">Female</span></span>
+							</span> 
+						</td>
+						<td></td>
+					</tr>
+					<c:if test="${primarySignupRec != null && primarySignupRec.itemDetail != null && primarySignupRec.itemDetail.recordName != null }">
+						<c:if test="${primarySignupRec.itemDetail.recordName == 'One Adult w/ Kids' || primarySignupRec.itemDetail.recordName == 'Two Adults w/ Kids' || primarySignupRec.itemDetail.recordName == 'Three Adults w/ or w/o kids'}">
+							<tr id="addToMemTr" style="display : none;">		 		
+								<td>
+									<!-- Add to Membership:&nbsp;Yes <input type="radio" name="addToMembership" class="addToMembership" value="Yes"/>&nbsp;No <input type="radio" name="addToMembership" class="addToMembership" value="No"/>&nbsp; -->
+									Add to Membership:&nbsp;
+									<form:radiobutton cssClass="form-control" path="addToMembership"  value="Yes" id="Yes" title="Please select Membership option"/>&nbsp;Yes&nbsp;
+									<form:radiobutton cssClass="form-control" path="addToMembership"  value="No" id="No" title="Please select Membership option"/>&nbsp;No&nbsp;
+								</td>			 							 		
+								<td></td>
+							</tr>
+						</c:if>
+					</c:if>				
+					</table>
+				  <!-- <label><input autofocus type="text" placeholder="First Name" name="firstName" id="firstName" value="" /></label>
+				  <label><input type="text" placeholder="Last Name" name="lastName" id="lastName" value="" /></label>
+				  <input type="text" placeholder="D.O.B" name="dateOfBirth" id="dateOfBirth" value="" style="width:495px;" />
+				  
+				  <label style="margin-top: 11px;"><input type="text" placeholder="Email" name="Email" id="Email" value="" /></label> -->
+				  
+				  <div id="statusBlock">
+					<span class="k-block k-success-colored" id="tcSuccessSpan1" style="display:none; padding : 5px;"></span>
+					<span class="k-block k-error-colored" id="tcErrorSpan1" style="display:none; padding : 5px;"></span>
+				  </div>
+					
+				  <div align="center"><span id="addmemberBtn" class="k-button" style="padding : 5px 0px; text-shadow: none;">Add</span></div>
+			</div>
+		</form:form>
+	</div>
+</div>
+
+

@@ -1,0 +1,54 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.Invoice;
+import com.ymca.model.Payment;
+import com.ymca.model.Signup;
+
+
+public interface PaymentDao  extends GenericDao<Payment, Long> {
+	
+	Payment findByPaymentId(Long paymentId);
+	
+	List<Payment> getByAmount(double amount);
+	
+	@Query("select prod.recordName,p.amount, p.type, p.paymentDate, p.status, p.reason, con.firstName, con.lastName from Payment p inner join p.signup s inner join s.itemDetail prod inner join p.contact con where p.type IN (?1) and p.status IN (?2) and p.signup.customer.accountId = ?3 and DATE(p.paymentDate) >= DATE(?4) and DATE(p.paymentDate) <= DATE(?5)")
+	List<Object> getPaymentHistoryByName(String type,String status,Long accountId,Date startDate, Date endDate);
+	
+	@Query("select prod.recordName,p.amount, p.type, p.paymentDate, p.status, p.reason, con.firstName, con.lastName from Payment p inner join p.signup s inner join s.itemDetail prod inner join p.contact con where p.status IN (?1) and p.signup.customer.accountId = ?2 and DATE(p.paymentDate) >= DATE(?3) and DATE(p.paymentDate) <= DATE(?4)")
+	List<Object> getPaymentHistoryByNameandstatus(String status,Long accountId,Date startDate, Date endDate);
+	
+	@Query("select prod.recordName,p.amount, p.type, p.paymentDate, p.status, p.reason, con.firstName, con.lastName from Payment p inner join p.signup s inner join s.itemDetail prod inner join p.contact con where p.type IN (?1) and p.signup.customer.accountId = ?2 and DATE(p.paymentDate) >= DATE(?3) and DATE(p.paymentDate) <= DATE(?4)")
+	List<Object> getPaymentHistoryByNameandtype(String type,Long accountId,Date startDate, Date endDate);
+	
+	@Query("select prod.recordName,p.amount, p.type, p.paymentDate, p.status, p.reason, con.firstName, con.lastName from Payment p inner join p.signup s inner join s.itemDetail prod inner join p.contact con where p.signup.customer.accountId = ?1 and DATE(p.paymentDate) >= DATE(?2) and DATE(p.paymentDate) <= DATE(?3)")
+	List<Object> getPaymentHistoryByName(Long accountId,Date startDate, Date endDate);
+
+	
+	@Query("select prod.recordName,p.amount, p.type, p.paymentDate, p.status, p.reason, con.firstName, con.lastName from Payment p inner join p.signup s inner join s.itemDetail prod inner join p.contact con where (con.fNameAndLName like %?1%) and p.signup.customer.accountId = ?2 and DATE(p.paymentDate) >= DATE(?3) and DATE(p.paymentDate) <= DATE(?4)")
+	List<Object> getPaymentHistoryByContact(String username,Long accountId,Date startDate, Date endDate);
+
+	
+	@Query("select prod.recordName,p.amount, p.type, p.paymentDate, p.status, p.reason, con.firstName, con.lastName from Payment p inner join p.signup s inner join s.itemDetail prod inner join p.contact con where p.type = ?1 and p.status =?2 and p.signup.customer.accountId = ?3 and DATE(p.paymentDate) >= DATE(?4) and DATE(p.paymentDate) <= DATE(?5)")
+	List<Object> getPaymentHistory(String type,String status,Long accountId,Date startDate, Date endDate);
+	
+	@Query("select p from Payment p inner join p.invoice i where i.invoiceId=?1")
+	List<Payment> getPaymentAmount(Long InvoiceId);
+	
+	@Query("select p from Payment p where p.signup=?1 and p.type=?2")
+	List<Payment> findBySignupAndType(Signup signup, String type);
+	
+	@Query("select p from Payment p inner join p.invoice i where i.invoiceId=?1 AND p.status='Success'")
+	List<Payment> getPaymentListForInvoice(Long invoiceId);
+	
+	List<Payment> findBySignupOrderByAmountDesc(Signup signup);
+	
+	@Query("SELECT p  from Payment p inner join p.signup s inner join p.customer c  where c.accountId=?1 and s.type = 'Donations' order by p.paymentDate desc")
+	List<Payment> getByCustomerIdAndTypeDonation(Long accountId);
+	
+	List<Payment> findByInvoiceAndStatusAndType(Invoice invoice, String status, String type);
+}

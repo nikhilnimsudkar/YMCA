@@ -1,0 +1,256 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<div id="programinfoPg">
+	<div id="tabstrip3" class="k-block" style=" background-color:#FFFFFF; padding:12px;">	
+		<form:form commandName="ItemDetailsSession" name="signupFrm" id="signupFrm" action="programRegistration" method="post">
+		<span class="head">NEW PROGRAM SIGN UP</span>
+		<div style="margin-top:10px; margin-bottom:10px;">
+			<select name="location" id="location" style="width:400px;">
+				
+				<c:forEach var="location" items="${locations}" varStatus="count">
+					<option value="${location.locationId }">${location.branchName }</option>
+				</c:forEach>
+			</select>
+		</div>
+		<span style="font-size: .7em;">We recommend you use our website to explore the many programs the Y of Silicon Valley offers and to determine what your
+home branch should be.</span>
+		<br><br>
+		<table>
+			<tr>
+				<td valign="top">
+					<div>
+						<span class="head">MEMBER(S)</span><br>
+						
+							<c:forEach var="member" items="${AlluserS}" varStatus="count">
+								<span><input type="checkbox" name="user_${member.id }" value="1"></span>
+								<span class="name">${member.firstName } ${member.lastName }</span>
+								<br>
+							</c:forEach>
+						
+					</div>
+					
+					<br>
+					<span class="head">CLASSES</span><br><br>
+					<div>
+						<select id="class" name="class" onchange="populateProducts()">
+							<c:forEach var="productcategory" items="${productcategories}" varStatus="count">
+								<option value="${productcategory}">${productcategory}</option>
+							</c:forEach>
+						</select>
+					</div><br>
+					<div>
+						<select id="subclass" name="subclass">
+							<option value=""></option>
+						</select>
+					</div><br>
+					<span class="k-button" id="SearchProgramBtn">Search</span>
+				</td>
+				<td valign="top" align="left">
+					<span style="font-size: .7em;margin-right: 20px;">
+						Select Calendar view: 
+						<select name="daypicker" id="daypicker" style="width:100px">
+							<option value="DAY">DAY</option>
+							<option value="MONTH">MONTH</option>
+						</select>
+						<input name="datepicker" id="datepicker"/>
+						<input name="monthpicker" id="monthpicker"/>
+					</span>
+					<span>PRINT</span><br>
+					<span style="font-size: .7em;margin-right: 40px;">Select </span>
+					<span style="font-size: .7em;"><a href="#">All</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#">None</a></span>
+					<br>
+					<br>
+					<div style="font-size:0">
+						<div id="program_session">
+						
+						</div>
+					</div>
+				</td>
+			</tr>
+			<tr height="30"><td></td></tr>
+			<tr>
+				<td>
+					<span class="head">PROGRAM COST</span>
+				</td>
+				<td align="right">
+					<span id="program_cost" style="margin-right: 315px;"></span>
+					<span class="k-button" id="payBtn">PAY</span>
+				</td>
+			</tr>
+		</table>
+		</form:form>
+	</div>	 
+</div>
+<script>
+	$(document).ready(function(){
+		$("#daypicker").kendoDropDownList({
+			width:"500px"
+		});
+		
+		$( "#daypicker" ).change(function(){	
+			
+			if($( "#daypicker" ).val()=='MONTH'){
+				$( "#datepicker" ).hide();
+				$('#datepicker').data('kendoDatePicker').enable(false);
+				
+				$( "#monthpicker" ).show();
+				$('#monthpicker').data('kendoDatePicker').enable(true);
+				
+				$('[class="k-picker-wrap k-state-default"]').show();
+				$('[class="k-picker-wrap k-state-default"]').css("width","100px");
+				$('[class="k-picker-wrap k-state-disabled"]').hide();
+				
+			}
+			else{
+				$( "#datepicker" ).show();
+				//$("#datepicker").kendoDatePicker();
+				$('#datepicker').data('kendoDatePicker').enable(true);
+				
+				$( "#monthpicker" ).hide();
+				$('#monthpicker').data('kendoDatePicker').enable(false);
+				
+				$('[class="k-picker-wrap k-state-default"]').show();
+				$('[class="k-picker-wrap k-state-default"]').css("width","100px");
+				$('[class="k-picker-wrap k-state-disabled"]').hide();
+			}
+		});
+		
+		$("#datepicker").kendoDatePicker();
+		$("#monthpicker").kendoDatePicker({
+            // defines the start view
+            start: "year",
+
+            // defines when the calendar should return date
+            depth: "year",
+
+            // display month and year in the input
+            format: "MMMM yyyy"
+        });
+		
+		// disable and hide month picker by default
+		$( "#datepicker" ).show();
+		//$("#datepicker").kendoDatePicker();
+		$('#datepicker').data('kendoDatePicker').enable(true);
+		
+		$( "#monthpicker" ).hide();
+		$('#monthpicker').data('kendoDatePicker').enable(false);
+		
+		$('[class="k-picker-wrap k-state-default"]').show();
+		$('[class="k-picker-wrap k-state-default"]').css("width","100px");
+		$('[class="k-picker-wrap k-state-disabled"]').hide();
+		
+		
+		$("#location").kendoDropDownList();
+		$("#class").kendoDropDownList();
+		$("#subclass").kendoDropDownList();
+		$('#subclass').data('kendoDropDownList').enable(false);
+		
+		populateProducts();
+		
+		$( "#SearchProgramBtn" ).click(function(){
+			getProgramSession();
+		});	
+		
+		$( "#payBtn" ).click(function(){
+			//alert($('#signupFrm').serialize());
+		});
+	});
+	
+	function getProgramSession(){
+		var category = $("#class").val();
+		var productname = $("#subclass").val();
+		var location = $("#location").val();
+		var dayview = $("#daypicker").val();
+		if(dayview=='MONTH'){
+			var dateormonth = $("#monthpicker").val();
+		}
+		else{
+			var dateormonth = $("#datepicker").val();
+		}
+		
+		
+		$.ajax({
+			  type: "GET",
+			  url:"getItemSessionDetails?location="+location+"&productname="+productname+"&category="+category+"&dayview="+dayview+"&dateormonth="+dateormonth,
+			  success: function( data ) {
+			  	 console.log(data.length);
+			  	 if(data.length>0){
+				  	 var price = "";
+				  	 var days = "";
+				  	 var dspDays = "";
+				  	 var item_session = "<table class='program_desc' width='100%'>";
+				  	 $.each(data, function(i,itemDetailsSession) {
+				  		
+				  		if(itemDetailsSession[4]==days){
+				  			dspDays = "";
+				  		}
+				  		else{
+				  			days = itemDetailsSession[4];
+				  			dspDays = days;
+				  		}
+				  		 
+				  		price = itemDetailsSession[7];
+				  		// alert(price);
+				  		item_session = item_session + "<tr>";
+				  			item_session = item_session + "<td><span class='name boldorange' style='font-weight:bold;'>"+dspDays+"</span></td>";
+				  			item_session = item_session + "<td><span><input type='checkbox' name='item_"+itemDetailsSession[9]+"' value=1></span></td>";
+				  			item_session = item_session + "<td><span class='name'>"+itemDetailsSession[2]+" - "+itemDetailsSession[3]+"</span></td>";
+				  			item_session = item_session + "<td><span class='name'>"+itemDetailsSession[1]+" - "+itemDetailsSession[0]+"</span></td>";
+				  			item_session = item_session + "<td><span class='name'>"+itemDetailsSession[5]+"</span></td>";
+				  			item_session = item_session + "<td></td>";
+				  		item_session = item_session + "</tr>";
+				  		item_session = item_session + "<tr><td></td><td colspan='5'><hr></td></tr>";
+						
+				  	 });
+				  	 item_session = item_session + "</table>";
+				  	
+				  	 //console.log(item_session);
+				  	 $("#program_session").html(item_session);
+				  	 $("#program_cost").text("$"+price+" per person");
+				  	 $("input[type='checkbox']").uniform();
+			  	 }
+			  	 else{
+			  		$("#program_session").html("");
+				  	$("#program_cost").text("");
+			  	 }
+			  },
+			  error: function( xhr,status,error ){
+				  alert("1" +status+"-"+error);
+				  console.log(xhr);
+				 
+			  }
+		});
+	}
+	
+	function populateProducts(){
+		var category = $("#class").val();
+		$.ajax({
+			  type: "GET",
+			  async: false,
+			  url:"getProductsbyCategory?category="+category,
+			  dataType: "json",
+			  success: function( data ) {
+			  	 // alert(data);
+			  	 
+			  	 //$("#subclass").data("kendoDropDownList").dataSource.data(data);
+			  	 $('#subclass').data('kendoDropDownList').enable(true);
+			  	 //$("#subclass").data("kendoDropDownList").setDataSource("");
+			     $("#subclass").data("kendoDropDownList").dataSource.data(""); // clears dataSource
+			  	 $("#subclass").data("kendoDropDownList").text(""); // clears visible text
+			  	 $("#subclass").data("kendoDropDownList").value(""); // clears invisible value
+
+			  	 $.each(data, function(i,product) {
+			  		 //console.log(product);
+			  		$("#subclass").data("kendoDropDownList").dataSource.add({ text: product, value: product });
+				});
+			  	 
+			  },
+			  error: function( xhr,status,error ){
+				  //alert("1" +status);
+				  console.log(xhr);
+				 
+			  }
+		});
+		
+		getProgramSession();
+	}
+</script>

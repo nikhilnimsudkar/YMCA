@@ -1,0 +1,248 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+
+/**
+ * This class represents the basic "Membership" object in YMCA Portal that allows for Membership management.  
+ *
+ */
+ 
+public class Contact extends BaseObject implements Serializable {
+	private static final long serialVersionUID = 3832626162173359411L;
+	
+	public Contact() {
+		
+	}
+	
+	public Contact(Long contactPartyId, Long accountId, String contactName,
+			String fNameAndLName, String email, String phone, Date dateOfBirth,
+			String relationships, String areaOfInterest) {
+		super();
+		//this.account = account;
+		this.contactPartyId = contactPartyId;
+		this.accountId = accountId;
+		this.contactName = contactName;
+		this.fNameAndLName = fNameAndLName;
+		this.email = email;
+		this.phone = phone;
+		this.dateOfBirth = dateOfBirth;
+		this.relationships = relationships;
+		this.areaOfInterest = areaOfInterest;	
+	}
+
+	
+	@Id
+	@GeneratedValue	
+    private Long contactPartyId;					// required  PK
+	
+    @Column(name = "account_id", nullable = false)
+   	private Long accountId;                    	// required  PK,FK1
+    
+    @Column(name = "contact_name", nullable = false)
+    private String contactName;                 
+    
+    @Column(name = "fName_and_lname", nullable = false)
+    private String fNameAndLName;
+    
+    @Column(name = "email", nullable = false)
+    private String email;
+    
+    @Column(name = "phone", nullable = false)
+    private String phone;
+    
+    @Column(name = "date_of_birth", nullable = false)
+    private Date dateOfBirth;
+    
+    @Column(name = "relationships", nullable = false)
+    private String relationships;
+
+    @Column(name = "area_of_interest", nullable = false)
+    private String areaOfInterest;
+    
+    @OneToOne(cascade={CascadeType.ALL})
+	@JoinColumn(name="waivers_and_tc_id_FK")
+    private ContactWaiversAndTC contactWaiversAndTC;
+    
+   
+    
+    public Long getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(Long accountId) {
+		this.accountId = accountId;
+	}
+
+	public String getContactName() {
+		return contactName;
+	}
+
+	public void setContactName(String contactName) {
+		this.contactName = contactName;
+	}
+
+	public String getfNameAndLName() {
+		return fNameAndLName;
+	}
+
+	public void setfNameAndLName(String fNameAndLName) {
+		this.fNameAndLName = fNameAndLName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public Date getDateOfBirth() {
+		return dateOfBirth;
+	}
+
+	public void setDateOfBirth(Date dateOfBirth) {
+		this.dateOfBirth = dateOfBirth;
+	}
+
+	public String getRelationships() {
+		return relationships;
+	}
+
+	public void setRelationships(String relationships) {
+		this.relationships = relationships;
+	}
+
+	public String getAreaOfInterest() {
+		return areaOfInterest;
+	}
+
+	public void setAreaOfInterest(String areaOfInterest) {
+		this.areaOfInterest = areaOfInterest;
+	}
+
+	public Long getContactPartyId() {
+		return contactPartyId;
+	}
+
+	public void setContactPartyId(Long contactPartyId) {
+		this.contactPartyId = contactPartyId;
+	}
+
+	public ContactWaiversAndTC getContactWaiversAndTC() {
+		return contactWaiversAndTC;
+	}
+
+	public void setContactWaiversAndTC(ContactWaiversAndTC contactWaiversAndTC) {
+		this.contactWaiversAndTC = contactWaiversAndTC;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((accountId == null) ? 0 : accountId.hashCode());
+		result = prime * result
+				+ ((areaOfInterest == null) ? 0 : areaOfInterest.hashCode());
+		result = prime * result
+				+ ((contactName == null) ? 0 : contactName.hashCode());
+		result = prime * result
+				+ ((contactPartyId == null) ? 0 : contactPartyId.hashCode());
+		result = prime * result
+				+ ((dateOfBirth == null) ? 0 : dateOfBirth.hashCode());
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
+		result = prime * result
+				+ ((fNameAndLName == null) ? 0 : fNameAndLName.hashCode());
+		result = prime * result + ((phone == null) ? 0 : phone.hashCode());
+		result = prime * result
+				+ ((relationships == null) ? 0 : relationships.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Contact other = (Contact) obj;
+		if (accountId == null) {
+			if (other.accountId != null)
+				return false;
+		} else if (!accountId.equals(other.accountId))
+			return false;
+		if (areaOfInterest == null) {
+			if (other.areaOfInterest != null)
+				return false;
+		} else if (!areaOfInterest.equals(other.areaOfInterest))
+			return false;
+		if (contactName == null) {
+			if (other.contactName != null)
+				return false;
+		} else if (!contactName.equals(other.contactName))
+			return false;
+		if (contactPartyId == null) {
+			if (other.contactPartyId != null)
+				return false;
+		} else if (!contactPartyId.equals(other.contactPartyId))
+			return false;
+		if (dateOfBirth == null) {
+			if (other.dateOfBirth != null)
+				return false;
+		} else if (!dateOfBirth.equals(other.dateOfBirth))
+			return false;
+		if (email == null) {
+			if (other.email != null)
+				return false;
+		} else if (!email.equals(other.email))
+			return false;
+		if (fNameAndLName == null) {
+			if (other.fNameAndLName != null)
+				return false;
+		} else if (!fNameAndLName.equals(other.fNameAndLName))
+			return false;
+		if (phone == null) {
+			if (other.phone != null)
+				return false;
+		} else if (!phone.equals(other.phone))
+			return false;
+		if (relationships == null) {
+			if (other.relationships != null)
+				return false;
+		} else if (!relationships.equals(other.relationships))
+			return false;
+		return true;
+	}
+
+	
+    
+	  
+}

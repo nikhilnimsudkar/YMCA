@@ -1,0 +1,58 @@
+package com.ymca.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.ItemDetail;
+
+public interface ItemDetailDao extends GenericDao<ItemDetail, Long>  {
+	
+	ItemDetail getById(Long id);
+	
+	@Query("select i from ItemDetail i inner join i.location l where l.id =?1 and DATE(i.registrationStartDate)= DATE(?2) and i.type= ?3")
+	ItemDetail getByLocationsAndRegistrationStartDate(Long locationId,Date date,String type);
+	
+	//@Query("select i from ItemDetail i where i.itemType =?1 and i.itemSubtype =?2 ")
+	List<ItemDetail> findByType_AndCategory_(String itemType,String category);
+	
+	@Query("select i from ItemDetail i inner join i.location l where i.type =?1 and i.category =?2 and l.id =?3 ")
+	List<ItemDetail> findByType_AndCategory_AndlocationId(String itemType,String category,Long locId);
+	
+	List<ItemDetail> findByTypeAndCategoryAndLocation(String itemType,String category,Long locId);
+	
+	@Query("select distinct i.category from ItemDetail i where i.type =?1")
+	@Cacheable("ymca-core")
+	List<Object[]> getDistinctCategoryByType(String type);
+	
+	
+	//@Query("select distinct type from ItemDetail")
+	//List<ItemDetail> findDistinct();
+	
+	//@Query("select distinct RecordName from ItemDetail where type = ?1")
+	List<ItemDetail> findDistinctItemDetailByType(String type);
+	
+	//@Query("select distinct recordName from ItemDetails where itemType = ?1")
+	List<ItemDetail> findDistinctItemDetailByCategory(String category);
+	
+	@Query("select distinct i.type from ItemDetail i where i.category =?1")
+	List<String> getDistinctTypeForCategory(String category);
+	
+	//@Query("select i from ItemDetail i where i.type='MEMBERSHIP' and i.startDate >=?1 and i.endDate <=?2 and i.type=?3 and i.recordName=?4 and i.location=?5")
+	//List<ItemDetail> getMembershipProgram(Date startDate, Date endDate, String category, String recordName, Location location);
+	
+	@Query("select  i.id, i.recordName, i.description, i.type, i.duration, i.waiversAndTC.tcDescription, l.tier, i.id from ItemDetail i inner join i.location l where l.id =?1 and i.type='MEMBERSHIP' and i.status='ACTIVE'")	
+	List<Object[]> getMembershipProgramByLocation(Long locationId);
+	
+	@Query("select  i.id, i.recordName, i.description, i.type, i.duration, i.waiversAndTC.tcDescription, l.tier, i.id from ItemDetail i inner join i.location l where l.id =?1 and i.type='Trial Pass' and i.category='Trial Pass'")	
+	List<Object[]> getTrialPassProgramByLocation(Long locationId);
+	
+	List<ItemDetail> findByCategory(String category);
+	
+	List<ItemDetail> findByStatus(String status);
+	
+	List<ItemDetail> findByIdIn(List<Long> id);
+	
+}

@@ -1,0 +1,22 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.User;
+
+public interface UserDao extends GenericDao<User, Long>  {
+	User getByUsername(String username);
+	List<User> getByFirstNameAndLastName(String firstName, String lastName);
+	
+	@Query("select u.password from User u where u.id = ?1")
+	String getUserPassword(Long userId);
+	
+	
+	User getByEmailAddress(String primaryEmailAddress);
+	
+	@Query("select u from User u where u.emailAddress = ?1")
+	List<User> getUserLstByPrimaryEmailAddress(String primaryEmailAddress);
+	
+}

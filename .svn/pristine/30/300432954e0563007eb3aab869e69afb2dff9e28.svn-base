@@ -1,0 +1,396 @@
+
+/* functions related to payment */
+
+var hash = '';
+var merchantId = "TESTTERMINAL";  
+var transactionAmount = "0.00";
+var JetDirectToken	= "1234567890ABCDEFGHIJKabcdefghijk";
+var paymentOrderId = Math.floor((Math.random()*1000000000000)+1);
+
+// payment cart page
+function submitPlaceOrderForm(){
+	//	console.log(" ");
+	if($("#paymentInfoRadio").val()=='New'){ // add new credit card form
+		if($('#SaveCard').is(":checked")){
+			
+			// check if nick name is not blank
+			if($("#nickName").val()==""){
+				 $("#tcErrorSpan").css("display", "block");		
+				 $( "#tcErrorSpan" ).html("Please provide Nick Name");
+			}
+			else{
+				//var payId = addcccard();
+				//payment_method_id = addcccard();
+				processpayment();
+				//proceedtosignup(payId);
+			}
+		}
+		else{
+			var paymentId = "0";
+			processpayment();
+			//alert();
+			//proceedtosignup(paymentId);
+		}
+	} else if($("#paymentInfoRadio").val()=='NewBank'){ // add new bank form
+		
+		if($('#SaveCard').is(":checked")){ // add new ACH form
+			// check if nick name is not blank
+			if($("#nickName").val()==""){
+				 $("#tcErrorSpan").css("display", "block");		
+				 $( "#tcErrorSpan" ).html("Please provide Nick Name");
+			}
+			else{
+				//var payId = addcccard();
+				processACHpayment("0");
+				//proceedtosignup(payId);
+			}
+		}
+		else{
+			var paymentId = "0";
+			processACHpayment(paymentId);
+			//alert();
+			//proceedtosignup(paymentId);
+		}
+		
+	} else {
+		var selectedPaymentMethod = $("#paymentInfoRadio").data("kendoDropDownList").text();
+		proceed = true;
+		var paymentDDvalue = $('#paymentInfoRadio').val();  
+		paymentDDvalue = paymentDDvalue.split("_");
+		
+		var paymentId = paymentDDvalue[0];  
+		console.log(" paymentId >> "+paymentId);
+		var token = paymentDDvalue[1];  
+		
+		if(paymentId=='' || typeof paymentId === "undefined"){
+				//alert($("#statusBlock").html());
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan1").css("display", "block");		
+			  $( "#tcErrorSpan1" ).html("Please select mode of payment");
+			  return;
+		}
+		
+		if (selectedPaymentMethod.indexOf(",") ==-1) {	 // payment by token for CC mode
+			processCCpaymentbytoken(paymentId,token);
+		} else if(selectedPaymentMethod.indexOf(",") > -1) { // payment by token for ACH mode
+			processACHpaymentbytoken(paymentId,token);
+		}
+	}
+}
+
+function processpayment(){
+	//console.log("  processpayment  ");
+	orderamount = $("#ordertotal").text();
+	transactionAmount = $.trim(orderamount.replace("$",""));
+	//console.log(" transactionAmount  "+transactionAmount);
+	
+	var jsSha = new jsSHA(merchantId+transactionAmount+JetDirectToken+paymentOrderId);
+	hash = jsSha.getHash("SHA-512", "HEX");	
+	//console.log(" hash  "+hash);
+	//console.log(" paymentOrderId "+paymentOrderId);
+	var jsonData = {
+				name : $("#fullName").val(),
+				cardNum : $("#cardNumber").val(),
+				cscNumber : $("#securityCode").val(),
+				AddressLine1 : $("#billingAddressLine1").val(),
+				AddressLine2 : $("#billingAddressLine2").val(),
+				City : $("#billingCity").val(),
+				state : $("#billingState").val(),
+				zipcode : $("#billingZip").val(),
+				email : "",
+				amount : transactionAmount,
+				expMonth : $("#expirationMonth").val(),
+				expYr : $("#addCardExpirationYear").val(),
+				contry : "US",
+				jetPayHash : hash.toString(),
+				paymentOrderId : paymentOrderId.toString()
+				
+	};
+	//console.log(" jsonData "+jsonData);
+	var win = document.getElementById("childIframeId").contentWindow;
+	//console.log(" win ");
+	//console.log(" win "+win);
+	win.postMessage(jsonData, '*');
+}
+
+function processACHpayment(payId){
+	var orderamount = $("#ordertotal").text();
+	var transactionAmount = $.trim(orderamount.replace("$",""));
+	transactionAmount = $.trim(transactionAmount.replace(".00",""));
+	
+	var bankAccountNumber =  $("#bankAccountNumber").val();
+	var bankRoutingNumber =  $("#bankRoutingNumber").val();
+	var checkNumber =  $("#checkNumber").val();
+	var cardName =  $("#cardName").val();
+	var totalAmt =  transactionAmount;
+	
+	var billingAddressLine1 =  $("#achbillingAddressLine1").val();
+	var billingAddressLine2 =  $("#achbillingAddressLine2").val();
+	var billingCity =  $("#achbillingCity").val();
+	var billingState =  $("#achbillingState").val();
+	var billingZip =  $("#achbillingZip").val();
+	
+	$.ajax({
+		  type: "POST",
+		  url: "processACHPayment",	
+		  data: { bankAccountNumber: bankAccountNumber, bankRoutingNumber : bankRoutingNumber, checkNumber : checkNumber, cardName : cardName, totalAmt : totalAmt},
+		  success: function( data ) {
+			  
+			  var paymentMethodHtml = '';
+			  if(data != null && data.responseText == "CHECK ACCEPTED"){
+				  
+				  $.ajax({
+						type: "POST",
+						url: "insertPaymentDetailsForAchTransaction",	
+						data: { bankAccountNumber: bankAccountNumber, bankRoutingNumber : bankRoutingNumber, checkNumber : checkNumber , cardName : cardName,
+							 totalAmt : totalAmt , transId : data.transId, responseText :  data.responseText, actCode :  data.actCode, apprCode :  data.apprCode, 
+							 billingAddress1 :  billingAddressLine1, billingAddress2 :  billingAddressLine2, billingCity :  billingCity, billingState :  billingState, billingZip :  billingZip,
+						},
+						success: function( dat ) {
+							 var transactionId = data.transId; 
+							  
+							 console.log(" Success processACHPayment >> ");
+							 proceedtosignup(payId,"",transactionId,"ACH");
+						},
+						error: function( xhr,status,error ){
+						  $("#statusBlock-payment").css("display", "block");	
+						  $("#tcloginErrorSpan-payment").css("display", "block");	
+						  $( "#tcloginErrorSpan-payment" ).html("There was some error. Please try again later");							  		 
+						}
+					});
+			  }else {
+				  	
+				  console.log(" Error processACHPaymentByTokenId ");
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcErrorSpan").css("display", "block");	
+				  $( "#tcErrorSpan" ).html("Error occurred while processing the payment. Please try again later <br />ActionCode :<b>"+data.actCode+"</b> Error message : "+data.responseText);
+			  }
+			  $(".k-loading-mask").hide();
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(" Error processACHPaymentByTokenId ");
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcErrorSpan").css("display", "block");	
+			  $( "#tcErrorSpan" ).html("There was some error. Please try again later");							  		 
+		  }
+	});
+}
+
+function processCCpaymentbytoken(payId,token){
+	//console.log(" processpaymentbytoken  ");
+	orderamount = $("#ordertotal").text();
+	transactionAmount = $.trim(orderamount.replace("$",""));
+	console.log(" transactionAmount  >>  "+transactionAmount);
+	
+	//var jsSha = new jsSHA(merchantId+transactionAmount+JetDirectToken+paymentOrderId);
+	//hash = jsSha.getHash("SHA-512", "HEX");	
+	var jp_request_hash = hash;
+	
+	$.ajax({
+		  type: "POST",
+		  url: "processPaymentByTokenId",	
+		  data: { token: token, totalAmount : Math.ceil(transactionAmount)},
+		  success: function( data ) {
+			  console.log(" processPaymentByTokenId ");
+			  if(data != null && data.responseText == "APPROVED"){	
+				  console.log(" Success processPaymentByTokenId >> ");
+				  
+				  var transactionId = data.transId; 
+				  
+				  proceedtosignup(payId,jp_request_hash,transactionId,"CC");
+			  }else {
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcErrorSpan").css("display", "block");	
+				  $( "#tcErrorSpan" ).html("The transaction failed..");	
+			  }
+			  $(".k-loading-mask").hide();
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(" Error processPaymentByTokenId ");
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcErrorSpan").css("display", "block");	
+			  $( "#tcErrorSpan" ).html("There was some error. Please try again later");							  		 
+		  }
+	});
+}
+
+function processACHpaymentbytoken(payId,token){
+	console.log(" processACHpaymentbytoken  ");
+	
+	orderamount = $("#ordertotal").text();
+	transactionAmount = $.trim(orderamount.replace("$",""));
+	transactionAmount = $.trim(transactionAmount.replace(".00",""));
+	console.log(" transactionAmount  >>  "+transactionAmount);
+	
+	var selectedPaymentMethod = $("#paymentInfoRadio").data("kendoDropDownList").text();
+	var selectedPaymentMethodArr = selectedPaymentMethod.split(", ");
+	var checkNumber = selectedPaymentMethodArr[1];
+	var cardName = selectedPaymentMethodArr[0];
+	var jp_request_hash = hash;
+	
+	$.ajax({
+		  type: "POST",
+		  url: "processACHPaymentByTokenId",	
+		  data: { token: token, totalAmount : transactionAmount, checkNumber : checkNumber, cardName : cardName},
+		  success: function( data ) {				 
+				  if(data != null && data.responseText == "CHECK ACCEPTED"){
+					  var transactionId = data.transId; 
+					  
+					  console.log(" Success processACHPaymentByTokenId >> ");
+					  console.log(data);
+					  proceedtosignup(payId,jp_request_hash,transactionId,"ACH");
+						  
+				 }else {
+					  console.log(" Error processACHPaymentByTokenId ");
+					  $("#tcSuccessSpan").css("display", "none");		
+					  $("#tcErrorSpan").css("display", "block");	
+					  $( "#tcErrorSpan" ).html("Error occurred while processing the payment. Please try again later <br />ActionCode :<b>"+data.actCode+"</b> Error message : "+data.responseText);
+				 }
+				 $(".k-loading-mask").hide();
+		  },
+		  error: function( xhr,status,error ){
+			  $("#statusBlock-payment").css("display", "block");	
+			  $("#tcloginErrorSpan-payment").css("display", "block");	
+			  $( "#tcloginErrorSpan-payment" ).html("There was some error. Please try again later");							  		 
+		  }
+	});
+	
+}
+
+function proceedtosignup(paymentId, jp_request_hash, orderNumber, paymentMode){
+	console.log("  proceedtosignup  ");
+	$(".k-loading-mask").show();
+	var sessionData1 = [], contactData1 = [],
+		data = $('form').find('input:not([name="selectedItemSession"])').serialize();
+
+	var cartItems = [];
+	
+	var cartType = $.sessionStorage.getItem("CartType");
+	if(cartType){
+		if(cartType == 'Program'){
+			if(cart.contents.length>0){
+				$.each(cart.contents, function(i,itemDetailsSession) {
+					var itemprice = 0;
+					
+					if(itemDetailsSession.contact.isMember)
+						itemprice = (parseFloat(itemDetailsSession.item.memberprice) - parseFloat(itemDetailsSession.item.memberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+					else
+						itemprice = (parseFloat(itemDetailsSession.item.nonmemberprice) - parseFloat(itemDetailsSession.item.nonmemberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+					
+					cartItems.push(itemDetailsSession.item.prodId+"__"+itemDetailsSession.contact.contactId+"__"+itemprice);
+				});
+			}
+		}else if(cartType == 'Event'){
+			if(event_cart.contents.length>0){
+				$.each(event_cart.contents, function(i,itemDetailsSession) {
+					var itemprice = 0;
+					
+					if(itemDetailsSession.contact.isMember)
+						itemprice = (parseFloat(itemDetailsSession.item.memberprice) - parseFloat(itemDetailsSession.item.memberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+					else
+						itemprice = (parseFloat(itemDetailsSession.item.nonmemberprice) - parseFloat(itemDetailsSession.item.nonmemberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+					
+					cartItems.push(itemDetailsSession.item.prodId+"__"+itemDetailsSession.contact.contactId+"__"+itemprice);
+				});
+			}
+		}
+	}
+	
+	data += '&paymentMode='+paymentMode+'&jp_request_hash='+jp_request_hash+'&orderNumber='+orderNumber+'&paymentId='+paymentId+'&cartItems='+cartItems.join(',');
+	//alert(data);
+	//console.log(" proceedtosignup 11 ");
+	$.ajax({
+		  type: "POST",
+		  url: $('#signupFrm').attr( "action"),
+		  async:false,
+		  data: data,
+		  success: function( data ) {
+			  //alert(data);
+			 // console.log(data);
+			 data_s = data.split("__");
+			 //console.log(" cartType "+cartType);
+			// console.log(" data_s "+data_s);
+			 if(data_s[0]=="SUCCESS"){
+				  $.sessionStorage.clear();
+				  if(cartType){
+						if(cartType == 'Program'){
+							cart.clear();
+						}else if(cartType == 'Event'){
+							event_cart.clear();
+						}
+				  }
+				  $(".k-loading-mask").hide();
+				  $("#payment_cart").html("");
+				  $("#payment_cart").html('<div id="statusBlock" class="k-block k-success-colored" style="width: 90%;margin: 20px; padding: 10px;">Thank you for enrolling to the '+cartType+'.<br>Your transaction Id is: '+orderNumber+'</div>');
+				  
+				  $("#tcErrorSpan").css("display", "none");		
+				  $("#tcErrorSpan" ).html("");	
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");
+			 }
+			 else{
+				  $("#tcErrorSpan").css("display", "block");		
+				  $("#tcErrorSpan" ).html("There is some error, please try after some time");	
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");
+				  $(".k-loading-mask").hide();
+			 }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  $("#tcErrorSpan").css("display", "block");		
+			  $("#tcErrorSpan" ).html("There is some error, please try after some time");	
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");
+			  $(".k-loading-mask").hide();
+		  }
+		});
+}
+
+function addcccard (){
+//alert($('#addCardInfoForm').serialize());
+	var payId = 0;
+	$.ajax({
+		  type: "POST",
+		  async:false,
+		  url: "addCardInfo",
+		  data: $('#addCardInfoForm').serialize(),
+		  success: function( data ) {
+			  data_split = data.split("__S__");
+		  	  if(data_split[0]=='SUCCESS'){
+			  	  $("#tcErrorSpan").css("display", "none");		
+				  $("#tcErrorSpan" ).html("");	
+			  	  $("#tcSuccessSpan").css("display", "block");		
+				  $("#tcSuccessSpan" ).html("Card Information Added successfully");
+				  $(".k-loading-mask").hide();
+				  payId = data_split[1];
+			  	  //setTimeout(function(){location.reload();}, 7000);
+			  	  
+		  	  }else if(data == 'NOT_FOUND'){
+		  		  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("Payment Information Not Found.");
+				  $(".k-loading-mask").hide();
+				  
+		  	  }else {
+		  		  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("Please verify you entered information correctly");
+				  $(".k-loading-mask").hide();
+		  	  }
+		  },
+		  error: function( xhr,status,error ){
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+			  $(".k-loading-mask").hide();
+		  }
+	});
+	
+	return payId;
+}
+	

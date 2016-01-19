@@ -1,0 +1,93 @@
+/**
+ * @author gpatwa
+ */
+package com.serene.job.writer;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import org.apache.commons.jxpath.JXPathContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.dao.ChildFieldMappingDao;
+import com.serene.job.dao.ChildObjectDao;
+import com.serene.job.dao.JobFieldMappingDao;
+import com.serene.job.model.ChildFieldMapping;
+import com.serene.job.model.ChildObject;
+import com.serene.job.model.FieldMapping;
+import com.serene.job.model.JobSchedulerMetadata;
+
+@Service
+@Scope("prototype")
+public class DbToDbCallbackWriter {
+
+	private JobSchedulerMetadata jobSchedulerMetadata ;
+	
+	@Resource
+	private JdbcTemplate jdbcTemplate;
+	
+	@Resource
+	private JobFieldMappingDao jobFieldMappingDao ;
+
+	@Resource
+	private ChildObjectDao childObjectDao; 
+	
+	@Resource
+	private ChildFieldMappingDao childFieldMappingDao; 
+	
+	public void setDataSource(DataSource dataSource) {
+		jdbcTemplate.setDataSource(dataSource);
+	}
+
+	@Transactional(value=TxType.REQUIRES_NEW)
+	public void updateResponse(Map<String,Object> requestData,Map<String,Object> responseData,List<String> operationTypes) throws Exception {
+		StringBuilder sqlBuilder = new StringBuilder("Update ");
+		sqlBuilder.append(jobSchedulerMetadata.getFromObjectName()).append(" Set ");
+		JXPathContext fieldMappingsContext = JXPathContext.newContext(responseData);
+		fieldMappingsContext.setLenient(true);
+		
+		List<FieldMapping> fieldMappings = jobFieldMappingDao.findByJobNameAndCallbackUpdateAndStatus(jobSchedulerMetadata.getJobName(), true,true); 
+		for(FieldMapping mapping:  fieldMappings) {
+			if (mapping.getCallbackUpdate()) {
+				sqlBuilder.append(" ").append(mapping.getFromField()).append(" = ").append(fieldMappingsContext.getValue(mapping.getToField())).append(",");
+			}
+		}
+		sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(","));
+		sqlBuilder.append(" where ").append(jobSchedulerMetadata.getFromObjectIdField()).append(" = ").append(requestData.get(jobSchedulerMetadata.getFromObjectIdField()));
+		jdbcTemplate.update(sqlBuilder.toString());
+	}
+	
+	@Transactional(value=TxType.REQUIRES_NEW)
+	public void updateChildResponse(ChildObject childObject,Map<String,Object> requestData,Map<String,Object> responseData,List<String> operationTypes) throws Exception {
+		StringBuilder sqlBuilder = new StringBuilder("Update ");
+		sqlBuilder.append(childObject.getFromObjectName()).append(" Set ");
+		JXPathContext fieldMappingsContext = JXPathContext.newContext(responseData);
+		fieldMappingsContext.setLenient(true);
+		
+		List<ChildFieldMapping> fieldMappings = childFieldMappingDao.findByJobNameAndObjectNameAndCallbackUpdateAndStatus(childObject.getJobName(),childObject.getObjectName(),true, true); 
+		for(ChildFieldMapping mapping:  fieldMappings) {
+			if (mapping.getCallbackUpdate()) {
+				sqlBuilder.append(" ").append(mapping.getFromField()).append(" = ").append(fieldMappingsContext.getValue(mapping.getToField())).append(",");
+			}
+		}
+		sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(","));
+		sqlBuilder.append(" where ").append(childObject.getFromObjectIdField()).append(" = ").append(requestData.get(childObject.getFromObjectIdField()));
+		jdbcTemplate.update(sqlBuilder.toString());
+	}
+
+	public JobSchedulerMetadata getJobSchedulerMetadata() {
+		return jobSchedulerMetadata;
+	}
+
+	public void setJobSchedulerMetadata(JobSchedulerMetadata jobSchedulerMetadata) {
+		this.jobSchedulerMetadata = jobSchedulerMetadata;
+	}
+	
+}

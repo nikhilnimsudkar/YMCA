@@ -1,0 +1,435 @@
+package com.ymca.web.controller;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.ParameterExpression;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.ItemDetailsDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.dao.PricingRuleDao;
+import com.ymca.model.ChildCare;
+import com.ymca.model.ItemDays;
+import com.ymca.model.ItemDetails;
+import com.ymca.model.ItemDetailsSession;
+import com.ymca.model.ItemPromoDetails;
+import com.ymca.model.Locations;
+import com.ymca.model.PricingRule;
+import com.ymca.model.Product;
+import com.ymca.model.Role;
+import com.ymca.service.ChildCareService;
+import com.ymca.web.util.Constants;
+
+@Controller
+// @RequestMapping("/childcare")
+@ComponentScan("com.ymca.service")
+public class ChildCareController {
+	
+	@Resource
+	private LocationDao locationDao;
+	
+	@Resource
+	private PricingRuleDao pricingRuleDao;
+	
+	@Resource
+	private ItemDetailsDao itemDetailsDao;
+	
+	@PersistenceContext
+	public EntityManager em; 
+	
+	/*
+	@Autowired(required = true)
+	private ChildCareService childCareService;
+	
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public String index(@ModelAttribute("ChildCare") ChildCare childCare) {
+		return "childcare";
+	}
+
+	@RequestMapping(value = "/create", method = RequestMethod.POST)
+	protected ModelAndView createChildCareAccount(
+			@ModelAttribute("ChildCare") ChildCare childCare) throws Exception {
+
+		if (childCare.getAccountId() != null) {
+			try {
+				childCareService.create(childCare);
+			} catch (Exception e) {
+
+			}
+		}
+		String message = "New childCare " + childCare.getName()
+				+ " was successfully created.";
+		ModelAndView mav = new ModelAndView("final", "message", message);
+		return mav;
+	}
+
+	@RequestMapping(value = "/list", method = RequestMethod.GET)
+	public ModelAndView childCareListPage(
+			@ModelAttribute("ChildCare") ChildCare childCare) {
+		List<ChildCare> childcareList = childCareService.findAll();
+		ModelAndView mav = new ModelAndView("read", "childcareList",
+				childcareList);
+		return mav;
+	}
+
+	@RequestMapping(value = "/find", method = RequestMethod.GET)
+	public ModelAndView findById(@RequestParam("accountId") Long accountId) {
+		ChildCare shop = childCareService.findById(accountId);
+		ModelAndView mav = new ModelAndView("find", "shop", shop);
+		return mav;
+	}
+
+	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
+	public ModelAndView deleteChildCareEntry(@RequestParam Long accountId) {
+		ChildCare childCare = childCareService.delete(accountId);
+		String message = "The shop " + childCare.getName()
+				+ " was successfully deleted.";
+		ModelAndView mav = new ModelAndView("delete", "message", message);
+		return mav;
+	}
+
+	@RequestMapping(value = "/edit", method = RequestMethod.PUT)
+	public ModelAndView editShop(@ModelAttribute ChildCare childCare) {
+
+		String message = "Shop was successfully updated.";
+		childCareService.update(childCare);
+		ModelAndView mav = new ModelAndView("update", "message", message);
+		return mav;
+	}*/
+	
+	@RequestMapping(value="/Childcare", method=RequestMethod.GET)
+    public ModelAndView Childcare(final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		
+		model.addAttribute("locations", locationDao.findAll());
+        return new ModelAndView("viewChildcare", model.asMap());
+    }
+	
+	@RequestMapping(value="/searchchildcare", method=RequestMethod.GET)
+    public ModelAndView searchchildcare(@RequestParam String location, @RequestParam String keyword,  @RequestParam String minage,  @RequestParam String maxage, final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap(); 
+		
+		Locations locations = new Locations();
+		Long locId = Long.parseLong(location);
+		locations.setLocationId(locId);
+				
+		try {
+			
+			List<ItemDetails> itemDetails = getListItemsObj(Constants.CHILDCARE_TYPE, locations, keyword, minage, maxage);
+			model.addAttribute("itemDetails", itemDetails);
+			
+			List<Object[]> productSubtypesObj = itemDetailsDao.getDistinctItemsubtypeByType(Constants.CHILDCARE_TYPE);
+			model.addAttribute("productsubtypes", productSubtypesObj);
+			
+			// create unique location and productsubtype lists
+			Set<String> lstProductSubtypeLocationsMap = new HashSet<String>();
+			Set<String> lstAllProductSubtypeLocationsMap = new HashSet<String>();
+			Set<String> lstLocations = new HashSet<String>();
+			
+			List<Object[]> childcareObj = new ArrayList<Object[]>();
+			List<String> gridfields = Arrays.asList("Type","Location","Start Time","End Time","Age Range","Gender","M / # of available slots","Tu / # of available slots","W / # of available slots","Th / # of available slots","F / # of available slots");
+			
+			for(ItemDetails itemDetail : itemDetails){
+				Object[] ccObj = new Object[2];
+				
+				Object[] iObj = new Object[10]; 
+				iObj[0] = gridfields.size()+1;
+				iObj[1] = itemDetail.getLocations().getTier();
+				iObj[2] = itemDetail.getNoofdaysinschoolyear();
+				iObj[3] = itemDetail.getNoofmonthsinschoolyear();
+				iObj[4] = itemDetail.getLocations().getLocationId();
+				ccObj[0] = iObj;
+				
+				// populate data for child care grid
+				Object[] obj = new Object[gridfields.size()+1];
+				obj[0] = itemDetail.getId();
+				obj[1] = itemDetail.getItemSubtype();
+				obj[2] = itemDetail.getLocations().getBranchName();
+				obj[3] = itemDetail.getStarttime();
+				obj[4] = itemDetail.getEndtime();
+				obj[5] = itemDetail.getMinAge() + " - " + itemDetail.getMaxAge();
+				obj[6] = itemDetail.getGender();
+				
+				List<String> days = Arrays.asList("1","2","3","4","5");
+				int objCount = 6;
+				for(String day: days){
+					objCount = objCount+1;
+					obj[objCount] = "-9";
+					for(ItemDays itemDays: itemDetail.getItemDays()){
+						  if(itemDays.getItemDaysId().toString().equals(day)){
+							  obj[objCount] = itemDays.getCapacity();
+						  } 
+		    		}
+				}
+				ccObj[1] = obj;
+				
+				childcareObj.add(ccObj);
+				
+				lstLocations.add(itemDetail.getLocations().getLocationId().toString()+"_"+itemDetail.getLocations().getBranchName());
+				lstProductSubtypeLocationsMap.add(itemDetail.getLocations().getLocationId().toString()+"_"+itemDetail.getItemSubtype().toString());
+			}
+			
+			for(String loc: lstLocations){
+				List<String> strLocations = Arrays.asList(loc.split("_"));
+				String strLocId = strLocations.get(0);
+				String strLocName = strLocations.get(1);
+				
+				for(Object pst : productSubtypesObj){
+					
+					String locPstMap = strLocId+"_"+pst;
+					lstAllProductSubtypeLocationsMap.add(locPstMap);
+					
+					boolean found = false;
+					for(String productSubtypeLocationsMap: lstProductSubtypeLocationsMap){
+						if(productSubtypeLocationsMap.trim().equalsIgnoreCase(locPstMap)){
+							found = true;
+							break;
+						}
+					}
+					
+					if(!found){
+						Object[] ccObj1 = new Object[2];
+						
+						Object[] iObj1 = new Object[10]; 
+						iObj1[0] = gridfields.size()+1;
+						iObj1[1] = "";
+						iObj1[2] = "";
+						iObj1[3] = "";
+						iObj1[4] = strLocId;
+						ccObj1[0] = iObj1;
+						
+						// populate data for child care grid
+						Object[] obj1 = new Object[gridfields.size()+1];
+						obj1[0] = "-9";
+						obj1[1] = pst;
+						obj1[2] = strLocName;
+						obj1[3] = "";
+						obj1[4] = "";
+						obj1[5] = "";
+						obj1[6] = "";
+						
+						List<String> days = Arrays.asList("1","2","3","4","5");
+						int objCount = 6;
+						for(String day: days){
+							objCount = objCount+1;
+							obj1[objCount] = "-9";
+							
+						}
+						ccObj1[1] = obj1;
+						
+						childcareObj.add(ccObj1);
+					}
+				}
+			}
+			
+			model.addAttribute("gridfields", gridfields);
+			model.addAttribute("childcareObj", childcareObj);
+			
+			/*
+			JSONArray json = new JSONArray();
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("id", "1");
+			jsonObj.put("productId", "11");
+			json.add(jsonObj);
+			model.addAttribute("childcareJsonObj", json);
+			*/
+			
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+			return null;
+		}
+		
+		return new ModelAndView("searchchildcare", model.asMap());
+	}
+	
+	@RequestMapping(value="/searchInservice", method=RequestMethod.GET)
+    public ModelAndView searchInservice(@RequestParam String location, @RequestParam String keyword,  @RequestParam String minage,  @RequestParam String maxage, final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap(); 
+		
+		Locations locations = new Locations();
+		Long locId = Long.parseLong(location);
+		locations.setLocationId(locId);
+		
+		try {
+			
+			List<ItemDetails> itemDetails = getListItemsObj(Constants.INSERVICE_TYPE, locations, keyword, minage, maxage);
+			model.addAttribute("itemDetails", itemDetails);
+			
+			List<Object[]> inserviceObj = new ArrayList<Object[]>();
+			List<String> gridfields = Arrays.asList("Type","Location","Start Time","End Time","Start Date","End Date");
+			
+			for(ItemDetails itemDetail : itemDetails){
+				Object[] obj = new Object[gridfields.size()+1];
+				
+				obj[0] = itemDetail.getId();
+				obj[1] = itemDetail.getItemSubtype();
+				obj[2] = itemDetail.getLocations().getBranchName();
+				obj[3] = itemDetail.getStarttime();
+				obj[4] = itemDetail.getEndtime();
+				obj[5] = itemDetail.getStartdate();
+				obj[6] = itemDetail.getEnddate();
+				  
+				inserviceObj.add(obj);
+			}
+			
+			model.addAttribute("gridfields", gridfields);
+			model.addAttribute("inserviceObj", inserviceObj);
+			
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+			return null;
+		}
+		
+		return new ModelAndView("searchinservice", model.asMap());
+	}
+	
+	@RequestMapping(value="/searchAfterschool", method=RequestMethod.GET)
+    public ModelAndView searchAfterschool(@RequestParam String location, @RequestParam String keyword,  @RequestParam String minage,  @RequestParam String maxage, final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap(); 
+		
+		Locations locations = new Locations();
+		Long locId = Long.parseLong(location);
+		locations.setLocationId(locId);
+		
+		try {
+			
+			List<ItemDetails> itemDetails = getListItemsObj(Constants.AFTERSCHOOL_TYPE, locations, keyword, minage, maxage);
+			model.addAttribute("itemDetails", itemDetails);
+			
+			List<Object[]> afterschoolObj = new ArrayList<Object[]>();
+			List<String> gridfields = Arrays.asList("Type","Location","Start Time","End Time","Age Range","Registration Fee","Price/ month");
+			
+			for(ItemDetails itemDetail : itemDetails){
+				Object[] obj = new Object[gridfields.size()+1];
+				
+				obj[0] = itemDetail.getId();
+				obj[1] = itemDetail.getItemSubtype();
+				obj[2] = itemDetail.getLocations().getBranchName();
+				obj[3] = itemDetail.getStarttime();
+				obj[4] = itemDetail.getEndtime();
+				obj[5] = itemDetail.getMinAge() + " - " + itemDetail.getMaxAge();
+				obj[6] = itemDetail.getRegistrationPrice();
+				obj[7] = "";
+				  
+				afterschoolObj.add(obj);
+			}
+			
+			model.addAttribute("gridfields", gridfields);
+			model.addAttribute("afterschoolObj", afterschoolObj);
+			
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+			return null;
+		}
+		
+		return new ModelAndView("searchafterschool", model.asMap());
+	}
+	private List<ItemDetails> getListItemsObj(String programSubtype, Locations locations, String keyword, String minage, String maxage) {
+		
+		List<Locations> bayareaLocations = new ArrayList<Locations>();
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<ItemDetails> query = builder.createQuery(ItemDetails.class);
+		Root<ItemDetails> itemDetails = query.from(ItemDetails.class);
+		Join<ItemDetails, Product> p = itemDetails.join("product",JoinType.INNER);
+		Join<ItemDetails, Locations> l = itemDetails.join("locations",JoinType.INNER);
+		
+		ParameterExpression<String> prodType = builder.parameter(String.class);
+		ParameterExpression<String> prodSubtype = builder.parameter(String.class);
+		ParameterExpression<String> kword = builder.parameter(String.class);
+		//ParameterExpression<Integer> minAge = builder.parameter(Integer.class);
+		//ParameterExpression<Integer> maxAge = builder.parameter(Integer.class);
+		ParameterExpression<Locations> loc = builder.parameter(Locations.class);
+		
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		predicates.add(
+				builder.and(
+					builder.equal(p.get("productType"), prodType)
+				)
+		);
+		
+		if(Constants.CHILDCARE_TYPE.equalsIgnoreCase(programSubtype.trim())){
+			predicates.add(builder.and(builder.notEqual(itemDetails.<String>get("productSubtype"), Constants.AFTERSCHOOL_TYPE)));
+			predicates.add(builder.and(builder.notEqual(itemDetails.<String>get("productSubtype"), Constants.INSERVICE_TYPE)));
+		} else {
+			predicates.add(builder.and(builder.equal(itemDetails.<String>get("productSubtype"), prodSubtype)));
+		}
+		
+		if(!"".equals(keyword.trim())){
+			predicates.add(builder.and(builder.like(p.<String>get("productName"), kword)));
+		}
+		
+		if(locations.getLocationId()==1){}
+		else if(locations.getLocationId()==2){
+			 bayareaLocations = locationDao.getLocationsByArea(Constants.LOCATION_BAYAREA);
+			 Collection<Locations> lstlocations = bayareaLocations;
+			 //Expression<Collection<Locations>> lstLocations = lstlocations;
+			 Expression<Locations> lstloc = itemDetails.get("locations");
+			 predicates.add(lstloc.in(lstlocations));
+		}
+		else {
+			predicates.add(builder.and(builder.equal(itemDetails.<Locations>get("locations"), loc)));
+		}
+		query.select(itemDetails);
+		query.where(predicates.toArray(new Predicate[]{}));
+
+		TypedQuery<ItemDetails> typequery = em.createQuery(query);
+		typequery.setParameter(prodType, Constants.CHILDCARE_TYPE);
+		if(Constants.CHILDCARE_TYPE.equalsIgnoreCase(programSubtype.trim())){
+			
+		} else {
+			typequery.setParameter(prodSubtype, programSubtype);
+		}
+		
+		if(!"".equals(keyword.trim())){
+			typequery.setParameter(kword, keyword.trim()+"%");
+		}
+		if(locations.getLocationId()==1){}
+		else if(locations.getLocationId()==2){
+		}
+		else {
+			typequery.setParameter(loc, locations);
+		}
+		
+		List<ItemDetails> lstObj = typequery.getResultList();
+		return lstObj;
+	}
+	
+	
+}

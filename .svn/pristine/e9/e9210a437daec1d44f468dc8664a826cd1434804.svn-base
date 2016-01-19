@@ -1,0 +1,13 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import com.ymca.model.PricingRule;
+import com.ymca.model.Signup;
+
+
+public interface PricingRuleDao extends GenericDao<PricingRule, Long> {	
+	
+    List<PricingRule> findByitemDetailsIdAndTier(Long id, String tier);   
+    List<PricingRule> findBySignupAndType(Signup signup, String type);   
+}

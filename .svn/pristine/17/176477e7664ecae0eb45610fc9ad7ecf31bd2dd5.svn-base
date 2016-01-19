@@ -1,0 +1,50 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    
+<body>
+
+<div id="main">
+	<div id="content">
+		<div id="myprofile">
+			<%@ include file="programProfile.jsp" %> 
+		</div>
+		<div id="program_details" class="k-block">
+			<div id="program">
+				<!-- programInformation.jsp  -->
+				<%@ include file="searchprogram.jsp" %>
+			</div>
+			<div id="familymembers" style="display:none;">
+				<%@ include file="familymembers.jsp" %>
+			</div>
+			<div id="purchase" style="display:none;">
+				<%@ include file="paymentcart.jsp" %> 
+			</div>
+			<div id="programsummary" style="display:none;">
+				<%@ include file="ProgramSummary.jsp" %> 
+			</div>
+			<div id="prgcart">
+				<%@ include file="Programcart.jsp" %> 
+			</div>
+			<div style="clear: both;"></div> 
+			<div id="statusBlock">
+				<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+				<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+
+<script>
+	$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_programregistration").attr('class','current');
+		
+		$("#page_name").html("PROGRAM MANAGEMENT");
+	});
+</script>

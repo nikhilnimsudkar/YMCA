@@ -1,0 +1,70 @@
+<div id="members" style="width: 666px;; padding: 12px;">
+	<div class="k-window1" id="popup_add" style="display: none;"></div>
+	<div>
+		<span class="head" style="float:left;">Select Family Member for Program</span>
+		<div style="float:left; margin-left: 50px;"><span>OR</span></div>
+		<div style="margin-left: 50px; float: left; margin-top: -5px;"><span  class="k-button" id="add_member" style="float:left;" onclick="add_member();">Add New Member</span></div>
+	</div>
+	<div style="clear: both;"></div> 
+	<div id="family_details" style="margin: 20px 20px 30px;  min-height: 300px;">
+		<div id="allmembers"></div>
+		
+	</div>
+	
+	<div id="cartbtns">
+		<button id="checkoutBtn" class="k-button">Checkout</button>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<button id="continueshop" class="k-button" onclick="location.href='programRegistration'" style="float:right;">CONTINUE SHOPPING</button>
+		
+	</div>
+</div>
+
+<script>
+$(document).ready(function(){
+	
+	$( "#checkoutBtn" ).click(function(){
+		 $("#tcSuccessSpan").css("display", "none");		
+		 $("#tcSuccessSpan" ).html("");	
+		 $("#tcErrorSpan").css("display", "none");		
+		 $( "#tcErrorSpan" ).html("");
+		 
+		var prodIds = $.sessionStorage.getItem('product_ids');
+		var contactData = [];
+		$('#allmembers').find('input[class="usercheck"]').each(function(){
+			if($("#user_"+this.value).is(':checked')){
+				contactData.push(this.value);
+			}
+		});
+		//alert(contactData);
+		//alert(prodIds);
+		if(contactData==""){
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("Please select atleast one Member");
+			  return;
+		}
+		$("#familymembers").fadeOut(200);
+		location.href = '#/product/'+prodIds+'/'+contactData.join(',');
+	});
+});
+
+function add_member() {
+	var window_add = $("#popup_add");
+	window_add.clone().kendoWindow({
+		title : "Add Members",
+		content : "addMember",
+		modal : false,
+		width : "700px",
+		close : onClose,
+		deactivate : function(e) {
+			this.destroy();
+		}
+	}).data("kendoWindow").center().open();
+	$('[data-role="draggable"]').css('top', '20px');
+}
+
+var onClose = function() {
+	//this.destroy();   
+};
+</script>

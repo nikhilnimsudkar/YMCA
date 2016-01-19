@@ -1,0 +1,112 @@
+package com.ymca.test.controller;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+import com.ymca.model.PricingRule;
+import com.ymca.model.Product;
+import com.ymca.model.WaiversAndTC;
+
+
+
+
+
+public class TestProduct {
+	
+	private static final SessionFactory sessionFactory = buildSessionFactory();
+	 
+	private static SessionFactory buildSessionFactory() {
+		try {
+			// Create the SessionFactory from hibernate.cfg.xml
+			return new Configuration().configure().buildSessionFactory();
+		} catch (Throwable ex) {
+			// Make sure you log the exception, as it might be swallowed
+			System.err.println("Initial SessionFactory creation failed." + ex);
+			throw new ExceptionInInitializerError(ex);
+		}
+	}
+ 
+	public static SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+		TestProduct t = new TestProduct();
+		try {
+			t.testSaveProductAndPricing();
+			
+			//t.testGetProductById();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void testSaveProductAndPricing() throws Exception {
+		// TODO Auto-generated method stub
+
+		for(int i =0; i<50; i++){
+		WaiversAndTC waiversAndTC = new  WaiversAndTC();
+		waiversAndTC.setRecordName("Nikhil Nimsudkar");
+		waiversAndTC.setTcDescription("<h3>Terms and Conditions</h3><h4>General</h4><p>Servicing servicing resistor <strong>video computer</strong> element transponder prototype analog solution mainframe network. Solution video debugged feedback sampling extended, infrared, generator generator. </p><ul><li>list item number one</li><li>list item number two</li>tem number three</li></ul><p>Harmonic gigabyte generator in <strong>sequential interface</strong>. Services, integer device read-only supporting cascading cache capacitance. Proxy boolean solution or data overflow element overflow processor arrray video, reflective extended. Gigabyte debugged distributed, reflective controller disk encapsulated phase network arrray feedback element cache high silicon. Sampling backbone analog remote adaptive extended bridgeware n-tier integer audio femtosecond. </p><p>Harmonic gigabyte generator in <strong>sequential interface</strong>. Services, integer device read-only supporting cascading cache capacitance. Proxy boolean solution or data overflow element overflow processor arrray video, reflective extended. Gigabyte debugged distributed, reflective controller disk encapsulated phase network arrray feedback element cache high silicon. Sampling backbone analog remote adaptive extended bridgeware n-tier integer audio femtosecond. </p>");		
+
+		PricingRule pricingRule = new PricingRule();
+		pricingRule.setRecordName("Nikhil Nimsudkar");
+		pricingRule.setSessionRange("5");
+		pricingRule.setTier("1");
+		pricingRule.setTierPrice("150");
+		pricingRule.setType("Type");
+		
+
+		Product product = new Product();
+		product.setDescription("Description "+i);
+		product.setProductName("Product Name "+i);
+		//product.setPricingRule(pricingRule);
+		product.setWaiversAndTC(waiversAndTC);
+
+		Session session = getSessionFactory().openSession();
+		session.beginTransaction();
+		
+		session.save(product);
+		session.save(pricingRule);
+		session.save(waiversAndTC);
+		
+		session.flush();
+		session.getTransaction().commit();
+
+		System.out.println("Done");
+		}
+
+	}
+	
+	private void testGetProductById() throws Exception {
+		// TODO Auto-generated method stub
+		Session session = getSessionFactory().openSession();
+		session.beginTransaction();
+		Product product = new Product();
+		product = (Product) session.get(Product.class, 10L);
+		
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			// display to console
+			System.out.println(mapper.writeValueAsString(product));
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		session.flush();
+		session.getTransaction().commit();
+		System.out.println("Done");
+
+	}
+}

@@ -1,0 +1,89 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "app_contact_waivers_and_tc")
+@XmlRootElement
+public class ContactWaiversAndTC extends BaseObject implements Serializable {
+	private static final long serialVersionUID = 3832626162173359411L;
+
+    @Id
+    @GeneratedValue
+    @Column(name = "waivers_and_tc", nullable = false)
+    private Long waiversAndTC;					// required  PK
+    
+    @Column(name = "contact_party_id", nullable = false)
+   	private Long contactPartyId;              	// required  PK,FK1
+    
+    @Column(name = "customer_party_id", nullable = false)
+    private Long customerPartyId;                 // required  PK,FK2
+    
+    @Column(name = "record_name", nullable = false)
+    private String recordName;
+    
+    @Column(name = "tc_description", nullable = false)
+    private String tcDescription;
+
+	public Long getContactPartyId() {
+		return contactPartyId;
+	}
+
+	public void setContactPartyId(Long contactPartyId) {
+		this.contactPartyId = contactPartyId;
+	}
+
+	public Long getCustomerPartyId() {
+		return customerPartyId;
+	}
+
+	public void setCustomerPartyId(Long customerPartyId) {
+		this.customerPartyId = customerPartyId;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String recordName) {
+		this.recordName = recordName;
+	}
+
+	public String getTcDescription() {
+		return tcDescription;
+	}
+
+	public void setTcDescription(String tcDescription) {
+		this.tcDescription = tcDescription;
+	}
+
+	public Long getWaiversAndTC() {
+		return waiversAndTC;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

@@ -1,0 +1,366 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+
+/**
+ * This class represents the basic "Membership" object in YMCA Portal that allows for Membership management.  
+ *
+ */
+
+@Entity
+@Table(name = "pricing_rule")
+@XmlRootElement
+public class PricingRule extends BaseObject implements Serializable {
+    @Override
+	public String toString() {
+		return "PricingRule [RecordName=" + recordName + ", type=" + type
+				+ ", tier=" + tier + ", ruleName=" + ruleName + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PricingRule other = (PricingRule) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+	private static final long serialVersionUID = 3832626162173359411L;
+    
+    public PricingRule() {
+		
+	}
+    
+	@Id
+	private Long id;					// required  PK
+    
+    @Column(name = "RecordName", nullable = false)
+    private String recordName;                
+    
+    @Column(name = "session_range", nullable = false)
+    private String sessionRange ;
+    
+    @Column(name = "rule_type", nullable = false)
+    private String type;
+    
+    @Column(name = "tier", nullable = false)
+    private String tier;
+    
+    @Column(name = "tier_price", nullable = false)
+    private Double  tierPrice;
+    
+    @Column(name = "nonmember_tier_price", nullable = false)
+    private Double  nonmemberTierPrice;
+    
+    @Column(name = "rule_name", nullable = false)
+    private String ruleName;
+    
+    @Column(name = "joining_fee", nullable = true)
+    private Double  joiningFee;
+    
+    @Column(name = "all_branch_price")
+    private Double allBranchPrice;
+
+    @Column(name = "bay_area_price")
+    private Double  bayAreaPrice;
+    
+    @Column(name = "hourlyRate")
+    private Double  hourlyRate;
+    @Column(name = "fullDayHours")
+    private Double  fullDayHours;
+    @Column(name = "fullDayFactor")
+    private Double  fullDayFactor;
+    @Column(name = "Days5Factor")
+    private Double  Days5Factor;
+    @Column(name = "Days4Factor")
+    private Double  Days4Factor;
+    @Column(name = "Days3Factor")
+    private Double  Days3Factor;
+    @Column(name = "Days2Factor")
+    private Double  Days2Factor;
+    @Column(name = "Day1Factor")
+    private Double  Day1Factor;
+    
+    @Column(name="refundExpression", columnDefinition="TEXT")
+	private String refundExpression;
+	private BigDecimal refundPercent;
+    
+	@Column(name="SignUpPricingOption_c")
+	private String priceOption;
+	
+	private String productCategory;
+	
+	@Column(name = "PackageSize")
+    private Integer packageSize;
+	
+	@ManyToMany(mappedBy="pricingRules",fetch=FetchType.LAZY)
+	private List<ItemDetail> itemDetails ;
+
+	
+	@Column(name = "FromAge_c")
+    private Integer fromAge;
+	
+	@Column(name = "ToAge_c")
+    private Integer toAge;
+	
+	@Column(name = "BillingFrequency_c")
+    private String billingFrequency;
+	
+	@Column(name = "Status")
+    private String status;
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long Id) {
+		this.id = Id;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String RecordName) {
+		this.recordName = RecordName;
+	}
+
+	public String getSessionRange() {
+		return sessionRange;
+	}
+
+	public void setSessionRange(String sessionRange) {
+		this.sessionRange = sessionRange;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getTier() {
+		return tier;
+	}
+
+	public void setTier(String tier) {
+		this.tier = tier;
+	}
+
+	public Double getTierPrice() {
+		return tierPrice;
+	}
+
+	public void setTierPrice(Double tierPrice) {
+		this.tierPrice = tierPrice;
+	}
+
+	public Double getNonmemberTierPrice() {
+		return nonmemberTierPrice;
+	}
+
+	public void setNonmemberTierPrice(Double nonmemberTierPrice) {
+		this.nonmemberTierPrice = nonmemberTierPrice;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	public String getRuleName() {
+		return ruleName;
+	}
+
+	public void setRuleName(String ruleName) {
+		this.ruleName = ruleName;
+	}
+
+	public Double getJoiningFee() {
+		return joiningFee;
+	}
+
+	public void setJoiningFee(Double joiningFee) {
+		this.joiningFee = joiningFee;
+	}
+
+	public Double getAllBranchPrice() {
+		return allBranchPrice;
+	}
+
+	public void setAllBranchPrice(Double allBranchPrice) {
+		this.allBranchPrice = allBranchPrice;
+	}
+
+	public Double getBayAreaPrice() {
+		return bayAreaPrice;
+	}
+
+	public void setBayAreaPrice(Double bayAreaPrice) {
+		this.bayAreaPrice = bayAreaPrice;
+	}
+
+	public Double getHourlyRate() {
+		return hourlyRate;
+	}
+
+	public void setHourlyRate(Double hourlyRate) {
+		this.hourlyRate = hourlyRate;
+	}
+
+	public Double getFullDayHours() {
+		return fullDayHours;
+	}
+
+	public void setFullDayHours(Double fullDayHours) {
+		this.fullDayHours = fullDayHours;
+	}
+
+	public Double getFullDayFactor() {
+		return fullDayFactor;
+	}
+
+	public void setFullDayFactor(Double fullDayFactor) {
+		this.fullDayFactor = fullDayFactor;
+	}
+
+	public Double getDays5Factor() {
+		return Days5Factor;
+	}
+
+	public void setDays5Factor(Double days5Factor) {
+		Days5Factor = days5Factor;
+	}
+
+	public Double getDays4Factor() {
+		return Days4Factor;
+	}
+
+	public void setDays4Factor(Double days4Factor) {
+		Days4Factor = days4Factor;
+	}
+
+	public Double getDays3Factor() {
+		return Days3Factor;
+	}
+
+	public void setDays3Factor(Double days3Factor) {
+		Days3Factor = days3Factor;
+	}
+
+	public Double getDays2Factor() {
+		return Days2Factor;
+	}
+
+	public void setDays2Factor(Double days2Factor) {
+		Days2Factor = days2Factor;
+	}
+
+	public Double getDay1Factor() {
+		return Day1Factor;
+	}
+
+	public void setDay1Factor(Double day1Factor) {
+		Day1Factor = day1Factor;
+	}
+
+	public String getRefundExpression() {
+		return refundExpression;
+	}
+
+	public void setRefundExpression(String refundExpression) {
+		this.refundExpression = refundExpression;
+	}
+
+	public BigDecimal getRefundPercent() {
+		return refundPercent;
+	}
+
+	public void setRefundPercent(BigDecimal refundPercent) {
+		this.refundPercent = refundPercent;
+	}
+
+	public String getPriceOption() {
+		return priceOption;
+	}
+
+	public void setPriceOption(String priceOption) {
+		this.priceOption = priceOption;
+	}
+
+	public String getProductCategory() {
+		return productCategory;
+	}
+
+	public void setProductCategory(String productCategory) {
+		this.productCategory = productCategory;
+	}
+
+	public Integer getPackageSize() {
+		return packageSize;
+	}
+
+	public void setPackageSize(Integer packageSize) {
+		this.packageSize = packageSize;
+	}
+
+	public Integer getFromAge() {
+		return fromAge;
+	}
+
+	public void setFromAge(Integer fromAge) {
+		this.fromAge = fromAge;
+	}
+
+	public Integer getToAge() {
+		return toAge;
+	}
+
+	public void setToAge(Integer toAge) {
+		this.toAge = toAge;
+	}
+
+	public String getBillingFrequency() {
+		return billingFrequency;
+	}
+
+	public void setBillingFrequency(String billingFrequency) {
+		this.billingFrequency = billingFrequency;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+}

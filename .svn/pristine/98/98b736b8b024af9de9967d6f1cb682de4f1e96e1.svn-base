@@ -1,0 +1,326 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<div id="programinfoPg">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+	<div id="tabstrip3">	
+		<form:form commandName="ItemDetailsSession" name="signupFrm" id="signupFrm" action="signupProgram" method="post">
+			<div>
+				<span class="head">NEW PROGRAM SIGN UP</span>
+				
+			</div>
+			<div style="margin-top: 5px; margin-bottom: 5px;">
+				<span style="font-size: .7em;">We recommend you use our website to explore the many programs the Y of Silicon Valley offers and to determine what your
+		home branch should be.</span>
+			</div>
+			
+			<div class="searchdiv">
+				<span class="head searchFields">Category</span>
+				<span class="searchFields">
+					<select id="class" name="class" onchange="populateProducts()" style="width:250px;">
+						<c:forEach var="productcategory" items="${productcategories}" varStatus="count">
+							<option value="${productcategory}">${productcategory}</option>
+						</c:forEach>
+					</select>
+				</span>
+			</div>	
+			<div class="searchdiv">
+				<span class="head searchFields">Location</span>
+				<span class="searchFields">
+					<select name="location" id="location" style="width:250px;">
+						
+						<c:forEach var="location" items="${locations}" varStatus="count">
+							<option value="${location.locationId }">${location.branchName }</option>
+						</c:forEach>
+					</select>
+				</span>
+			</div>
+			<div class="searchdiv">
+				<span class="head searchFields">Age Range</span>
+				<div id="agerangeslider" class="searchFields" style=" margin: 5px 0 0 7px; width: 170px;">
+					<span><input name="age_min" id="age_min" value=""></span>
+					<span><input name="age_max" id="age_max" value=""></span>
+				</div>
+			</div>
+			<div class="searchdiv">
+				<span class="head searchFields">Keyword<br>(Program Description/ Name)</span>
+				<span class="searchFields">
+					<input name="subclass" id="subclass" class="k-textbox" style="width: 250px;" value="">
+				</span>
+			</div>
+			<div class="searchdiv">
+				<span class="head searchFields">Program Date Range</span>
+				<span class="searchFields">
+					<span><input name="datepicker" id="datepicker" value="" style="width:130px;"/></span>
+					<span> - </span>
+					<span><input name="datepickerend" id="datepickerend" value="" style="width:130px;"/></span>
+				</span>
+			</div>
+			<div class="searchdiv">
+				<span class="head searchFields">&nbsp;</span>
+				<span class="searchFields">
+					<span class="k-button" id="SearchProgramBtn">Go >></span>
+				</span>
+			</div>
+
+		</form:form>
+	</div>	 
+</div>
+<script>
+	$(document).ready(function(){
+		$("#cart-header").appendTo("#shoppingcart");
+		
+		$("#agerangeslider").kendoRangeSlider({
+            change: rangeSliderOnChange,
+            slide: rangeSliderOnSlide,
+            min: 1,
+            max: 100,
+            smallStep: 1,
+            largeStep: 2,
+            tickPlacement: "both"
+        });
+		
+		$( ".tortoise" ).click(function(){
+			//alert($(this).text());
+			if($(this).text()=="All") { // check select status
+				$('form').find('input[name="selectedItemSession"]').each(function(){
+					//alert(this.value);
+					$("#uniform-item_"+this.value +" span").attr("class", "checked");
+					$("#item_"+this.value).attr("checked", true);
+				});
+	        }else if($(this).text()=="None"){
+	            $('input[name="selectedItemSession"]').each(function() { //loop through each checkbox
+	            	$("#uniform-item_"+this.value +" span").attr("class", "");
+	            	$("#item_"+this.value).attr("checked", false);                      
+	            });         
+	        }
+		});	
+		
+		$("#datepicker").kendoDatePicker({
+			value: new Date(),
+			format: "MM/dd/yyyy",
+			min: new Date()
+		});
+		$("#datepickerend").kendoDatePicker({
+			value: new Date(new Date().getTime() + 24 * 7 * 60 * 60 * 1000),
+			format: "MM/dd/yyyy",
+			min: new Date()
+		});
+		
+		$("#location").kendoDropDownList();
+		$("#class").kendoDropDownList();
+		
+		//populateProducts();
+		
+		$( "#SearchProgramBtn" ).click(function(){
+			 $("#tcSuccessSpan").css("display", "none");
+			 $("#tcErrorSpan").css("display", "none");
+			 $(".k-loading-mask").show();
+			 $("#program").fadeIn(100);
+			 //$("#details-checkout").fadeOut("fast");
+			 getProgramSession();
+		});
+	});
+	
+	function rangeSliderOnSlide(e) {
+        //kendoConsole.log("Slide :: new slide values are: " + e.value.toString().replace(",", " - "));
+    }
+
+    function rangeSliderOnChange(e) {
+        //kendoConsole.log("Change :: new values are: " + e.value.toString().replace(",", " - "));
+    }
+	
+	function getProgramSession(){
+		var category = $("#class").val();
+		var productname = $("#subclass").val();
+		var location = $("#location").val();
+		var age_min = $("#age_min").val();
+		var age_max = $("#age_max").val();
+		
+		var datestart = $("#datepicker").val();
+		var dateend = $("#datepickerend").val();
+		
+		$.ajax({
+			  type: "GET",
+			  url:"getProgramDetails?location="+location+"&productname="+productname+"&category="+category+"&age_min="+age_min+"&age_max="+age_max+"&datestart="+datestart+"&dateend="+dateend,
+			  success: function( data ) {
+				 //console.log(data);
+			  	 //console.log(data.length);
+			  	 if(data.length>0){
+			  		 var itemDetailsId = "";
+				  	 var price = "";
+				  	 var days = "";
+				  	 var dspDays = "";
+				  	 /*
+				  	 var item_Details = "<table id='programDetail' class='program_desc' width='100%'>";
+				  	 $.each(data, function(i,itemDetailsSession) {
+				  		 	if(itemDetailsId=="" || itemDetailsId!=itemDetailsSession[11]){
+				  				itemDetailsId = itemDetailsSession[11];
+				  				
+				  				item_Details = item_Details + "<tr>";
+					  				item_Details = item_Details + "<td><span class='name boldorange' style='font-weight:bold;'>Program Name:</span></td>";
+					  				item_Details = item_Details + "<td><span class='name'><a id='programname"+itemDetailsId+"' href='#' onclick='showProgramSessionTble("+itemDetailsId+")'>"+itemDetailsSession[12]+"</a></span></td>";
+					  				item_Details = item_Details + "<td><span class='name'>"+formatDate(itemDetailsSession[9])+"</span><span class='name'> - </span><span class='name'>"+formatDate(itemDetailsSession[10])+"</span></td>";
+						  		item_Details = item_Details + "</tr>";
+				  		 	}
+				  	 });
+				  	 item_Details = item_Details + "</table>";
+				  	//console.log(item_Details);
+				  	 $("#program_session").html(item_Details);
+				  	 */
+				  	 
+				  	 var itemDetails_Id = "";
+				  	 var item_session = "";
+				  	 //var item_session = "<div style='margin-bottom: 20px;'><span class='head'>NEW PROGRAM SIGN UP</span><span id='shoppingcart1' style='float:right;'></span></div>";
+				  	 $.each(data, function(i,itemDetailsSession) {
+				  		var showtbl = "false"
+				  		if(itemDetails_Id=="" || itemDetails_Id!=itemDetailsSession[11]){
+				  			itemDetails_Id = itemDetailsSession[11];
+				  			showtbl = "true";
+				  			item_session = item_session + "<div id='session_detail"+itemDetails_Id+"' style='display:block;'><table class='program_desc' width='90%'>";
+				  		}
+				  			
+					  		var stTime = new Date(itemDetailsSession[2]);
+					  		var endTime = new Date(itemDetailsSession[3]);
+					  		
+					  		item_session = item_session + "<tr>";
+					  			item_session = item_session + "<td rowspan='7' width='40px'><span><input type='hidden' id='itemDetailsSessionId"+itemDetailsSession[6]+"' value='"+itemDetailsSession[6]+"'><input type='checkbox' name='selectedItemSession' id='item_"+itemDetailsSession[6]+"' value="+itemDetailsSession[6]+"></span></td>";
+				  				item_session = item_session + "<td><span class='name boldorange' style='font-weight:bold;'>Program Name:</span></td>";
+				  				item_session = item_session + "<td><span class='name'>"+itemDetailsSession[12]+"</span>";
+				  				item_session = item_session + "&nbsp;&nbsp;";
+				  				item_session = item_session + "<span class='name'>"+formatDate(itemDetailsSession[9])+"</span><span class='name'> - </span><span class='name'>"+formatDate(itemDetailsSession[10])+"</span></td>";
+					  		item_session = item_session + "</tr>";
+					  		item_session = item_session + "<tr>";
+				  				item_session = item_session + "<td><span class='name boldorange' style='font-weight:bold;'>Location:</span></td>";
+				  				item_session = item_session + "<td><span class='name'>"+itemDetailsSession[14]+"</span></td>";
+					  		item_session = item_session + "</tr>";
+					  		item_session = item_session + "<tr>";
+				  				item_session = item_session + "<td><span class='name boldorange' style='font-weight:bold;'>Instructor:</span></td>";
+				  				item_session = item_session + "<td><span class='name'>"+itemDetailsSession[0]+"</span></td>";
+					  		item_session = item_session + "</tr>";
+						  	item_session = item_session + "<tr>";
+				  				item_session = item_session + "<td><span class='name boldorange' style='font-weight:bold;'>Start/End Dates:</span></td>";
+				  				item_session = item_session + "<td><span class='name'>"+formatDate(itemDetailsSession[9])+"</span><span class='name'> - </span><span class='name'>"+formatDate(itemDetailsSession[10])+"</span></td>";
+					  		item_session = item_session + "</tr>";
+					  		item_session = item_session + "<tr>";
+				  				item_session = item_session + "<td><span class='name boldorange' style='font-weight:bold;'>Timing:</span></td>";
+				  				item_session = item_session + "<td><span class='name'>"+formatTime(stTime)+" - "+formatTime(endTime)+"</span></td>";
+					  		item_session = item_session + "</tr>";
+					  		item_session = item_session + "<tr>";
+				  				item_session = item_session + "<td><span class='name boldorange' style='font-weight:bold;'>Available Capacity:</span></td>";
+				  				item_session = item_session + "<td><span class='name'>"+itemDetailsSession[5]+"</span></td>";
+					  		item_session = item_session + "</tr>";
+					  		item_session = item_session + "<tr>";
+				  				item_session = item_session + "<td><span class='name boldorange' style='font-weight:bold;'>Membership/ Non-membership Price:</span></td>";
+				  				item_session = item_session + "<td><span class='name'>$"+itemDetailsSession[8]+"</span></td>";
+					  		item_session = item_session + "</tr>";
+					  		item_session = item_session + "<tr height='10px'>";
+					  			item_session = item_session + "<td></td>";
+					  			item_session = item_session + "<td style='border-bottom:1px solid #dadada;' colspan='2'></td>";
+					  		item_session = item_session + "</tr>";
+					  		item_session = item_session + "<tr height='10px'>";
+					  			item_session = item_session + "<td></td>";
+					  		item_session = item_session + "</tr>";
+					  		
+					  	if(showtbl=="true"){
+					  		
+					  	}
+				  	 });
+				  	item_session = item_session + "</table>";
+				  	item_session = item_session + "<div id='nextbtn' align='center'></div>";
+				  	item_session = item_session + "</div>";
+				  	//console.log(item_session);
+				  	$("#program_session").html(item_session);
+				  	
+				  	 //$("#program_cost").text("$"+price+" per person");
+				  	 $("input[type='checkbox']").uniform();
+				  	 
+				  	//$("#add-to-cart").appendTo("#nextbtn");
+				  	$("#add-to-cart").show();
+				  	$("#familymembers").hide();
+				  	$("#checkout_content").fadeOut("fast");
+				  	$(".k-loading-mask").hide();
+			  	 }
+			  	 else{
+			  		$("#program_session").html("");
+				  	$("#program_cost").text("");
+				  	 $("#tcSuccessSpan").css("display", "block");		
+					 $("#tcSuccessSpan" ).html("No Programs found for searched query");	
+					 $("#tcErrorSpan").css("display", "none");		
+					 $( "#tcErrorSpan" ).html("");
+					 $("#add-to-cart").hide();
+			  	 }
+			  	$(".k-loading-mask").hide();
+			  },
+			  error: function( xhr,status,error ){
+				  alert("1" +status+"-"+error);
+				  console.log(xhr);
+				 
+			  }
+		});
+	}
+	
+	function showProgramSessionTble(itemId){
+		$("#program").html("");
+		$("#program").fadeOut();
+		$("#programsessiom").fadeIn();
+		$("#programDetail").fadeOut();
+		$("#session_detail"+itemId).fadeIn();
+
+	}
+	
+	function populateProducts(){
+		/*
+		var category = $("#class").val();
+		$.ajax({
+			  type: "GET",
+			  async: false,
+			  url:"getProductsbyCategory?category="+category,
+			  dataType: "json",
+			  success: function( data ) {
+			  	 // alert(data);
+			  	 
+			  	 //$("#subclass").data("kendoDropDownList").dataSource.data(data);
+			  	 $('#subclass').data('kendoDropDownList').enable(true);
+			  	 //$("#subclass").data("kendoDropDownList").setDataSource("");
+			     $("#subclass").data("kendoDropDownList").dataSource.data(""); // clears dataSource
+			  	 $("#subclass").data("kendoDropDownList").text(""); // clears visible text
+			  	 $("#subclass").data("kendoDropDownList").value(""); // clears invisible value
+
+			  	 $.each(data, function(i,product) {
+			  		 //console.log(product);
+			  		$("#subclass").data("kendoDropDownList").dataSource.add({ text: product, value: product });
+				});
+			  	 
+			  },
+			  error: function( xhr,status,error ){
+				  //alert("1" +status);
+				  console.log(xhr);
+				 
+			  }
+		});
+		
+		getProgramSession();
+		*/
+	}
+	
+	function formatTime(date) {
+		  var hours = date.getHours();
+		  var minutes = date.getMinutes();
+		  var ampm = hours >= 12 ? 'pm' : 'am';
+		  hours = hours % 12;
+		  hours = hours ? hours : 12; // the hour '0' should be '12'
+		  minutes = minutes < 10 ? '0'+minutes : minutes;
+		  var strTime = hours + ':' + minutes + ' ' + ampm;
+		  return strTime;
+	}
+	
+	function formatDate(inputFormat) {
+		  function pad(s) { return (s < 10) ? '0' + s : s; }
+		  var d = new Date(inputFormat);
+		  return [pad(d.getMonth()+1), pad(d.getDate()), pad(d.getFullYear ())].join('/');
+	}
+</script>

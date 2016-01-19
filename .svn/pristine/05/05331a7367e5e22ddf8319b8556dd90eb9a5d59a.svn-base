@@ -1,0 +1,192 @@
+/**
+ * 
+ */
+package com.ymca.model;
+
+
+
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+
+
+/**
+ * 
+ * This class represents the basic "ChildCareInformation" object in YMCA Portal
+ * that allows for ChildCare process management.
+ * 
+ * 
+ * @author achauhan
+ * 
+ */
+
+@Entity
+@Table(name = "Program")
+public class Program implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public static final Comparator<Program> DATE_ORDER_DEC_COMPARATOR = new DateOrderComparator();
+	public Program() {
+	}
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long programId; // required PK
+
+	@Column(name = "program_name", nullable = false)
+	private String programName;
+
+	public String getProgramName() {
+		return programName;
+	}
+
+	public void setProgramName(String programName) {
+		this.programName = programName;
+	}
+
+	public String getYlocation() {
+		return ylocation;
+	}
+
+	public void setYlocation(String ylocation) {
+		this.ylocation = ylocation;
+	}
+
+	public Double getProgramCost() {
+		return programCost;
+	}
+
+	public void setProgramCost(Double programCost) {
+		this.programCost = programCost;
+	}
+
+	public String getMemberName() {
+		return memberName;
+	}
+
+	public void setMemberName(String memberName) {
+		this.memberName = memberName;
+	}
+
+	public Date getProgramStartDate() {
+		return programStartDate;
+	}
+
+	public void setProgramStartDate(Date programStartDate) {
+		this.programStartDate = programStartDate;
+	}
+
+	@Column(name = "y_location")
+	private String ylocation; // required PK,FK1
+
+	@Column(name = "program_cost", nullable = false)
+	private Double programCost;
+
+	@Column(name = "member_name", nullable = false)
+	private String memberName;
+
+	@Column(name = "program_start_date", nullable = false)
+	private Date programStartDate;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((programName == null) ? 0 : programName.hashCode());
+		result = prime * result
+				+ ((ylocation == null) ? 0 : ylocation.hashCode());
+		result = prime * result
+				+ ((programCost == null) ? 0 : programCost.hashCode());
+		result = prime * result
+				+ ((memberName == null) ? 0 : memberName.hashCode());
+		result = prime
+				* result
+				+ ((programStartDate == null) ? 0 : programStartDate.hashCode());
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Program other = (Program) obj;
+		if (programName == null) {
+			if (other.programName != null)
+				return false;
+		} else if (!programName.equals(other.programName))
+			return false;
+		if (ylocation == null) {
+			if (other.ylocation != null)
+				return false;
+		} else if (!ylocation.equals(other.ylocation))
+			return false;
+		if (programCost == null) {
+			if (other.programCost != null)
+				return false;
+		} else if (!programCost.equals(other.programCost))
+			return false;
+
+		if (memberName == null) {
+			if (other.memberName != null)
+				return false;
+		} else if (!memberName.equals(other.memberName))
+			return false;
+
+		if (programStartDate == null) {
+			if (other.programStartDate != null)
+				return false;
+		} else if (!programStartDate.equals(other.programStartDate))
+			return false;
+
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "programName [programName=" + programName + ", ylocation="
+				+ ylocation + ", memberName=" + memberName + ", programCost="
+				+ programCost + ", programStartDate=" + programStartDate + "]";
+	}
+	
+	private static final class DateOrderComparator implements Comparator<Program> {
+		public int compare(Program rs1, Program rs2) {
+			if (rs1.programStartDate.before(rs2.programStartDate) )return 1;
+			if (rs1.programStartDate == rs2.programStartDate) return 0;
+			return -1;
+			
+		}
+ 
+	}
+
+}

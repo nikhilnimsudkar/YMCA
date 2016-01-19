@@ -1,0 +1,123 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%
+    	String contextPath = request.getContextPath();
+    %>
+    
+<body>
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="main">
+	
+	<div id="content">
+		<form:form commandName="account" id="updateMembershipForm" method="post" action="update_membership">  
+			<div id="member">
+				<%@ include file="member.jsp" %> 
+			</div>
+			
+			<div id="profile">
+				<%@ include file="Form.jsp" %> 
+			</div>
+			
+			<div id="update">
+				<%@ include file="RightSection.jsp" %>
+			</div>
+		</form:form>
+	</div>
+</div>
+
+<script id="delete-confirmation" type="text/x-kendo-template">
+    <p class="delete-message">Are you sure you want to remove?</p>
+	
+    <div class="confirmbutton"><button class="delete-confirm k-button">Yes</button>&nbsp;&nbsp;&nbsp;
+    <span class="delete-cancel k-button">No</span></div>
+</script>
+
+<script>
+	$(document).ready(function() {
+		$("#top_profile").attr('class','current');
+		$("#top_login").attr('class','');
+		
+		$("#tabstrip").kendoTabStrip({
+			animation:  {
+				open: {
+					effects: "fadeIn"
+				}
+			}
+		});
+		
+		$("#tabstrip1").kendoTabStrip({
+			animation:  {
+				open: {
+					effects: "fadeIn"
+				}
+			}
+		});
+		$("#tabstrip2").kendoTabStrip({
+			animation:  {
+				open: {
+					effects: "fadeIn"
+				}
+			}
+		});
+		
+		
+		$('.scroller').slimScroll({
+			height: '110px',
+			width: '160px',
+			alwaysVisible: true,
+			color: '#666666',
+			distance: '4px',
+			railVisible: true,
+			allowPageScroll: true
+		}).parent().css({
+		  border: '1px solid #cccccc'
+		});
+		
+		$( "#removemember" ).click(function(){
+			var kendoWindow = $("<div />").kendoWindow({
+	            title: "Confirm",
+	            resizable: false,
+	            modal: true,
+	            width:400
+	        });
+			
+			kendoWindow.data("kendoWindow")
+	        .content($("#delete-confirmation").html())
+	        .center().open();
+			
+			 kendoWindow
+		        .find(".delete-confirm,.delete-cancel")
+		            .click(function() {
+		                if ($(this).hasClass("delete-confirm")) {
+		                    //alert("Deleting record...");
+		                    delete_record();
+		                }
+		                
+		                kendoWindow.data("kendoWindow").close();
+		            })
+		            .end()
+		});
+		
+	});
+	
+	function delete_record(){
+		$.ajax({
+			  url: "remove_member?member_id="+$( "#member_id" ).val(),
+			  success: function( data ) {
+			  	 // alert(data);
+			  	 if(data=='SUCCESS'){
+			  		 location.reload();
+			  	 }
+			  	  
+			  },
+			  error: function( xhr,status,error ){
+				  //alert("1" +status);
+				  console.log(xhr);
+				  
+			  }
+		});
+		
+	}
+</script>
+
+</body>

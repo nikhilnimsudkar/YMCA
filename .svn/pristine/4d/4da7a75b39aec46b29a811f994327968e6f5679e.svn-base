@@ -1,0 +1,139 @@
+package com.serene.job.logger;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.ItemReadListener;
+import org.springframework.batch.core.ItemWriteListener;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+
+import com.serene.job.common.Constants;
+import com.serene.job.dao.IntermidiateTableDao;
+import com.serene.job.dao.JobSchedulerMetadataDao;
+import com.serene.job.model.IntermediateTable;
+import com.serene.job.model.IntermediateTablePrimaryKey;
+import com.serene.job.model.JobSchedulerMetadata;
+
+@Component
+public class ItemListener implements  ItemWriteListener<Map<String,Object>>,ItemReadListener<Map<String,Object>>,  StepExecutionListener  {
+
+	private Logger log = LoggerFactory.getLogger(ItemFailureWriterListener.class);
+	private StepExecution stepExecution ;
+	
+	@Resource
+	private IntermidiateTableDao intermidiateTableDao ; 
+
+	@Resource
+	private JobSchedulerMetadataDao jobSchedulerMetadataDao ;
+	
+
+	@Resource
+	private ApplicationContext applicationContext;
+
+	
+	@Override
+	public void beforeRead() {
+		
+	}
+
+	@Override
+	@Transactional(value=TxType.REQUIRES_NEW)
+	public void afterRead(Map<String, Object> item) {
+		
+		String jobName = stepExecution.getJobExecution().getJobInstance().getJobName();
+		JobSchedulerMetadata jobSchedulerMetadata =  jobSchedulerMetadataDao.findOne(jobName);
+		
+		// TODO move this code as service and implement error handling and field check
+/*		StringBuilder sql = new StringBuilder("SELECT ");
+		sql.append(jobSchedulerMetadata.getInterfaceLastUpdatedField()).append(" FROM ")
+		.append(jobSchedulerMetadata.getFromObjectName()).append(" where ").append(jobSchedulerMetadata.getFromObjectIdField())
+		.append(" = ").append(item.get(jobSchedulerMetadata.getFromObjectIdField()));
+		jdbcTemplate.setDataSource(applicationContext.getBean(jobSchedulerMetadata.getDataSource(), DataSource.class));
+		String lastUpdatedTime = jdbcTemplate.queryForObject(sql.toString(), String.class);
+*/
+		
+		Object lastUpdatedTime = item.get(jobSchedulerMetadata.getInterfaceLastUpdatedField());
+		if (lastUpdatedTime != null) jobSchedulerMetadata.setInterfaceLastPoolTime(lastUpdatedTime.toString());
+		else jobSchedulerMetadata.setInterfaceLastPoolTime(null);
+		
+		jobSchedulerMetadataDao.save(jobSchedulerMetadata);
+	}
+	
+	@Override
+	public void onReadError(Exception ex) {
+		log.error("Error while reading item",ex);
+	}
+	
+	@Override
+	@Transactional(value=TxType.REQUIRES_NEW)
+	public void beforeWrite(List<? extends Map<String, Object>> items) {
+		String jobName = stepExecution.getJobExecution().getJobInstance().getJobName();
+		
+		String objectName = stepExecution.getJobParameters().getString(Constants.OBJECT_NAME);
+		String objectIdField = stepExecution.getJobParameters().getString(Constants.OBJECT_ID_FIELD);
+
+		for (Map<String,Object> item : items) {
+			IntermediateTable intermediateTable = new IntermediateTable();
+			intermediateTable.setJobName(jobName);
+			intermediateTable.setObjectName(objectName);
+			intermediateTable.setObjectId(item.get(objectIdField).toString());
+			intermediateTable.setSyncState("");
+			intermediateTable.setSyncStatus("COMPLETED");
+			intermediateTable.setRetryCount(0);
+			intermediateTable.setErrorMessage(null);
+			intermediateTable.setData(item.toString());
+			intermidiateTableDao.save(intermediateTable);
+		}
+	}
+
+	@Override
+	public void afterWrite(List<? extends Map<String, Object>> items) {
+	}
+
+	@Override
+	@Transactional(value=TxType.REQUIRES_NEW)
+	public void onWriteError(Exception exception,List<? extends Map<String, Object>> items) {
+		String jobName = stepExecution.getJobExecution().getJobInstance().getJobName();
+		String objectName = stepExecution.getJobParameters().getString(Constants.OBJECT_NAME);
+		String objectIdField = stepExecution.getJobParameters().getString(Constants.OBJECT_ID_FIELD);
+
+		for (Map<String,Object> item : items) {
+			IntermediateTablePrimaryKey key = new IntermediateTablePrimaryKey();
+			key.setJobName(jobName);
+			key.setObjectName(objectName);
+			key.setObjectId(item.get(objectIdField).toString());
+			IntermediateTable intermediateTable = intermidiateTableDao.getOne(key);
+			
+			intermediateTable.setSyncState("INTERMIDIATE");
+			intermediateTable.setSyncStatus("ERROR");
+			intermediateTable.setRetryCount(intermediateTable.getRetryCount()+1);
+			intermediateTable.setErrorMessage(ExceptionUtils.getRootCauseMessage(exception));
+			intermidiateTableDao.save(intermediateTable);
+		}
+		log.error("error ", exception);
+	}
+
+	@Override
+	public void beforeStep(StepExecution stepExecution) {
+		this.stepExecution =stepExecution;
+	}
+
+	@Override
+	public ExitStatus afterStep(StepExecution stepExecution) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+}

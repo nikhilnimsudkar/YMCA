@@ -1,0 +1,406 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+
+/**
+ * This class represents the basic "Membership" object in YMCA Portal that allows for Membership management.  
+ *
+ */
+
+@Entity
+@Table(name = "app_pricing_rule")
+@XmlRootElement
+public class PricingRule extends BaseObject implements Serializable {
+    private static final long serialVersionUID = 3832626162173359411L;
+    
+    public PricingRule() {
+		
+	}
+    
+    @GenericGenerator(name = "generator", strategy = "foreign", parameters = @Parameter(name = "property", value = "membership"))
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "pricing_rule_id", unique = true, nullable = false)
+	private Long pricingRuleId;					// required  PK
+    
+    @Column(name = "record_name", nullable = false)
+    private String recordName;                
+    
+    @Column(name = "session_range", nullable = false)
+    private String sessionRange ;
+    
+    @Column(name = "type", nullable = false)
+    private String type;
+    
+    @Column(name = "tier", nullable = false)
+    private String tier;
+    
+    @Column(name = "tier_price", nullable = false)
+    private String tierPrice;
+    
+    @Column(name = "nonmember_tier_price", nullable = false)
+    private String nonmemberTierPrice;
+    
+    @Column(name = "rule_name", nullable = false)
+    private String ruleName;
+    
+    @Column(name = "joining_fee", nullable = true)
+    private String joiningFee;
+    
+    @Column(name = "all_branch_price")
+    private String allBranchPrice;
+
+    @Column(name = "bay_area_price")
+    private String bayAreaPrice;
+    
+    @Column(name = "hourlyRate")
+    private String hourlyRate;
+    @Column(name = "fullDayHours")
+    private String fullDayHours;
+    @Column(name = "fullDayFactor")
+    private String fullDayFactor;
+    @Column(name = "Days5Factor")
+    private String Days5Factor;
+    @Column(name = "Days4Factor")
+    private String Days4Factor;
+    @Column(name = "Days3Factor")
+    private String Days3Factor;
+    @Column(name = "Days2Factor")
+    private String Days2Factor;
+    @Column(name = "Day1Factor")
+    private String Day1Factor;
+    
+    @ManyToOne
+	@JoinColumn(name="locationId")
+	private Locations locations;
+    
+    @ManyToOne
+	@JoinColumn(name="itemDetailsId")
+	private ItemDetails itemDetails;
+    
+   /* @OneToOne
+    @PrimaryKeyJoinColumn
+    private Membership membership;*/
+    
+    
+	public Long getPricingRuleId() {
+		return pricingRuleId;
+	}
+
+	public void setPricingRuleId(Long pricingRuleId) {
+		this.pricingRuleId = pricingRuleId;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String recordName) {
+		this.recordName = recordName;
+	}
+
+	public String getSessionRange() {
+		return sessionRange;
+	}
+
+	public void setSessionRange(String sessionRange) {
+		this.sessionRange = sessionRange;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getTier() {
+		return tier;
+	}
+
+	public void setTier(String tier) {
+		this.tier = tier;
+	}
+
+	public String getTierPrice() {
+		return tierPrice;
+	}
+
+	public void setTierPrice(String tierPrice) {
+		this.tierPrice = tierPrice;
+	}
+
+	/*public Membership getMembership() {
+		return membership;
+	}
+
+	public void setMembership(Membership membership) {
+		this.membership = membership;
+	}*/
+
+	public String getNonmemberTierPrice() {
+		return nonmemberTierPrice;
+	}
+
+	public void setNonmemberTierPrice(String nonmemberTierPrice) {
+		this.nonmemberTierPrice = nonmemberTierPrice;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	public String getRuleName() {
+		return ruleName;
+	}
+
+	public void setRuleName(String ruleName) {
+		this.ruleName = ruleName;
+	}
+
+	public Locations getLocations() {
+		return locations;
+	}
+
+	public void setLocations(Locations locations) {
+		this.locations = locations;
+	}
+
+	public String getJoiningFee() {
+		return joiningFee;
+	}
+
+	public void setJoiningFee(String joiningFee) {
+		this.joiningFee = joiningFee;
+	}
+
+	public ItemDetails getItemDetails() {
+		return itemDetails;
+	}
+
+	public void setItemDetails(ItemDetails itemDetails) {
+		this.itemDetails = itemDetails;
+	}
+
+	public String getAllBranchPrice() {
+		return allBranchPrice;
+	}
+
+	public void setAllBranchPrice(String allBranchPrice) {
+		this.allBranchPrice = allBranchPrice;
+	}
+
+	public String getBayAreaPrice() {
+		return bayAreaPrice;
+	}
+
+	public void setBayAreaPrice(String bayAreaPrice) {
+		this.bayAreaPrice = bayAreaPrice;
+	}
+
+	public String getHourlyRate() {
+		return hourlyRate;
+	}
+
+	public void setHourlyRate(String hourlyRate) {
+		this.hourlyRate = hourlyRate;
+	}
+
+	public String getFullDayHours() {
+		return fullDayHours;
+	}
+
+	public void setFullDayHours(String fullDayHours) {
+		this.fullDayHours = fullDayHours;
+	}
+
+	public String getFullDayFactor() {
+		return fullDayFactor;
+	}
+
+	public void setFullDayFactor(String fullDayFactor) {
+		this.fullDayFactor = fullDayFactor;
+	}
+
+	public String getDays5Factor() {
+		return Days5Factor;
+	}
+
+	public void setDays5Factor(String days5Factor) {
+		Days5Factor = days5Factor;
+	}
+
+	public String getDays4Factor() {
+		return Days4Factor;
+	}
+
+	public void setDays4Factor(String days4Factor) {
+		Days4Factor = days4Factor;
+	}
+
+	public String getDays3Factor() {
+		return Days3Factor;
+	}
+
+	public void setDays3Factor(String days3Factor) {
+		Days3Factor = days3Factor;
+	}
+
+	public String getDays2Factor() {
+		return Days2Factor;
+	}
+
+	public void setDays2Factor(String days2Factor) {
+		Days2Factor = days2Factor;
+	}
+
+	public String getDay1Factor() {
+		return Day1Factor;
+	}
+
+	public void setDay1Factor(String day1Factor) {
+		Day1Factor = day1Factor;
+	}
+
+	@Override
+	public String toString() {
+		return "PricingRule [pricingRuleId=" + pricingRuleId + ", recordName="
+				+ recordName + ", sessionRange=" + sessionRange + ", type="
+				+ type + ", tier=" + tier + ", tierPrice=" + tierPrice
+				+ ", nonmemberTierPrice=" + nonmemberTierPrice + ", ruleName="
+				+ ruleName + ", joiningFee=" + joiningFee + ", allBranchPrice="
+				+ allBranchPrice + ", bayAreaPrice=" + bayAreaPrice
+				+ ", locations=" + locations + ", itemDetails=" + itemDetails
+				+ "]";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PricingRule other = (PricingRule) obj;
+		if (allBranchPrice == null) {
+			if (other.allBranchPrice != null)
+				return false;
+		} else if (!allBranchPrice.equals(other.allBranchPrice))
+			return false;
+		if (bayAreaPrice == null) {
+			if (other.bayAreaPrice != null)
+				return false;
+		} else if (!bayAreaPrice.equals(other.bayAreaPrice))
+			return false;
+		if (itemDetails == null) {
+			if (other.itemDetails != null)
+				return false;
+		} else if (!itemDetails.equals(other.itemDetails))
+			return false;
+		if (joiningFee == null) {
+			if (other.joiningFee != null)
+				return false;
+		} else if (!joiningFee.equals(other.joiningFee))
+			return false;
+		if (locations == null) {
+			if (other.locations != null)
+				return false;
+		} else if (!locations.equals(other.locations))
+			return false;
+		if (nonmemberTierPrice == null) {
+			if (other.nonmemberTierPrice != null)
+				return false;
+		} else if (!nonmemberTierPrice.equals(other.nonmemberTierPrice))
+			return false;
+		if (pricingRuleId == null) {
+			if (other.pricingRuleId != null)
+				return false;
+		} else if (!pricingRuleId.equals(other.pricingRuleId))
+			return false;
+		if (recordName == null) {
+			if (other.recordName != null)
+				return false;
+		} else if (!recordName.equals(other.recordName))
+			return false;
+		if (ruleName == null) {
+			if (other.ruleName != null)
+				return false;
+		} else if (!ruleName.equals(other.ruleName))
+			return false;
+		if (sessionRange == null) {
+			if (other.sessionRange != null)
+				return false;
+		} else if (!sessionRange.equals(other.sessionRange))
+			return false;
+		if (tier == null) {
+			if (other.tier != null)
+				return false;
+		} else if (!tier.equals(other.tier))
+			return false;
+		if (tierPrice == null) {
+			if (other.tierPrice != null)
+				return false;
+		} else if (!tierPrice.equals(other.tierPrice))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((allBranchPrice == null) ? 0 : allBranchPrice.hashCode());
+		result = prime * result
+				+ ((bayAreaPrice == null) ? 0 : bayAreaPrice.hashCode());
+		result = prime * result
+				+ ((itemDetails == null) ? 0 : itemDetails.hashCode());
+		result = prime * result
+				+ ((joiningFee == null) ? 0 : joiningFee.hashCode());
+		result = prime * result
+				+ ((locations == null) ? 0 : locations.hashCode());
+		result = prime
+				* result
+				+ ((nonmemberTierPrice == null) ? 0 : nonmemberTierPrice
+						.hashCode());
+		result = prime * result
+				+ ((pricingRuleId == null) ? 0 : pricingRuleId.hashCode());
+		result = prime * result
+				+ ((recordName == null) ? 0 : recordName.hashCode());
+		result = prime * result
+				+ ((ruleName == null) ? 0 : ruleName.hashCode());
+		result = prime * result
+				+ ((sessionRange == null) ? 0 : sessionRange.hashCode());
+		result = prime * result + ((tier == null) ? 0 : tier.hashCode());
+		result = prime * result
+				+ ((tierPrice == null) ? 0 : tierPrice.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+}

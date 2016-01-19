@@ -1,0 +1,933 @@
+package com.ymca.web.controller;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.GrantedAuthorityImpl;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.InteractionDao;
+import com.ymca.dao.LocationDao;
+import com.ymca.dao.PaymentMethodDao;
+import com.ymca.dao.ProductDao;
+import com.ymca.dao.RoleDao;
+import com.ymca.dao.SignupDao;
+import com.ymca.dao.UserDao;
+import com.ymca.dao.WaiversAndTCDao;
+import com.ymca.model.Account;
+import com.ymca.model.Address;
+import com.ymca.model.ContactWaiversAndTC;
+import com.ymca.model.Interaction;
+import com.ymca.model.ItemDetails;
+import com.ymca.model.Locations;
+import com.ymca.model.PaymentMethod;
+import com.ymca.model.PricingRule;
+import com.ymca.model.Product;
+import com.ymca.model.Signup;
+import com.ymca.model.User;
+import com.ymca.model.WaiversAndTC;
+import com.ymca.web.service.CreateInteraction;
+import com.ymca.web.util.Constants;
+
+@Controller
+public class MembershipController extends BaseController {
+
+	@Resource
+	private ProductDao productDao;
+	
+	@Resource
+	private RoleDao roleDao;
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	@Resource
+	private UserDao userDao;
+	
+	@Resource
+	private InteractionDao interactionDao;
+	
+	@Resource
+	private SignupDao signupDao;
+	
+	@Resource
+	private WaiversAndTCDao  waiversAndTCDao;
+	
+	@Resource
+	private LocationDao locationDao;
+	
+	@Resource
+	private PaymentMethodDao paymentMethodDao;
+	
+	public MembershipController(){
+		
+	}
+	
+	@ModelAttribute
+    @RequestMapping(value= "ymca/memberships/view_membership", method = RequestMethod.GET)
+    public String showMembershipInfo() {
+			
+		
+		return "home";
+		
+	}
+	
+	//ymca/memberships/signup
+	@ModelAttribute
+    @RequestMapping(value= "signup", method = RequestMethod.GET)
+    public ModelAndView showForm() {
+		
+		List<Product> products = productDao.findAll();
+		List<WaiversAndTC> waiversAndTCLst = waiversAndTCDao.getTcByType(Constants.WAIVERS_TC_TYPE_COMMON);
+    	/*ObjectMapper mapper = new ObjectMapper();
+        try {        
+    		System.out.println(mapper.writeValueAsString(products));     
+    	} catch (Exception e) {     
+    		e.printStackTrace();     
+    	}*/
+    	
+        Model model = new ExtendedModelMap();
+        try {
+            model.addAttribute("products", products);
+            if(waiversAndTCLst != null && !waiversAndTCLst.isEmpty()){
+            	model.addAttribute("waiversAndTC", waiversAndTCLst.get(0));
+            }
+            model.addAttribute("account", new Account());           
+            
+        } catch (Exception se) {
+            System.out.println("Error occoured while querying Product");
+            se.printStackTrace();
+        }
+        return new ModelAndView("membership_signup", model.asMap());
+    	/*//products = productDao.getAllProducts();
+        ModelAndView model = new ModelAndView( "membership_signup");
+		model.addObject("products",products);
+		model.addObject("account", new Account());
+		return model;*/
+    	/*Model model = new ExtendedModelMap();
+        try {
+            model.addAttribute("products", products);
+            model.addAttribute("account", new Account());
+        } catch (Exception se) {
+            System.out.println("Error occoured while querying Product");
+            se.printStackTrace();
+        }*/
+        
+        //return "membership_signup";
+        
+        /*ResponseObject responseObj = new ResponseObject();
+        responseObj.setStatus(Constants.STATUS_SUCCESS);       
+        responseObj.setMessage("Successfully created donation details");
+        responseObj.setData(products);
+        //responseObj.setData(new Account());
+        return responseObj; */
+	}
+    
+    @RequestMapping(value="register", method = RequestMethod.POST)
+    public ModelAndView onSubmit(Account account, final BindingResult errors, final HttpServletRequest request, final HttpServletResponse response)
+            throws Exception {        	
+    	User user = new User();    	
+    	user = populateUserData(account);   	
+    	populateContactAndCustomerWaiversAndTC(user, account);
+    	//populateMembershipData(account, user);
+    	
+    	account.setUser(new HashSet<User>());
+    	account.getUser().add(user);
+    	account.setEmail(user.getEmail());
+    	account.setName(user.getFullName());
+    	
+        user.setEnabled(true);
+
+        // Set the default user role on this new user
+        //user.addRole(roleDao.getRoleByName(Constants.USER_ROLE));
+        
+        // unencrypted users password to log in user automatically
+        final String password = user.getPassword();
+
+        try {
+            //this.getUserManager().saveUser(user);        	
+            Account acc = accountDao.saveAndFlush(account);
+            /*Interaction interaction = getInteractionData(account, user, Constants.NEW_MEMBERSHIP_REQUEST);
+            Interaction interactionSave = interactionDao.saveAndFlush(interaction);
+            User contact =  null;	
+			contact = getUserByAccount(acc, contact);
+            try{
+    			Long fcrmCustId = 0L;
+        		Long fcrmContactId = 0L;
+        		if(account != null && account.getFcrmCustId() != null && !"".equals(account.getFcrmCustId())){
+        			fcrmCustId = Long.valueOf(account.getFcrmCustId());
+        		}
+        		if(contact != null && contact.getFcrmContactId() != null && !"".equals(contact.getFcrmContactId())){
+        			fcrmContactId = Long.valueOf(contact.getFcrmContactId());
+        		}
+        		fcrmCustId = 300000002351031L;
+        		fcrmContactId = 300000001957013L;        		
+    			CreateInteraction.createInteraction(Constants.NEW_MEMBERSHIP_REQUEST, Constants.NEW_MEMBERSHIP_REQUEST_INTERACTION_DESCTIPTION, fcrmCustId, fcrmContactId, new Date());
+    		
+            }catch(Exception e){
+    			e.printStackTrace();
+    		}*/
+            
+            Model model = new ExtendedModelMap();
+    		if(acc != null){	    		    	    	
+    	        model.addAttribute("account", account);     
+    	        int userCount = account.getUser().size();
+    	        List<User> userS = new ArrayList<User>();
+    	        if(userCount>1){
+    		        for(User u: account.getUser()){
+    		        	if(!user.getUsername().equalsIgnoreCase(u.getUsername())){
+    		        		userS.add(u);
+    		        	}
+    		        }
+    			}    	        
+    	        model.addAttribute("userS", acc.getUserLst());
+    			
+    		}
+    		return new ModelAndView("membershipConfirmation", model.asMap());
+            /*List<GrantedAuthority> authList = new ArrayList<GrantedAuthority>(1);  	          
+ 	       // All users are granted with ROLE_USER access
+ 	 	   // Therefore this user gets a ROLE_USER by default
+ 	 	   authList.add(new GrantedAuthorityImpl("USER"));            
+           UserDetails userDetails = new org.springframework.security.core.userdetails.User(  
+            		user.getUsername().trim(), user.getPassword() , true,  
+                    true, true, true, authList);
+           Authentication token = new UsernamePasswordAuthenticationToken(user.getEmail().trim(), user.getPassword());	        
+	       SecurityContextHolder.getContext().setAuthentication(token);          
+           System.out.println(acc.getName());
+           return "redirect:view_membership";*/
+           
+            
+        } catch (Exception ade) {
+        	Model model = new ExtendedModelMap();
+        	model.addAttribute("errMsg", "Error Occured in Registration Process");
+			return new ModelAndView("login", model.asMap());
+        }
+		//return "home";
+    }
+    
+    @ModelAttribute
+    @RequestMapping(value= "becomeMember", method = RequestMethod.GET)
+    public ModelAndView trialPassShowForm() {	
+    	
+        Model model = new ExtendedModelMap();
+        try {            
+            model.addAttribute("locations", locationDao.findAll());
+            model.addAttribute("bayAreaLocations", locationDao.getLocationsByArea("Bay Area"));
+            model.addAttribute("account", new Account());
+        } catch (Exception se) {
+            System.out.println("Error occoured while querying Product");
+            se.printStackTrace();
+        }
+        return new ModelAndView("trial_pass_signup", model.asMap());    	
+	}
+    
+    @RequestMapping(value="getProductDetailsByLocation", method=RequestMethod.GET)
+    public @ResponseBody String  getProductDetailsByLocation(@RequestParam(value="locationId") Long locationId, final HttpServletRequest request, final HttpServletResponse response) { 		
+    	try{
+    		List<ItemDetails> productDetails =  productDao.getMembershipProgramByLocation(locationId);
+    		JSONArray json = new JSONArray();    		
+    		for(Object product : productDetails){
+    			Object objArr1[] = (Object[]) product;	
+    			if(objArr1 != null && objArr1.length >0){
+    				JSONObject obj = new JSONObject();
+    				if(objArr1[0] != null){
+    					obj.put("id", objArr1[0].toString());
+    				}
+    				if(objArr1[1] != null){
+    					obj.put("productName", objArr1[1].toString());
+    				}
+					if(objArr1[2] != null){
+						obj.put("productDescription", objArr1[2].toString());			
+					}
+					if(objArr1[3] != null){
+						obj.put("productType", objArr1[3].toString());
+					}
+					if(objArr1[4] != null){
+						obj.put("productDuration", objArr1[4].toString());
+					}	
+					
+					if(objArr1[6] != null){
+						Locations location = (Locations) objArr1[6];
+						List<PricingRule> pricingRuleLst =  location.getPricingRule();
+						List<PricingRule> pricingLst = new ArrayList<PricingRule>();
+						for(PricingRule pricingRule: pricingRuleLst) {
+							if(location.getTier() != null && pricingRule.getTier() != null && location.getTier().equals(pricingRule.getTier())){
+								pricingLst.add(pricingRule);
+							}
+						}
+						double price = 0D;						
+						StringBuffer sb = new StringBuffer();
+						for(PricingRule pricingRule: pricingLst) {
+							if(pricingRule.getTierPrice() != null){								
+								price += Double.parseDouble(pricingRule.getTierPrice());
+								sb.append(pricingRule.getRuleName()+":"+pricingRule.getTierPrice()+";;");							
+							}
+						}
+						obj.put("productPrice", price);						
+						obj.put("pricingJsonArray", sb.toString());						
+					}
+					if(objArr1[5] != null){
+						obj.put("tandc", objArr1[5].toString());
+					}
+					json.add(obj);
+    			}  			
+    		}   		
+    		System.out.println(json.toString());
+    		return json.toString(); 	    	  					
+    	}catch(Exception e){    		
+    		System.out.println("Error occoured while querying Product");
+            e.printStackTrace();        		
+    	}
+		return null;    	
+    }
+    
+    @RequestMapping(value="becomeMemberRegister", method = RequestMethod.POST)
+    public ModelAndView onSubmitTrialPassRegister(Account account, final BindingResult errors, final HttpServletRequest request, final HttpServletResponse response)
+            throws Exception {        	
+    	String opptyId = request.getParameter("opptyId");    
+    	User user = new User();     	
+    	User accUser = new User();  
+    	accUser = account.getUserLst().get(0);
+    	Signup signup = new Signup();
+    	Product product  =  productDao.getItemDetailsByProductId(Long.parseLong(account.getProductId())); 
+    	  	
+    		Account isAccountExist = accountDao.getByEmail(accUser.getEmail());    		
+    		if(isAccountExist != null){
+    			User userDb = getUserByAccount(isAccountExist, user);
+    			signup = populateSignupData(isAccountExist, userDb, product,signup,  opptyId);  
+    			try {              	
+    	            Account acc = accountDao.saveAndFlush(isAccountExist);
+    	            User user2 = userDao.saveAndFlush(userDb);
+    	            Signup signup2 = signupDao.save(signup);            
+    	            Model model = new ExtendedModelMap();
+    	    		if(acc != null){	    		    	    	
+    	    	        model.addAttribute("account", isAccountExist);    	            	        
+    	    	        model.addAttribute("user", userDb);
+    	    	        model.addAttribute("signup", signup2);
+    	    	        model.addAttribute("product", product);
+    	    		}
+    	    		return new ModelAndView("trial_pass_confirmation", model.asMap());
+    	            
+    	        } catch (Exception ade) {
+    	        	ade.printStackTrace();
+    	        	Model model = new ExtendedModelMap();
+    	        	model.addAttribute("errMsg", "Error Occured in Registration Process");
+    				return new ModelAndView("login", model.asMap());
+    	        }
+    		}else{
+    			user = populateUserData(account);   	
+    	    	populateContactAndCustomerWaiversAndTC(user, account);	    	   	
+    	    		    	
+    	    	signup = populateSignupData(account, user, product,signup,  opptyId);   	
+    	    	account.setUser(new HashSet<User>());
+    	    	account.getUser().add(user);    	
+    	    	account.setEmail(user.getEmail());
+    	    	account.setName(user.getFullName());    	
+    	        user.setEnabled(true);  
+    	        try {              	
+    	            Account acc = accountDao.saveAndFlush(account);
+    	            Signup signup2 = signupDao.save(signup);            
+    	            Model model = new ExtendedModelMap();
+    	    		if(acc != null){	    		    	    	
+    	    	        model.addAttribute("account", account);    	            	        
+    	    	        model.addAttribute("userS", acc.getUserLst());
+    	    	        model.addAttribute("signup", signup2);
+    	    	        model.addAttribute("product", product);
+    	    		}
+    	    		return new ModelAndView("trial_pass_confirmation", model.asMap());
+    	            
+    	        } catch (Exception ade) {
+    	        	ade.printStackTrace();
+    	        	Model model = new ExtendedModelMap();
+    	        	model.addAttribute("errMsg", "Error Occured in Registration Process");
+    				return new ModelAndView("login", model.asMap());
+    	        }
+    		}   	
+    	    	
+    }
+    
+    private Signup populateSignupData(Account account, User contact, Product item, Signup signup, String opptyId) {
+		// TODO Auto-generated method stub
+    	if(account.getSignup() != null && !account.getSignup().isEmpty()){
+    		signup = account.getSignup().get(0);
+    	}    	
+    	signup.setContact(contact);
+    	signup.setCustomer(account);
+    	signup.setItem(item);
+    	//signup.setPaymentMethod(paymentMethod);
+    	signup.setContactName(contact.getFullName());
+    	signup.setType("Membership");
+    	signup.setStatus("New");
+    	signup.setOpptyId(opptyId);
+    	signup.setSignupDate(new Date());   
+    	signup.setProgramStartDate(new Date());
+    	return signup;		
+	}
+
+	private User populateUserData(Account account) { 
+    	User user = new User();
+    	BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();	
+    	user = account.getUserLst().get(0);
+    	user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+    	//user.setDateOfBirth(new Date());
+    	user.setEnabled(true);	
+    	user.setAccountExpired(true);
+    	user.setAccountLocked(true);
+    	user.setCredentialsExpired(true);
+    	user.setEnabled(true);
+    	user.setPrimary(true);      	
+    	return user;
+	}
+
+	/*private void populateMembershipData(Account account, User user) {
+		Membership membership = new Membership();
+		membership = account.getMembership();
+		if(account.getUserLst() != null && !account.getUserLst().isEmpty()){
+			membership.setContactName(account.getUserLst().get(0).getFullName());
+		}
+		membership.setMembershipBeginDate(new Date());
+		membership.setMembershipEndDate(new Date());
+		account.setMembership(membership);
+	}*/
+	
+	private Interaction getInteractionData(Account account, User contact, String process) {	
+		Interaction interaction = new Interaction();
+		if(account!=null && contact!=null){				
+			if(process.equals(Constants.Request_Trial_Pass)){
+				interaction.setType(com.ymca.web.util.Constants.INTERACTION_TYPE.TrialPass_Request.toString());
+				interaction.setDescription(com.ymca.web.util.Constants.Request_Trial_Pass);
+			}else {
+				interaction.setType(com.ymca.web.util.Constants.NEW_MEMBERSHIP_REQUEST);
+				interaction.setDescription(com.ymca.web.util.Constants.NEW_MEMBERSHIP_REQUEST);
+			}
+			
+			
+			
+			// get current time stamp
+			java.util.Date date= new java.util.Date();
+	 		interaction.setCreatedDate(new Timestamp(date.getTime()));
+	 		interaction.setCustomer(account);
+	 		interaction.setContact(contact);
+	 		interaction.setShowOnPortal(true);	  		
+    	}
+		return interaction;
+	}
+
+	private void populateContactAndCustomerWaiversAndTC(User user, Account account) {
+		ContactWaiversAndTC tAncC = new ContactWaiversAndTC();
+		if(account.getUserLst() != null && !account.getUserLst().isEmpty()){
+			tAncC.setRecordName(account.getUserLst().get(0).getFullName());
+		}
+		tAncC.setTcDescription(account.getTcDescription());
+		//tAncC.setContact(user);
+		//tAncC.setCustomer(account);
+		tAncC.setContactPartyId(443L);
+		tAncC.setCustomerPartyId(665L);
+		user.setContactWaiversAndTC(new HashSet<ContactWaiversAndTC>());
+		user.getContactWaiversAndTC().add(tAncC);
+	}
+	@RequestMapping(value= "view_membership", method = RequestMethod.GET)
+    public ModelAndView showMembershipInfo(final HttpServletRequest request, final HttpServletResponse response) {
+		//HttpSession session = request.getSession();
+		Model model = new ExtendedModelMap();
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		Interaction interaction=null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			model.addAttribute("errMsg", "Your session is expired");
+			return new ModelAndView("login", model.asMap());
+		}
+		
+    	Account account = null;
+    	User user =  null;	
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			user = getUserByAccount(account, user);
+    	}
+		
+    	
+    	
+		if(account != null){	    		    	    	
+	        model.addAttribute("accInfo", account);
+	        model.addAttribute("usInfo", user);		
+	        
+	        int userCount = account.getUser().size();
+	        List<User> userS = new ArrayList<User>();
+	        int countmembers = 0;
+	        if(userCount>1){
+		        for(User u: account.getUser()){
+		        	if(!user.getUsername().equalsIgnoreCase(u.getUsername()) && u.isActive()){
+		        		countmembers = countmembers + 1;
+		        		userS.add(u);
+		        	}
+		        }
+			}
+	        
+	        
+	        
+	        
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("userS", userS);
+	        
+	        model.addAttribute("volunteerActivity", getVolunteerActivity());
+	        
+	       /* String cancelledMember = "false";
+	        if(account.getInteractions()!=null && account.getInteractions().size()>0){
+		        for(Interaction interaction: account.getInteractions()){
+		        	if(interaction.getType().equalsIgnoreCase(com.ymca.web.util.Constants.INTERACTION_TYPE.Request_Membership_Cancellation.toString())){
+		        		cancelledMember = "true";
+		        		break;
+		        	}
+		        }
+	        }
+	       */
+	       // model.addAttribute("cancelled_Member", cancelledMember);
+	        model.addAttribute("account", new Account());		
+			return new ModelAndView("myProfileView", model.asMap());
+		}else {
+			model.addAttribute("errMsg", "Please Login");
+			return new ModelAndView("login", model.asMap());
+			
+		}		
+	
+	}
+	
+	@RequestMapping(value="update_membership", method = RequestMethod.POST)
+    public @ResponseBody String updateMembership(Account account, final BindingResult errors, final HttpServletRequest request, final HttpServletResponse response)
+            throws Exception {
+		
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();	
+    	Account accountVO = null;
+    	User user =  null;	
+    	
+    	if(account.getUsrId()==null || "".equals(account.getUsrId())){
+    		return null;
+    	}
+    	
+    	if(userId != null && !"".equals(userId)){
+    		accountVO = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			//user = getUserByAccount(accountVO, user);
+			for(User u: accountVO.getUser()){
+				 if(u.getId()!=null && account.getUsrId().toString().trim().equalsIgnoreCase(u.getId().toString())){
+					 user = u;
+					 break;
+				 }
+			 }
+    	}
+    	
+    	if(user==null){
+    		return null;
+    	}
+    	populateAccountUserData(account, accountVO, user);	
+    	Model model = new ExtendedModelMap();
+    	try{
+    		Account updAccount =  accountDao.save(accountVO);
+    		return "SUCCESS";
+    		
+    	}catch(Exception e){
+    		model.addAttribute("updateAccountMsg", "Error occured while updating Profile Information");
+    		return null;
+    	}		   
+    }
+	 
+	 @RequestMapping(value= "view_member", method = RequestMethod.GET)
+	 public @ResponseBody User viewMember(final HttpServletRequest request, final HttpServletResponse response) {
+		 String member_id = request.getParameter("member_id");
+		 if(member_id==null || "".equals(member_id)){
+			 return null;
+		 }
+		 
+		 Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		 String userId = ((UserDetails) a.getPrincipal()).getUsername();	
+		 User user = null;
+		 Account account = null;
+		 
+		 if(userId != null && !"".equals(userId)){
+			 account = accountDao.getByEmail(userId);	
+			 
+			 for(User u: account.getUser()){
+				 if(u.getId()!=null && member_id.trim().equalsIgnoreCase(u.getId().toString())){
+					 user = u;
+					 break;
+				 }
+			 }
+			 
+			 if(user!=null){
+				 return user;
+			 }
+		 }
+		 return null;
+	 }
+	 
+	 
+	@RequestMapping(value = "enrolled_programs", method = RequestMethod.GET)
+	public @ResponseBody
+	List<Signup> enrolledProgram(final HttpServletRequest request,
+			final HttpServletResponse response) {
+		String member_id = request.getParameter("member_id");
+		if (member_id == null || "".equals(member_id)) {
+			return null;
+		}
+		Authentication a = SecurityContextHolder.getContext()
+				.getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+		User user = null;
+		Account account = null;
+		List<Signup> signup = null;
+
+		if (userId != null && !"".equals(userId)) {
+			account = accountDao.getByEmail(userId);
+			for (User u : account.getUser()) {
+				if (u.getId() != null
+						&& member_id.trim().equalsIgnoreCase(
+								u.getId().toString())) {
+					user = u;
+					signup = signupDao.findByContactNameAndTypeNotLike(user
+							.getId().toString(), "Memberships");
+
+					break;
+				}
+			}
+
+			if (signup != null) {
+
+				return signup;
+			}
+		}
+
+		return null;
+	}
+	
+	 @RequestMapping(value= "remove_member", method = RequestMethod.GET)
+	 public @ResponseBody String removeMember(final HttpServletRequest request, final HttpServletResponse response) {
+		 String member_id = request.getParameter("member_id");
+		 if(member_id==null || "".equals(member_id)){
+			 return null;
+		 }
+		 
+		 Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		 String userId = ((UserDetails) a.getPrincipal()).getUsername();	
+		 User user = null;
+		 Account account = null;
+		 
+		 if(userId != null && !"".equals(userId)){
+			 account = accountDao.getByEmail(userId);	
+			 
+			 for(User u: account.getUser()){
+				 if(u.getId()!=null && member_id.trim().equalsIgnoreCase(u.getId().toString())){
+					 user = u;
+					 break;
+				 }
+			 }
+			 
+			 if(user!=null){
+				 user.setActive(false);
+				 userDao.save(user);
+				 return "SUCCESS";
+			 }
+    	 }
+		 return null;
+	 }
+	 @RequestMapping(value= "requestcancellation", method = RequestMethod.GET)
+	 public String requestCancellation(final HttpServletRequest request, final HttpServletResponse response) {
+		 return "requestcancellation";
+	 }
+	 
+	 @RequestMapping(value= "requestcancellation", method = RequestMethod.POST)
+	 public ModelAndView requestCancellation1(Interaction interaction, final HttpServletRequest request, final HttpServletResponse response) {
+
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+		
+		Model model = new ExtendedModelMap();
+		String reasontext = request.getParameter("reason");
+		
+		Account account = null;
+    	User contact =  null;	
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);		
+	    	contact = getUserByAccount(account, contact);
+    	}
+		
+    	if(account!=null && contact!=null){
+			interaction.setType(com.ymca.web.util.Constants.INTERACTION_TYPE.Request_Membership_Cancellation.toString());
+			
+			interaction.setDescription(reasontext);
+			
+			// get current time stamp
+			java.util.Date date= new java.util.Date();
+	 		interaction.setCreatedDate(new Timestamp(date.getTime()));
+	 		interaction.setCustomer(account);
+	 		interaction.setContact(contact);
+	 		interaction.setShowOnPortal(true);
+	 		
+	 		interactionDao.save(interaction);
+	 		model.addAttribute("successMsg", com.ymca.web.util.Constants.REQUEST_MEMBERSHIP_SUCCESS);
+    	}
+    	else{
+    		model.addAttribute("errMsg", com.ymca.web.util.Constants.INTERNAL_ERROR);
+    	}
+    	return new ModelAndView("requestcancellation", model.asMap());
+	 }
+	
+	 @RequestMapping(value= "receivecancellation", method = RequestMethod.GET)
+	 public ModelAndView receiveCancellation(final HttpServletRequest request, final HttpServletResponse response) {
+		 String success = request.getParameter("success");
+		 String err = request.getParameter("err");
+		 Model model = new ExtendedModelMap();
+		 
+		 if(success!=null && success.equals("1")){
+			 model.addAttribute("successMsg", com.ymca.web.util.Constants.REQUEST_MEMBERSHIP_SUCCESS);
+		 }
+		 if(err!=null && err.equals("1")){
+			 model.addAttribute("errMsg", com.ymca.web.util.Constants.INTERNAL_ERROR);
+		 }
+		 return new ModelAndView("receivecancellation", model.asMap());
+	 }
+	 
+	private void populateAccountUserData(Account account, Account accountVO, User user) {
+	
+		accountVO.setAddressLine1(account.getAddressLine1());
+		accountVO.setAddressLine2(account.getAddressLine2());
+		accountVO.setCity(account.getCity());
+		accountVO.setState(account.getState());
+		accountVO.setCountry(account.getCountry());
+		//accountVO.setEmail(account.getEmail());
+		
+		//user.setUsername(account.getUsername());
+    	//user.setPassword(account.getPassword());     
+    	user.setFirstName(account.getFirstName());
+    	user.setLastName(account.getLastName());
+    	//user.setEmail(account.getEmail());    	
+    	user.setPhoneNumber(account.getPhoneNumber());
+    	//user.setDateOfBirth(new Date());
+    	//user.setId(account.getUsrId());
+    	user.setEnabled(true);	
+    	user.setWorkNumber(account.getWorkNumber());
+    	user.setHomeNumber(account.getHomeNumber());
+    	
+    	accountVO.getMembership().setContactName(user.getFullName());
+    	accountVO.getMembership().setMembershipBeginDate(new Date());
+    	accountVO.getMembership().setMembershipEndDate(new Date());
+		
+		for (Iterator<ContactWaiversAndTC> it = user.getContactWaiversAndTC().iterator(); it.hasNext(); ) {
+			ContactWaiversAndTC tAncC = it.next();
+			tAncC.setRecordName(user.getFullName());		
+	    }
+	}	 
+	
+	@RequestMapping(value= "addMember", method = RequestMethod.GET)
+	public String addMember(final HttpServletRequest request, final HttpServletResponse response) {
+		 return "addMember";
+	}
+	
+	@RequestMapping(value= "addMember", method = RequestMethod.POST)
+	public @ResponseBody String addMember1(Account account, final HttpServletRequest request, final HttpServletResponse response) {
+		
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();	
+    	Account accountVO = null;
+    	Set<User> usersLst = new HashSet<User>();
+    	
+    	if(userId != null && !"".equals(userId)){
+    		accountVO = accountDao.getByEmail(userId);
+    		usersLst = accountVO.getUser();
+    		
+    		for(User usr: usersLst){
+    			if(usr!=null){
+    				if(usr.getEmail().equals(account.getEmail())){
+    					return "DUPE";
+    				}
+    			}
+    		}
+    	}
+    
+    	try{
+    		if(accountVO!=null){
+    			User user = new User();    
+    			   	
+    			user.setDateOfBirth(new Date());
+    	    	user.setEnabled(true);	
+    	    	user.setAccountExpired(true);
+    	    	user.setAccountLocked(true);
+    	    	user.setCredentialsExpired(true);
+    			user.setActive(true);
+    			user.setPassword("password");
+    			user.setUsername(account.getEmail());
+     			user.setFirstName(account.getFirstName());
+     	    	user.setLastName(account.getLastName());
+     	    	user.setProfileImage("resources/img/portal_Images/defaultpic.jpg");
+     	    	user.setEmail(account.getEmail());    	
+     	    	user.setPhoneNumber(account.getPhoneNumber());
+     	    	user.setEnabled(true);	
+     	    	user.setWorkNumber(account.getWorkNumber());
+     	    	user.setHomeNumber(account.getHomeNumber());
+     	    	usersLst.add(user);
+    	    	//populateContactAndCustomerWaiversAndTC(user, accountVO);
+    	    	//populateMembershipData(accountVO, user);
+    	    	
+    	    	accountVO.setUser(usersLst);
+    	    	//accountVO.getUser().add(user);
+    	
+	    		Account updAccount =  accountDao.save(accountVO);
+	    		System.out.println(updAccount.getUser());
+	    		return "SUCCESS";
+    		}
+    		
+    	}catch(Exception e){
+    		
+    	}		
+    	return null;
+	}
+	
+	@RequestMapping(value= "holdMembership", method = RequestMethod.GET)
+	 public String holdMembership(final HttpServletRequest request, final HttpServletResponse response) {
+		 return "holdMembership";
+	 }
+	
+	@RequestMapping(value= "isEmailExists", method = RequestMethod.GET)
+	 public @ResponseBody String isEmailExists(@RequestParam("userLst[0].email") String email, final HttpServletRequest request, final HttpServletResponse response) {
+		if(email==null || "".equals(email)){
+			 return "true";
+		 }else{
+			 try{
+				 User user =  userDao.getByEmail(email);
+				 if(user != null){
+					 return "false";
+				 }else{
+					 return "true";
+				 }
+				 
+			 }catch(Exception e){
+				 return null;
+			 }			
+		 }
+			
+		 
+		 
+	 }
+	
+	@RequestMapping(value="/memberAuth", method=RequestMethod.POST)
+    public @ResponseBody String auth(final HttpServletRequest request, final HttpServletResponse response) { 
+		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+		
+		String username = request.getParameter("username");
+		String password = request.getParameter("password");
+		User user = null;
+
+		if(username!=null && !"".equals(username.trim()) && password!=null && !"".equals(password)){
+			Account account = accountDao.getByEmail(username);			
+			user = getUserByAccount(account, user);
+			if(user!=null && user.getPassword() !=null && bCryptPasswordEncoder.matches(password, user.getPassword())){			
+				UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, user.getPassword());
+				//request.getSession();
+		        token.setDetails(new WebAuthenticationDetails(request));
+		        SecurityContextHolder.getContext().setAuthentication(token);		        
+				return "Success";
+			}			
+		}		
+		return "Failure";
+		
+	}
+	
+	@RequestMapping(value="/getAccountDetailsByEmail", method=RequestMethod.POST)
+    public @ResponseBody List<Account> getAccountDetailsByEmail(@RequestParam("emailId") String email, final HttpServletRequest request, final HttpServletResponse response) { 
+		if(email != null && !"".equals(email.trim())){			
+			return accountDao.getAccountByEmail(email);
+		}		
+		return null;		
+	}
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	@RequestMapping(value= "ReqforFA", method = RequestMethod.POST)
+	public @ResponseBody String requestForFA1( final HttpServletRequest request, final HttpServletResponse response)
+	{
+		
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = ((UserDetails) a.getPrincipal()).getUsername();
+		//System.out.println(userId);
+    	Account account= null;
+    	//Set<User> usersLst = new HashSet<User>();
+    	Interaction interaction=null;
+    	account=accountDao.getByEmail(userId);
+     //  System.out.println(account.getEmail()+"---"+account.getName()+"----"+account.getAccountId());
+       	try{
+       	//	System.out.println("in try");
+    	interaction=interactionDao.findByTypeAndCustomer("REQUEST FOR FA",account );
+		//System.out.println("interaction is not null");
+		System.out.println(interaction.getType()+"---"+ interaction.getDescription());
+    	
+    	
+    		
+    					return "DUPE";
+       	}
+    		catch(NullPointerException ex){
+    			
+    			System.out.println("in catch "+ex);
+    			Interaction interaction2=new Interaction();
+    			Account acc=accountDao.getByEmail(account.getEmail());
+    
+    			if(interaction2.getCustomer()==null)
+    			{
+    			System.out.println("in if");
+    			interaction2.setCustomer(acc);
+    			interaction2.setShowOnPortal(true);
+        		interaction2.setType("REQUEST FOR FA");
+        		interaction2.setDescription("Failure Analysis..");
+    			interactionDao.save(interaction2);
+    			
+    		//	System.out.println(interaction2.getCustomer().getAccountId());
+    			}
+    			return "SUCCESS";
+    		}
+    
+	}
+}

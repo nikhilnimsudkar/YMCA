@@ -1,0 +1,232 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "item_details") 
+@XmlRootElement
+public class ItemDetails extends BaseObject implements Serializable {
+private static final long serialVersionUID = 1L;
+	
+	public ItemDetails(){
+		
+	}	
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", nullable = false)
+	private Long id;
+	
+	@Column(name = "price", nullable = false)
+	private double price;
+	
+	@Column(name = "start_date", columnDefinition="DATE")
+	private Date startdate;
+	
+	@Column(name = "end_date", columnDefinition="DATE")
+	private Date enddate;
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="product_id")
+	private Product product;
+	
+	@OneToOne
+	@JoinColumn(name="locationId")
+	private Locations locations;
+	
+	@OneToMany(mappedBy = "itemDetails")
+	private List<ItemDetailsSession> itemDetailsSession;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="itemDetails")
+	private List<ItemDays> itemDays;
+	
+	//@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+	//@JoinColumn(name = "id")	
+	@Transient
+	private List<PricingRule> pricingRules;
+	
+	@Column(name = "start_time", columnDefinition="TIME")
+	private Date starttime;
+	
+	@Column(name = "end_time", columnDefinition="TIME")
+	private Date endtime;
+	
+	@Column(name = "RegistrationStartDate", columnDefinition="DATE")
+	private Date registrationStartDate ;
+	
+	
+	public Date getRegistrationStartDate() {
+		return registrationStartDate;
+	}
+
+	public void setRegistrationStartDate(Date registrationStartDate) {
+		this.registrationStartDate = registrationStartDate;
+	}
+	
+	@Column(name = "productSubtype")
+	private String productSubtype;
+	
+	@Column(name = "gender")
+	private String gender;
+	
+	private Integer minAge;
+	private Integer maxAge;
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public double getPrice() {
+		return price;
+	}
+
+	public void setPrice(double price) {
+		this.price = price;
+	}
+
+	public Date getStartdate() {
+		return startdate;
+	}
+
+	public void setStartdate(Date startdate) {
+		this.startdate = startdate;
+	}
+
+	public Date getEnddate() {
+		return enddate;
+	}
+
+	public void setEnddate(Date enddate) {
+		this.enddate = enddate;
+	}
+
+	public Product getProduct() {
+		return product;
+	}
+
+	public void setProduct(Product product) {
+		this.product = product;
+	}
+
+	public Locations getLocations() {
+		return locations;
+	}
+
+	public void setLocations(Locations locations) {
+		this.locations = locations;
+	}
+
+	public List<ItemDetailsSession> getItemDetailsSession() {
+		return itemDetailsSession;
+	}
+
+	public void setItemDetailsSession(List<ItemDetailsSession> itemDetailsSession) {
+		this.itemDetailsSession = itemDetailsSession;
+	}
+
+	
+	public List<ItemDays> getItemDays() {
+		return itemDays;
+	}
+
+	public void setItemDays(List<ItemDays> itemDays) {
+		this.itemDays = itemDays;
+	}
+
+	public List<PricingRule> getPricingRules() {
+		return pricingRules;
+	}
+
+	public void setPricingRule(List<PricingRule> pricingRules) {
+		this.pricingRules = pricingRules;
+	}
+
+	public Date getStarttime() {
+		return starttime;
+	}
+
+	public void setStarttime(Date starttime) {
+		this.starttime = starttime;
+	}
+
+	public Date getEndtime() {
+		return endtime;
+	}
+
+	public void setEndtime(Date endtime) {
+		this.endtime = endtime;
+	}
+
+	public String getProductSubtype() {
+		return productSubtype;
+	}
+
+	public void setProductSubtype(String productSubtype) {
+		this.productSubtype = productSubtype;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public Integer getMinAge() {
+		return minAge;
+	}
+
+	public void setMinAge(Integer minAge) {
+		this.minAge = minAge;
+	}
+
+	public Integer getMaxAge() {
+		return maxAge;
+	}
+
+	public void setMaxAge(Integer maxAge) {
+		this.maxAge = maxAge;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

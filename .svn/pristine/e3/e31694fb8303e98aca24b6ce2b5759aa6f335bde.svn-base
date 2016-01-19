@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+  <definition name="home" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/body.jsp" />
+  </definition>
+  
+  <definition name="login" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/login.jsp" />
+  </definition>
+  
+  <!-- <definition name="membershipsignup" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/membershipsignup.jsp" />
+  </definition> -->
+  <!-- <definition name="membership_signup" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/membership_signup.jsp" />
+  </definition> -->
+  
+  <definition name="resetpassword" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/resetpassword.jsp" />
+  </definition>
+  
+  <definition name="resetusername" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/resetusername.jsp" />
+  </definition>
+
+  <definition name="resetpasswordlink" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/resetpasswordlink.jsp" />
+  </definition>
+</tiles-definitions>

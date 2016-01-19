@@ -1,0 +1,7 @@
+package com.ymca.dao;
+
+import com.ymca.model.ItemDetailsSession;
+
+public interface ItemDetailsSessionDao extends GenericDao<ItemDetailsSession, Long> {
+	ItemDetailsSession getByItemDetailsSessionId(Long itemDetailsSessionId);
+}

@@ -1,0 +1,29 @@
+/**
+* @author lavy
+* **/
+package com.serene.job.service;
+
+import java.io.UnsupportedEncodingException;
+import java.util.Map;
+
+import javax.xml.parsers.FactoryConfigurationError;
+
+import com.serene.job.model.JobSchedulerMetadata;
+import com.ymca.model.JetPayPayment;
+
+public interface PaymentJobService {
+	
+	public Double computePaymentAmount(Map<String, Object> invoice,JobSchedulerMetadata jobSchedulerMetadata);
+	public Boolean checkDupeByInvoiceIdAndDueDateAndSource(Map<String, Object> invoice, JobSchedulerMetadata jobSchedulerMetadata);
+	
+	public void updatePaymentStatusAndErrorMessage(Map<String, Object> data, JobSchedulerMetadata jobSchedulerMetadata, String status, String errorMessage);
+	public void updatePaymentStatus(Map<String, Object> data, JobSchedulerMetadata jobSchedulerMetadata, String status);
+	
+	public JetPayPayment processJetpayACHPayment(Map<String, Object> data,
+			String payAmount, JobSchedulerMetadata jobSchedulerMetadata) throws UnsupportedEncodingException,
+			FactoryConfigurationError;
+			
+	public JetPayPayment processCCjetPayTransaction(Map<String, Object> data, String totalAmount, JobSchedulerMetadata jobSchedulerMetadata) throws Exception;
+	
+	public void savePayment(Map<String, Object> data, JobSchedulerMetadata jobSchedulerMetadata, Double amount, Long invoiceId, String paymentType, String paymentStatus);
+}

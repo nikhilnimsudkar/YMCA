@@ -1,0 +1,89 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "item_detail_associated_item_detail")
+public class ItemDetailAssociatedItemDetail extends BaseObject implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@Column(name="Id")
+	private Long id;
+	
+	@Column(name="RecordName")
+	private String recordName ;
+
+	
+	@ManyToOne  
+	@JoinColumn(name = "associated_item_detail_id")  
+	private ItemDetail associatedItemDetail;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="item_detail_id")
+	private ItemDetail itemDetail;
+	
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long Id) {
+		this.id = Id;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String recordName) {
+		this.recordName = recordName;
+	}
+
+	public ItemDetail getAssociatedItemDetail() {
+		return associatedItemDetail;
+	}
+
+	public void setAssociatedItemDetail(ItemDetail associatedItemDetail) {
+		this.associatedItemDetail = associatedItemDetail;
+	}
+
+	public ItemDetail getItemDetail() {
+		return itemDetail;
+	}
+
+	public void setItemDetail(ItemDetail itemDetail) {
+		this.itemDetail = itemDetail;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

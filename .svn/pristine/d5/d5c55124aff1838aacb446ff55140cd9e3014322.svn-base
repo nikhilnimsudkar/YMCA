@@ -1,0 +1,7 @@
+package com.ymca.dao;
+
+import com.ymca.model.Program;
+
+public interface ProgramDao extends GenericDao<Program, Long> {
+
+}

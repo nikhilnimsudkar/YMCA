@@ -1,0 +1,16 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import com.ymca.model.ItemDetailPricingRule;
+
+
+public interface ItemDetailPricingRuleDao extends GenericDao<ItemDetailPricingRule, Long> {	
+	List<ItemDetailPricingRule> findByItemDetailId(Long id);
+	List<ItemDetailPricingRule> findByItemDetailIdAndPricingRule_Tier(Long id, String tier);
+	List<ItemDetailPricingRule> findByItemDetailIdAndPricingRule_Type(Long id, String type);
+	List<ItemDetailPricingRule> findByItemDetailIdAndPricingRule_TypeAndPricingRule_ProductCategory(Long id, String type, String productCategory);
+	List<ItemDetailPricingRule> findByItemDetailIdAndPricingRule_ProductCategory(Long id, String productCategory);
+	
+	
+}

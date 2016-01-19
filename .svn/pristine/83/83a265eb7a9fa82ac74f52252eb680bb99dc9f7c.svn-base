@@ -1,0 +1,8 @@
+package com.ymca.dao;
+
+import com.ymca.model.PricingRule;
+
+
+public interface PricingRuleDao extends GenericDao<PricingRule, Long> {
+    
+}

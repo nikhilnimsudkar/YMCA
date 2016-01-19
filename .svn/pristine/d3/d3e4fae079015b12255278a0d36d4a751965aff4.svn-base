@@ -1,0 +1,639 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+	pageEncoding="ISO-8859-1"%>
+<%
+	String contextPath = request.getContextPath();
+%>
+<head>
+
+<link rel="stylesheet" href="<%=contextPath %>/resources/css/jquery-ui.css" type="text/css" media="all" />  
+<link href="<%=contextPath %>/resources/css/kendo/kendo.common.min.css" rel="stylesheet" media="screen">
+<link href="<%=contextPath %>/resources/css/kendo/kendo.default.min.css" rel="stylesheet" media="screen">
+<link href="<%=contextPath %>/resources/css/kendo/kendo.dataviz.min.css" rel="stylesheet" />
+<link href="<%=contextPath %>/resources/css/kendo/kendo.dataviz.default.min.css" rel="stylesheet" />
+
+
+ <script src="<%=contextPath %>/resources/js/jquery.min.js"></script>
+<script src="<%=contextPath %>/resources/js/jquery-ui.min.js"></script>
+<script src="<%=contextPath %>/resources/js/kendo/kendo.web.min.js"></script>
+<script src="<%=contextPath %>/resources/js/kendo/angular.min.js"></script>
+<script src="<%=contextPath %>/resources/js/kendo/kendo.all.min.js"></script>
+<script src="<%=contextPath %>/resources/js/kendo/jquery.slimscroll.min.js"></script>
+
+<script src="<%=contextPath %>/resources/js/jquery.validate.min.js"></script>
+<script src="<%=contextPath %>/resources/js/maskedinput.min.js"></script>
+<script src="<%=contextPath %>/resources/js/additional-methods.min.js"></script>
+<script src="<%=contextPath %>/resources/js/jquery.html5storage.min.js"></script>
+</head>
+<body>
+	<%@ include file="../../layouts/include_taglib.jsp"%>
+	<div id="main">
+		<div class="k-loading-mask"
+			style="width: 100%; height: 100%; position: absolute; top: 114px; left: 0px; display: none; z-index: 9999">
+			<span class="k-loading-text">Loading... Please wait</span>
+			<div class="k-loading-image">
+				<div class="k-loading-color"></div>
+			</div>
+		</div>
+		<div id="content">
+			<div class="k-window1" id="popup_add" style="display: none;"></div>
+			<form:form commandName="account" id="updateMembershipForm"
+				method="post" action="update_membership">
+				<div id="member">
+
+					<%@ include file="member.jsp"%>
+
+
+				</div>
+
+				<div id="profile">
+					<%@ include file="Form.jsp"%>
+				</div>
+
+				<div id="update">
+
+					<%@ include file="RightSection.jsp"%>
+
+				</div>
+			</form:form>
+		</div>
+	</div>
+
+	<script id="delete-confirmation" type="text/x-kendo-template">
+    <p class="delete-message">Are you sure you want to remove?</p>
+	
+    <div class="confirmbutton"><button class="delete-confirm k-button">Yes</button>&nbsp;&nbsp;&nbsp;
+    <span class="delete-cancel k-button">No</span></div>
+</script>
+
+<script id="member-delete-error" type="text/x-kendo-template">
+    <p class="delete-message">You can not remove family contact with Active membership. Please use the Change Membership Process.</p>
+	
+    <div class="confirmbutton" align="center"><button class="member-delete-confirm k-button">Ok</button>
+</script>
+
+<script id="kid-delete-error" type="text/x-kendo-template">
+    <p class="delete-message">You can not delete kid information. Please contact Y Agent.</p>
+	
+    <div class="confirmbutton" align="center"><button class="kid-delete-confirm k-button">Ok</button>
+</script>
+
+	<script>
+		$("#enrolled_programs").hide();
+		//$("#Email").attr("readonly", "readonly");
+		$(document).ready(function() {
+			$("#top_profile").attr('class', 'current');
+			$("#top_login").attr('class', '');
+			$("#top_payment").attr('class', '');
+
+			$("#tabstrip").kendoTabStrip({
+				animation : {
+					open : {
+						effects : "fadeIn"
+					}
+				}
+			});
+
+			$("#tabstrip1").kendoTabStrip({
+				animation : {
+					open : {
+						effects : "fadeIn"
+					}
+				}
+			});
+			$("#tabstrip2").kendoTabStrip({
+				animation : {
+					open : {
+						effects : "fadeIn"
+					}
+				}
+			});
+
+			$('.scroller').slimScroll({
+				height : '110px',
+				width : '160px',
+				alwaysVisible : true,
+				color : '#666666',
+				distance : '4px',
+				railVisible : true,
+				allowPageScroll : true
+			}).parent().css({
+				border : '1px solid #cccccc'
+			});
+			 $(document).on('click', '.removeMemberCls', function(){
+				var isMember = $(this).parent().find(".contactSignupId").html();
+				var iskid = $(this).parent().find(".isContactKid").html();
+				var contactId = $(this).parent().find(".contactIdSpan").html();
+				
+				 //find(".contactSignupId")
+				//find(".isContactKid").
+				//alert(isMember);
+				//alert(iskid);
+				if(typeof isMember != 'undefined' && isMember != ""){
+					var kendoWindow = $("<div />").kendoWindow({
+						title : "Error",
+						resizable : false,
+						modal : true,
+						width : 400
+					});
+
+					kendoWindow.data("kendoWindow").content(
+							$("#member-delete-error").html()).center().open();
+
+					kendoWindow.find(".member-delete-confirm").click(
+							function() {
+								if ($(this).hasClass("member-delete-confirm")) {
+									kendoWindow.data("kendoWindow").close();
+								}								
+							}).end()
+		   	    
+					//alert("You can not remove family member information with Active membership. Please use the Change Membership Process.");
+					
+				}else if(typeof iskid != 'undefined' && iskid == 'true' ){
+					var kendoWindow = $("<div />").kendoWindow({
+						title : "Error",
+						resizable : false,
+						modal : true,
+						width : 400
+					});
+
+					kendoWindow.data("kendoWindow").content(
+							$("#kid-delete-error").html()).center().open();
+
+					kendoWindow.find(".kid-delete-confirm").click(
+							function() {
+								if ($(this).hasClass("kid-delete-confirm")) {
+									kendoWindow.data("kendoWindow").close();
+								}								
+							}).end()
+				}else {
+					remove_member(contactId);
+				}
+			}); 
+			
+			
+			
+			$(document).on('click', '#addmemberBtn', function(){							
+				var url = "isEmailExists";
+				var validator1 = $(document).find("#addMembershipForm").validate({
+					debug: true,
+					errorElement: "em",			
+					errorPlacement: function(error, element) {
+						$element = $(element);			
+						//console.log($element.hasClass("dateOfBirth"));
+						if($element.attr("id") == "dateOfBirth"){
+							$element.parent().parent().parent().next("td").html("");
+							element.addClass("inputErrorr");
+							error.appendTo(element.parent().parent().parent().next("td"));
+							element.parent().parent().parent().next("td").addClass("textMsgError");
+							$element.parent().parent().parent().next("td").css("color","red");
+						}else{
+							element.addClass("inputErrorr");
+							error.appendTo(element.parent("td").next("td"));
+							element.parent("td").next("td").addClass("textMsgError");
+							$element.parent("td").next("td").css("color","red");
+						}
+						//$("#wizard"). smartWizard("fixHeight");
+						/* element.addClass("inputErrorr");
+						error.appendTo(element.parent("td").next("td"));
+						element.parent("td").next("td").addClass("textMsgError"); */
+					},
+					success: function(label, element) {
+						//alert("success");
+						//label.text("ok!").addClass("success");
+						var $element = $(element);
+						var $label = $(label);
+				       	$element.removeClass("inputErrorr");
+						$element.removeClass("error");
+						$element.addClass("success");
+						
+						$label.removeClass("textMsgError");
+						$label.removeClass("error");
+						$label.addClass("success");
+						//$("#wizard"). smartWizard("fixHeight");
+						
+					},
+					rules: {
+						"firstName": {
+							required: true,
+							minlength: 2,
+							maxlength: 30
+						},
+						"lastName": {
+							required: true,
+							minlength: 2,
+							maxlength: 30
+						},
+						"dateOfBirth": {
+							required: true,
+							//check_date_of_birth: true,
+						},
+						"Email" : {				
+							email: true				
+						}						
+						
+					},
+					messages: {
+						"firstName": {				
+							required: "Please enter your First Name",
+							minlength: "First Name must consist of at least 2 characters",
+							maxlength : "First Name must be less than of 30 characters"
+						},
+						
+						"lastName": {				
+							required: "Please enter your Last Name",
+							minlength: "Last Name must consist of at least 2 characters",
+							maxlength : "Last Name must be less than of 30 characters"
+						},			
+						"dateOfBirth" : {
+					    	  required: "Please enter your Date of Birth",
+					    	  //check_date_of_birth : "You must be less than "+ $("#kidsAgeValidation").html() +" years of age, or choose another membership product"
+								
+					    },
+				        "Email" : {				
+							email: "Please enter correct email address"				
+						}
+					}				
+				});	
+				
+				/* $.validator.addMethod("check_date_of_birth", function(value, element) {		
+				    var day = $("#dob_day").val();
+				    var month = $("#dob_month").val();
+				    var year = $("#dob_year").val(); 
+				    //11/18/2014
+				    var inpDate = value;
+				    var day;
+			    	var month;
+			    	var year;
+			    	//var age =  $("#adultAgeValidation").html();
+			    	var age =  18;
+				    if(inpDate != null){
+				    	var dateArr = inpDate.split("/");	    	
+				    	month = dateArr[0];
+				    	day = dateArr[1];
+				    	year = dateArr[2];
+				    }
+
+				    var mydate = new Date();
+				    mydate.setFullYear(year, month-1, day);
+
+				    var currdate = new Date();
+				    currdate.setFullYear(currdate.getFullYear() - age);
+
+				    return currdate >= mydate;
+
+				}, "You must be at least 18 "+ $("#adultAgeValidation").html() +"years of age, or choose another membership product"); */
+				
+				if(!$("#addMembershipForm").valid()) {
+					 //console.log("")
+					 return false;
+	    		} else {
+	    			//console.log("Validation Success submittting form");
+	    			addcurrentfamilymember();
+	    		}
+				
+				
+			});
+			
+
+		});
+
+		function view_member(mType, member_id) {
+			//alert(member_id);
+			$("#form").show();
+			$("#update").show();
+			$("#profileinfo").show();
+			$("#enrolled_programs").hide();
+			$("#customerAddress").show();
+			$(".k-loading-mask").show();
+			$("#updateProfInfo").css("display", "none");
+			$("#updateProfInfo").html("");
+			$("#tcErrorSpan").css("display", "none");
+			$("#tcErrorSpan").html("");
+			if (member_id != '') {
+				$("#usrId").val(member_id);
+				$.ajax({
+					url : "view_member?member_id=" + member_id,
+					success : function(data) {
+						if (mType == 'A') {
+							$("#customerAddress").hide();
+						}
+						//console.log("Success:"+ data.username);
+						$("#firstName").val(data.firstName);
+						$("#lastName").val(data.lastName);
+						$("#workNumber").val(data.formattedPhoneNumber);
+						$("#phoneNumber").val(data.formattedPhoneNumber);
+						$("#homeNumber").val(data.formattedPhoneNumber);
+						$("#Email").val(data.emailAddress);
+
+						$(".k-loading-mask").hide();
+					},
+					error : function(xhr, status, error) {
+						//alert("1" +status);
+						console.log(xhr);
+
+					}
+				});
+			}
+		}
+
+		function enrolled_programs(member_id) {
+
+			$(".k-loading-mask").show();
+			$("#updateProfInfo").css("display", "none");
+			$("#updateProfInfo").html("");
+			$("#tcErrorSpan").css("display", "none");
+			$("#tcErrorSpan").html("");
+			if (member_id != '') {
+				$("#usrId").val(member_id);
+
+				$
+						.ajax({
+
+							url : "enrolled_programs?member_id=" + member_id,
+
+							success : function(data) {
+
+								//console.log("Success:"+ data.productName);
+
+								$("#countrytable").find("tr:gt(0)").remove();
+								var table1 = $("#countrytable");
+
+								$
+										.each(
+												data,
+												function(key, value) {
+
+													var rowNew2 = $("<tr ><td >&nbsp;</td></tr>");
+													rowNew2.appendTo(table1);
+
+				var rowNew = $('<tr style="outline: thin solid;padding-left:4px;"><td style="color:red;padding-left:25px;"></td><td style="color:red;padding-left:25px;"></td><td style="color:red;padding-left:25px;"></td><td style="color:red;padding-left:25px;"></td><td style="color:red;padding-left:25px;"></td><td style="color:red;padding-left:25px;"></td></tr>');
+													rowNew
+															.children()
+															.eq(0)
+															.text("$"+
+																	value['finalAmount']+".00");
+													rowNew
+															.children()
+															.eq(1)
+															.text(
+																	value['location']);
+
+													var dateStr = JSON
+															.parse(value['programStartDate']);
+													
+													rowNew
+															.children()
+															.eq(2)
+															.text(
+																	formatDate(dateStr));
+                                                    var dateStr = JSON
+															.parse(value['programEndDate']);
+													
+													rowNew
+															.children()
+															.eq(3)
+															.text(
+																	formatDate(dateStr));
+																	rowNew
+															.children()
+															.eq(4)
+															.text(
+																	value['status']);
+
+													rowNew.appendTo(table1);
+													var rowNew3 = $("<tr ><td >&nbsp;</td></tr>");
+													rowNew3.appendTo(table1);
+												});
+
+								$(".k-loading-mask").hide();
+							},
+							error : function(xhr, status, error) {
+								alert("1" + error);
+								console.log(xhr);
+
+							}
+						});
+			}
+			$("#customerAddress").hide();
+			$("#profileinfo").hide();
+			$("#enrolled_programs").show();
+			$("#update").hide();
+			$("#form").hide();
+			
+		}
+
+		function formatDate(inputFormat) {
+			function pad(s) {
+				return (s < 10) ? '0' + s : s;
+			}
+			var d = new Date(inputFormat);
+			return [ pad(d.getMonth() + 1), pad(d.getDate()), d.getFullYear() ]
+					.join('/');
+		}
+
+		function remove_member(member_id) {
+			
+			$("#enrolled_programs").hide();
+			$("#form").show();
+			$("#form").show();
+			$("#update").show();
+			$("#profileinfo").show();
+			
+			$("#updateProfInfo").css("display", "none");
+			$("#updateProfInfo").html("");
+			$("#tcErrorSpan").css("display", "none");
+			$("#tcErrorSpan").html("");
+			var kendoWindow = $("<div />").kendoWindow({
+				title : "Confirm",
+				resizable : false,
+				modal : true,
+				width : 400
+			});
+
+			kendoWindow.data("kendoWindow").content(
+					$("#delete-confirmation").html()).center().open();
+
+			kendoWindow.find(".delete-confirm,.delete-cancel").click(
+					function() {
+						if ($(this).hasClass("delete-confirm")) {
+							//alert("Deleting record...");
+							$(".k-loading-mask").show();
+							delete_record(member_id);
+						}
+
+						kendoWindow.data("kendoWindow").close();
+					}).end()
+		
+		
+	}
+
+		function delete_record(member_id) {
+			$
+					.ajax({
+						url : "remove_member?member_id=" + member_id,
+						success : function(data) {
+							// alert(data);
+							if (data == 'SUCCESS') {
+								$(".k-loading-text")
+										.html(
+												"Please wait while the member is removed");
+								setTimeout(function() {
+									$(".k-loading-text").fadeOut("slow");
+								}, 3000);
+								setTimeout(function() {
+									$(".k-loading-text").html(
+											"Member was removed successfully");
+									$(".k-loading-text").fadeIn("slow");
+								}, 4000);
+								setTimeout(function() {
+									$(".k-loading-text").fadeOut("slow");
+								}, 7000);
+								setTimeout(function() {
+									location.reload();
+								}, 7000);
+
+							} else {
+								$(".k-loading-text")
+										.html(
+												"Please wait while the member is removed");
+								setTimeout(function() {
+									$(".k-loading-text").fadeOut("slow");
+								}, 3000);
+								setTimeout(
+										function() {
+											$(".k-loading-text")
+													.html(
+															"There was some Error while processing your request");
+											$(".k-loading-text").fadeIn("slow");
+										}, 4000);
+								setTimeout(function() {
+									$(".k-loading-text").fadeOut("slow");
+									$(".k-loading-mask").hide();
+								}, 7000);
+								setTimeout(function() {
+									location.reload();
+								}, 7000);
+							}
+
+						},
+						error : function(xhr, status, error) {
+							//alert("1" +status);
+							console.log(xhr);
+							$(".k-loading-text").html(
+									"Please wait while the member is removed");
+							setTimeout(function() {
+								$(".k-loading-text").fadeOut("slow");
+							}, 3000);
+							setTimeout(
+									function() {
+										$(".k-loading-text")
+												.html(
+														"There was some Error while processing your request");
+										$(".k-loading-text").fadeIn("slow");
+									}, 4000);
+							setTimeout(function() {
+								$(".k-loading-text").fadeOut("slow");
+								$(".k-loading-mask").hide();
+							}, 7000);
+							setTimeout(function() {
+								location.reload();
+							}, 7000);
+						}
+					});
+
+		}
+
+		function add_member() {
+			var window_add = $("#popup_add");
+			window_add.clone().kendoWindow({
+				title : "Add Family Contact",
+				content : "addMember",
+				modal : false,
+				width : "700px",
+				close : onClose,
+				deactivate : function(e) {
+					this.destroy();
+				}
+			}).data("kendoWindow").center().open();
+			$('[data-role="draggable"]').css('top', '20px');
+		}
+
+		var onClose = function() {
+			//this.destroy();   
+		};
+		
+		function addcurrentfamilymember(){
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait while the member is added");
+			
+			 $("#tcSuccessSpan").css("display", "none");		
+			 $("#tcSuccessSpan" ).html("");	
+			 $("#tcErrorSpan1").css("display", "none");		
+			 $( "#tcErrorSpan1" ).html("");
+			  
+			//alert($('#addMembershipForm').serialize());
+			$.ajax({
+				  type: "POST",
+				  url: $('#addMembershipForm').attr( "action"),
+				  data: $('#addMembershipForm').serialize(),
+				  success: function( data ) {
+					  var jsonDataArr = jQuery.parseJSON(data);
+					  if(jsonDataArr != null && jsonDataArr.length > 0){			  
+					  	  if(jsonDataArr[0] != null && jsonDataArr[0].Success != null && jsonDataArr[0].Success =='Success'){
+						  	  $("#tcErrorSpan").css("display", "none");		
+							  $("#tcErrorSpan" ).html("");	
+							  //$("#tcSuccessSpan").css("display", "block");		
+							  //$("#tcSuccessSpan" ).html("Profile Information Updated successfully.");
+							  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 100);
+							  setTimeout(function(){$(".k-loading-text").html("Member was added successfully");$(".k-loading-text").fadeIn("slow");}, 300);
+						  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 500);
+						  	  //setTimeout(function(){location.href='view_membership';}, 7000);
+						  	  //setTimeout(function(){location.reload();}, 7000);
+						  	  //getFamilymembers();
+						  	  $("#tcSuccessSpan1").css("display", "block");		
+							  $("#tcSuccessSpan1" ).html("User Information added successfully");	
+							  $("#tcErrorSpan1").css("display", "none");		
+							  $( "#tcErrorSpan1" ).html("");
+							  setTimeout(function(){location.href='view_membership';}, 4000);
+						  	  //closeAllwindow();
+						  	  $(".k-loading-mask").hide();
+						  	//location.href='view_membership';
+						  	  
+					  	  }
+					  	 else if(jsonDataArr[0] != null && jsonDataArr[0].Duplicate != null && jsonDataArr[0].Duplicate=='Duplicate'){
+					  		  $("#tcSuccessSpan1").css("display", "none");		
+							  $("#tcSuccessSpan1" ).html("");	
+							  $("#tcErrorSpan1").css("display", "block");		
+							  $( "#tcErrorSpan1" ).html("User Information already exists!");
+							  $(".k-loading-mask").hide();
+					  	  }
+					  	  else{
+					  		  $("#tcSuccessSpan1").css("display", "none");		
+							  $("#tcSuccessSpan1" ).html("");	
+							  $("#tcErrorSpan1").css("display", "block");		
+							  $( "#tcErrorSpan1" ).html("There was some error. Please try again later");
+							  $(".k-loading-mask").hide();
+					  	  }
+					  }else{					  
+						  $("#tcSuccessSpan1").css("display", "none");		
+						  $("#tcSuccessSpan1" ).html("");	
+						  $("#tcErrorSpan1").css("display", "block");		
+						  $( "#tcErrorSpan1" ).html("There was some error. Please try again later");
+						  $(".k-loading-mask").hide();
+					  }
+					  //$(".k-loading-mask").hide();
+				  },
+				  error: function( xhr,status,error ){
+					  //alert("1" +status);
+					  console.log(xhr);
+					  $("#tcSuccessSpan1").css("display", "none");		
+					  $("#tcSuccessSpan1" ).html("");	
+					  $("#tcErrorSpan1").css("display", "block");		
+					  $( "#tcErrorSpan1" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+				  }
+			});
+		}
+	</script>
+
+</body>

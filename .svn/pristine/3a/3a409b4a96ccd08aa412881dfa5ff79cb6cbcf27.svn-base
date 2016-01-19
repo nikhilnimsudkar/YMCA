@@ -1,0 +1,13 @@
+# Specify database connection property
+spring.datasource.url=jdbc:mysql://localhost/ymca
+spring.datasource.username=root
+spring.datasource.password=Serene123
+spring.datasource.driverClassName=com.mysql.jdbc.Driver
+
+spring.jpa.generate-ddl=true
+spring.jpa.hibernate.ddl-auto=update
+
+#spring.jpa.hibernate.naming_strategy=org.hibernate.cfg.ImprovedNamingStrategy
+spring.jpa.database: MYSQL
+spring.jpa.show-sql=true
+#spring.jpa.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect

@@ -1,0 +1,210 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@Entity
+@Table(name = "items", catalog = "ymca") 
+@XmlRootElement
+public class Product  extends BaseObject implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
+	public Product(){
+		
+	}	
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "product_id", nullable = false)
+	private Long productId;
+	
+	@Column(name = "product_name", nullable = false)
+	private String productName;
+	
+	@Column(name = "description", nullable = false)
+	private String description;
+	
+	@Column(name = "product_type")
+	private String productType;
+	
+	@Column(name = "duration")
+	private String duration;
+	
+	@Column(name = "category", nullable = false)
+	private String category;
+	
+	/*@OneToOne
+	@JoinColumn(name="pricing_rule_id_FK")
+	private PricingRule pricingRule;*/
+	
+	@OneToOne
+	@JoinColumn(name="waivers_and_tc_id_FK")
+	private WaiversAndTC waiversAndTC;
+	
+	@OneToOne(fetch=FetchType.LAZY, mappedBy = "product", cascade = CascadeType.ALL)
+	private ItemDetails itemDetails;
+	
+	@OneToMany(mappedBy = "item")
+	private List<ItemDetailsSession> itemDetailsSession;
+	
+	public Long getProductId() {
+		return productId;
+	}
+	public void setProductId(Long productId) {
+		this.productId = productId;
+	}
+	public String getProductName() {
+		return productName;
+	}
+	public void setProductName(String productName) {
+		this.productName = productName;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	/*public PricingRule getPricingRule() {
+		return pricingRule;
+	}
+
+	public void setPricingRule(PricingRule pricingRule) {
+		this.pricingRule = pricingRule;
+	}*/
+
+	public WaiversAndTC getWaiversAndTC() {
+		return waiversAndTC;
+	}
+
+	public void setWaiversAndTC(WaiversAndTC waiversAndTC) {
+		this.waiversAndTC = waiversAndTC;
+	}
+
+	public String getProductType() {
+		return productType;
+	}
+	public void setProductType(String productType) {
+		this.productType = productType;
+	}
+	public String getDuration() {
+		return duration;
+	}
+	public void setDuration(String duration) {
+		this.duration = duration;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
+	}
+	public ItemDetails getItemDetails() {
+		return itemDetails;
+	}
+	public void setItemDetails(ItemDetails itemDetails) {
+		this.itemDetails = itemDetails;
+	}
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((category == null) ? 0 : category.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((duration == null) ? 0 : duration.hashCode());
+		result = prime * result
+				+ ((itemDetails == null) ? 0 : itemDetails.hashCode());
+		result = prime
+				* result
+				+ ((itemDetailsSession == null) ? 0 : itemDetailsSession
+						.hashCode());
+		result = prime * result
+				+ ((productId == null) ? 0 : productId.hashCode());
+		result = prime * result
+				+ ((productName == null) ? 0 : productName.hashCode());
+		result = prime * result
+				+ ((productType == null) ? 0 : productType.hashCode());
+		result = prime * result
+				+ ((waiversAndTC == null) ? 0 : waiversAndTC.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Product other = (Product) obj;
+		if (category == null) {
+			if (other.category != null)
+				return false;
+		} else if (!category.equals(other.category))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (duration == null) {
+			if (other.duration != null)
+				return false;
+		} else if (!duration.equals(other.duration))
+			return false;
+		if (itemDetails == null) {
+			if (other.itemDetails != null)
+				return false;
+		} else if (!itemDetails.equals(other.itemDetails))
+			return false;
+		if (itemDetailsSession == null) {
+			if (other.itemDetailsSession != null)
+				return false;
+		} else if (!itemDetailsSession.equals(other.itemDetailsSession))
+			return false;
+		if (productId == null) {
+			if (other.productId != null)
+				return false;
+		} else if (!productId.equals(other.productId))
+			return false;
+		if (productName == null) {
+			if (other.productName != null)
+				return false;
+		} else if (!productName.equals(other.productName))
+			return false;
+		if (productType == null) {
+			if (other.productType != null)
+				return false;
+		} else if (!productType.equals(other.productType))
+			return false;
+		if (waiversAndTC == null) {
+			if (other.waiversAndTC != null)
+				return false;
+		} else if (!waiversAndTC.equals(other.waiversAndTC))
+			return false;
+		return true;
+	}
+	
+
+}

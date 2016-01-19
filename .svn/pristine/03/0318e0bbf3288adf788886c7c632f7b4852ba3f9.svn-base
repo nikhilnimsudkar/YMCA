@@ -1,0 +1,116 @@
+package com.ymca.web.controller;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.UserDao;
+import com.ymca.model.User;
+import com.ymca.web.service.ContactService;
+
+@Controller
+public class TestController {
+
+	@Resource
+	private AccountDao accountDao;
+	
+	//@Resource
+	//private InteractionDao interactionDao; 
+	
+	@Resource
+	private UserDao userDao; 
+	
+	@Resource
+	private ContactService contactService;
+
+	
+	
+    @RequestMapping(value="/Testing", method=RequestMethod.GET)
+    public String index() {
+    	//System.out.println("inside login");
+        return "home";
+    }
+    
+   /* @RequestMapping(value="/YAgentConsole", method=RequestMethod.GET)
+    public String yAgentConsole() {
+    	//System.out.println("inside YAgentConsole");
+        return "YAgentConsole";
+    }
+    @RequestMapping(value="/CancelProgSum", method=RequestMethod.GET)
+    public String cancelProgSumary() {
+    	////System.out.println("inside login");
+        return "CancelProgSum";
+    }*/
+    
+    @RequestMapping(value="/YAgentConsole2", method=RequestMethod.GET)
+    public String yAgentConsole2() {
+    	////System.out.println("in console2");
+    	
+    	
+        return "YAgentConsole2";
+    }
+    
+    @RequestMapping(value="getUsersBySearchCriteria", method=RequestMethod.GET)
+	public @ResponseBody String getUsersBySearchCriteria(@RequestParam(value="fName") String fname,@RequestParam(value="lName") String lname,@RequestParam(value="eMail") String email,
+				final HttpServletRequest request, final HttpServletResponse response) {
+    	try{
+    	//System.out.println("in serch by criteria users.");
+//List<User> usersList=new ArrayList<User>();
+    	//User userobj=new User();
+		JSONArray json = new JSONArray();
+    	//usersList=userDao.findByPersonFirstNameOrPersonLastNameOrPrimaryEmailAddress(fname,lname,email);
+		//usersList=userDao.findByFirstNameOrLastNameOrEmailAddress(fname,lname,email);
+		List<Object[]> customerList = contactService.getAccountDetails(fname, lname, email);
+		
+    	for(Object object : customerList){
+    		User user = (User) object;
+    		JSONObject obj = new JSONObject();
+    	
+    		obj.put("PersonFirstName",user.getFirstName().toString() );
+    		obj.put("PersonLastName", user.getLastName().toString());
+    		obj.put("PrimaryEmailAddress", user.getEmailAddress().toString()); 
+    		obj.put("FormattedPhoneNumber", user.getFormattedPhoneNumber());
+    		obj.put("gender", user.getGender());
+    		/*String dobOld=user.getDateOfBirth().toString();
+    		//System.out.println(dobOld);
+    		 String oldFormat = "yyyy-MM-dd HH:mm:ss";
+    		String newFormat = "MM/dd/yyyy";
+	 	    SimpleDateFormat sdf1 = new SimpleDateFormat(oldFormat);
+	 	    SimpleDateFormat sdf2 = new SimpleDateFormat(newFormat);
+	 	   //System.out.println(sdf2.format(sdf1.parse(dobOld)));
+	 	    String DOB=sdf2.format(sdf1.parse(dobOld));
+	 	   //System.out.println(DOB);*/
+    		//obj.put("DateOfBirth", DOB);
+    		obj.put("DateOfBirth",user.getDateOfBirth().toString());
+    
+    		json.add(obj);
+    	}
+    	
+    	//System.out.println(json.toString());
+        //System.out.println("Size:"+usersList.size());
+        return json.toString();
+    	
+    	
+    	
+    	}
+    	catch(Exception se){
+    		//System.out.println("Err Occ");
+    	}
+    	
+    	return null;
+    }
+		
+
+}

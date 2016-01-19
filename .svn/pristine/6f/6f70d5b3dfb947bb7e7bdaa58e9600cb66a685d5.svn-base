@@ -1,0 +1,292 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+<% try { %>
+
+<script>
+	$(document).ready(function() {
+		
+		var today = kendo.date.today();
+        var start = $("#start").kendoDatePicker({
+        	value: new Date(new Date().getTime() - 24 * 30 * 60 * 60 * 1000),
+        	format: "yyyy-MM-dd",               
+            parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+        });
+        var end = $("#end").kendoDatePicker({
+            format: "yyyy-MM-dd",
+            value: today,                
+            parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+        });
+        var type = $('#type').kendoDropDownList({
+        	dataTextField: "text",
+            dataValueField: "value",
+            dataSource:
+            	[
+				 { text: "All", value:"All" },
+                 { text: "Credit", value:"Credit" },
+                 { text: "ACH", value:"ACH" }
+             ]
+        });
+        var status = $('#status').kendoDropDownList({
+        	dataTextField: "text",
+            dataValueField: "value",
+            dataSource: 
+            	[
+				 { text: "All", value:"All" },
+                 { text: "Success", value:"Success" },
+                 { text: "Failure", value:"Failure" },
+                 { text: "Pending", value:"Pending" }
+             ]
+        });
+      	
+        function initGrid(){
+        	$("#kgrid").kendoGrid({
+        
+     		  dataSource: GetRemoteData($("#start").val(),$("#end").val(),$('#type').data('kendoDropDownList').value(),
+     				  $('#status').data('kendoDropDownList').value(),$('#contact').val()),    	
+					filterable: false,
+					sortable: true,
+					pageable: true,
+     		       	resizable: true,
+     		        columns: 
+     					[{field: "contact", title: "Person",width:"90px"},
+     					 {field: "program", title: "Product",width:"85px"},
+        				 {field: "amount", title: "Amount",width:"80px"},
+        				 {field: "type", title: "Type",width:"75px"},
+       					 {field: "paymentDate", title: "Date",width:"80px"}, 
+        				 {field: "status", title: "Status"}]
+     		});
+        }
+        
+        function setfailurecolor(){
+        	var gridData = $("#kgrid").data("kendoGrid");
+        	var data = gridData.dataSource.data();
+			
+        	gridData.tbody.find('>tr').each(function () {
+                var dataItem = gridData.dataItem(this);
+                if (dataItem.status != null && dataItem.status.indexOf("Failure")!=-1) {
+                    $(this).css('color', 'red');
+                }
+            });
+        	setTimeout(function(){setfailurecolor();}, 1000);
+        }
+        
+     	function GetRemoteData(stDate,eDate,pType,pStatus,username) { 
+     		var  source = new kendo.data.DataSource({
+     	        autoSync: true,
+     	        transport: {
+     	            read: {
+     	                type: "GET",
+     	                url: "getPaymentHistoryBySearchCriteria",
+     	                data: {"stDate" : $("#start").val(),"eDate" : $("#end").val(),"pType" : $('#type').data('kendoDropDownList').value(),
+     	                	"pStatus" : $('#status').data('kendoDropDownList').value(),"username":$('#contact').val()},
+     	                dataType: "json",                
+     	                cache: false,
+     	            }    	            
+     	        },
+     	        pageSize: 5
+     	    });
+     	    source.fetch(function () {
+     	        var data = this.data();
+     	    });
+     	    return source;
+     	}
+     	
+     	function resizeGrid(d) {
+     	     var gridElement = $("#kgrid");
+     	     var dataArea = gridElement.find(".k-grid-content");
+     	     var newHeight = gridElement.parent().innerHeight() - 2;
+     	     var diff = gridElement.innerHeight() - dataArea.innerHeight();
+     	     gridElement.height(newHeight);
+     	     dataArea.height(newHeight - diff);
+     	     return d;
+     	}
+     	
+     	$("#kgrid").hide();
+     	
+     	$('#getPaymentHistoryBtn').click(function(e){
+     		initGrid();
+     		var stDate=$("#start").val();
+         	var eDate=$("#end").val();
+         	var pType= $('#type').data('kendoDropDownList').value();
+         	var pStatus= $('#status').data('kendoDropDownList').value();
+         	var username= $('#contact').val();
+        	
+        	setTimeout(function(){setfailurecolor(); $("#kgrid").show(); $("#btns").show();}, 500);
+        }); 
+      
+     	$('#exportToExcel').click(function() {	
+        	 if($("#kgrid").data("kendoGrid"))
+        	 	$("#kgrid").data("kendoGrid").saveAsExcel();
+    	}); 
+     	
+     	function printGrid() {
+     	    
+     		var gridData = $('#kgrid').data("kendoGrid").dataSource;
+     		var gridElement = $('<div></div>').kendoGrid({
+     			dataSource: gridData.data()
+     		});
+     		
+     		 var
+     	        printableContent = '',
+     	        win = window.open('', '', 'width=800, height=500'),
+     	        doc = win.document.open();
+
+     	    var htmlStart =
+     	            '<!DOCTYPE html>' +
+     	            '<html>' +
+     	            '<head>' +
+     	            '<meta charset="utf-8" />' +
+     	            '<title>Payment History</title>' +
+     	            '<link href="http://cdn.kendostatic.com/' + kendo.version + '/styles/kendo.common.min.css" rel="stylesheet" /> ' +
+     	            '<style>' +
+     	            'html { font: 11pt sans-serif; }' +
+     	            '.k-grid { border-top-width: 0; }' +
+     	            '.k-grid, .k-grid-content { height: auto !important; }' +
+     	            '.k-grid-content { overflow: visible !important; }' +
+     	            'div.k-grid table { table-layout: auto; width: 100% !important; }' +
+     	            '.k-grid .k-grid-header th { border-top: 1px solid; }' +
+     	            '.k-grid-toolbar, .k-grid-pager > .k-link { display: none; }' +
+     	            '</style>' +
+     	            '</head>' +
+     	            '<body>';
+
+     	    var htmlEnd =
+     	            '</body>' +
+     	            '</html>';
+
+     	    var gridHeader = gridElement.children('.k-grid-header');
+     	    if (gridHeader[0]) {	
+     	        var thead = gridHeader.find('thead').clone().addClass('k-grid-header');
+     	        printableContent = gridElement
+     	            .clone()
+     	                .children('.k-grid-header').remove()
+     	            .end()
+     	                .children('.k-grid-content')
+     	                    .find('table')
+     	                        .first()
+     	                            .children('tbody').before(thead)
+     	                        .end()
+     	                    .end()
+     	                .end()
+     	            .end()[0].outerHTML;
+     	    } else { 
+     	        printableContent = gridElement.clone()[0].outerHTML;
+     	    } 
+     	   doc.write(htmlStart + printableContent + htmlEnd);
+     	   doc.close();
+     	   win.print();
+     	}
+     	
+     	$('#print').click(function() {	
+     		printGrid();
+     	});
+    	
+     	$('#editPaymentMethodInfo').on( "click", function() {  
+      		$("#tcErrorSpan").css("display", "none");		
+    	    $("#tcErrorSpan" ).html("");	
+    	    $("#PaymentMethodDivID").css("display", "none");
+    	    $("#PaymentMethodInfoEditDivID").css("display", "block");
+       });
+    	
+	});
+</script>
+
+<div id="purchaseinfoPg">
+	<div id="tabstrip4" class="k-block" style="margin-top: 20px; padding: 10px; ">
+		<div class="pay_header">
+			<span class="head" style="margin-left:3px;">PAYMENT METHOD INFORMATION</span>
+			<span class="autopaySpan" style="width: 300px;">
+				<button id="editPaymentMethodInfo" class="k-button">Add/Edit Payment Method Info</button>
+			</span>
+			
+			<div id="purchase_info">
+				<table>
+					<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+					<tr>
+						<td><span class="k-icon k-i-arrow-e"></span><!-- <input type="radio" name="paymentInfoRadio" class="bootstrapRadio" disabled="disabled"> --></td>
+						<c:choose>
+							<c:when test="${ paymentInfo[4] == 'CREDIT' }">
+								<td><span style="font-weight: normal;">Credit & Debit Cards</span></td>
+							</c:when>
+							<c:when test="${ paymentInfo[4] == 'ACH' }">
+								<td><span style="font-weight: normal;">Bank Details</span></td>
+							</c:when>
+						</c:choose>
+						<td><span style="font-weight: normal;">${ paymentInfo[3] } </span></td>
+						<td><span style="font-weight: normal;">${ paymentInfo[2] }</span></td>
+						<c:choose>
+							<c:when test="${ paymentInfo[4] == 'CREDIT' }">
+								<td><span style="font-weight: normal;"><%-- ${ paymentInfo[3] } --%> ${ paymentInfo[5] }/${ paymentInfo[6] }</span></td>
+							</c:when>
+							<c:when test="${ paymentInfo[4] == 'ACH' }">
+								<td><span style="font-weight: normal;"></span></td>
+							</c:when>
+						</c:choose>
+						<c:choose>
+							<c:when test="${ paymentInfo[7] == 'VP' }">
+						      	<td><span style="font-weight: normal;">Validation Pending</span></td>
+						    </c:when>
+						    <c:when test="${ paymentInfo[7] == 'ACTIVE' }">
+						      	<td><span style="font-weight: normal;">Active</span></td>
+						    </c:when>
+						    <c:otherwise>
+						      	<td><span style="font-weight: normal;">${ paymentInfo[7] }</span></td>
+						    </c:otherwise>
+					    </c:choose>
+					</tr>
+					</c:forEach>
+				</table>
+			</div>
+		</div>
+		
+		<div class="pay_header">
+			<span class="head" style="margin-left:3px;">VIEW PAYMENT HISTORY</span>
+			<div id="bill_info">
+				<table>
+					<tr>
+						<td>Start Date</td>
+						<td>:</td>
+						<td><input type="text" id="start" name="startDate"></td>
+						<td>End Date</td>
+						<td>:</td>
+						<td><input type="text" id="end" name="endDate"></td>
+						<td>Type</td>
+						<td>:</td>
+						<td><input type="text" id="type" name="type" style="width:100px;"></td>
+					</tr>
+					<tr>
+						<td>Status</td>
+						<td>:</td>
+						<td><input type="text" id="status" name="status" ></td>
+						<td>Contact</td>
+						<td>:</td>
+						<td><input type="text" id="contact" name="contact" class="k-textbox" placeholder="Enter username" ></td>
+						<td></td>
+						<td></td>
+						<td><span id="getPaymentHistoryBtn" class="k-button"  style="width: 70px; text-shadow: none;">Go</span></td>
+					</tr>
+				</table>
+				<br/>
+				<div id="msg" style="color: blue"></div>
+				<br/>
+				<div id="btns" style="display:none; margin-bottom:10px;" align="right">
+					<button id="exportToExcel" class="k-button" style="margin-right: 10px">Export</button>
+					<button id="print" class="k-button" style="margin-right: 8px">Print</button>
+				</div>
+				<div id="kgrid"></div>
+				<div id="pgrid"></div>
+			</div>
+		</div>
+		
+		 <div id="statusBlock">
+			<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+			<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+		  </div>
+	</div>
+</div>
+
+<% 
+	}catch(Exception e1){ 
+		e1.printStackTrace();
+	} 
+%>

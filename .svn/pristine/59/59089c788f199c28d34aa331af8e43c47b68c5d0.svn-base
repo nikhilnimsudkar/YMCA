@@ -1,0 +1,118 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "app_waivers_and_tc")
+public class WaiversAndTC extends BaseObject implements Serializable {
+	private static final long serialVersionUID = -7439568389541257102L;
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "waivers_and_tc_id", nullable = false)
+    private Long waiversAndTcId;					// required  PK
+    
+    @Column(name = "record_name")
+    private String recordName;
+    
+    @Column(name = "tc_description", nullable = false, columnDefinition="LONGTEXT")
+    private String tcDescription;
+    
+    @Column
+    private String type;
+
+    public Long getWaiversAndTcId() {
+		return waiversAndTcId;
+	}
+
+	public void setWaiversAndTcId(Long waiversAndTcId) {
+		this.waiversAndTcId = waiversAndTcId;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String recordName) {
+		this.recordName = recordName;
+	}
+
+	public String getTcDescription() {
+		return tcDescription;
+	}
+
+	public void setTcDescription(String tcDescription) {
+		this.tcDescription = tcDescription;
+	}
+
+	
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	@Override
+	public String toString() {
+		return "WaiversAndTC [waiversAndTcId=" + waiversAndTcId
+				+ ", recordName=" + recordName + ", tcDescription="
+				+ tcDescription + ", type=" + type + "]";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WaiversAndTC other = (WaiversAndTC) obj;
+		if (recordName == null) {
+			if (other.recordName != null)
+				return false;
+		} else if (!recordName.equals(other.recordName))
+			return false;
+		if (tcDescription == null) {
+			if (other.tcDescription != null)
+				return false;
+		} else if (!tcDescription.equals(other.tcDescription))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		if (waiversAndTcId == null) {
+			if (other.waiversAndTcId != null)
+				return false;
+		} else if (!waiversAndTcId.equals(other.waiversAndTcId))
+			return false;
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((recordName == null) ? 0 : recordName.hashCode());
+		result = prime * result
+				+ ((tcDescription == null) ? 0 : tcDescription.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result
+				+ ((waiversAndTcId == null) ? 0 : waiversAndTcId.hashCode());
+		return result;
+	}
+
+}

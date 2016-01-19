@@ -1,0 +1,61 @@
+/**
+ * @author gpatwa
+ */
+package com.serene.job;
+
+import javax.sql.DataSource;
+
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import com.serene.bootstrap.WebServiceBootStrap;
+import com.serene.job.reader.CustomJdbcItemReader;
+import com.serene.job.reader.FusionItemReader;
+
+@Configuration
+@ComponentScan(basePackages={"com.serene.job"})
+@EnableAutoConfiguration
+@EnableBatchProcessing
+@EnableTransactionManagement(proxyTargetClass=true)
+@EnableScheduling
+@Import(WebServiceBootStrap.class)
+@ImportResource({"classpath:/META-INF/spring/**/*-context.xml"})
+public class JobBootLoader   {
+
+	@Bean
+	@Scope("prototype")
+	public ItemReader jdbcItemReader(String sql,DataSource dataSource,RowMapper resultsetToHashMap) {
+		CustomJdbcItemReader  reader = new CustomJdbcItemReader();
+		reader.setSql(sql);
+		reader.setRowMapper(resultsetToHashMap);
+		reader.setDataSource(dataSource);
+		return reader;
+	}
+	
+/*	@Bean
+	@Scope("prototype")
+	public ItemReader fusionItemReader(String fql) {
+		FusionItemReader  reader = new FusionItemReader();
+		reader.setFql(fql);
+		return reader;
+	}*/
+	
+	
+	@Bean
+	//@Scope("prototype")
+	public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+		ThreadPoolTaskScheduler  threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+		return threadPoolTaskScheduler;
+	}
+}

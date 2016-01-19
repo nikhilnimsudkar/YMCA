@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:ws="http://jax-ws.dev.java.net/spring/core"
+       xmlns:wss="http://jax-ws.dev.java.net/spring/servlet"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://jax-ws.dev.java.net/spring/core
+       http://jax-ws.java.net/spring/core.xsd
+       http://jax-ws.dev.java.net/spring/servlet
+       http://jax-ws.java.net/spring/servlet.xsd">
+
+<!-- 	<bean id="facilityBookingWebService" class="org.springframework.remoting.jaxws.JaxWsPortProxyFactoryBean">
+	    <property name="serviceInterface" value="com.ymca.web.ws.FacilityBookingService"/>
+	    <property name="wsdlDocumentUrl" value="http://localhost/ymca-web/FacilityBookingService?WSDL"/>
+	    <property name="namespaceUri" value="http://ymca-web/facilitybooking/ns"/>
+	    <property name="serviceName" value="FacilityBookingWebService"/>
+	    <property name="portName" value="FacilityBookingWebServiceEndpointPort"/>
+	</bean> -->
+
+<!--     <bean class="org.springframework.remoting.jaxws.SimpleJaxWsServiceExporter"> -->
+<!-- 	    <property name="baseAddress" value="http://localhost:8081/ymca-web/ws/"/> -->
+<!-- 	</bean> -->
+
+<!-- 	    <bean id="facilityBookingWebService" class="com.ymca.web.ws.FacilityBookingWebService" />
+	    <wss:binding url="FacilityBookingService">
+	        <wss:service>
+	            <ws:service bean="#facilityBookingWebService" />
+	        </wss:service>
+	    </wss:binding> -->
+</beans>
+

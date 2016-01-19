@@ -1,0 +1,23 @@
+package com.ymca.web.service;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class InvoiceServiceImpl implements InvoiceService {
+	
+	//private Logger log = LoggerFactory.getLogger(InvoiceServiceImpl.class);
+	
+	@Override
+	public String generateInvoiceNumber(Long accountId, Long signupId, Long payerId, Date billDate){
+
+		DateFormat sdf = new SimpleDateFormat("MMddYYYY");
+		String invoiceNumber = accountId +"-"+ signupId +"-"+ payerId +"-"+ sdf.format(billDate);
+		
+		return invoiceNumber;
+	}
+	
+}

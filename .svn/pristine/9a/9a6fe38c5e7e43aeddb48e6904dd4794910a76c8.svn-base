@@ -1,0 +1,32 @@
+/**
+ * @author gpatwa
+ * Template for fusion Item writer by External System Id 
+ */
+package com.serene.job.writer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+import com.serene.ws.model.fusion.ProcessControl;
+
+@Service
+@Scope("prototype")
+public class FusionItemByExternalSystemIdWriter extends AbstractFusionItemWriter implements ItemWriter<Map<String,Object>> {
+
+	
+	@Override
+	public void write(List<? extends Map<String, Object>> items) throws Exception {
+		List<Map<String,Object>> payloads = new ArrayList<Map<String, Object>>();
+		for (Map<String, Object> item : items) {
+			Map<String,Object> payload =  getPayload(item);
+			payloads.add(payload);
+		}
+		ProcessControl processControl = new ProcessControl();
+		fusionWebService.processObject(batchJobContext.getJobSchedulerMetadata().getJobName(), "Merge", payloads, processControl );
+	}
+}

@@ -1,0 +1,2638 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+	pageEncoding="ISO-8859-1"%>
+<body>
+	<%@ include file="../../layouts/include_taglib.jsp"%>
+	<script src="<%=contextPath %>/resources/js/payment/luhn.js"></script>
+	<script src="<%=contextPath %>/resources/js/payment/view.js"></script>
+	<div id="main544">
+		<div class="k-loading-mask"
+			style="width: 100%; height: 100%; position: absolute; top: 114px; left: 0px; display: none; z-index: 9999">
+			<span class="k-loading-text">Loading... Please wait</span>
+			<div class="k-loading-image">
+				<div class="k-loading-color"></div>
+			</div>
+		</div>
+		<div id="content33">
+			<div id="contentFormDiv223">
+				
+				<div id="payment-Error-Box" type="text/x-kendo-template" style="display:none;">
+				    <p class="error-message-p payment-Error-Box-msg-p"></p>
+					
+				    <div class="confirmbutton" align="center"><button class="confirm-payment-process k-button" style=" width: 35%;">Ok</button>  </div> 
+				</div>
+				
+				<table align="center" border="0" cellpadding="0" cellspacing="0">
+				<tr><td> 
+				<!-- Smart Wizard -->
+				        
+				  		<div id="wizard" class="swMain">
+				  			<ul>
+				  				<li>
+					  				<a href="#step-1">
+					                <!-- <label class="stepNumber">1</label> -->
+					                <span class="stepDesc">
+					                  1. MEMBERSHIP INFO<br />
+					                   <!-- <small>&nbsp;</small> -->
+					                </span>
+					            	</a>
+				            	</li>
+				  				<li><a href="#step-2">
+				                <!-- <label class="stepNumber">1</label> -->
+				                <span class="stepDesc">
+				                  2. USER INFORMATION	<br />
+				                   <!-- <small>&nbsp;</small> -->
+				                </span>
+				            </a></li>
+				  				<li><a href="#step-3">
+				               <!--  <label class="stepNumber">2</label> -->
+				                <span class="stepDesc">
+				                   3. T & C<br />
+				                   <!-- <small>Step 2 description</small> -->
+				                </span>
+				            </a></li>
+				            <li><a href="#step-4">
+				               <!--  <label class="stepNumber">2</label> -->
+				                <span class="stepDesc">
+				                   4. Payment Information<br />
+				                   <!-- <small>Step 2 description</small> -->
+				                </span>
+				            </a></li>
+				            <li><a href="#step-5">
+				               <!--  <label class="stepNumber">2</label> -->
+				                <span class="stepDesc">
+				                   5. Summary<br />
+				                   <!-- <small>Step 2 description</small> -->
+				                </span>
+				            </a></li>
+				  			</ul>
+				  			<div id="step-1">	
+				            <p>
+				            <div class="border-bottom-h3">
+				            	<span style="margin-right: 15px;"> Please select YMCA location</span>
+				            <select name="location" id="location" style="width:250px;" ><br />
+										<option value="0">--Select Location--</option>
+										<c:forEach var="location" items="${locations}" varStatus="count">
+											<c:if test="${ location.branchName != 'All Branches' && location.branchName != 'Bay Area' }">
+												<option value="${location.locationId }">${location.branchName }</option>
+											</c:if>
+										</c:forEach>
+							</select> 
+							
+							<%-- <select style="width:250px; display: none; margin-left : 10px;" id="pricingOption" name="prefLocation" >
+								<option value="0">--Select Pricing Options--</option>
+								<c:forEach var="location" items="${locations}" varStatus="count">
+									<c:if test="${ location.branchName == 'All Branches' || location.branchName == 'Bay Area' }">
+										<option value="${location.locationId }">${location.branchName }</option>
+									</c:if>
+								</c:forEach>
+								
+								<option value="This Branch Only">This Branch Only</option>																	
+							</select> --%>
+							</div>	
+							
+							<%-- <div id="allLocations" style="display:none;">
+								<option value="0">--Select Preferred Location--</option>
+								<c:forEach var="location" items="${locations}" varStatus="count">
+									<c:if test="${ location.branchName != 'All Branches' && location.branchName != 'Bay Area' }">
+										<option value="${location.locationId }">${location.branchName }</option>
+									</c:if>					
+								</c:forEach>	
+							</div>
+							
+							<div id="bayAreaLocations" style="display:none;">
+								<option value="0">--Select Preferred Location--</option>
+								<c:forEach var="location1" items="${bayAreaLocations}" varStatus="count">
+									<option value="${location1.locationId }">${location1.branchName }</option>
+								</c:forEach>
+							</div> --%>	
+							
+							<!-- <div id="example" style="margin-top: 10px;">
+				            	<div id="grid"></div>
+				            </div> -->    
+				            <div style="height: 315px;">		
+				               
+				            <ul id="panels">
+						
+										<!-- <li>
+											<div class="k-block k-block-div">
+												<div class="k-header k-shadow k-header-custom-gray" >Adult</div>
+												<div>
+													<div class="price-div">$ 90</div>
+													<div class="product-description-div">One Adult<br />No Kids</div>
+													<div class="product-location-div">All Locations</div>
+													<div class="border-bottom-line"></div>
+													<div class="product-join-fee-text-div">One Time Join Fee</div>
+													<div class="product-join-fee-text-val-div">$105</div>
+													<div class="k-button product-register-div">Register</div>
+												</div>						
+											</div>
+										</li>
+										<li>
+											<div class="k-block k-block-div">
+												<div class="k-header k-shadow k-header-custom-orange">Youth</div>
+												<div>
+													<div class="price-div">$ 90</div>
+													<div class="product-description-div">One Youth Unlimited Kids</div>
+													<div class="product-location-div">All Locations</div>
+													<div class="border-bottom-line"></div>
+													<div class="product-join-fee-text-div">One Time Join Fee</div>
+													<div class="product-join-fee-text-val-div">$105</div>
+													<div class="k-button product-register-div">Register</div>
+												</div>	
+											</div>
+										</li>
+										<li>
+											<div class="k-block k-block-div">
+												<div class="k-header k-shadow k-header-custom-gray">One Adult<br />w/ Kids</div>
+												<div>
+													<div class="price-div">$ 90</div>
+													<div class="product-description-div">One Adult Unlimited Kids</div>
+													<div class="product-location-div">All Locations</div>
+													<div class="border-bottom-line"></div>
+													<div class="product-join-fee-text-div">One Time Join Fee</div>
+													<div class="product-join-fee-text-val-div">$105</div>
+													<div class="k-button product-register-div">Register</div>
+												</div>	
+											</div>
+										</li>
+										<li>
+											<div class="k-block k-block-div">
+												<div class="k-header k-shadow k-header-custom-orange">Two Adults</div>
+												<div>
+													<div class="price-div">$ 90</div>
+													<div class="product-description-div">One Adult Unlimited Kids</div>
+													<div class="product-location-div">All Locations</div>
+													<div class="border-bottom-line"></div>
+													<div class="product-join-fee-text-div">One Time Join Fee</div>
+													<div class="product-join-fee-text-val-div">$105</div>
+													<div class="k-button product-register-div">Register</div>
+												</div>	
+											</div>
+										</li>
+										<li>
+											<div class="k-block k-block-div">
+												<div class="k-header k-shadow k-header-custom-gray">Two Adults<br />w/ Kids</div>
+												<div>
+													<div class="price-div">$ 90</div>
+													<div class="product-description-div">One Adult Unlimited Kids</div>
+													<div class="product-location-div">All Locations</div>
+													<div class="border-bottom-line"></div>
+													<div class="product-join-fee-text-div">One Time Join Fee</div>
+													<div class="product-join-fee-text-val-div">$105</div>
+													<div class="k-button product-register-div">Register</div>
+												</div>	
+											</div>
+										</li>
+										<li>
+											<div class="k-block k-block-div">
+												<div class="k-header k-shadow k-header-custom-orange">Three Adults<br />w/ or w/o kids</div>
+												<div>
+													<div class="price-div">$ 90</div>
+													<div class="product-description-div">One Adult Unlimited Kids</div>
+													<div class="product-location-div">All Locations</div>
+													<div class="border-bottom-line"></div>
+													<div class="product-join-fee-text-div">One Time Join Fee</div>
+													<div class="product-join-fee-text-val-div">$105</div>
+													<div class="k-button product-register-div">Register</div>
+												</div>	
+											</div>
+										</li> -->
+						
+									</ul>
+								</div> 
+							
+							</div>
+							<div id="step-2">			
+							<div id="registerDiv" >
+				            	<form:form commandName="account" method="post" action="becomeMemberRegister" id="becomeMemberForm" style="border : none; padding : 0px; margin : 0px; max-width: 100%;" autocomplete="off"
+							              class="bootstrap-frm cmxform" >			        
+									 <table border="0" width="100%" id="userInfoTb">					 						 
+									 	<tr>
+									 		<td colspan="2"><h2 style="margin-top: 5px; margin-bottom : 5px;"><span>PRIMARY MEMBER</span></h2> </td>
+									 		<td >&nbsp;</td>
+									 		<td > <span id="memberSignInSpan" class="k-button" style="width: 70px;text-shadow: none;float: right; margin-left:10px; ">Sign in</span></td>
+									 		<!-- <span id="newMemberSpan" class="k-button" style="width: 70px;text-shadow: none;float: right; ">New Member?</span> -->
+									 	</tr>
+									 	<tr>
+									 		<td><form:input cssClass="form-control" path="userLst[0].personFirstName" title="Please enter yout First Name" name="firstName" id="firstName" maxlength="50" placeholder="First Name"  /></td>					 		
+									 		<td>&nbsp;</td>
+									 		<td><form:input cssClass="form-control" path="userLst[0].personLastName" title="Please enter yout Last Name" name="lastName" id="lastName" maxlength="50" placeholder="Last Name" /></td>
+									 		<td>&nbsp;</td>
+									 	</tr>
+									 	<tr>		 		
+									 		<td><form:input  path="userLst[0].dateOfBirth" title="Please enter your Date of Birth" name="dob" id="dob" maxlength="50" placeholder="D.O.B"  style="width: 205px; " /></td>		
+									 		<td id="dop-er"></td>
+									 		<td><form:input cssClass="form-control" path="userLst[0].primaryFormattedPhoneNumber" title="Please enter your Phone Number" name="phoneNumber" id="phoneNumber" maxlength="50" placeholder="Phone Number" /></td>
+									 		<td></td>
+									 	</tr>
+										<tr>		 		
+									 		<td><form:input cssClass="form-control" path="userLst[0].primaryEmailAddress"  name="email" id="email"  maxlength="50" placeholder="Email"  /></td>			 							 		
+									 		<td></td>
+									 		<td>
+									 		<%-- <span><form:radiobutton cssClass="form-control" path="workNumber" value="Male" id="genderM" />&nbsp;Male&nbsp;<form:radiobutton cssClass="form-control" path="workNumber" value="Female" id="genderF" />&nbsp;Female</span> --%>
+									 			<span >
+									 				<span><span><form:radiobutton cssClass="form-control" path="userLst[0].gender" style="width : 15px;" value="Male" id="genderM" /></span><span style="margin-left : 5px;">Male</span></span>
+									 				<span><span><form:radiobutton cssClass="form-control" path="userLst[0].gender"  style="width : 15px;" value="Female" id="genderF" /></span><span style="margin-left : 5px;">Female</span></span>
+									 			</span> 
+									 		</td>
+									 		<td></td>
+									 	</tr>
+									 	<tr>		 		
+									 		<td>
+									 			<span class="k-block k-success-colored" id="emailSuccessSpan"></span>
+												<span class="k-block k-error-colored" id="emailErrorSpan"></span>
+											</td>			 							 		
+									 		<td></td>
+									 		<td></td>
+									 		<td></td>
+									 	</tr>
+										<tr>
+									 		<td><form:password cssClass="form-control" path="userLst[0].password" name="password" id="password" maxlength="50" placeholder="Password" /></td>
+									 		<td></td>
+									 		<td><form:password cssClass="form-control" path="userLst[0].confirmPassword" id="confirm_password" name="confirm_password" maxlength="50" placeholder="Confirm Password" /></td>
+									 		<td></td>
+									 	</tr>
+									 </table>
+									 <table border="0" width="100%" id="oneAdultWithKidsTable">		
+									 					 	
+									 </table>
+									 <table border="0" width="100%" id="userInfoTb">
+										 <tr>
+										 		<td colspan="2"><h2 style="margin-top: 5px; margin-bottom : 5px;"><span>ADDRESS</span></h2> </td>
+										 		<td></td>
+										 		<td></td>
+										 		<td></td>
+										 </tr>
+										 <tr>
+										 		<td><form:input cssClass="form-control" path="addressLine1" name="addressLine1" id="addressLine1" maxlength="50" placeholder="Address 1" /></td>
+										 		<td></td>
+										 		<td><form:input cssClass="form-control" path="addressLine2" name="addressLine2" id="addressLine2" maxlength="50" placeholder="Address 2" /></td>
+										 		<td></td>
+										 </tr>
+									 	<tr>
+									 		<td><form:input cssClass="form-control" path="city" name="city" id="city" maxlength="50" placeholder="City" title="Please enter yout City"/></td>						
+											<td></td>
+											<td>
+												<select size="1" id="state" name="state" style="width: 205px;  line-height: 15px; height: 30px; margin-bottom: 5px; padding: 5px 0px 5px 5px;">
+													<option value="">--Select State/Province--</option>
+													<option value="ZZ">Not USA or Canada</option>
+													<option value="AA">APO AA</option>
+													<option value="AE">APO AE</option>
+													<option value="AP">APO AP</option>
+													<option value="AL">Alabama</option>
+													<option value="AK">Alaska</option>
+													<option value="AB">Alberta</option>
+													<option value="AS">American Samoa</option>
+													<option value="AZ">Arizona</option>
+													<option value="AR">Arkansas</option>
+													<option value="BC">British Columbia</option>
+													<option value="CA" selected="">California</option>
+													<option value="CO">Colorado</option>
+													<option value="CT">Connecticut</option>
+													<option value="DE">Delaware</option>
+													<option value="DC">District of Columbia</option>
+													<option value="FL">Florida</option>
+													<option value="GA">Georgia</option>
+													<option value="GU">Guam</option>
+													<option value="HI">Hawaii</option>
+													<option value="ID">Idaho</option>
+													<option value="IL">Illinois</option>
+													<option value="IN">Indiana</option>
+													<option value="IA">Iowa</option>
+													<option value="KS">Kansas</option>
+													<option value="KY">Kentucky</option>
+													<option value="LA">Louisiana</option>
+													<option value="ME">Maine</option>
+													<option value="MB">Manitoba</option>
+													<option value="MD">Maryland</option>
+													<option value="MA">Massachusetts</option>
+													<option value="MI">Michigan</option>
+													<option value="MN">Minnesota</option>
+													<option value="MS">Mississippi</option>
+													<option value="MO">Missouri</option>
+													<option value="MT">Montana</option>
+													<option value="NE">Nebraska</option>
+													<option value="NV">Nevada</option>
+													<option value="NB">New Brunswick</option>
+													<option value="NH">New Hampshire</option>
+													<option value="NJ">New Jersey</option>
+													<option value="NM">New Mexico</option>
+													<option value="NY">New York</option>
+													<option value="NL">Newfoundland and Labrador</option>
+													<option value="NC">North Carolina</option>
+													<option value="ND">North Dakota</option>
+													<option value="MP">Northern Mariana Islands</option>
+													<option value="NT">Northwest Territories</option>
+													<option value="NS">Nova Scotia</option>
+													<option value="NU">Nunavut</option>
+													<option value="OH">Ohio</option>
+													<option value="OK">Oklahoma</option>
+													<option value="ON">Ontario</option>
+													<option value="OR">Oregon</option>
+													<option value="PA">Pennsylvania</option>
+													<option value="PE">Prince Edward Island</option>
+													<option value="PR">Puerto Rico</option>
+													<option value="QC">Quebec</option>
+													<option value="RI">Rhode Island</option>
+													<option value="SK">Saskatchewan</option>
+													<option value="SC">South Carolina</option>
+													<option value="SD">South Dakota</option>
+													<option value="TN">Tennessee</option>
+													<option value="TX" >Texas</option>
+													<option value="UM">US Minor Outlying Islands</option>
+													<option value="UT">Utah</option>
+													<option value="VT">Vermont</option>
+													<option value="VI">Virgin Islands, US</option>
+													<option value="VA">Virginia</option>
+													<option value="WA">Washington</option>
+													<option value="WV">West Virginia</option>
+													<option value="WI">Wisconsin</option>
+													<option value="WY">Wyoming</option>
+													<option value="YT">Yukon Territory</option>
+												</select>						  
+											</td>
+											<td></td>
+									 	</tr>
+									 	<tr>
+										 		<td><form:input cssClass="form-control" path="postalCode" name="postalCode" id="postalCode" maxlength="20" placeholder="Postal Code" /></td>
+										 		<td>&nbsp; </td>
+										 		<td>&nbsp; </td>
+										 		<td>&nbsp; </td>
+										 </tr>
+										 
+									 					
+									</table>
+									<form:input style="display:none;" path="tcDescription" id="userTC" value="" />	
+									<form:input style="display:none;" path="productId" id="productIdHidInput" value="" />
+									<form:input style="display:none;" path="paymentMethodId" id="paymentMethodIdHidInput" value="" />
+									<form:input style="display:none;" path="transId" id="paymentTransId" value="" />	
+									<form:input style="display:none;" path="joiningFee" id="prodJoiningFeeInput" value="" />
+									<form:input style="display:none;" path="productPrice" id="prodPriceInput" value="" />								
+									<%-- <form:input style="display:none;" path="signup[0].finalAmount" id="progFinalAmtIdHidInput" value="" /> --%>
+								</form:form>
+								</div>				
+								<div id="loginDiv" style="display:none;">
+									<%@ include file="../../views/customer/memberLogin.jsp" %> 
+								</div>
+				                     			
+				        </div>
+				  			<div id="step-3">
+				            	<div class="termsDiv">           	
+				            	</div>           	         	
+				            	<div>
+				            		<span>
+				            			<form id="tcForm" action="#" class="cmxform" style="margin-top : 10px;"> 
+				            				<table border="0">
+						            			<tr>
+											 		<td><input class="form-control bootstrap-Inputcss" name="tcname" id="tcname" maxlength="50" placeholder="Full Name" style="width: 230px;"/> </td>
+											 		<td>&nbsp; </td>							 		
+												 </tr> 
+												 
+											 </table>             				
+				            			</form>
+				            		</span>
+				            	</div>
+				        		<input type="checkbox" name="chkTermsAndCond" style="margin-top: 10px;">&nbsp;I accept terms and conditions
+				        		<div style="height:20px;"></div>            
+				        	</div>    
+				        	
+				        	<div id="step-4">
+				        		<div id="purchase_info" style="height: 260px;">
+									
+									<div class="addcarddiv">
+										<div style="height:20px;">Please select Payment Method</div>
+										<select id="paymentInfoRadio" name="paymentInfoRadio" style="width:300px;">							
+										</select>
+									</div>
+									<div class="addcarddiv" style="margin-left: 42px;">
+										<div style="height:20px;">Please select Payment Frequency</div>
+										<select id="paymentFrequencySelect" name="paymentFrequencySelect" style="width:150px;">	
+											<option value="Monthly" selected="selected">Monthly</option>
+											<option value="Annual">Annual</option>						
+										</select>
+									</div>
+									<div class="addcarddiv">
+										<div style="height:20px;">Start Date</div>
+										<input type="text" id="start" name="startDate" style="width:150px;">
+									</div>
+									<div class="addcarddiv" id="endDateDiv" style="display:none;">
+										<div style="height:20px;">End Date</div>
+										<input type="text" id="end" name="type" style="width:150px;">
+									</div>
+									<br /><br />
+										
+									<div id="addcard" style="margin-top:10px; margin-bottom:10px; height:44px; display:none;   float: left; ">
+										  
+											
+											<div style="height:50px;">
+												<div class="addcarddiv">
+													<div style="height:20px;">Name on card</div>
+													<div><input type="text" class="k-textbox" placeholder="Full Name on Card" name="fullName" id="fullName" value="" tabIndex="1"></div>
+												</div>
+												<div class="addcarddiv" style="margin-right : 30px;">
+													<div style="height:20px;">Card Number</div>
+													<!-- <input type="text"  name="cardType" id="cardType" value="">	 -->			
+						<!-- <div><input type="text" class="k-textbox" placeholder="Card Number" tabIndex="2" autocomplete="off" maxlength="16" size="16" value="" onchange="handleCCTyping(this.form, event);" onkeyup="handleCCTyping(this.form, event);" id="cardNumber" name="cardNumber" placeholder="Credit Card Number" style="width: 230px;"></div> -->
+													<form id="paymentForm" action="#" > 
+													<div>
+														<input type="text" class="k-textbox" placeholder="Card Number" name="cardNum" id="cardNum" value="" tabIndex="2" onchange="handleCCTyping(this.form, event);" onkeyup="handleCCTyping(this.form, event);">
+														<img src="resources/img/payment_credit_cards/cards/invalid.png" name="cardimage" width="40"  height="22" hspace="10" vspace="0" align="top">
+													</div>
+													</form> 
+												</div>
+												
+												<div class="addcarddiv">
+													<div style="height:20px;">Expiration date</div>
+													<div>
+														<span>
+															<select id="expirationMonth" name="expirationMonth" style="width:50px;">
+											                      <option value="01">01</option>
+											                      <option value="02">02</option>
+											                      <option value="03">03</option>
+											                      <option value="04">04</option>
+											                      <option value="05">05</option>
+											                      <option value="06">06</option>
+											                      <option value="07">07</option>
+											                      <option value="08">08</option>
+											                      <option value="09">09</option>
+											                      <option value="10">10</option>
+											                      <option value="11">11</option>
+											                      <option value="12">12</option>
+															</select>
+														</span>
+														<span>
+															<select id="addCardExpirationYear" name="expirationYear" style="width:70px;">																
+															</select>
+														</span>
+													</div>
+												</div>
+												<div class="addcarddiv">
+													<div style="height:20px;">Security Code</div>
+													<div>
+														<input type="password" class="k-textbox" placeholder="Security Code" style="width: 90px;" name="securityCode" id="securityCode" value="" tabIndex="3" title="CVV Help"> 
+													</div>
+												</div>
+												<div class="addcarddiv">
+													<div style="height:20px;">&nbsp;</div>
+													<div>
+														<a href="#" class="tooltip_display">
+															<img src="resources/img/question-mark.png" height="25px" width="25px"></img>
+														</a>
+														<div id="large">
+															<div class="ttip">
+																<span><a class="note"
+																	style="float: right; height: 25px; width: 25px;"><img
+																		src="resources/img/close.jpg" height="20px"
+																		width="20px"></img></a></span>
+																<div class="contents">
+																	<!-- <span class="profilepic"
+																		style="background: url('resources/img/cv_card.gif'); width: 250px; height: 160px;">&nbsp;</span>
+																	<span class="profilepic"
+																		style="background: url('resources/img/cv_amex_card.gif'); width: 250px; height: 160px;">&nbsp;</span> -->
+																		<span><img src="resources/img/cv_card.gif" height="130px" width="160px"></img></span>
+																		<span><img src="resources/img/cv_amex_card.gif" height="130px" width="160px"></img></span>																		
+																</div>
+																<div id="background"></div>
+															</div>
+														</div> 
+													</div>
+												</div>
+											<div style="height:50px;">
+												<div class="addcarddiv">
+													<div style="height:20px;">Address Line 1</div>
+													<div><!-- <textarea placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" class="k-textbox" style="width: 279px; height: 46px;"></textarea> -->
+														<input type="text" class="k-textbox" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" value="" tabIndex="4">
+													</div> 
+												</div>
+												<div class="addcarddiv">
+													<div style="height:20px;">Address Line 2</div>
+													<div><input type="text" class="k-textbox" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2" value="" tabIndex="5"></div> 
+												</div>
+												<div class="addcarddiv">
+													<div style="height:20px;">City</div>
+													<div><input type="text" class="k-textbox" placeholder="Billing City" name="billingCity" id="billingCity" value="" tabIndex="6"></div> 
+												</div>
+												<div class="addcarddiv" style="width:45px;">
+													<div style="height:20px;">State</div>
+													<div><input type="text" class="k-textbox" placeholder="" name="billingState" id="billingState" value="" style="width:45px;" tabIndex="7"></div> 
+												</div>
+												<div class="addcarddiv" style="width:60px">
+													<div style="height:20px;">Zip</div>
+													<div><input type="text" class="k-textbox" placeholder="Zip" name="billingZip" id="billingZip" value="" style="width:60px;" tabIndex="8"></div> 
+												</div>
+												<div class="addcarddiv" style="display:none;">
+													 <span id="paymentTokenIdSpan"></span>
+													 <span id="paymentAmountSpan"></span>
+												</div>
+												
+											</div>
+											
+											<div style="height:50px;">
+												
+												<div id="savecardcheckbox" class="addcarddiv" style="width:124px">
+													<div><input type="checkbox" checked="checked" disabled="disabled" name="SaveCard" id="SaveCard">&nbsp;&nbsp;Save Card</div>
+													
+												</div>
+												<div id="nickname" class="addcarddiv" >
+													<div style="height:20px;">Nick Name</div>
+													<div><input type="text" class="k-textbox" placeholder="Nick Name" name="nickName" id="nickName" value=""></div> 
+												</div>
+											</div>
+										
+									</div>
+									<div style="float: right; width: 300px;">
+									<!-- <div style="margin-right: 100px;">
+										<table style="margin:0px; padding: 7px; border: 1px solid #ddd;" class="summary-table-border">							
+												<tbody style="min-height: 300px;">	
+													<tr>
+														<td colspan="2" style="text-align: center;">
+															 <h3>
+															   Payment Information
+															 </h3>
+														</td>
+														<td></td>
+													</tr>							
+													<tr>
+														<td ><span><b>Join Fee</b></span></td>
+														<td id="paymentJoinFeeTd"></td>
+													</tr>
+													<tr>
+														<td><span><b>Price</b></span></td>
+														<td id="paymentTierTd"></td>
+													</tr>
+													<tr style="display:none;">
+														<td><span><b>Payment Frequency</b></span></td>
+														<td id="paymentFrequencyTd"></td>
+													</tr>
+													<tr style="display:none;">
+														<td><span><b>Billing cycle</b></span></td>
+														<td id="paymentBillingcycleTd"></td>
+													</tr>													
+													<tr>
+														<td><span><b>Total Price</b></span></td>
+														<td ><span></span><span id="paymentTotalPriceTd"></span></td>
+													</tr>														
+												</tbody>
+										</table>
+									</div> -->
+										
+										</div>
+									</div>
+									
+									<div id="addBank" style="margin-top:10px; margin-bottom:10px; height:44px; display:none;   float: left; ">										
+											<div style="height:50px;">
+												<div class="addcarddiv">
+													<div style="height:20px;">Account Number</div>
+													<div><input type="text" class="k-textbox" placeholder="Account Number" name="bankAccountNumber" id="bankAccountNumber" value=""  style="width: 15.4em;" tabIndex="1"></div>
+												</div>
+												<div class="addcarddiv">
+													<div style="height:20px;">Bank Routing Number</div>
+													<div><input type="text" class="k-textbox" placeholder="Bank Routing Number" name="bankRoutingNumber" id="bankRoutingNumber" value=""  style="width: 15.4em;" tabIndex="2"></div>
+												</div>
+												<div class="addcarddiv">
+													<div style="height:20px;">Check Number</div>
+													<div><input type="text" class="k-textbox" placeholder="Check Number" name="checkNumber" id="checkNumber" value=""  style="width: 15.4em;" tabIndex="3"></div>
+												</div>
+												<div class="addcarddiv">
+													<div style="height:20px;">Card Name</div>
+													<div><input type="text" class="k-textbox" placeholder="Card Name" name="cardName" id="cardName" value=""  style="width: 15.4em;" tabIndex="4"></div>
+												</div>
+											</div>											
+									</div><br />
+									<div id="statusBlock-payment" style="display: none;">
+										<span class="k-block k-success-colored"
+											id="tcloginSuccessSpan-payment" style="display: none"></span>
+										<span class="k-block k-error-colored"
+											id="tcloginErrorSpan-payment" style="display: none"></span>
+									</div>
+											
+											
+										<!--        	
+				            	<div class="bootstrap-frm" style="max-width : auto;">
+									<h2 style="color: #888; text-align: center;">Summary</h2>					
+										<table width="100%">							
+											<tbody id="confirmationDataBody" style="min-height: 300px;">
+											
+												<tr>
+													<td width="50%">
+												 		<h2>
+												   			<span>PRODUCT INFO</span>
+												 		</h2>
+												 	</td>
+													<td ></td>
+												</tr>
+											
+												<tr>
+													<td width="50%"><span><b>Product Id</b></span></td>
+													<td id="productIdTd"></td>
+												</tr>
+												<tr>
+													<td><span><b>Product Name</b></span></td>
+													<td id="productNameTd"></td>
+												</tr>								
+												<tr>
+													<td><span><b>Product Description</b></span></td>
+													<td id="productDescriptionTd"></td>
+												</tr>
+												<tr>
+													<td><span><b>Product Type</b></span></td>
+													<td id="productTypeTd"></td>
+												</tr>
+												<tr>
+													<td><span><b>Product Duration</b></span></td>
+													<td id="productDurationTd"></td>
+												</tr>
+												<tr>
+													<td><span><b>Product Price</b></span></td>
+													<td id="productPriceTd"></td>
+												</tr>	
+											
+											<tr>
+													<td width="50%">
+									 <h2>
+									   <span>USER INFO</span>
+									 </h2></td>
+													<td ></td>
+												</tr>
+											
+												<tr>
+													<td width="50%"><span><b>First Name</b></span></td>
+													<td id="firstNameTd"></td>
+												</tr>
+												<tr>
+													<td><span><b>Last Name</b></span></td>
+													<td id="lastNameTd"></td>
+												</tr>								
+												<tr>
+													<td><span><b>Date of Birth</b></span></td>
+													<td id="dobTd"></td>
+												</tr>
+												<tr>
+													<td><span><b>Phone Number</b></span></td>
+													<td id="phoneNumberTd"></td>
+												</tr>
+												<tr>
+													<td><span><b>Email</b></span></td>
+													<td id="emailTd"></td>
+												</tr>	
+																	
+												<tr>
+													<td><h2>
+									   <span>ADDRESS</span>
+									 </h2> </td>
+													<td ></td>
+												</tr>
+												
+												
+												<tr>
+													<td><span><b>Address Line 1</b></span></td>
+													<td id="addressLine1Td"></td>
+												</tr>
+												<tr>
+													<td><span><b>Address Line 2</b></span></td>
+													<td id="addressLine2Td"></td>
+												</tr>
+												<tr>
+													<td><span><b>City</b></span></td>
+													<td id="cityTd"></td>
+												</tr>
+												<tr>
+													<td><span><b>State</b></span></td>
+													<td id="stateTd"></td>
+												</tr>
+												<tr>
+													<td><span><b>Postal Code</b></span></td>
+													<td id="postalCodeTd"></td>
+												</tr>
+												<tr>
+													<td></td>
+													<td ><span id="" style="float:right; margin-top:10px;"><a href="/ymca-web/login">Go to Login Page</a></span></td>
+												</tr>
+												
+											</tbody>
+										</table> 
+									</div>	 -->	
+								         
+				        	</div> 
+				        	</div>
+				        	
+				        	<div id="step-5">
+				            	 <div id="contentFormDiv" >
+				            	<div class="border-bottom-h3" style="margin-bottom : 0px;">
+				        		<h2 style="color: #888; text-align: center; margin-top: 5px; margin-bottom: 5px;">Summary</h2>	
+				        	</div>
+				        	<div style="max-width : auto;" class="memberSummaryPage">
+									<table style="" border="0" width="100%">							
+												<tbody >	
+													<tr>
+														<td width="50%">
+															<table style="/* float: left; margin-left: 10px; */"
+																class="summary-table-border">
+																<tbody style="min-height: 300px;">
+																	<tr>
+																		<td colspan="2" style="border-bottom: 1px solid #ddd;">
+																			<h3>USER INFORMATION</h3>
+																		</td>
+																		<td></td>
+																	</tr>
+
+																	<tr>
+																		<td><span><b>First Name</b></span></td>
+																		<td id="firstNameTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Last Name</b></span></td>
+																		<td id="lastNameTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Date of Birth</b></span></td>
+																		<td id="dobTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Phone Number</b></span></td>
+																		<td id="phoneNumberTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Email</b></span></td>
+																		<td id="emailTd"></td>
+																	</tr>
+																</tbody>
+															</table>
+
+														</td>
+														<td width="50%">
+															<table style="/* float: left; margin-left: 10px; */"
+																class="summary-table-border">
+																<tbody style="min-height: 300px;">
+																	<tr>
+																		<td colspan="2" style="border-bottom: 1px solid #ddd;"><h3>
+																				ADDRESS INFORMATION</h3></td>
+																		<td></td>
+																	</tr>
+
+
+																	<tr>
+																		<td><span><b>Address Line 1</b></span></td>
+																		<td id="addressLine1Td"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Address Line 2</b></span></td>
+																		<td id="addressLine2Td"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>City</b></span></td>
+																		<td id="cityTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>State</b></span></td>
+																		<td id="stateTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Postal Code</b></span></td>
+																		<td id="postalCodeTd"></td>
+																	</tr>
+
+																</tbody>
+															</table>
+														</td>
+													</tr>							
+													<tr>
+														<td width="50%">
+															<table style="/* float: left; margin-left: 5px; */"
+																class="summary-table-border">
+																<tbody style="min-height: 300px;">
+																	<tr>
+																		<td colspan="2" style="border-bottom: 1px solid #ddd;">
+																			<h3>MEMBERSHIP INFORMATION</h3>
+																		</td>
+																		<td></td>
+																	</tr>
+																	<tr style="display:none">
+																		<td ><span><b>Product Id</b></span></td>
+																		<td id="productIdTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Product Name</b></span></td>
+																		<td id="productNameTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Product Description</b></span></td>
+																		<td id="productDescriptionTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Product Type</b></span></td>
+																		<td id="productTypeTd"></td>
+																	</tr>
+																	<tr style="display:none">
+																		<td><span><b>Product Duration</b></span></td>
+																		<td id="productDurationTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Product Price</b></span></td>
+																		<td ><span><b>$</b></span><b><span id="productPriceTd"></span></b></td>
+																	</tr>
+																</tbody>
+															</table>
+
+														</td>
+														<td width="50%">
+															<table style="/* float: left; margin-left: 5px; */"
+																class="summary-table-border">
+																<tbody style="min-height: 300px;">
+																	<tr>
+																		<td colspan="2" style="border-bottom: 1px solid #ddd;">
+																			<h3>PAYMENT INFORMATION</h3>
+																		</td>
+																		<td></td>
+																	</tr>
+																						<!-- <tr>
+																		<td ><span><b>Product Id</b></span></td>
+																		<td id="productIdTd"></td>
+																	</tr> -->
+																	<tr>
+																		<td><span><b>Join Fee</b></span></td>
+																		<td ><span>$</span><span id="sumJoinFeeTd"></span></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Price</b></span></td>
+																		<td ><span>$</span><span id="sumTierPriceTd"></span></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Payment Frequency</b></span></td>
+																		<td id="sumPaymentFreqTd"></td>
+																	</tr>
+																	<tr>
+																		<td><span><b>Total Price</b></span></td>
+																		<!-- <td id="sumTotalPriceTd"></td> -->
+																		<td><span>$</span><span id="sumTotalPriceTd"></span></td>
+																	</tr>
+																	<tr style="display:none;" id="sumAutoApplyTr">
+																		<td><span><b>EARLYBIRD</b></span></td>
+																		<td ><span style="color: red;">-$</span><span id="sumEarlyBirdDiscount" style="color: red;"></span></td>
+																	</tr>
+																	<tr style="display:none;" id="sumPromoCodeTr">
+																		<td><b><span id="sumPromoCodeName"></span></b></td>
+																		<td><span style="color: red;">-$</span><span id="sumPromoCodeVal" style="color: red;"></span></td>
+																	</tr>	
+																	<tr>
+																		<td><span><b>Final Amount</b></span></td>
+																		<!-- <td id="sumTotalPriceTd"></td> -->
+																		<td><span>$</span><span id="sumFinalAmountTd"></span></td>
+																	</tr>																
+																	<tr>
+																		<td colspan="2">
+																			<span>
+																				<b><span>Promo Code:</span></b>
+																				&nbsp;&nbsp;
+																				<span><input id="c_promocode" type="text" class="k-textbox"></span>
+																				<span id="applypromo" class="k-button" style="text-shadow: none;" >Apply</span>
+																			</span>
+																		</td>																		
+																		<td>&nbsp;</td>
+																	</tr>
+																	<tr>
+																		<td colspan="2">
+																			<div id="statusBlock">
+																				<span class="k-block k-success-colored" id="tcSuccessSpan"></span>
+																				<span class="k-block k-error-colored" id="tcErrorSpan"></span>
+																			</div>
+																		</td>																		
+																		<td>&nbsp;</td>
+																	</tr>
+																</tbody>
+															</table>
+
+														</td>
+													</tr>
+																										
+												</tbody>
+										</table>
+										
+							</div>
+				           </div>           
+				           <div class="bootstrap-frm" id="paymentSuccessDiv" style="display:none">
+							<h2><span>Payment Process Completed Successfully.</span></h2>
+						</div>
+						<div class="bootstrap-frm" id="paymentFailuresDiv" style="display:none">
+							<h2><span>Payment process Failed. Please try after sometime. </span></h2>
+						</div> 	
+				            	                 
+				        	</div>                   
+				  			
+				  		</div>
+				  		
+				<!-- End SmartWizard Content -->  		
+				 		
+				</td></tr>
+				</table>
+			
+			</div>
+		</div>
+	</div>
+	
+<script id="product-select-ErrorBox" type="text/x-kendo-template">
+    <p class="error-message-p">Please select the Product before Proceeding</p>
+	
+    <div class="confirmbutton" align="center"><button class="confirm-product-select k-button" style=" width: 35%;">Ok</button>   
+</script>
+
+<script id="terms-conditions-ErrorBox" type="text/x-kendo-template">
+    <p class="error-message-p">Please agree the terms and conditions before Proceding</p>
+	
+    <div class="confirmbutton" align="center"><button class="confirm-terms-conditions k-button" style=" width: 35%;">Ok</button>   
+</script>
+
+<script id="terms-conditions-LocationBox" type="text/x-kendo-template">
+    <p class="error-message-p">Please select the YMCA Location.</p>
+	
+    <div class="confirmbutton" align="center"><button class="confirm-location-select k-button" style=" width: 35%;">Ok</button>   
+</script>
+
+<script id="terms-conditions-PricingBox" type="text/x-kendo-template">
+    <p class="error-message-p">Please select the Pricing Options.</p>
+	
+    <div class="confirmbutton" align="center"><button class="confirm-pricing-select k-button" style=" width: 35%;">Ok</button>   
+</script>
+
+<script type="text/javascript">
+var emailValid = "false";
+var loginValid = "false";
+var signInSelected = "false";
+var isLoggedIn = "false";
+var paymentFreq1 = $("#paymentFrequencySelect").data("kendoDropDownList");
+
+var selectedHeaderInfo = "";
+var selectedTierPriceInfo = "";
+var selectedProdDescInfo = "";
+var selectedJoiningFeeInfo = "";
+
+var selectedProdctId = "";
+var selectedProductName = "";
+var selectedProductTotalPrice = "";
+var selectedProdTandc = "";
+
+var selectedAutoPromoDiscount = "";
+var selectedItemDetailsId = "";
+
+
+/* $("#grid").data("kendoGrid").dataSource.data([ ]);
+
+var productsGrid = $('#grid').data('kendoGrid');
+var dataSource = productsGrid.dataSource;
+dataSource.add({ id: "testId", productName: 'A Johns Product 1', productDescription: "desc"});
+dataSource.sync(); */
+
+$(document).ready(function(){	
+	$("input#cardNum").on({
+		  keydown: function(e) {
+		    if (e.which === 32 || e.which == 173)
+		      return false;
+		  },
+		  change: function() {
+		    this.value = this.value.replace(/\s/g, "");
+		  }
+		});
+	
+	$('.tooltip_display').click(function() {
+	    var $this = $(this);
+	    /* $("#background").css({
+	        "opacity": "0.3"
+	    }).fadeIn("slow"); */
+
+
+	    $("#large").html(function() {
+	        $('.ttip').css({
+	            left: $this.position() + '20px',
+	            top: $this.position() + '50px'
+	        }).show(500)
+
+	    }).fadeIn("slow");
+
+
+	});
+	
+	$('#applypromo').click(function() {
+		
+		$("#tcSuccessSpan").css("display", "none");		
+		 $("#tcSuccessSpan" ).html("");	
+		 $("#tcErrorSpan").css("display", "none");		
+		 $( "#tcErrorSpan" ).html("");
+		var d_promocode = $("#c_promocode").val();
+		var found = false;
+
+		if(d_promocode!=''){
+			$.ajax({
+				  type: "GET",
+				  async: false,
+				  url:"getPromodetails?promocode="+d_promocode,
+				  dataType: "json",
+				  success: function( data ) {
+					  if(data.length==1){
+						  $.each(data, function(i,promo) {
+								if(promo.itemDetails.length>0){
+									  $.each(promo.itemDetails, function(j,itemInfo) {
+											  if(selectedItemDetailsId == itemInfo.itemDetailsId){
+													  var p_price = parseFloat(0);
+													  p_price = parseFloat($("#sumTotalPriceTd").text());
+													  var d_price = parseFloat(0);
+													  var discount_type = promo.discounttype;
+													  if(discount_type=='AMOUNT')
+														  d_price = promo.discountValue;
+													  else if(discount_type=='PERCENTAGE'){
+														  d_price = parseFloat(promo.discountPercentage) * parseFloat(p_price);
+														  d_price = d_price/100;
+													  }													  
+													  found = true;
+													  if(d_price != 0){
+														  $("#sumPromoCodeTr").css("display","");
+														  $("#sumPromoCodeName").html(d_promocode);
+														  $("#sumPromoCodeVal").html(d_price);
+													  }else{
+														  $("#sumPromoCodeTr").css("display","none");
+														  $("#sumPromoCodeName").html("");
+														  $("#sumPromoCodeVal").html("");
+													  }
+													  
+													  var finalAmount = 0;
+													  if($("#sumEarlyBirdDiscount").text() != '' && $("#sumPromoCodeVal").text() != ''){
+													  	finalAmount = parseFloat($("#sumTotalPriceTd").text()) - parseFloat($("#sumEarlyBirdDiscount").text()) - parseFloat($("#sumPromoCodeVal").text());
+													  }else if($("#sumEarlyBirdDiscount").text() != ''){
+													  	finalAmount = parseFloat($("#sumTotalPriceTd").text()) - parseFloat($("#sumEarlyBirdDiscount").text());
+													  }else if($("#sumPromoCodeVal").text() != ''){
+													  	finalAmount = parseFloat($("#sumTotalPriceTd").text()) - parseFloat($("#sumPromoCodeVal").text());
+													  }else {
+													  	finalAmount = parseFloat($("#sumTotalPriceTd").text());
+													  }
+													  $("#sumFinalAmountTd").html(finalAmount);
+													 
+											  }
+											  
+									  });
+								}
+								
+						  });
+					  }
+					  else{
+						  $("#tcSuccessSpan").css("display", "none");		
+						  $("#tcSuccessSpan" ).html("");	
+						  $("#tcErrorSpan").css("display", "block");		
+						  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+						  
+						  $("#sumPromoCodeTr").css("display","none");
+						  $("#sumPromoCodeName").html("");
+						  $("#sumPromoCodeVal").html("");
+						  return;
+					  }
+				  },
+				  error: function( xhr,status,error ){
+					  //alert("1" +status);
+					  console.log(xhr);
+					 
+				  }
+			});
+		}
+
+		if (!found) {
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+		}
+	    
+	});
+	
+	
+
+	$('.note').on('click', function() {
+	    $('.ttip').hide(500);
+	    $("#background").fadeOut("slow");
+	    $("#large").fadeOut("slow");
+
+	});
+		
+	$("#phoneNumber").mask("(999) 999-9999");
+    $("#dob").kendoDatePicker();
+    $("#location").kendoDropDownList();    
+    //$("#pricingOption").kendoDropDownList();
+    //var pricingOption = $("#pricingOption").data("kendoDropDownList");
+    //pricingOption.select(0);
+    
+    var locationDropdownlist = $("#location").data("kendoDropDownList");
+    locationDropdownlist.select(0);
+    //var prefLocationDropdownlist = $("#prefLocation").data("kendoDropDownList");
+    //prefLocationDropdownlist.select(0);
+   // $("#prefLocation").closest(".k-widget").hide(); 
+    $("#paymentFrequencySelect").kendoDropDownList();
+    var paymentFreq = $("#paymentFrequencySelect").data("kendoDropDownList");
+    
+    var currentYear = new Date().getFullYear();
+	currentYear = parseInt(currentYear.toString().substring(2, 4));
+	for(var i=0; i<30 ; i++){
+		$('#addCardExpirationYear').append($('<option>', {value: currentYear,text: currentYear}));
+		currentYear = currentYear +1;
+	}
+	$("#addCardExpirationYear").kendoDropDownList();    
+    $("#expirationMonth").kendoDropDownList();
+          
+    $("#paymentFrequencySelect").on('change',function(e){   	
+    	$("#paymentFrequencyTd").html(paymentFreq.text());
+    	$("#sumPaymentFreqTd").html(paymentFreq.text());    	
+    	if(paymentFreq.text() == 'Annual'){
+    		$("#endDateDiv").css("display","inline");
+    		if(selectedProductTotalPrice != null){    			
+    			$("#sumTotalPriceTd").html(parseFloat(selectedProductTotalPrice) * 12);
+    		}    		
+    		//$("#end").attr("value", "");
+    	}else{
+    		$("#endDateDiv").css("display","none");    		
+    		$("#sumTotalPriceTd").html(selectedProductTotalPrice);
+    		$("#paymentBillingcycleTd").html($("#start").val() + "(Of each month)");
+    		//$("#end").attr("value", "");
+    		var str = $("#start").val();  		
+    		
+            if(str != null) {
+
+                var parts = str.split("-");
+
+                var year = parts[0] && parseInt( parts[0], 10 );
+                var month = parts[1] && parseInt( parts[1], 10 );
+                var day = parts[2] && parseInt( parts[2], 10 );
+                var duration = 1;
+
+                if( day <= 31 && day >= 1 && month <= 12 && month >= 1 ) {
+
+                    var expiryDate = new Date( year, month - 1, day );
+                    expiryDate.setFullYear( expiryDate.getFullYear() + duration );
+
+                    var day = ( '0' + expiryDate.getDate() ).slice( -2 );
+                    var month = ( '0' + ( expiryDate.getMonth() + 1 ) ).slice( -2 );
+                    var year = expiryDate.getFullYear();
+
+                    $("#end").val(year + "-" +month + "-" + day);
+                    $("#end").data('kendoDatePicker').value($("#end").val());
+
+                } else {
+                    alert("Error Occured while setting Membership End Date");
+                }
+            }
+    	}
+    });
+    
+    
+    var today = kendo.date.today();
+    var d = new Date();
+    d.setMonth(d.getMonth() + 2);
+    var start = $("#start").kendoDatePicker({
+    	format: "yyyy-MM-dd",
+    	value: today,      
+    	max: d,
+    	change: function (e) {
+    		var str = $("#start").val();
+    		$("#paymentBillingcycleTd").html($("#start").val() + "(Of each month)");
+    		$("#progStartDateIdHidInput").attr("value", $("#start").val());    		
+            if(str != null) {
+
+                var parts = str.split("-");
+
+                var year = parts[0] && parseInt( parts[0], 10 );
+                var month = parts[1] && parseInt( parts[1], 10 );
+                var day = parts[2] && parseInt( parts[2], 10 );
+                var duration = 1;
+
+                if( day <= 31 && day >= 1 && month <= 12 && month >= 1 ) {
+
+                    var expiryDate = new Date( year, month - 1, day );
+                    expiryDate.setFullYear( expiryDate.getFullYear() + duration );
+
+                    var day = ( '0' + expiryDate.getDate() ).slice( -2 );
+                    var month = ( '0' + ( expiryDate.getMonth() + 1 ) ).slice( -2 );
+                    var year = expiryDate.getFullYear();
+
+                    $("#end").val(year + "-" +month + "-" + day);
+                    $("#end").data('kendoDatePicker').value($("#end").val());
+
+                } else {
+                    alert("Error Occured while setting Membership End Date");
+                }
+            }
+        },
+    	parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+    });    
+    var end = $("#end").kendoDatePicker({
+    	format: "yyyy-MM-dd",
+    	value: today,                
+    	parseFormats: ["MM/dd/yyyy", "dd/MM/yyyy"]
+    });
+    
+    var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+	var eventer = window[eventMethod];
+	var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+	eventer(messageEvent,function(e) {
+		var key = e.message ? "message" : "data";
+		var data = e[key];
+		//$("#contentFormDiv").css("display", "none");			
+		if(data.view.toString() == "Success"){
+			//$("#paymentSuccessDiv").css("display", "block");	
+			var joinFee = $('#sumJoinFeeTd').text();
+			  var sumTierPriceTd = $('#sumTierPriceTd').text();
+			  
+			  var joinFeeAmount = 0;
+			    if(joinFee != null){
+			    	var amountArr = joinFee.split(" ");
+			    	joinFeeAmount = amountArr[1];
+			    	if(joinFeeAmount){
+			    		$("#prodJoiningFeeInput").attr("value", joinFeeAmount);
+			    	}else{
+			    		$("#prodJoiningFeeInput").attr("value", "0");  
+			    	}
+			    	  
+			    	
+			    }
+			    var sumTierPriceTdAmount = 0;
+			    if(sumTierPriceTd != null){
+			    	var amountArr = sumTierPriceTd.split(" ");
+			    	sumTierPriceTdAmount = amountArr[1];
+			    	if(sumTierPriceTdAmount){
+			    		$("#prodPriceInput").attr("value", sumTierPriceTdAmount);    
+			    	}else{
+			    		$("#prodPriceInput").attr("value", "0");     
+			    	}
+			    	
+			    }
+			    $("#statusBlock-payment").css("display", "none");	
+			    $("#tcloginErrorSpan-payment").css("display", "none");	
+			    $( "#tcloginErrorSpan-payment" ).html("");
+			document.forms["becomeMemberForm"].submit();
+			$('#wizard').smartWizard('setError',{stepnum:4,iserror:false});
+			$(".k-loading-mask").hide();
+		}
+		if(data.view.toString() == "Failure"){
+			$('#childIframeId').attr("src", "<%=contextPath %>/viewPaymentForm");
+			//document.getElementById("childIframeId").contentDocument.location.reload(true);
+			$('#wizard').smartWizard('goToStep',4);
+			$('#wizard').smartWizard('setError',{stepnum:4,iserror:true});
+			  /* var errorMsg = '';
+			  errorMsg += "Error occurred while processing Payment.<br />";			  					  
+			  $("p.payment-Error-Box-msg-p").html(errorMsg);						  
+			  var kendoWindow = $("<div />").kendoWindow({
+		        	title: "Error",
+		        	resizable: false,
+		        	modal: true,
+		        	width:400
+		        });		
+	  			kendoWindow.data("kendoWindow")
+		         .content($("#payment-Error-Box").html())
+		         .center().open();	  			
+		        kendoWindow
+		        .find(".confirm-payment-process")
+		        .click(function() {
+		        	if ($(this).hasClass("confirm-payment-process")) {  
+		        		$("#payment-Error-Box").css("display", "none");
+		        		kendoWindow.data("kendoWindow").close();
+		        	}
+		        })
+		        .end(); */
+		        $("#statusBlock-payment").css("display", "block");	
+		        $("#tcloginErrorSpan-payment").css("display", "block");	
+		        $( "#tcloginErrorSpan-payment" ).html("Error occurred while processing the payment. Please try again later");
+		        $(".k-loading-mask").hide();
+			//$("#paymentFailuresDiv").css("display", "block");
+		}
+		//$("#form_container").html("Success Redirection " + data.view);			
+	},false);
+   
+    $("#location").on('change',function(e){    	    	 
+    	/*$('#grid').data('kendoGrid').dataSource.read({"locationId":$("#location").kendoDropDownList().val()});
+    	$("#grid").data("kendoGrid").refresh();
+    	var grid = $("#grid").data("kendoGrid");
+    	var count = grid.dataSource.total();    	
+    	if(count != null && count == 0){
+    		 var tableDataHtml = '';
+	    	tableDataHtml += '<tr role="row" data-uid="44b95541-b9d3-45df-8dc2-093934cabdbb"><td role="gridcell" colspan="3">No Product Information found for selected Location. Please select different Location.</td></tr>';
+	    	$("#grid tbody").html(tableDataHtml); 
+    	}	    
+    	*/
+    	/* if(locationDropdownlist.text() == 'All Branches' || locationDropdownlist.text() == 'Bay Area'){
+    		if(locationDropdownlist.text() == 'All Branches'){
+    			$("#prefLocation").html("");
+    			$("#prefLocation").html($("#allLocations").html());
+    			$("#prefLocation").kendoDropDownList();
+    		}
+    		if(locationDropdownlist.text() == 'Bay Area'){
+    			$("#prefLocation").html("");
+    			$("#prefLocation").html($("#bayAreaLocations").html());
+    			$("#prefLocation").kendoDropDownList();
+    		}	    		
+    		$("#prefLocation").closest(".k-widget").show();    		 
+    	} else{ 
+    		var dropdownlist = $("#prefLocation").data("kendoDropDownList");
+    		dropdownlist.select(0);
+    		$("#prefLocation").closest(".k-widget").hide();    		
+    	} */
+    });    
+    $(document).on('click', '.add-child-lnk', function(){
+    	var secondaryKidInfo = getSecondaryKidsInfoHtml("3");
+    	$('#oneAdultWithKidsTable').css("display" , "inline-table");
+		$('#oneAdultWithKidsTable').append(secondaryKidInfo);
+		//$('.dob-class').kendoDatePicker();
+		$("#wizard").smartWizard("fixHeight");
+    });
+    
+    $(document).on('click', '.remove-child-lnk', function(){
+    	$(this).parent().parent().next().remove();
+    	$(this).parent().parent().prev().remove();
+    	$(this).parent().parent().remove();
+		$("#wizard").smartWizard("fixHeight");
+    });
+    
+     
+   // $('.dob-class').kendoDatePicker();
+    $(document).on('click', '.product-register-div', function(){
+    	//alert("click");
+    	/* console.log("header " + $(this).parent().parent().find( ".k-header" ).text());
+    	console.log("price-div " + $(this).parent().parent().find( ".price-div" ).text());
+    	console.log("product-description-div " +$(this).parent().parent().find( ".product-description-div" ).text());
+    	console.log("product-join-fee-text-val-div " + $(this).parent().parent().find( ".product-join-fee-text-val-div" ).text());  */
+    	selectedHeaderInfo = $(this).parent().parent().find( ".k-header" ).text();
+    	selectedTierPriceInfo = $(this).parent().parent().find( ".price-div" ).text();
+    	selectedProdDescInfo = $(this).parent().parent().find( ".product-description-div" ).text();
+    	selectedJoiningFeeInfo = $(this).parent().parent().find( ".product-join-fee-text-val-div" ).text();  
+    	
+    	selectedProdctId = $(this).parent().parent().find( ".prod-id-div" ).text();
+    	selectedProductName = $(this).parent().parent().find( ".prod-name-div" ).text();
+    	//selectedProductTotalPrice = $(this).parent().parent().find( ".prod-total-price-div" ).text();
+    	selectedProdTandc = $(this).parent().parent().find( ".prod-tandc-div" ).html();
+    	
+    	selectedAutoPromoDiscount = $(this).parent().parent().find( ".prod-autoPromoDiscount-div" ).html();
+    	
+    	//$("input:radio[name=paymentTypeSelect]").change(function() {
+    	/* $(document).on('change', 'input:[name=paymentTypeSelect]', function(){
+    	
+    		if($("input:checkbox[name=paymentTypeSelect]").is(":checked")){
+    			$("input:checkbox[name=paymentTypeSelect]").prop('checked', false); 
+    		}
+    	    $(this).prop('checked', false); 
+    	    alert( $(this).val());
+    		selectedProductTotalPrice = parseFloat(selectedTierPriceInfo) + parseFloat(selectedJoiningFeeInfo);
+    		alert(selectedProductTotalPrice);
+    	});  */
+    	
+    	/* $(document).on('click', '.paymentTypeSelectClass', function() {
+    		if($("input:checkbox[name=paymentTypeSelect]").is(":checked")){
+    			$("input:checkbox[name=paymentTypeSelect]").prop('checked', false); 
+    		}
+    	    $(this).prop('checked', true); 
+    	    alert( $(this).val());
+    		selectedProductTotalPrice = parseFloat(selectedTierPriceInfo) + parseFloat(selectedJoiningFeeInfo);
+    		alert(selectedProductTotalPrice);
+    	}); */
+    	//if($("input:radio[name=paymentTypeSelect]").is(":checked")){
+    	if($(this).parent().parent().find( "input:radio[name=paymentTypeSelect]" ).is(":checked")){    	
+    		var paymentType = $(this).parent().parent().find( "input:radio[name=paymentTypeSelect]:checked" ).val();
+    		if(paymentType == 'AllArea'){
+    			var allAreaPrice = $(this).parent().parent().find( ".all-area-price-td" ).text();    		
+    			selectedProductTotalPrice = parseFloat(allAreaPrice) + parseFloat(selectedJoiningFeeInfo);       
+    			$("#sumTierPriceTd").html(allAreaPrice);
+    		}else if(paymentType == 'BayArea'){
+    			var bayAreaPrice = $(this).parent().parent().find( ".bay-area-price-td" ).text();    		
+    			selectedProductTotalPrice = parseFloat(bayAreaPrice) + parseFloat(selectedJoiningFeeInfo);    
+    			$("#sumTierPriceTd").html(bayAreaPrice);
+    		}    		
+    	} else{
+			selectedProductTotalPrice = parseFloat(selectedTierPriceInfo) + parseFloat(selectedJoiningFeeInfo);  
+			$("#sumTierPriceTd").html(selectedTierPriceInfo);
+		}
+    	
+    	if(selectedAutoPromoDiscount != 0){
+			  $("#sumAutoApplyTr").css("display","");			  
+			  $("#sumEarlyBirdDiscount").html(selectedAutoPromoDiscount);
+		  }else{
+			  $("#sumAutoApplyTr").css("display","none");			 
+			  $("#sumEarlyBirdDiscount").html("");
+		  }
+    	
+    	
+		 $("#sumPromoCodeTr").css("display","none");			  
+		 $("#sumPromoCodeName").html("");
+		 $("#sumPromoCodeVal").html("");		 
+		
+    	//alert(selectedAutoPromoDiscount);
+    	selectedItemDetailsId = $(this).parent().parent().find( ".prod-itemDetailsId-div" ).html();
+    	
+    	$("#productIdTd").html(selectedProdctId);
+    	$("#productIdHidInput").attr("value", selectedProdctId);
+    	$("#productNameTd").html(selectedProductName);
+    	$("#productDescriptionTd").html(selectedProdDescInfo);
+    	$("#productTypeTd").html($(this).parent().parent().find( ".prod-type-div" ).text());    	
+    	
+    	$("#productPriceTd").html(selectedProductTotalPrice);
+    	$("#paymentAmountSpan").html(selectedProductTotalPrice);
+    	$("#paymentTotalPriceTd").html(selectedProductTotalPrice);	
+    	$("#sumTotalPriceTd").html(selectedProductTotalPrice);
+    	
+    	$(".termsDiv").html(selectedProdTandc);
+    	$("#userTC").attr("value", selectedProdTandc);
+    	
+    	$("#paymentJoinFeeTd").html(selectedJoiningFeeInfo);
+    	$("#sumJoinFeeTd").html(selectedJoiningFeeInfo);		
+    	
+    	
+    		    	
+    	
+    	var oneAdultWithKidsHtml = getKidsInfoHeader() + getKidsInfoHtml("1");
+    	var twoAdultsHtml = getSecondUserInfoHeader() + getSecondUserInfoData("1");
+    	var twoAdultsWithKidsHtml = getSecondUserInfoHeader() + getSecondUserInfoData("1") + getKidsInfoHeader() + getKidsInfoHtml("1");
+    	var threeAdultsWithKidsHtml = getSecondUserInfoHeader() + getSecondUserInfoData("1") + getThirdUserInfoHeader() + getSecondUserInfoData("2") + getKidsInfoHeader() + getKidsInfoHtml("1");
+    	
+    	if(selectedHeaderInfo == 'One Adultw/ Kids'){
+    		$('#oneAdultWithKidsTable').css("display" , "inline-table");
+    		$('#oneAdultWithKidsTable').html(oneAdultWithKidsHtml);
+    		
+    	}else if(selectedHeaderInfo == 'Two Adults'){
+    		$('#oneAdultWithKidsTable').css("display" , "inline-table");
+    		$('#oneAdultWithKidsTable').html(twoAdultsHtml);
+    	}else if(selectedHeaderInfo == 'Two Adultsw/ Kids'){
+    		$('#oneAdultWithKidsTable').css("display" , "inline-table");
+    		$('#oneAdultWithKidsTable').html(twoAdultsWithKidsHtml);
+    	}else if(selectedHeaderInfo == 'Three Adultsw/ or w/o kids'){
+    		$('#oneAdultWithKidsTable').css("display" , "inline-table");
+    		$('#oneAdultWithKidsTable').html(threeAdultsWithKidsHtml);
+    	}else{
+    		$('#oneAdultWithKidsTable').css("display" , "none");
+    	}    	
+    	$("#wizard"). smartWizard("fixHeight");
+    	$('#wizard').smartWizard('goToStep',2);
+    	
+    });
+    
+    $("#location").on('change',function(e){  
+	    if(locationDropdownlist.text() != '--Select Location--'){
+	    	/* var locId = 0;
+	    	if(pricingOption.text() == 'All Branches' || pricingOption.text() == 'Bay Area'){
+	    		locId = $("#pricingOption").kendoDropDownList().val(); */
+	    		/* if(locationDropdownlist.text() == 'All Branches'){
+	    			$("#prefLocation").html("");
+	    			$("#prefLocation").html($("#allLocations").html());
+	    			$("#prefLocation").kendoDropDownList();
+	    		}
+	    		if(locationDropdownlist.text() == 'Bay Area'){
+	    			$("#prefLocation").html("");
+	    			$("#prefLocation").html($("#bayAreaLocations").html());
+	    			$("#prefLocation").kendoDropDownList();
+	    		} */	    		
+	    		//$("#prefLocation").closest(".k-widget").show();    		 
+	    	/* } else{ 
+	    		locId = $("#location").kendoDropDownList().val();
+    		} */
+	    	
+	    	$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait");	
+			$("#tcloginErrorSpan-payment").css("display", "none");	
+			$( "#tcloginErrorSpan-payment" ).html("");
+			$("#panels").html("");
+			$.ajax({
+				  type: "GET",
+				  url: "getProductDetailsByLocation",	
+				  data: {"locationId" : $("#location").kendoDropDownList().val()},
+				  success: function( data ) {
+					  //console.log(data);
+					  var pricingBoxHtml = '';
+					  var jsonDataArr = jQuery.parseJSON(data);
+					  if(jsonDataArr != null && jsonDataArr.length > 0){
+	    				  for(var i = 0; i<jsonDataArr.length; i++){
+	    					  //console.log(jsonDataArr[i].id); 	    					  
+	    					  pricingBoxHtml += '<li>';
+	    					  pricingBoxHtml += '<div class="k-block k-block-div" style="position: relative;">';
+	    					  var prodHeaderInfo = '';
+	    					  if(jsonDataArr[i].productName != null && (jsonDataArr[i].productName =='One Adult w/ Kids' || jsonDataArr[i].productName =='Two Adults w/ Kids' || jsonDataArr[i].productName =='Three Adults w/ or w/o kids')){
+	    						  if(jsonDataArr[i].productName =='One Adult w/ Kids'){
+	    							  prodHeaderInfo = 'One Adult<br />w/ Kids';
+	    						  }else if(jsonDataArr[i].productName =='Two Adults w/ Kids'){
+	    							  prodHeaderInfo = 'Two Adults<br />w/ Kids';
+	    						  }else{
+	    							  prodHeaderInfo = 'Three Adults<br />w/ or w/o kids';
+	    						  }
+	    					  }else{
+	    						  prodHeaderInfo = jsonDataArr[i].productName;
+	    					  }
+	    					  if(i % 2 == 0){
+	    						  pricingBoxHtml += '<div class="k-header k-shadow k-header-custom-gray" >'+prodHeaderInfo+'</div>';
+	    					  }else{
+	    						  pricingBoxHtml += '<div class="k-header k-shadow k-header-custom-orange" >'+prodHeaderInfo+'</div>';
+	    					  }
+	    					  pricingBoxHtml += '<div>';
+	    					  pricingBoxHtml += '<span style="font-size: x-large; font-family: cursive;">$ <div class="price-div">'+jsonDataArr[i].tierPrice+'</div></span>';
+	    					  
+	    					  pricingBoxHtml += '<div class="prod-id-div" style="display:none">'+jsonDataArr[i].id+'</div>';
+	    					  pricingBoxHtml += '<div class="prod-name-div" style="display:none">'+jsonDataArr[i].productName+'</div>';
+	    					  pricingBoxHtml += '<div class="prod-total-price-div" style="display:none">'+jsonDataArr[i].productPrice+'</div>';
+	    					  pricingBoxHtml += '<div class="prod-tandc-div" style="display:none">'+jsonDataArr[i].tandc+'</div>';
+	    					  pricingBoxHtml += '<div class="prod-autoPromoDiscount-div" style="display:none">'+jsonDataArr[i].autoPromoDiscount+'</div>';
+	    					  pricingBoxHtml += '<div class="prod-type-div" style="display:none">'+jsonDataArr[i].productType+'</div>';
+	    					  pricingBoxHtml += '<div class="prod-itemDetailsId-div" style="display:none">'+jsonDataArr[i].itemDetailsId+'</div>';
+	    					  
+	    					  
+	    					  pricingBoxHtml += '<div class="product-description-div">'+jsonDataArr[i].productDescription+'</div>';
+	    					  pricingBoxHtml += '<div class="product-location-div">'+locationDropdownlist.text()+'</div>';
+	    					  pricingBoxHtml += '<div class="border-bottom-line"></div>';
+	    					  pricingBoxHtml += '<div class="product-join-fee-text-div">One Time Join Fee</div>';
+	    					  pricingBoxHtml += '<span style="font-size: small; font-family: cursive;">$ <div class="product-join-fee-text-val-div">'+jsonDataArr[i].joiningPrice+'</div></span>';	    					    					  
+	    					  
+	    					  pricingBoxHtml += '<div>';
+	    					  pricingBoxHtml += '<table border="0" style="text-align: left;" id="productPriceTable">';
+	    					  pricingBoxHtml += '<tr>';
+	    					  pricingBoxHtml += '<td><input type="radio" name="paymentTypeSelect" class="paymentTypeSelectClass" value="AllArea"/></td>';
+	    					  pricingBoxHtml += '<td width="65%" style="font-size: 11px;">All Branches</td>';
+	    					  pricingBoxHtml += '<td width="30%" style="font-size: smaller;font-weight: bolder;">$ <span class="all-area-price-td">'+jsonDataArr[i].allAreaPrice+'</span></td>';
+	    					  pricingBoxHtml += '</tr>';
+	    					  pricingBoxHtml += '<tr>';
+	    					  pricingBoxHtml += '<td><input type="radio" name="paymentTypeSelect" class="paymentTypeSelectClass" value="BayArea"/></td>';
+	    					  pricingBoxHtml += '<td width="65%" style="font-size: 11px;">Bay Area</td>';
+	    					  pricingBoxHtml += '<td width="30%" style="font-size: smaller;font-weight: bolder;">$ <span class="bay-area-price-td">'+jsonDataArr[i].bayAreaPrice+'</span></td>';
+	    					  pricingBoxHtml += '</tr>'; 
+	    					  pricingBoxHtml += '</table>'; 
+	    					  pricingBoxHtml += '</div>'; 
+	    						    					  
+	    					  if(i % 2 == 0){
+	    						  pricingBoxHtml += '<div class="k-button product-register-div" style="bottom: 8px; margin-right: 29px;position: absolute;right: 8px; text-shadow: none; background-color: #929292 !important; color: #ffffff !important; background-image:none !important; font-weight:bold !important;">Register</div>';
+	    					  }else{
+	    						  pricingBoxHtml += '<div class="k-button product-register-div" style="bottom: 8px; margin-right: 29px;position: absolute;right: 8px; text-shadow: none; background-color: #eb8120 !important; color: #ffffff !important; background-image:none !important; font-weight:bold !important;">Register</div>';
+	    					  }
+	    					  pricingBoxHtml += '</div>';
+	    					  pricingBoxHtml += '</div>';
+	    					  pricingBoxHtml += '</li>';
+	    				  }
+	    				  $("#panels").html(pricingBoxHtml);
+					  }else {			  
+						  $("#panels").html("No Product Information found for selected Location. Please select different Location.");
+						  //pricingOption.select(0);
+					  }
+					  $(".k-loading-mask").hide();
+				  },
+				  error: function( xhr,status,error ){		 
+					  $("#tcloginErrorSpan-payment").css("display", "block");	
+					  $( "#tcloginErrorSpan-payment" ).html("There was some error. Please try again later");							  		 
+				  }
+			});
+    			
+    	}else if(locationDropdownlist.text() == '--Select Location--'){  
+   			var kendoWindow = $("<div />").kendoWindow({
+   	        	title: "Error",
+   	        	resizable: false,
+   	        	modal: true,
+   	        	width:400
+   	        });   	
+     		kendoWindow.data("kendoWindow")
+   	         .content($("#terms-conditions-LocationBox").html())
+   	         .center().open();
+     			
+   	        kendoWindow
+   	        .find(".confirm-location-select")
+   	        .click(function() {
+   	        	if ($(this).hasClass("confirm-location-select")) {         		
+   	        		kendoWindow.data("kendoWindow").close();
+   	        	}
+   	        })
+   	        .end();
+   			//e.preventDefault();
+   	     	//pricingOption.select(0);
+    	}else{
+    		var kendoWindow = $("<div />").kendoWindow({
+   	        	title: "Error",
+   	        	resizable: false,
+   	        	modal: true,
+   	        	width:400
+   	        });   	
+     		kendoWindow.data("kendoWindow")
+   	         .content($("#terms-conditions-PricingBox").html())
+   	         .center().open();
+     			
+   	        kendoWindow
+   	        .find(".confirm-pricing-select")
+   	        .click(function() {
+   	        	if ($(this).hasClass("confirm-pricing-select")) {         		
+   	        		kendoWindow.data("kendoWindow").close();
+   	        	}
+   	        })
+   	        .end();
+   	     
+    	}
+    });
+    
+    /* $("#prefLocation").on('change',function(e){
+    	//getProductDetails($(this).val());
+    }); */    
+    
+    
+	$('#wizard').smartWizard({
+		// Properties
+		selected: 0,  // Selected Step, 0 = first step   
+		keyNavigation: false, // Enable/Disable key navigation(left and right keys are used if enabled)
+		enableAllSteps: false,  // Enable/Disable all steps on first load
+		transitionEffect: 'slideleft', // Effect on navigation, none/fade/slide/slideleft
+		contentURL:null, // specifying content url enables ajax content loading
+		contentURLData:null, // override ajax query parameters
+		contentCache:true, // cache step contents, if false content is fetched always from ajax url
+		cycleSteps: false, // cycle step navigation
+		enableFinishButton: false, // makes finish button enabled always
+		hideButtonsOnDisabled: true, // when the previous/next/finish buttons are disabled, hide them instead
+		errorSteps:[],    // array of step numbers to highlighting as error steps
+		labelNext:'Next', // label for Next button
+		labelPrevious:'Previous', // label for Previous button
+		labelFinish:'Place Order',  // label for Finish button        
+		noForwardJumping:false,
+		ajaxType: 'POST',
+		// Events
+		onLeaveStep: nextClick, // triggers when leaving a step
+		onShowStep: null,  // triggers when showing a step
+		onFinish: registerContact,  // triggers when Finish button is clicked
+		includeFinishButton : true   // Add the finish button
+	});
+	
+	var validator2 = $("#tcForm").validate({
+		debug: true,
+		errorElement: "em",			
+		errorPlacement: function(error, element) {			
+			element.addClass("inputErrorr");
+			error.appendTo(element.parent("td").next("td"));
+			element.parent("td").next("td").addClass("textMsgError");			
+		},
+		success: function(label, element) {			
+			var $element = $(element);
+			var $label = $(label);
+	       	$element.removeClass("inputErrorr");
+			$element.removeClass("error");
+			$element.addClass("success");
+			
+			$label.removeClass("textMsgError");
+			$label.removeClass("error");
+			$label.addClass("success");
+			//$("#wizard"). smartWizard("fixHeight");
+			
+		},
+		rules: {
+			"tcname": {
+				required: true,
+				minlength: 2,
+				maxlength: 40,
+				check_fName_lName : true				
+			}
+		},
+		messages: {
+			"tcname": {				
+				required: "Please enter your Full Name",
+				minlength: "Full Name must consist of at least 2 characters",
+				maxlength: "Full Name can not be more than 40 characters",
+				check_fName_lName : "Please enter the primary contact's First Name and Last Name."
+			}
+		}
+	});	
+	
+	$.validator.addMethod("check_fName_lName", function(value, element) {
+		var firstName = $("#firstName").val();
+		var lastName = $("#lastName").val();
+		var fullName = firstName + " " + lastName;
+		var tcname = $("#tcname").val();
+		if(tcname != fullName){
+			return false;
+		} else{
+			return true;
+		}
+		
+	}, "Please enter the primary contact's First Name and Last Name.");
+	
+	
+	
+	
+	
+	var url = "isEmailExists";
+	var validator1 = $("#becomeMemberForm").validate({
+		debug: true,
+		errorElement: "em",			
+		errorPlacement: function(error, element) {
+			$element = $(element);			
+			if($element.attr("id") == "dob"){
+				element.addClass("inputErrorr");
+				error.appendTo(element.parent().parent().parent().next("td"));
+				element.parent().parent().parent().next("td").addClass("textMsgError");
+				$element.parent().parent().parent().next("td").css("color","red");
+			}else{
+				element.addClass("inputErrorr");
+				error.appendTo(element.parent("td").next("td"));
+				element.parent("td").next("td").addClass("textMsgError");
+				$element.parent("td").next("td").css("color","red");
+			}
+			//$("#wizard"). smartWizard("fixHeight");
+			/* element.addClass("inputErrorr");
+			error.appendTo(element.parent("td").next("td"));
+			element.parent("td").next("td").addClass("textMsgError"); */
+		},
+		success: function(label, element) {
+			//alert("success");
+			//label.text("ok!").addClass("success");
+			var $element = $(element);
+			var $label = $(label);
+	       	$element.removeClass("inputErrorr");
+			$element.removeClass("error");
+			$element.addClass("success");
+			
+			$label.removeClass("textMsgError");
+			$label.removeClass("error");
+			$label.addClass("success");
+			//$("#wizard"). smartWizard("fixHeight");
+			
+		},
+		rules: {
+			"userLst[0].firstName": {
+				required: true,
+				minlength: 2,
+				maxlength: 20
+			},
+			"userLst[0].lastName": {
+				required: true,
+				minlength: 2,
+				maxlength: 20
+			},
+			"userLst[0].email" : {
+				required: true,
+				email: true,
+				remote: {
+                    url: url,  
+                    type:"GET"                    	
+                 }
+			},
+			"userLst[0].password": {
+				required: true,
+				minlength: 5
+			},
+			"userLst[0].confirmPassword": {
+				required: true,
+				minlength: 5,
+				equalTo: "#password"
+			},
+			"userLst[0].dateOfBirth": { 
+				required: true,
+				check_date_of_birth: true
+			},
+			"postalCode" : {
+				required: true,
+				number: true,
+				minlength: 5
+			},
+			"userLst[0].phoneNumber" : "required",			
+			"addressLine1" : "required",			
+			"city" : "required",
+			"state" : "required"
+			
+		},
+		messages: {
+			"userLst[0].firstName": {				
+				required: "Please enter your First Name",
+				minlength: "First Name must consist of at least 2 characters"
+			},
+			
+			"userLst[0].lastName": {				
+				required: "Please enter your First Name",
+				minlength: "Last Name must consist of at least 2 characters"
+			},
+			"userLst[0].email" : {
+				required: "Please enter your email address",
+				email : "Please enter valid email address",
+				remote: "You appear to be associated with a customer account already.  Please speak with the primary contact for that account"
+				/* ,
+				check_Email_valid : "You appear to be associated with a customer account already.  Please speak with the primary contact for that account" */
+			},
+			"userLst[0].phoneNumber" : "Please enter your Phone Number",			
+			"userLst[0].password": {
+				required: "Please provide a password",
+				minlength: "Your password must be at least 5 characters long"
+			},
+			"userLst[0].confirmPassword": {
+				required: "Please provide a password",
+				minlength: "Your password must be at least 5 characters long",
+				equalTo: "Please enter the same password as above"
+			},
+			"userLst[0].dateOfBirth": { 
+				required: "Please enter your Date of Birth",
+				check_date_of_birth: "Age should be more than 18 Years"
+			},
+			"postalCode" : {
+				required: "Please enter Postal Code",
+				number: "Please enter numbers only",
+				minlength: "Postal Code must consist of at least 5 characters"
+			},
+			"addressLine1" : "Please enter address line 1",			
+			"city" : "Please enter yout City",
+			"state" : "Please enter your State",
+			agree: "Please accept our policy"
+		}
+	});	
+	//"userLst[0].dateOfBirth" : "required",
+	//"userLst[0].dateOfBirth" : "Please enter your Date of Birth",
+	$.validator.addMethod("check_date_of_birth", function(value, element) {
+
+	    /* var day = $("#dob_day").val();
+	    var month = $("#dob_month").val();
+	    var year = $("#dob_year").val(); */
+	    //11/18/2014
+	    var inpDate = $("#dob").val();
+	    var day;
+    	var month;
+    	var year;
+    	var age =  18;
+	    if(inpDate != null){
+	    	var dateArr = inpDate.split("/");	    	
+	    	month = dateArr[0];
+	    	day = dateArr[1];
+	    	year = dateArr[2];
+	    }
+
+	    var mydate = new Date();
+	    mydate.setFullYear(year, month-1, day);
+
+	    var currdate = new Date();
+	    currdate.setFullYear(currdate.getFullYear() - age);
+
+	    return currdate > mydate;
+
+	}, "You must be at least 18 years of age.");
+	
+	/* function resizeGrid(d) {
+	    var gridElement = $("#grid");
+	    var dataArea = gridElement.find(".k-grid-content");
+	    var newHeight = gridElement.parent().innerHeight() - 2;
+	    var diff = gridElement.innerHeight() - dataArea.innerHeight();
+	    gridElement.height(newHeight);
+	    dataArea.height(newHeight - diff);
+	    return d;
+	}
+	
+	$(window).resize(function(){
+	    resizeGrid();
+	}); */
+	
+	var validator3 = $("#loginForm").validate({
+		debug: true,
+		errorElement: "em",			
+		errorPlacement: function(error, element) {
+			$element = $(element);	
+			element.addClass("inputErrorr");
+			error.appendTo(element.parent("td").next("td"));
+			element.parent("td").next("td").addClass("textMsgError");
+			$element.parent("td").next("td").css("color","red");
+		},
+		success: function(label, element) {			
+			var $element = $(element);
+			var $label = $(label);
+	       	$element.removeClass("inputErrorr");
+			$element.removeClass("error");
+			$element.addClass("success");
+			
+			$label.removeClass("textMsgError");
+			$label.removeClass("error");
+			$label.addClass("success");			
+		},
+		rules: {			
+			"username" : {
+				required: true,
+				email: true				
+			},
+			"password": {
+				required: true,
+				minlength: 5
+			}			
+		},
+		messages: {			
+			"username" : {
+				required: "Please enter your email address",
+				email : "Please enter valid email address"			
+			},
+						
+			"password": {
+				required: "Please provide a password",
+				minlength: "Your password must be at least 5 characters long"
+			}
+		}
+	});	
+
+	
+	var location = $("#location").kendoDropDownList().val();
+	/* $("#grid").kendoGrid({
+		dataSource: GetRemoteData($("#location").kendoDropDownList().val()),
+        height: 270,*/
+        /* filterable: true, */
+        /*sortable: true,
+        pageable: true,*/
+        /* dataBound: resizeGrid, */
+       /* columns: [
+			{ 			
+				template: "<input type='radio' name='termsAndCondition' class='termsAndCondition' />", 
+				width: "3%"
+			},      
+			{ field: "id", title: "ID",width: "0%", hidden: true }, 
+			{ field: "productName", title: "Name",width: "30%" },
+			{ field: "productDescription", title: "Description",width: "53%" },
+			{ field: "productType", title: "Product Type",width: "0%", hidden: true }, 
+			{ field: "productDuration", title: "Product Duration",width: "0%", hidden: true }, 
+			{ field: "productPrice", title: "Price", hidden: true },
+			{ field: "tandc", title: "T & C", hidden: true },
+			{ field: "pricingJsonArray", title: "Pricing Breakup", hidden: true },
+			{ field: "joiningPrice", title: "Price", hidden: true },
+			{ field: "tierPrice", title: "Price",width: "14%" }
+	        
+    	]        
+    }); */
+	
+	 $('body').on( "click", "input.termsAndCondition", function() { 	 
+         if($('input:radio[name=type]:checked')){        	
+         	var $termsVar = $(this).parent().parent().find('td');
+         	$termsVar.each(function(index){
+         		if(index && index == '1'){
+         			$("#productIdTd").html($(this).html());
+         			$("#productIdHidInput").attr("value", $(this).html());
+         		}
+				if(index && index == '2'){
+					$("#productNameTd").html($(this).html());     			
+				}
+				if(index && index == '3'){
+					$("#productDescriptionTd").html($(this).html());	
+				}
+				if(index && index == '4'){
+					$("#productTypeTd").html($(this).html());	
+				}
+				if(index && index == '5'){
+					$("#productDurationTd").html($(this).html());	
+				}
+				if(index && index == '6'){
+					$("#productPriceTd").html("$ "+$(this).html());
+					$("#paymentAmountSpan").html($(this).html());
+					$("#paymentTotalPriceTd").html("$ "+$(this).html());	
+					$("#sumTotalPriceTd").html("$ "+$(this).html());
+				}				
+				if(index && index == '7'){				
+					$(".termsDiv").html($(this).text());
+					$("#userTC").attr("value", $(this).text());
+				}
+				if(index && index == '9'){				
+					$("#paymentJoinFeeTd").html("$ "+$(this).text());
+					$("#sumJoinFeeTd").html("$ "+$(this).text());					
+				}
+				if(index && index == '10'){				
+					$("#paymentTierTd").html("$ "+$(this).text());
+					$("#sumTierPriceTd").html("$ "+$(this).text());	
+				}
+				if(index && index == '8'){				
+					var priceRuleStr = $(this).text();
+					if(priceRuleStr != null){
+						var priceRuleArr= priceRuleStr.split(";;");
+						for(var i = 0; i<priceRuleArr.length; i++){
+							if(priceRuleArr[i] != null && priceRuleArr[i] != ""){
+								var ruleArray = priceRuleArr[i].split(":");
+								var ruleName = ruleArray[0];
+								var rulePrice = ruleArray[1];	
+								if(ruleName == 'Join Fee'){
+									$("#paymentJoinFeeTd").html("$ "+rulePrice);
+									$("#sumJoinFeeTd").html("$ "+rulePrice);									
+								}
+								if(ruleName == 'Tier 1' || ruleName == 'Tier 2' || ruleName == 'Tier 3'){
+									$("#paymentTierTd").html("$ "+rulePrice);
+									$("#sumTierPriceTd").html("$ "+rulePrice);									
+								}						
+							}
+						}
+					}
+				}
+				
+         	    //console.log($(this).html())
+         	});
+         }
+	 });
+	 
+	 $('body').on( "click", "#memberSignInSpan", function() { 	 
+		 signInSelected = "true";
+		 $('#loginDiv').css("display","inline");
+		 $('#registerDiv').css("display","none");
+	 });
+	 
+	 $('body').on( "click", "#newMemberSpan", function() { 	 
+		 signInSelected = "false";
+		 $('#loginDiv').css("display","none");
+		 $('#registerDiv').css("display","inline");
+	 });
+	
+  	
+	$("#wizard"). smartWizard("fixHeight");
+      
+	});
+	
+function GetRemoteData(location) {	
+   var  source = new kendo.data.DataSource({
+        autoSync: true,
+        transport: {
+            read: {
+                type: "GET",
+                url: "getProductDetailsByLocation",
+                data: {"locationId" : $("#location").kendoDropDownList().val()},
+                dataType: "json",                
+                cache: false
+            }
+            
+        },
+        schema: {
+        	 model: {
+	        	fields: {
+	        		radioButton : {},
+	            	id: { type: "string" }, 
+	            	productName: { type: "string" },
+	            	productDescription: { type: "string" },
+	            	productType: { type: "string" },
+	            	productDuration: { type: "string" }, 
+	            	productPrice: { type: "string" },
+	            	tandc : { type: "string" },
+	            	pricingJsonArray : { type: "string" },
+	            	joiningPrice : { type: "string" },
+	            	tierPrice: { type: "string" }
+	            	
+	            }
+        	 }
+       
+    	},
+        
+        pageSize: 12
+    });
+    source.fetch(function () {
+        var data = this.data();
+    });
+    return source;
+}
+
+function registerContact(){	
+	if(!$("input[name='chkTermsAndCond']:checked").val()){ 
+			var kendoWindow = $("<div />").kendoWindow({
+	        	title: "Error",
+	        	resizable: false,
+	        	modal: true,
+	        	width:400
+	        });
+	
+  			kendoWindow.data("kendoWindow")
+	         .content($("#terms-conditions-ErrorBox").html())
+	         .center().open();
+  			
+	        kendoWindow
+	        .find(".confirm-terms-conditions")
+	        .click(function() {
+	        	if ($(this).hasClass("confirm-terms-conditions")) {         		
+	        		kendoWindow.data("kendoWindow").close();
+	        	}
+	        })
+	        .end();
+	        $('#wizard').smartWizard('setError',{stepnum:2,iserror:true});
+			$('#wizard').smartWizard('showMessage','Please agree the terms and conditions before Proceeding');			
+ 			return false;
+ 	}else{	
+ 		$('#wizard').smartWizard('setError',{stepnum:2,iserror:false});
+		$('#wizard').smartWizard('hideMessage');		
+		$("#progFinalAmtIdHidInput").attr("value", $("#paymentTotalPriceTd").text());	
+		$("#progStartDateIdHidInput").attr("value", $("#start").val());
+		
+		if($("#paymentInfoRadio").val()!='New' && $("#paymentInfoRadio").val()!='NewBank'){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait");
+			$("#statusBlock-payment").css("display", "none");	
+			$("#tcloginErrorSpan-payment").css("display", "none");	
+			$( "#tcloginErrorSpan-payment" ).html("");
+			var paymentAmount = 0;
+		    if($("#paymentAmountSpan").text() != null){
+		    	var amountArr = $("#paymentAmountSpan").text().split(" ");
+		    	paymentAmount = amountArr[1];
+		    	
+		    }
+			
+			$.ajax({
+				  type: "POST",
+				  url: "processPaymentByTokenId",	
+				  data: { token: $("#paymentTokenIdSpan").text(), totalAmount : paymentAmount},
+				  success: function( data ) {
+					  
+					  var paymentMethodHtml = '';
+					  if(data != null && data.responseText == "APPROVED"){	
+						  $('#wizard').smartWizard('setError',{stepnum:4,iserror:false});
+						  $("#paymentTransId").attr("value", data.transId); 
+						  
+						  var joinFee = $('#sumJoinFeeTd').text();
+						  var sumTierPriceTd = $('#sumTierPriceTd').text();
+						  
+						  var joinFeeAmount = 0;
+						    if(joinFee != null){
+						    	var amountArr = joinFee.split(" ");
+						    	joinFeeAmount = amountArr[1];
+						    	if(joinFeeAmount){
+						    		$("#prodJoiningFeeInput").attr("value", joinFeeAmount);
+						    	}else{
+						    		$("#prodJoiningFeeInput").attr("value", "0");  
+						    	}
+						    	  
+						    	
+						    }
+						    var sumTierPriceTdAmount = 0;
+						    if(sumTierPriceTd != null){
+						    	var amountArr = sumTierPriceTd.split(" ");
+						    	sumTierPriceTdAmount = amountArr[1];
+						    	if(sumTierPriceTdAmount){
+						    		$("#prodPriceInput").attr("value", sumTierPriceTdAmount);    
+						    	}else{
+						    		$("#prodPriceInput").attr("value", "0");     
+						    	}
+						    	
+						    }
+						    $("#statusBlock-payment").css("display", "none");	
+						    $("#tcloginErrorSpan-payment").css("display", "none");	
+						    $( "#tcloginErrorSpan-payment" ).html("");
+						  
+						  document.forms["becomeMemberForm"].submit();
+					      //alert(data.responseText);	
+					      //alert(data.transId);
+					      //alert(data.actCode);
+					  }else {
+						  $('#wizard').smartWizard('goToStep',4);
+						  $('#wizard').smartWizard('setError',{stepnum:4,iserror:true});
+						  /* var errorMsg = '';
+						  //if(data != null && data.responseText == "UNKNOWN TOKEN"){					  
+							//  errorMsg = "ActionCode&nbsp;:&nbsp;<b>"+data.actCode+"</b>&nbsp;Error message&nbsp;:&nbsp;"+data.responseText;
+						  //}else if(data != null && data.responseText == "INVALID MESSAGE TYPE"){
+							//  errorMsg = "";
+						  //}else if(data != null && data.responseText == "DECLINED"){
+							//  errorMsg = "";
+						  //}else{
+							 // errorMsg = "";
+						  //} 
+						  
+						  errorMsg += "Error occurred while processing Payment.<br />";
+						  errorMsg += "ActionCode :<b>"+data.actCode+"</b> Error message : "+data.responseText;						  
+						  $("p.payment-Error-Box-msg-p").html(errorMsg);						  
+						  var kendoWindow = $("<div />").kendoWindow({
+					        	title: "Error",
+					        	resizable: false,
+					        	modal: true,
+					        	width:400
+					        });
+					
+				  			kendoWindow.data("kendoWindow")
+					         .content($("#payment-Error-Box").html())
+					         .center().open();
+				  			
+					        kendoWindow
+					        .find(".confirm-payment-process")
+					        .click(function() {
+					        	if ($(this).hasClass("confirm-payment-process")) {  
+					        		$("#payment-Error-Box").css("display", "none");
+					        		kendoWindow.data("kendoWindow").close();
+					        	}
+					        })
+					        .end();	 */		
+					        
+						  $("#statusBlock-payment").css("display", "block");	
+					        $("#tcloginErrorSpan-payment").css("display", "block");	
+					        $( "#tcloginErrorSpan-payment" ).html("Error occurred while processing the payment. Please try again later <br />ActionCode :<b>"+data.actCode+"</b> Error message : "+data.responseText);
+					  }
+					  $(".k-loading-mask").hide();
+				  },
+				  error: function( xhr,status,error ){
+					  $("#statusBlock-payment").css("display", "block");	
+					  $("#tcloginErrorSpan-payment").css("display", "block");	
+					  $( "#tcloginErrorSpan-payment" ).html("There was some error. Please try again later");							  		 
+				  }
+			});
+		}else if($("#paymentInfoRadio").val()=='NewBank'){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait");
+			$("#statusBlock-payment").css("display", "none");	
+			$("#tcloginErrorSpan-payment").css("display", "none");	
+			$( "#tcloginErrorSpan-payment" ).html("");
+			
+			var bankAccountNumber =  $("#bankAccountNumber").val();
+			var bankRoutingNumber =  $("#bankRoutingNumber").val();
+			var checkNumber =  $("#checkNumber").val();
+			var cardName =  $("#cardName").val();
+			var totalAmt =  $("#sumFinalAmountTd").text();
+			
+			$.ajax({
+				  type: "POST",
+				  url: "processACHPayment",	
+				  data: { bankAccountNumber: bankAccountNumber, bankRoutingNumber : bankRoutingNumber, checkNumber : checkNumber, cardName : cardName, totalAmt : totalAmt},
+				  success: function( data ) {
+					  
+					  var paymentMethodHtml = '';
+					  if(data != null && data.responseText == "CHECK ACCEPTED"){	
+						  $('#wizard').smartWizard('setError',{stepnum:4,iserror:false});
+						  $("#paymentTransId").attr("value", data.transId); 
+						  
+						  var joinFee = $('#sumJoinFeeTd').text();
+						  var sumTierPriceTd = $('#sumTierPriceTd').text();
+						  
+				    	  if(joinFee){
+				    		  $("#prodJoiningFeeInput").attr("value", joinFee);
+				    	  }else{
+				    		  $("#prodJoiningFeeInput").attr("value", "0");  
+				    	  }						    	  
+					    	if(sumTierPriceTd){
+					    		$("#prodPriceInput").attr("value", sumTierPriceTd);    
+					    	}else{
+					    		$("#prodPriceInput").attr("value", "0");     
+					    	}
+						    $("#statusBlock-payment").css("display", "none");	
+						    $("#tcloginErrorSpan-payment").css("display", "none");	
+						    $( "#tcloginErrorSpan-payment" ).html("");
+						  
+						  document.forms["becomeMemberForm"].submit();
+					      //alert(data.responseText);	
+					      //alert(data.transId);
+					      //alert(data.actCode);
+					  }else {
+						  $('#wizard').smartWizard('goToStep',4);
+						  $('#wizard').smartWizard('setError',{stepnum:4,iserror:true});
+						  /* var errorMsg = '';
+						  //if(data != null && data.responseText == "UNKNOWN TOKEN"){					  
+							//  errorMsg = "ActionCode&nbsp;:&nbsp;<b>"+data.actCode+"</b>&nbsp;Error message&nbsp;:&nbsp;"+data.responseText;
+						  //}else if(data != null && data.responseText == "INVALID MESSAGE TYPE"){
+							//  errorMsg = "";
+						  //}else if(data != null && data.responseText == "DECLINED"){
+							//  errorMsg = "";
+						  //}else{
+							 // errorMsg = "";
+						  //} 
+						  
+						  errorMsg += "Error occurred while processing Payment.<br />";
+						  errorMsg += "ActionCode :<b>"+data.actCode+"</b> Error message : "+data.responseText;						  
+						  $("p.payment-Error-Box-msg-p").html(errorMsg);						  
+						  var kendoWindow = $("<div />").kendoWindow({
+					        	title: "Error",
+					        	resizable: false,
+					        	modal: true,
+					        	width:400
+					        });
+					
+				  			kendoWindow.data("kendoWindow")
+					         .content($("#payment-Error-Box").html())
+					         .center().open();
+				  			
+					        kendoWindow
+					        .find(".confirm-payment-process")
+					        .click(function() {
+					        	if ($(this).hasClass("confirm-payment-process")) {  
+					        		$("#payment-Error-Box").css("display", "none");
+					        		kendoWindow.data("kendoWindow").close();
+					        	}
+					        })
+					        .end();	 */		
+					        
+						  $("#statusBlock-payment").css("display", "block");	
+					        $("#tcloginErrorSpan-payment").css("display", "block");	
+					        $( "#tcloginErrorSpan-payment" ).html("Error occurred while processing the payment. Please try again later <br />ActionCode :<b>"+data.actCode+"</b> Error message : "+data.responseText);
+					  }
+					  $(".k-loading-mask").hide();
+				  },
+				  error: function( xhr,status,error ){
+					  $("#statusBlock-payment").css("display", "block");	
+					  $("#tcloginErrorSpan-payment").css("display", "block");	
+					  $( "#tcloginErrorSpan-payment" ).html("There was some error. Please try again later");							  		 
+				  }
+			});
+		} else{
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait");
+			
+			var merchantId = "TESTTERMINAL";  
+			var JetDirectToken	= "1234567890ABCDEFGHIJKabcdefghijk";
+			var hash = '';
+			var paymentAmount = $("#sumFinalAmountTd").text() + ".00";
+			var paymentOrderId = Math.floor((Math.random()*1000000000000)+1);
+			var jsSha = new jsSHA(merchantId+paymentAmount+JetDirectToken+paymentOrderId);
+			hash = jsSha.getHash("SHA-512", "HEX");
+			var paymentOrderId = Math.floor((Math.random()*1000000000000)+1);
+			
+			var jsonData = {
+				name : $("#fullName").val(),
+				cardNum : $("#cardNum").val(),
+				cscNumber : $("#securityCode").val(),
+				AddressLine1 : $("#billingAddressLine1").val(),
+				AddressLine2 : $("#billingAddressLine2").val(),
+				City : $("#billingCity").val(),
+				state : $("#billingState").val(),
+				zipcode : $("#billingZip").val(),
+				email : "test@gmail.com",
+				amount : paymentAmount,
+				expMonth : $("#expirationMonth").val(),
+				expYr : $("#addCardExpirationYear").val(),
+				contry : "US",
+				jetPayHash : hash.toString(),
+				paymentOrderId : paymentOrderId.toString()
+			};
+			//console.log(jsonData);
+			var win = document.getElementById("childIframeId").contentWindow;
+			win.postMessage(jsonData, '*'); 				
+			//document.forms["becomeMemberForm"].submit();
+		}		 
+		//document.forms["becomeMemberForm"].submit();
+		return true;
+ 	}
+}
+
+function nextClick(obj, context){	
+	//$("#wizard"). smartWizard("fixHeight");	
+	//$("#paymentTotalPriceTd").html($("#paymentAmountSpan").text());
+	//var pricingOption = $("#pricingOption").data("kendoDropDownList");  
+	$("#sumPromoCodeVal").html("");
+    var locationDropdownlist = $("#location").data("kendoDropDownList");
+    var paymentFreq2 = $("#paymentFrequencySelect").data("kendoDropDownList");
+    if(paymentFreq2.text() == 'Annual'){
+		$("#endDateDiv").css("display","inline");
+		if(selectedProductTotalPrice != null){    			
+			$("#sumTotalPriceTd").html(parseFloat(selectedProductTotalPrice) * 12);
+		} 	
+	}else{
+		$("#endDateDiv").css("display","none");    		
+		$("#sumTotalPriceTd").html(selectedProductTotalPrice);		
+	}
+    var finalAmount = 0;
+    if(context.toStep == 5 ){
+    	if($("#sumEarlyBirdDiscount").text() != '' && $("#sumPromoCodeVal").text() != ''){
+    		finalAmount = parseFloat($("#sumTotalPriceTd").text()) - parseFloat($("#sumEarlyBirdDiscount").text()) - parseFloat($("#sumPromoCodeVal").text());
+    	}else if($("#sumEarlyBirdDiscount").text() != ''){
+    		finalAmount = parseFloat($("#sumTotalPriceTd").text()) - parseFloat($("#sumEarlyBirdDiscount").text());
+    	}else if($("#sumPromoCodeVal").text() != ''){
+    		finalAmount = parseFloat($("#sumTotalPriceTd").text()) - parseFloat($("#sumPromoCodeVal").text());
+    	}else {
+    		finalAmount = parseFloat($("#sumTotalPriceTd").text());
+    	}   	
+    }
+    $("#sumFinalAmountTd").html(finalAmount);
+    	
+	var paymentFreq2 = $("#paymentFrequencySelect").data("kendoDropDownList");
+    $("#paymentFrequencyTd").html(paymentFreq2.text());
+    $("#sumPaymentFreqTd").html(paymentFreq2.text());
+	$(".stepContainer").height($(".stepContainer").find("div:not(:hidden)").height());
+	if( context.fromStep == 1 && context.toStep == 2 ){	
+		
+		if(locationDropdownlist.text() == '--Select Location--'){  
+   			var kendoWindow = $("<div />").kendoWindow({
+   	        	title: "Error",
+   	        	resizable: false,
+   	        	modal: true,
+   	        	width:400
+   	        });   	
+     		kendoWindow.data("kendoWindow")
+   	         .content($("#terms-conditions-LocationBox").html())
+   	         .center().open();
+     			
+   	        kendoWindow
+   	        .find(".confirm-location-select")
+   	        .click(function() {
+   	        	if ($(this).hasClass("confirm-location-select")) {         		
+   	        		kendoWindow.data("kendoWindow").close();
+   	        	}
+   	        })
+   	        .end();
+   			//e.preventDefault();
+   	     	//pricingOption.select(0);
+   	     	$('#wizard').smartWizard('setError',{stepnum:1,iserror:true});
+	       //$("#wizard"). smartWizard("fixHeight");	
+		   return false;
+    	} else{
+         	$('#wizard').smartWizard('setError',{stepnum:1,iserror:false});	
+         	$("#wizard"). smartWizard("fixHeight");	
+    		return true;
+        } 
+    }else if( context.fromStep == 2 && context.toStep == 3 ){
+    	if(signInSelected == "true"){
+    		if(!$("#loginForm").valid()) {
+    			$('#wizard').smartWizard('setError',{stepnum:2,iserror:true});		
+    			return false;
+    		} else if(isLoggedIn == 'false'){
+    			$('#wizard').smartWizard('setError',{stepnum:2,iserror:true});	
+    			$("#statusBlock").css("display", "block");	
+		  		$("#tcloginErrorSpan").css("display", "block");	
+				$( "#tcloginErrorSpan" ).html("Please login");
+    			return false;
+    		} else {
+    			$("#statusBlock").css("display", "none");	
+   			 	$("#tcloginErrorSpan").css("display", "none");	
+   			 	$( "#tcloginErrorSpan" ).html("");
+   			 
+    			$('#wizard').smartWizard('setError',{stepnum:2,iserror:false});	
+    			$('#firstNameTd').html($('#firstName').val());
+    			$('#lastNameTd').html($('#lastName').val());
+    			$('#dobTd').html($('#dob').val());
+    			$('#phoneNumberTd').html($('#phoneNumber').val());
+    			$('#emailTd').html($('#email').val());
+    			
+    			$('#addressLine1Td').html($('#addressLine1').val());
+    			$('#addressLine2Td').html($('#addressLine2').val());
+    			$('#cityTd').html($('#city').val());
+    			$('#stateTd').html($('#state').val());
+    			$('#postalCodeTd').html($('#postalCode').val());	
+    			//$("#wizard"). smartWizard("fixHeight");	
+    			return true;
+    		}
+    	} else{
+    		if(!$("#becomeMemberForm").valid()){
+    			$('#wizard').smartWizard('setError',{stepnum:2,iserror:true});	
+    			//$("#wizard"). smartWizard("fixHeight");	
+    			return false;
+    		}else{
+    			$('#wizard').smartWizard('setError',{stepnum:2,iserror:false});	
+    			$('#firstNameTd').html($('#firstName').val());
+    			$('#lastNameTd').html($('#lastName').val());
+    			$('#dobTd').html($('#dob').val());
+    			$('#phoneNumberTd').html($('#phoneNumber').val());
+    			$('#emailTd').html($('#email').val());
+    			
+    			$('#addressLine1Td').html($('#addressLine1').val());
+    			$('#addressLine2Td').html($('#addressLine2').val());
+    			$('#cityTd').html($('#city').val());
+    			$('#stateTd').html($('#state').val());
+    			$('#postalCodeTd').html($('#postalCode').val());	
+    			
+    			var paymentMethodHtml = '';
+    			paymentMethodHtml += '<option value="0" >--Select Payment Method--</option>';
+    			paymentMethodHtml += '<option value="New" selected="selected">Add New Card</option>';
+    			paymentMethodHtml += '<option value="NewBank" selected="selected">Add New Bank Info</option>';
+    			$("#paymentInfoRadio").html(paymentMethodHtml);
+    			$("#paymentInfoRadio").kendoDropDownList();  
+    			$("#addcard").css("display","inline");
+    			//$("#wizard"). smartWizard("fixHeight");	
+    			return true;
+    		}
+    	}
+		 
+				
+	}else if( context.fromStep == 3 && context.toStep == 4 ){	
+		 if(!$("input[name='chkTermsAndCond']:checked").val()){ 
+				$("#tcForm").valid();
+	 			var kendoWindow = $("<div />").kendoWindow({
+			        	title: "Error",
+			        	resizable: false,
+			        	modal: true,
+			        	width:400
+			        });
+			
+		  			kendoWindow.data("kendoWindow")
+			         .content($("#terms-conditions-ErrorBox").html())
+			         .center().open();
+		  			
+			        kendoWindow
+			        .find(".confirm-terms-conditions")
+			        .click(function() {
+			        	if ($(this).hasClass("confirm-terms-conditions")) {         		
+			        		kendoWindow.data("kendoWindow").close();
+			        	}
+			        })
+			        .end();	
+			        $('#wizard').smartWizard('setError',{stepnum:3,iserror:true});		
+			       // $("#wizard"). smartWizard("fixHeight");	
+	     	return false;
+	     }else if(!$("#tcForm").valid()){
+	 		 $('#wizard').smartWizard('setError',{stepnum:3,iserror:true});
+	 		//$("#wizard"). smartWizard("fixHeight");	
+			 return false;
+	 	 }else{
+	    	 $('#wizard').smartWizard('setError',{stepnum:3,iserror:false});	
+	    	 //$("#wizard"). smartWizard("fixHeight");	
+	    	 return true;
+	     }
+	}else {	
+		//$("#wizard"). smartWizard("fixHeight");	
+		return true;
+	}
+	
+}
+
+function forceLower(strInput) {
+	strInput.value=strInput.value.toLowerCase();
+}
+
+function getSecondUserInfoHeader(){
+	var secondUserInfoTableHtml = '';
+	secondUserInfoTableHtml += '<tr>';
+	secondUserInfoTableHtml += '<td colspan="2"><h2 style="margin-top: 5px; margin-bottom : 5px;"><span>SECONDARY MEMBER</span></h2> </td>';
+	secondUserInfoTableHtml += '<td >&nbsp;</td>';
+	secondUserInfoTableHtml += '<td >&nbsp;</td>';
+	secondUserInfoTableHtml += '<td >&nbsp;</td>';
+	secondUserInfoTableHtml += '</tr>';
+	return secondUserInfoTableHtml;
+}
+
+function getThirdUserInfoHeader(){
+	var secondUserInfoTableHtml = '';
+	secondUserInfoTableHtml += '<tr>';
+	secondUserInfoTableHtml += '<td colspan="2"><h2 style="margin-top: 5px; margin-bottom : 5px;"><span>THIRD MEMBER</span></h2> </td>';
+	secondUserInfoTableHtml += '<td >&nbsp;</td>';
+	secondUserInfoTableHtml += '<td >&nbsp;</td>';
+	secondUserInfoTableHtml += '<td >&nbsp;</td>';
+	secondUserInfoTableHtml += '</tr>';
+	return secondUserInfoTableHtml;
+}
+
+function getSecondUserInfoData(userNo){
+	var secondUserInfoTableHtml = '';
+	secondUserInfoTableHtml += '<tr>';
+	secondUserInfoTableHtml += '<td><input type="text" class="form-control" value="" title="Please enter yout First Name" name="userLst['+userNo+'].firstName" id="firstName" maxlength="50" placeholder="First Name"  /></td>';
+	secondUserInfoTableHtml += '<td>&nbsp;</td>';
+	secondUserInfoTableHtml += '<td><input type="text" class="form-control" value="" title="Please enter yout Last Name" name="userLst['+userNo+'].lastName" id="lastName" maxlength="50" placeholder="Last Name" /></td>';
+	secondUserInfoTableHtml += '<td>&nbsp;</td>';
+	secondUserInfoTableHtml += '</tr>';
+	
+	secondUserInfoTableHtml += '<tr>';
+	secondUserInfoTableHtml += '<td><input type="text" class="form-control dob-class"  title="Please enter your Date of Birth" name="userLst['+userNo+'].dateOfBirth"  maxlength="50" placeholder="D.O.B"  style="width: 205px; " /></td>';
+	secondUserInfoTableHtml += '<td id="dop-er"></td>';
+	secondUserInfoTableHtml += '<td><input type="text" class="form-control" title="Please enter your Phone Number" name="userLst['+userNo+'].phoneNumber" id="phoneNumber" maxlength="50" placeholder="Phone Number" /></td>';
+	secondUserInfoTableHtml += '<td>&nbsp;</td>';
+	secondUserInfoTableHtml += '</tr>';	
+	
+	secondUserInfoTableHtml += '<tr>';
+	secondUserInfoTableHtml += '<td><input type="text" class="form-control"  name="userLst['+userNo+'].email" id="email"  maxlength="50" placeholder="Email"  /></td>';
+	secondUserInfoTableHtml += '<td id="dop-er"></td>';
+
+	secondUserInfoTableHtml += '<td>';
+	secondUserInfoTableHtml += '<span>';
+	secondUserInfoTableHtml += '<span><span><input id="genderM" name="userLst['+userNo+'].gender" class="form-control" style="width: 15px;" type="radio" value="Male"></span><span style="margin-left : 5px;">Male</span></span>';
+	secondUserInfoTableHtml += '<span><span><input id="genderF" name="userLst['+userNo+'].gender" class="form-control" style="width : 15px;" type="radio" value="Female"></span><span style="margin-left : 5px;">Female</span></span>';
+	secondUserInfoTableHtml += '</span>';
+	secondUserInfoTableHtml += '</td>';	
+	
+	secondUserInfoTableHtml += '<td>&nbsp;</td>';
+	secondUserInfoTableHtml += '</tr>';
+	return secondUserInfoTableHtml;
+}
+
+function getKidsInfoHeader(){
+	var kidsInfoTableHtml = '';
+	kidsInfoTableHtml += '<tr>';
+	kidsInfoTableHtml += '<td colspan="2"><h2 style="margin-top: 5px; margin-bottom : 5px;"><span>Kids INFORMATION</span></h2> </td>';
+	//kidsInfoTableHtml += '<td >&nbsp;</td>';
+	kidsInfoTableHtml += '<td >&nbsp;</td>';
+	kidsInfoTableHtml += '<td ><a class="add-child-lnk">Add Child &nbsp; <span>+</span></a></td>';
+	kidsInfoTableHtml += '</tr>';
+	return kidsInfoTableHtml;
+}
+
+function getKidsInfoHtml(kidNo){
+	var kidsInfoTableHtml = '';
+	kidsInfoTableHtml += '<tr>';
+	kidsInfoTableHtml += '<td><input type="text" class="form-control" value="" title="Please enter yout First Name" name="userLst['+kidNo+'].firstName" id="firstName" maxlength="50" placeholder="First Name"  /></td>';
+	kidsInfoTableHtml += '<td>&nbsp;</td>';
+	kidsInfoTableHtml += '<td><input type="text" class="form-control" value="" title="Please enter yout Last Name" name="userLst['+kidNo+'].lastName" id="lastName" maxlength="50" placeholder="Last Name" /></td>';
+	kidsInfoTableHtml += '<td>&nbsp;</td>';
+	kidsInfoTableHtml += '</tr>';
+	
+	kidsInfoTableHtml += '<tr>';
+	kidsInfoTableHtml += '<td><input type="text" class="form-control dob-class"  title="Please enter your Date of Birth" name="userLst['+kidNo+'].dateOfBirth"  maxlength="50" placeholder="D.O.B"  style="width: 205px; " /></td>';
+	kidsInfoTableHtml += '<td id="dop-er"></td>';
+	
+	kidsInfoTableHtml += '<td>';
+	kidsInfoTableHtml += '<span>';
+	kidsInfoTableHtml += '<span><span><input id="genderM" name="userLst['+kidNo+'].gender" class="form-control" style="width: 15px;" type="radio" value="Male"></span><span style="margin-left : 5px;">Male</span></span>';
+	kidsInfoTableHtml += '<span><span><input id="genderF" name="userLst['+kidNo+'].gender" class="form-control" style="width : 15px;" type="radio" value="Female"></span><span style="margin-left : 5px;">Female</span></span>';
+	kidsInfoTableHtml += '</span>';
+	kidsInfoTableHtml += '</td>';	
+	
+	kidsInfoTableHtml += '<td>&nbsp;</td>';
+	kidsInfoTableHtml += '</tr>';	
+	return kidsInfoTableHtml;
+}
+
+function getSecondaryKidsInfoHtml(kidNo){
+	var kidsInfoTableHtml = '';
+	kidsInfoTableHtml += '<tr>';
+	kidsInfoTableHtml += '<td>&nbsp;</td>';
+	kidsInfoTableHtml += '<td>&nbsp;</td>';
+	kidsInfoTableHtml += '<td>&nbsp;</td>';
+	kidsInfoTableHtml += '<td>&nbsp;</td>';
+	kidsInfoTableHtml += '</tr>';
+	
+	kidsInfoTableHtml += '<tr>';
+	kidsInfoTableHtml += '<td><input type="text" class="form-control" value="" title="Please enter yout First Name" name="userLst['+kidNo+'].firstName" id="firstName" maxlength="50" placeholder="First Name"  /></td>';
+	kidsInfoTableHtml += '<td>&nbsp;</td>';
+	kidsInfoTableHtml += '<td><input type="text" class="form-control" value="" title="Please enter yout Last Name" name="userLst['+kidNo+'].lastName" id="lastName" maxlength="50" placeholder="Last Name" /></td>';
+	kidsInfoTableHtml += '<td><a class="remove-child-lnk">Remove Child &nbsp; <span>-</span></a></td>';
+	kidsInfoTableHtml += '</tr>';
+	
+	kidsInfoTableHtml += '<tr>';
+	kidsInfoTableHtml += '<td><input type="text" class="form-control dob-class"  title="Please enter your Date of Birth" name="userLst['+kidNo+'].dateOfBirth"  maxlength="50" placeholder="D.O.B"  style="width: 205px; " /></td>';
+	kidsInfoTableHtml += '<td id="dop-er"></td>';
+
+	kidsInfoTableHtml += '<td>';
+	kidsInfoTableHtml += '<span>';
+	kidsInfoTableHtml += '<span><span><input id="genderM" name="userLst['+kidNo+'].gender" class="form-control" style="width: 15px;" type="radio" value="Male"></span><span style="margin-left : 5px;">Male</span></span>';
+	kidsInfoTableHtml += '<span><span><input id="genderF" name="userLst['+kidNo+'].gender" class="form-control" style="width : 15px;" type="radio" value="Female"></span><span style="margin-left : 5px;">Female</span></span>';
+	kidsInfoTableHtml += '</span>';
+	kidsInfoTableHtml += '</td>';	
+	
+	kidsInfoTableHtml += '<td>&nbsp;</td>';
+	kidsInfoTableHtml += '</tr>';	
+	return kidsInfoTableHtml;
+}
+    
+</script>
+</body>

@@ -1,0 +1,170 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"   pageEncoding="ISO-8859-1"%>
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+<span class="head">Please select transportation service for camp if needed</span>
+<div id="itemTransportDiv" style="margin-top: 15px;">
+</div>
+<div style="float:right;margin-top: 95px;clear: both;">
+	<button class="k-button" style="font-size: small; width: 150px;" onclick="afterTransport();">Next</button>
+</div>
+<script type="text/javascript">
+	function initTransportGrid(){
+		 $("#itemTransportDiv").kendoGrid ( {
+			 	dataSource: getTransportDataSource(),    	
+		        filterable: false,
+		        autoSync: true,
+		        sortable: true,
+		        pageable: false,
+		        scrollable:true,
+		        resizable: true,
+		        editable: true,
+		        groupable: false,
+		        columns: [ 
+						  {field: "agreed", title: "&nbsp;" ,width: 30,template: '<input type="checkbox" onclick="onCheckUnCheck(this);" class="chkbx" name="selectedActivity" data-bind="checked:agreed" />'},
+						  {field: "cId", title: "Person",hidden:true},
+		                  {field: "id", title: "Id",hidden:true},
+						  {field: "serviceType", title: "Transport Type"},
+						  {field: "parentItemId", title: "Camp",hidden:true},
+						  {field: "locationName", title: "Location"},
+						  {field: "direction", title: "Direction"},
+						  {field: "startDate", title: "Date",template: "#= kendo.toString(new Date(startDate), 'MM/dd/yyyy') #" },
+						  {field: "startTime", title: "Time",template: "#= kendo.toString(new Date(startTime), 'hh:mm tt') #" },
+						  {field: "memberprice", title: "Member Price"},
+						  {field: "nonmemberprice", title: "Non Member Price"},
+						  {field: "flightName", title: "Flight Name/#"},
+						  {field: "flightTime", title: "Flight Time"}
+						],
+	 			dataBound: function(e) {
+	 				var selectedActivity = $("#selectedActivity").val();
+	 				if ($("#selectedActivity").val() == "true") {
+	 					$("input[type='checkbox']").prop( "checked", true );	 					
+	 				}
+	 				$("input[type='checkbox']").uniform();
+	 			 }
+		 });
+	}
+	
+	$(document).ready(function(){
+		//loadActivityTransportData();
+	});	
+	
+	
+	function getTransportDataSource(){
+		transportDataSource = new kendo.data.DataSource({
+	        autoSync: false,
+            data: respData,
+            schema: {
+            model: {
+                id: "id",
+                fields: {
+                	agreed: { editable: true,type:"boolean"},
+                	id: { editable: false},
+                	cId: {  editable: false},
+                	serviceType: {  editable: false},
+                	locationName: {  editable: false},
+                	direction: {  editable: false},
+                	startDate: {  editable: false},
+                	startTime: {  editable: false},
+                	memberprice: {  editable: false},
+                    nonmemberprice: { editable: false},
+                    flightName: { editable: true},
+                    flightTime: {  editable: true}
+                }
+            }
+        },
+	    filter : [{
+	        field: "type", operator: "eq", value: "Transportation"
+	    }],
+	    groupable: false,
+        group: [{
+            field: "cId",
+            dir: "asc"},{
+            field: "parentItemId",
+            dir: "asc"
+            }],
+        pageSize: 20
+   	 	});
+    	return transportDataSource;
+	}
+	
+	function loadTransportGrid() {
+		var itemActivity = []  ;
+		var actData = activityDataSource.data();
+		for (var i = 0; i < actData.length; i++) {
+			var actParam = actData[i].cId + "_" + actData[i].parentId +  "_" + actData[i].associatedItemId + "_"  + actData[i].priority;
+			itemActivity.push(actParam);
+		}
+		$.sessionStorage.setItem("selectedItemActivity",itemActivity);
+		$("#contactActivityDiv").hide();
+		initTransportGrid();
+		transportDataSource.read();
+		var transportData = transportDataSource.data();
+		if (transportData.length > 0) {
+			$("#contactTransportDiv").slideDown();	
+		} else {
+			gotocheckout();
+		}
+	}
+	
+	
+	function afterTransport(){
+		var itemTransport  = [] ;
+		var transportData = transportDataSource.data();
+		var transportItems = {} ;  
+		for (var i = 0; i < transportData.length; i++) {
+			if (transportData[i].agreed) {
+				var actParam = transportData[i].cId + "_" + transportData[i].parentId +  "_" + transportData[i].id + "_"  + transportData[i].agreed;
+				itemTransport.push(transportData[i].associatedItemId);
+ 			}
+		}
+		$.ajax({ url: "getallProducts?ids="+itemTransport.join(","), 
+			  type: "GET",
+			  async: false,
+			  dataType: "json",
+			  success: function(data) {
+				  	$.each(data, function(i,member) {
+						transportItems[member.itemDetailsId] = member;	
+				 	});
+	            },
+		  	  error: function( xhr,status,error ){
+				  console.log(xhr);
+			  }
+	    });
+		for (var i = 0; i < transportData.length; i++) {
+			if (transportData[i].agreed) {
+				
+				var item = transportItems[transportData[i].associatedItemId];
+				item.parentSignUpItem = transportData[i].cId+ "#" + transportData[i].parentItemId ;
+				var contact = getContactFromDatasource(transportData[i].cId); 
+				try {
+					cart.add(item,contact);
+				} catch (e) {
+					console.log(e);
+				}
+			}
+		}
+		$("#contactTransportDiv").hide();
+		gotocheckout();	
+	}
+	
+	function onCheckUnCheck(e){
+	    var checked = $(e).is(':checked');
+	    var grid = $('#itemTransportDiv').data().kendoGrid;
+	    var dataItem = grid.dataItem($(e).closest('tr'));
+	    dataItem.agreed = checked;
+	    dataItem.dirty = true;
+	}
+	
+	function getContactFromDatasource(contactId){
+		var contact ;
+		var datasourcedata = contacts.data()
+		 for (var i = 0; i < datasourcedata.length; i++) {
+			 if (datasourcedata[i].contactId == contactId) {
+				 contact = datasourcedata[i];
+				 return contact;
+			 }
+		 }
+		console.log("Error no contact found in the datasource");		
+	}
+	
+</script>

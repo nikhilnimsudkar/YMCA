@@ -1,0 +1,734 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+
+
+
+/**
+ * This class represents the basic "Donation" object in YMCA Portal that allows for Payment process management.  
+ */
+@Entity
+@Table(name = "donation")
+public class Donation extends BaseObject implements Serializable {
+
+	private static final long serialVersionUID = -7381613385407423268L;
+	public static final Comparator<Donation> DATE_ORDER_DEC_COMPARATOR = new DateOrderComparator();
+
+	public Donation(){
+    }
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long donationId;							// required  PK
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="accountId")
+	private Account customer;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="contact_id")
+	private User contact;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="payment_method_id")
+	private PaymentMethod paymentMethod;
+	
+    @Column(name = "donation_number")
+    private Long donationNumber;
+    
+    @Column(name = "donation_amount")
+    private Double donationAmount;
+    
+    @Transient
+    private String donationAmtStr;
+    
+    @Transient
+    private String donationAmtString;
+    
+    @Column(name = "donation_date")
+    private Date donationDate;                
+    
+    @Column(name = "type")
+    private String type;    
+   
+    @Column(name = "donation_frequency")
+    private String donationFrequency;
+    
+    @Transient
+    private String donationFrequencyStr;
+    
+    @Column(name = "donation_branch")
+    private String donationBranch;
+    
+    @Column(name = "ymca_campaigner_name")
+    private String ymcaCampaignerName;
+    
+    @Column(name = "donation_gift_chk")
+    private boolean donationGiftChk;    
+    
+    @Column(name = "doner_title")
+    private String donerTitle;
+    
+    @Column(name = "doner_first_name")
+    private String donerFirstName;
+    
+    @Column(name = "doner_last_name")
+    private String donerLastName;
+    
+    @Column(name = "address_line1")
+    private String addressLine1;
+    
+    @Column(name = "address_line2")
+    private String addressLine2;
+    
+    @Column(name = "city")
+    private String city;
+    
+    @Column(name = "state")
+    private String state;
+    
+    @Column(name = "zipcode")
+    private String zipcode;
+    
+    @Column(name = "contry")
+    private String contry;
+    
+    @Column(name = "preferred_phone")
+    private String preferredPhone;
+    
+    @Column(name = "email")
+    private String email;
+    
+    @Column(name = "add_email_lst_check")
+    private String addEmailLstCheck;
+    
+    @Column(name = "card_type")
+    private String cardType;
+    
+    @Transient
+    private String cardTypeStr;
+    
+    @Column(name = "card_number")
+    private String cardNumber;
+    
+    @Column(name = "csc_number")
+    private String cscNumber;
+    
+    @Column(name = "exp_month")
+    private String expMonth;
+    
+    @Column(name = "exp_year")
+    private String expYear;
+    
+    @Column(name = "name_on_card")
+    private String nameOnCard;
+    
+
+	/**
+	 * @return the donationId
+	 */
+	public Long getDonationId() {
+		return donationId;
+	}
+
+	/**
+	 * @param donationId the donationId to set
+	 */
+	public void setDonationId(Long donationId) {
+		this.donationId = donationId;
+	}
+
+	/**
+	 * @return the donationNumber
+	 */
+	public Long getDonationNumber() {
+		return donationNumber;
+	}
+
+	/**
+	 * @param donationNumber the donationNumber to set
+	 */
+	public void setDonationNumber(Long donationNumber) {
+		this.donationNumber = donationNumber;
+	}
+
+	/**
+	 * @return the donationAmount
+	 */
+	public Double getDonationAmount() {
+		return donationAmount;
+	}
+
+	/**
+	 * @param donationAmount the donationAmount to set
+	 */
+	public void setDonationAmount(Double donationAmount) {
+		this.donationAmount = donationAmount;
+	}
+
+
+	/**
+	 * @return the donationDate
+	 */
+	public Date getDonationDate() {
+		return donationDate;
+	}
+
+	/**
+	 * @param donationDate the donationDate to set
+	 */
+	public void setDonationDate(Date donationDate) {
+		this.donationDate = donationDate;
+	}
+
+	/**
+	 * @return the type
+	 */
+	public String getType() {
+		return type;
+	}
+
+	/**
+	 * @param type the type to set
+	 */
+	public void setType(String type) {
+		this.type = type;
+	}
+
+
+	public Account getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Account customer) {
+		this.customer = customer;
+	}
+
+	public User getContact() {
+		return contact;
+	}
+
+	public void setContact(User contact) {
+		this.contact = contact;
+	}
+
+	public PaymentMethod getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(PaymentMethod paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public String getDonationFrequency() {
+		return donationFrequency;
+	}
+
+	public void setDonationFrequency(String donationFrequency) {
+		this.donationFrequency = donationFrequency;
+	}
+
+	public String getDonationBranch() {
+		return donationBranch;
+	}
+
+	public void setDonationBranch(String donationBranch) {
+		this.donationBranch = donationBranch;
+	}
+
+	public String getYmcaCampaignerName() {
+		return ymcaCampaignerName;
+	}
+
+	public void setYmcaCampaignerName(String ymcaCampaignerName) {
+		this.ymcaCampaignerName = ymcaCampaignerName;
+	}
+
+	public boolean isDonationGiftChk() {
+		return donationGiftChk;
+	}
+
+	public void setDonationGiftChk(boolean donationGiftChk) {
+		this.donationGiftChk = donationGiftChk;
+	}
+
+	public String getDonerTitle() {
+		return donerTitle;
+	}
+
+	public void setDonerTitle(String donerTitle) {
+		this.donerTitle = donerTitle;
+	}
+
+	public String getDonerFirstName() {
+		return donerFirstName;
+	}
+
+	public void setDonerFirstName(String donerFirstName) {
+		this.donerFirstName = donerFirstName;
+	}
+
+	public String getDonerLastName() {
+		return donerLastName;
+	}
+
+	public void setDonerLastName(String donerLastName) {
+		this.donerLastName = donerLastName;
+	}
+
+	public String getAddressLine1() {
+		return addressLine1;
+	}
+
+	public void setAddressLine1(String addressLine1) {
+		this.addressLine1 = addressLine1;
+	}
+
+	public String getAddressLine2() {
+		return addressLine2;
+	}
+
+	public void setAddressLine2(String addressLine2) {
+		this.addressLine2 = addressLine2;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public String getZipcode() {
+		return zipcode;
+	}
+
+	public void setZipcode(String zipcode) {
+		this.zipcode = zipcode;
+	}
+
+	public String getContry() {
+		return contry;
+	}
+
+	public void setContry(String contry) {
+		this.contry = contry;
+	}
+
+	public String getPreferredPhone() {
+		return preferredPhone;
+	}
+
+	public void setPreferredPhone(String preferredPhone) {
+		this.preferredPhone = preferredPhone;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getAddEmailLstCheck() {
+		return addEmailLstCheck;
+	}
+
+	public void setAddEmailLstCheck(String addEmailLstCheck) {
+		this.addEmailLstCheck = addEmailLstCheck;
+	}
+
+	public String getCardType() {
+		return cardType;
+	}
+
+	public void setCardType(String cardType) {
+		this.cardType = cardType;
+	}
+
+	public String getCardNumber() {
+		return cardNumber;
+	}
+
+	public void setCardNumber(String cardNumber) {
+		this.cardNumber = cardNumber;
+	}
+
+	public String getCscNumber() {
+		return cscNumber;
+	}
+
+	public void setCscNumber(String cscNumber) {
+		this.cscNumber = cscNumber;
+	}
+
+	public String getExpMonth() {
+		return expMonth;
+	}
+
+	public void setExpMonth(String expMonth) {
+		this.expMonth = expMonth;
+	}
+
+	public String getExpYear() {
+		return expYear;
+	}
+
+	public void setExpYear(String expYear) {
+		this.expYear = expYear;
+	}
+
+	public String getNameOnCard() {
+		return nameOnCard;
+	}
+
+	public void setNameOnCard(String nameOnCard) {
+		this.nameOnCard = nameOnCard;
+	}
+	
+
+	public String getDonationAmtStr() {
+		return donationAmtStr;
+	}
+
+	public void setDonationAmtStr(String donationAmtStr) {
+		this.donationAmtStr = donationAmtStr;
+	}
+
+	public String getDonationFrequencyStr() {
+		return donationFrequencyStr;
+	}
+
+	public void setDonationFrequencyStr(String donationFrequencyStr) {
+		this.donationFrequencyStr = donationFrequencyStr;
+	}
+
+	public String getCardTypeStr() {
+		return cardTypeStr;
+	}
+
+	public void setCardTypeStr(String cardTypeStr) {
+		this.cardTypeStr = cardTypeStr;
+	}
+
+	public String getDonationAmtString() {
+		return donationAmtString;
+	}
+
+	public void setDonationAmtString(String donationAmtString) {
+		this.donationAmtString = donationAmtString;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime
+				* result
+				+ ((addEmailLstCheck == null) ? 0 : addEmailLstCheck.hashCode());
+		result = prime * result
+				+ ((addressLine1 == null) ? 0 : addressLine1.hashCode());
+		result = prime * result
+				+ ((addressLine2 == null) ? 0 : addressLine2.hashCode());
+		result = prime * result
+				+ ((cardNumber == null) ? 0 : cardNumber.hashCode());
+		result = prime * result
+				+ ((cardType == null) ? 0 : cardType.hashCode());
+		result = prime * result
+				+ ((cardTypeStr == null) ? 0 : cardTypeStr.hashCode());
+		result = prime * result + ((city == null) ? 0 : city.hashCode());
+		result = prime * result + ((contact == null) ? 0 : contact.hashCode());
+		result = prime * result + ((contry == null) ? 0 : contry.hashCode());
+		result = prime * result
+				+ ((cscNumber == null) ? 0 : cscNumber.hashCode());
+		result = prime * result
+				+ ((customer == null) ? 0 : customer.hashCode());
+		result = prime * result
+				+ ((donationAmount == null) ? 0 : donationAmount.hashCode());
+		result = prime * result
+				+ ((donationAmtStr == null) ? 0 : donationAmtStr.hashCode());
+		result = prime
+				* result
+				+ ((donationAmtString == null) ? 0 : donationAmtString
+						.hashCode());
+		result = prime * result
+				+ ((donationBranch == null) ? 0 : donationBranch.hashCode());
+		result = prime * result
+				+ ((donationDate == null) ? 0 : donationDate.hashCode());
+		result = prime
+				* result
+				+ ((donationFrequency == null) ? 0 : donationFrequency
+						.hashCode());
+		result = prime
+				* result
+				+ ((donationFrequencyStr == null) ? 0 : donationFrequencyStr
+						.hashCode());
+		result = prime * result + (donationGiftChk ? 1231 : 1237);
+		result = prime * result
+				+ ((donationId == null) ? 0 : donationId.hashCode());
+		result = prime * result
+				+ ((donationNumber == null) ? 0 : donationNumber.hashCode());
+		result = prime * result
+				+ ((donerFirstName == null) ? 0 : donerFirstName.hashCode());
+		result = prime * result
+				+ ((donerLastName == null) ? 0 : donerLastName.hashCode());
+		result = prime * result
+				+ ((donerTitle == null) ? 0 : donerTitle.hashCode());
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
+		result = prime * result
+				+ ((expMonth == null) ? 0 : expMonth.hashCode());
+		result = prime * result + ((expYear == null) ? 0 : expYear.hashCode());
+		result = prime * result
+				+ ((nameOnCard == null) ? 0 : nameOnCard.hashCode());
+		result = prime * result
+				+ ((paymentMethod == null) ? 0 : paymentMethod.hashCode());
+		result = prime * result
+				+ ((preferredPhone == null) ? 0 : preferredPhone.hashCode());
+		result = prime * result + ((state == null) ? 0 : state.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime
+				* result
+				+ ((ymcaCampaignerName == null) ? 0 : ymcaCampaignerName
+						.hashCode());
+		result = prime * result + ((zipcode == null) ? 0 : zipcode.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Donation other = (Donation) obj;
+		if (addEmailLstCheck == null) {
+			if (other.addEmailLstCheck != null)
+				return false;
+		} else if (!addEmailLstCheck.equals(other.addEmailLstCheck))
+			return false;
+		if (addressLine1 == null) {
+			if (other.addressLine1 != null)
+				return false;
+		} else if (!addressLine1.equals(other.addressLine1))
+			return false;
+		if (addressLine2 == null) {
+			if (other.addressLine2 != null)
+				return false;
+		} else if (!addressLine2.equals(other.addressLine2))
+			return false;
+		if (cardNumber == null) {
+			if (other.cardNumber != null)
+				return false;
+		} else if (!cardNumber.equals(other.cardNumber))
+			return false;
+		if (cardType == null) {
+			if (other.cardType != null)
+				return false;
+		} else if (!cardType.equals(other.cardType))
+			return false;
+		if (cardTypeStr == null) {
+			if (other.cardTypeStr != null)
+				return false;
+		} else if (!cardTypeStr.equals(other.cardTypeStr))
+			return false;
+		if (city == null) {
+			if (other.city != null)
+				return false;
+		} else if (!city.equals(other.city))
+			return false;
+		if (contact == null) {
+			if (other.contact != null)
+				return false;
+		} else if (!contact.equals(other.contact))
+			return false;
+		if (contry == null) {
+			if (other.contry != null)
+				return false;
+		} else if (!contry.equals(other.contry))
+			return false;
+		if (cscNumber == null) {
+			if (other.cscNumber != null)
+				return false;
+		} else if (!cscNumber.equals(other.cscNumber))
+			return false;
+		if (customer == null) {
+			if (other.customer != null)
+				return false;
+		} else if (!customer.equals(other.customer))
+			return false;
+		if (donationAmount == null) {
+			if (other.donationAmount != null)
+				return false;
+		} else if (!donationAmount.equals(other.donationAmount))
+			return false;
+		if (donationAmtStr == null) {
+			if (other.donationAmtStr != null)
+				return false;
+		} else if (!donationAmtStr.equals(other.donationAmtStr))
+			return false;
+		if (donationAmtString == null) {
+			if (other.donationAmtString != null)
+				return false;
+		} else if (!donationAmtString.equals(other.donationAmtString))
+			return false;
+		if (donationBranch == null) {
+			if (other.donationBranch != null)
+				return false;
+		} else if (!donationBranch.equals(other.donationBranch))
+			return false;
+		if (donationDate == null) {
+			if (other.donationDate != null)
+				return false;
+		} else if (!donationDate.equals(other.donationDate))
+			return false;
+		if (donationFrequency == null) {
+			if (other.donationFrequency != null)
+				return false;
+		} else if (!donationFrequency.equals(other.donationFrequency))
+			return false;
+		if (donationFrequencyStr == null) {
+			if (other.donationFrequencyStr != null)
+				return false;
+		} else if (!donationFrequencyStr.equals(other.donationFrequencyStr))
+			return false;
+		if (donationGiftChk != other.donationGiftChk)
+			return false;
+		if (donationId == null) {
+			if (other.donationId != null)
+				return false;
+		} else if (!donationId.equals(other.donationId))
+			return false;
+		if (donationNumber == null) {
+			if (other.donationNumber != null)
+				return false;
+		} else if (!donationNumber.equals(other.donationNumber))
+			return false;
+		if (donerFirstName == null) {
+			if (other.donerFirstName != null)
+				return false;
+		} else if (!donerFirstName.equals(other.donerFirstName))
+			return false;
+		if (donerLastName == null) {
+			if (other.donerLastName != null)
+				return false;
+		} else if (!donerLastName.equals(other.donerLastName))
+			return false;
+		if (donerTitle == null) {
+			if (other.donerTitle != null)
+				return false;
+		} else if (!donerTitle.equals(other.donerTitle))
+			return false;
+		if (email == null) {
+			if (other.email != null)
+				return false;
+		} else if (!email.equals(other.email))
+			return false;
+		if (expMonth == null) {
+			if (other.expMonth != null)
+				return false;
+		} else if (!expMonth.equals(other.expMonth))
+			return false;
+		if (expYear == null) {
+			if (other.expYear != null)
+				return false;
+		} else if (!expYear.equals(other.expYear))
+			return false;
+		if (nameOnCard == null) {
+			if (other.nameOnCard != null)
+				return false;
+		} else if (!nameOnCard.equals(other.nameOnCard))
+			return false;
+		if (paymentMethod == null) {
+			if (other.paymentMethod != null)
+				return false;
+		} else if (!paymentMethod.equals(other.paymentMethod))
+			return false;
+		if (preferredPhone == null) {
+			if (other.preferredPhone != null)
+				return false;
+		} else if (!preferredPhone.equals(other.preferredPhone))
+			return false;
+		if (state == null) {
+			if (other.state != null)
+				return false;
+		} else if (!state.equals(other.state))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		if (ymcaCampaignerName == null) {
+			if (other.ymcaCampaignerName != null)
+				return false;
+		} else if (!ymcaCampaignerName.equals(other.ymcaCampaignerName))
+			return false;
+		if (zipcode == null) {
+			if (other.zipcode != null)
+				return false;
+		} else if (!zipcode.equals(other.zipcode))
+			return false;
+		return true;
+	}
+    
+	@Override
+	public String toString() {
+		return "Donation [donationId=" + donationId + ", customer=" + customer
+				+ ", contact=" + contact + ", paymentMethod=" + paymentMethod
+				+ ", donationNumber=" + donationNumber + ", donationAmount="
+				+ donationAmount + ", donationAmtStr=" + donationAmtStr
+				+ ", donationAmtString=" + donationAmtString
+				+ ", donationDate=" + donationDate + ", type=" + type
+				+ ", donationFrequency=" + donationFrequency
+				+ ", donationFrequencyStr=" + donationFrequencyStr
+				+ ", donationBranch=" + donationBranch
+				+ ", ymcaCampaignerName=" + ymcaCampaignerName
+				+ ", donationGiftChk=" + donationGiftChk + ", donerTitle="
+				+ donerTitle + ", donerFirstName=" + donerFirstName
+				+ ", donerLastName=" + donerLastName + ", addressLine1="
+				+ addressLine1 + ", addressLine2=" + addressLine2 + ", city="
+				+ city + ", state=" + state + ", zipcode=" + zipcode
+				+ ", contry=" + contry + ", preferredPhone=" + preferredPhone
+				+ ", email=" + email + ", addEmailLstCheck=" + addEmailLstCheck
+				+ ", cardType=" + cardType + ", cardTypeStr=" + cardTypeStr
+				+ ", cardNumber=" + cardNumber + ", cscNumber=" + cscNumber
+				+ ", expMonth=" + expMonth + ", expYear=" + expYear
+				+ ", nameOnCard=" + nameOnCard + "]";
+	}
+
+	private static final class DateOrderComparator implements Comparator<Donation> {
+		public int compare(Donation dn1, Donation dn2) {
+			if (dn1.donationDate.before(dn2.donationDate) )return 1;
+			if (dn1.donationDate == dn2.donationDate) return 0;
+			return -1;
+			
+		}
+	}
+    
+}

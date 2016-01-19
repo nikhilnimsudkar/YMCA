@@ -1,0 +1,352 @@
+package com.ymca.web.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ymca.dao.AccountDao;
+import com.ymca.dao.PaymentMethodDao;
+import com.ymca.model.Account;
+import com.ymca.model.PaymentMethod;
+import com.ymca.model.User;
+import com.ymca.web.util.Constants;
+
+@Controller
+public class PaymentController extends BaseController {
+	
+	@Resource
+	private AccountDao accountDao;
+	
+	@Resource
+	private PaymentMethodDao paymentMethodDao;
+	
+	@RequestMapping(value="/viewPaymentHistory", method=RequestMethod.GET)
+    public String viewPaymentHistory(final HttpServletRequest request, final HttpServletResponse response) { 
+        return "viewPaymentHistory";
+    }
+	
+	@RequestMapping(value="/viewPaymentInformation", method=RequestMethod.GET)
+    public ModelAndView viewPaymentInformation(final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+		String userId = null;
+		try{
+			userId = ((UserDetails) a.getPrincipal()).getUsername();
+		}catch(Exception e){
+			model.addAttribute("errMsg", "Your session is expired");
+			return new ModelAndView("viewPaymentInformation", model.asMap());
+		}
+		
+		Account account = null;
+    	User user =  null;	    	
+    	List<PaymentMethod> paymentList = null;
+    	if(userId != null && !"".equals(userId)){
+	    	account = accountDao.getByEmail(userId);
+			request.setAttribute("userId", userId);				
+			user = getUserByAccount(account, user);
+			paymentList = account.getPaymentMethod();
+    	}
+    	
+    	if(account != null){	    		    	    	
+	        model.addAttribute("accInfo", account);
+	        model.addAttribute("usInfo", user);	
+	        int userCount = account.getUser().size();
+	        List<User> userS = new ArrayList<User>();
+	        int countmembers = 0;
+	        if(userCount>1){
+		        for(User u: account.getUser()){
+		        	if(!user.getUsername().equalsIgnoreCase(u.getUsername()) && u.isActive()){
+		        		countmembers = countmembers + 1;
+		        		userS.add(u);
+		        	}
+		        }
+			}
+	        model.addAttribute("userCount", countmembers);
+	        model.addAttribute("userS", userS);
+	        model.addAttribute("paymentInfoLst" , paymentList);	        
+	        
+    	}else {
+			model.addAttribute("errMsg", "Please Login");
+			return new ModelAndView("login", model.asMap());			
+		}	        
+	        
+		return new ModelAndView("viewPaymentInformation", model.asMap());
+    }
+	
+	@RequestMapping(value="/updateCardInfo/{paymentId}", method=RequestMethod.GET)
+    public @ResponseBody PaymentMethod updateCardInfo(@PathVariable Long paymentId, final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		List<PaymentMethod> paymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(paymentId);
+        try {            
+            model.addAttribute("paymentMethod", new PaymentMethod());
+            if(paymentMethod != null && !paymentMethod.isEmpty()){
+            	PaymentMethod pm = paymentMethod.get(0);
+            	Account customer =  new Account();
+            	customer.setAccountId(pm.getCustomer().getAccountId());
+            	pm.setCustomer(customer);
+            	return pm;
+            }
+            
+        } catch (Exception se) {
+            System.out.println("Error occoured");
+            se.printStackTrace();
+        }
+       return null;
+    }
+	
+	@RequestMapping(value="/updateCardInfo", method=RequestMethod.POST)
+    public @ResponseBody String updateCardInfoSubmit(PaymentMethod paymentMethod, final HttpServletRequest request, final HttpServletResponse response) {		
+        try {            
+			PaymentMethod payMethod = paymentMethodDao.getOne(paymentMethod.getPaymentId());			
+			if(payMethod != null){				
+				payMethod.setBillingAddressLine1(paymentMethod.getBillingAddressLine1());
+				payMethod.setBillingAddressLine2(paymentMethod.getBillingAddressLine2());
+				payMethod.setBillingCity(paymentMethod.getBillingCity());
+				payMethod.setBillingState(paymentMethod.getBillingState());
+				
+				
+				payMethod.setExpirationMonth(paymentMethod.getExpirationMonth());
+				payMethod.setExpirationYear(paymentMethod.getExpirationYear());
+				
+				paymentMethodDao.save(payMethod);
+				return "SUCCESS";	
+			}else{
+				return "NOT_FOUND";	
+			}
+			           
+        } catch (Exception se) {
+            System.out.println("Error occoured");
+            se.printStackTrace();
+            return "FAIL";
+        }       
+    }
+	
+	@RequestMapping(value="/updateBankInfo/{paymentId}", method=RequestMethod.GET)
+    public @ResponseBody PaymentMethod updateBankInfo(@PathVariable Long paymentId, final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();
+		List<PaymentMethod> paymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(paymentId);
+        try {            
+            model.addAttribute("paymentMethod", new PaymentMethod());
+            if(paymentMethod != null && !paymentMethod.isEmpty()){
+            	PaymentMethod pm = paymentMethod.get(0);
+            	Account customer =  new Account();
+            	customer.setAccountId(pm.getCustomer().getAccountId());
+            	pm.setCustomer(customer);
+            	return pm;
+            }
+            
+        } catch (Exception se) {
+            System.out.println("Error occoured");
+            se.printStackTrace();
+        }
+       return null;       
+    }
+	
+	@RequestMapping(value="/updateBankInfo", method=RequestMethod.POST)
+    public @ResponseBody String updateBankInfoSubmit(PaymentMethod paymentMethod, final HttpServletRequest request, final HttpServletResponse response) {		
+        try {            
+        	PaymentMethod payMethod = paymentMethodDao.getOne(paymentMethod.getPaymentId());			
+			if(payMethod != null){
+				payMethod.setBillingAddressLine1(paymentMethod.getBillingAddressLine1());
+				payMethod.setBillingAddressLine2(paymentMethod.getBillingAddressLine2());
+				payMethod.setBillingCity(paymentMethod.getBillingCity());
+				payMethod.setBillingState(paymentMethod.getBillingState());			
+				paymentMethodDao.save(payMethod);
+				return "SUCCESS";	
+			}else{
+				return "NOT_FOUND";	
+			}
+			           
+        } catch (Exception se) {
+            System.out.println("Error occoured");
+            se.printStackTrace();
+            return "FAIL";
+        }       
+    }
+	
+	@RequestMapping(value="/addBankInfo", method=RequestMethod.POST)
+    public @ResponseBody String addBankInfoSubmit(PaymentMethod paymentMethod, final HttpServletRequest request, final HttpServletResponse response) {		
+		try {
+			if (paymentMethod != null) {
+				boolean flag = false;
+				Authentication a = SecurityContextHolder.getContext().getAuthentication();
+				String userId = null;
+				userId = ((UserDetails) a.getPrincipal()).getUsername();
+				Account account = null;
+				User user = null;
+				List<PaymentMethod> paymentList = null;
+				if (userId != null && !"".equals(userId)) {
+					account = accountDao.getByEmail(userId);
+					if (account != null && account.getAccountId() != null) {
+						List<PaymentMethod> paymentMethodLst = paymentMethodDao.getPaymentByAccountId(account.getAccountId());
+						if (paymentMethodLst != null && !paymentMethodLst.isEmpty()) {
+							for (PaymentMethod pm : paymentMethodLst) {
+								if (pm.getIsPrimary().equals(1)) {
+									flag = true;
+								}
+							}
+						}
+						paymentMethod.setCustomer(account);
+					}
+					if (flag) {
+						paymentMethod.setIsPrimary(0);
+					} else {
+						paymentMethod.setIsPrimary(1);
+					}
+					paymentMethod.setPortalStatus(Constants.PAYMENT_METHOD_PORTAL_STATUS);
+					paymentMethod.setPaymentType(Constants.PAYMENT_METHOD_PAYMENT_METHOD_EFT);
+					paymentMethodDao.save(paymentMethod);
+
+				}
+				return "SUCCESS";
+			} else {
+				return "FAIL";
+			}
+
+		} catch (Exception se) {
+			System.out.println("Error occoured");
+			se.printStackTrace();
+			return "FAIL";
+		}     
+    }
+	
+	@RequestMapping(value="/addCardInfo", method=RequestMethod.POST)
+    public @ResponseBody String addCardInfoSubmit(PaymentMethod paymentMethod, final HttpServletRequest request, final HttpServletResponse response) {		
+        try {    		
+				if(paymentMethod != null){	
+						boolean flag = false;			
+						Authentication a = SecurityContextHolder.getContext().getAuthentication();
+						String userId = null;
+						userId = ((UserDetails) a.getPrincipal()).getUsername();				
+						Account account = null;
+				    	User user =  null;	    	
+				    	List<PaymentMethod> paymentList = null;
+				    	if(userId != null && !"".equals(userId)){
+					    	account = accountDao.getByEmail(userId);
+					    	if(account != null && account.getAccountId() != null){
+					    		List<PaymentMethod> paymentMethodLst = paymentMethodDao.getPaymentByAccountId(account.getAccountId());        	
+					            if(paymentMethodLst != null && !paymentMethodLst.isEmpty()){
+					            	for(PaymentMethod pm :paymentMethodLst){
+					            		if(pm.getIsPrimary().equals(1)){
+					            			flag = true;
+					            		}
+					            	}
+					    	}
+					    	paymentMethod.setCustomer(account);
+				    	}
+				    	if(flag){
+					    	paymentMethod.setIsPrimary(0);
+					    }else{
+					    	paymentMethod.setIsPrimary(1);
+					    }	
+				    	paymentMethod.setPortalStatus(Constants.PAYMENT_METHOD_PORTAL_STATUS);
+				    	paymentMethod.setPaymentType(Constants.PAYMENT_METHOD_PAYMENT_METHOD_CREDIT);
+						paymentMethodDao.save(paymentMethod);
+			    	}
+					return "SUCCESS";	
+				}else{
+					return "FAIL";	
+				}	
+			
+        } catch (Exception se) {
+            System.out.println("Error occoured");
+            se.printStackTrace();
+            return "FAIL";
+        }       
+    }
+	
+	@RequestMapping(value="/removeCardInfo/{paymentId}", method=RequestMethod.GET)
+    public @ResponseBody String removeCardInfo(@PathVariable Long paymentId, final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();		
+        try { 
+        	List<PaymentMethod> paymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(paymentId);
+            model.addAttribute("paymentMethod", new PaymentMethod());
+            if(paymentMethod != null && !paymentMethod.isEmpty()){
+            	PaymentMethod pm = paymentMethod.get(0);
+            	Account customer =  new Account();
+            	customer.setAccountId(pm.getCustomer().getAccountId());
+            	pm.setCustomer(customer);
+            	pm.setPortalStatus(Constants.PAYMENT_METHOD_PORTAL_STATUS_REMOVE);
+            	paymentMethodDao.save(pm);            	
+            	return "SUCCESS";
+            }
+            
+        } catch (Exception se) {        	
+            System.out.println("Error occoured");
+            se.printStackTrace();
+            return "NOT_FOUND";
+        }
+       return null;
+    }
+	
+	@RequestMapping(value="/removeBankInfo/{paymentId}", method=RequestMethod.GET)
+    public @ResponseBody String removeBankInfo(@PathVariable Long paymentId, final HttpServletRequest request, final HttpServletResponse response) { 
+		Model model = new ExtendedModelMap();		
+        try { 
+        	List<PaymentMethod> paymentMethod = paymentMethodDao.getPaymentMethodByPaymentId(paymentId);
+            model.addAttribute("paymentMethod", new PaymentMethod());
+            if(paymentMethod != null && !paymentMethod.isEmpty()){
+            	PaymentMethod pm = paymentMethod.get(0);
+            	Account customer =  new Account();
+            	customer.setAccountId(pm.getCustomer().getAccountId());
+            	pm.setCustomer(customer);
+            	pm.setPortalStatus(Constants.PAYMENT_METHOD_PORTAL_STATUS_REMOVE);
+            	paymentMethodDao.save(pm);   
+            	return "SUCCESS";
+            }
+            
+        } catch (Exception se) {        	
+            System.out.println("Error occoured");
+            se.printStackTrace();
+            return "NOT_FOUND";
+        }
+       return null;
+    }
+	
+	@RequestMapping(value="/updatePaymentMethodPrimary/{paymentId}", method=RequestMethod.GET)
+    public @ResponseBody String updatePaymentMethodPrimary(@PathVariable Long paymentId, final HttpServletRequest request, final HttpServletResponse response) { 
+				
+        try { 
+        	Authentication a = SecurityContextHolder.getContext().getAuthentication();
+    		String userId = null;
+    		userId = ((UserDetails) a.getPrincipal()).getUsername();    		
+    		Account account = null;        	
+        	if(userId != null && !"".equals(userId)){
+    	    	account = accountDao.getByEmail(userId);
+	        	List<PaymentMethod> paymentMethodLst = paymentMethodDao.getPaymentByAccountId(account.getAccountId());        	
+	            if(paymentMethodLst != null && !paymentMethodLst.isEmpty()){
+	            	for(PaymentMethod pm :paymentMethodLst){
+	            		if(paymentId !=null && pm.getPaymentId().equals(paymentId)){
+	            			pm.setIsPrimary(1);
+	            		}else{
+	            			pm.setIsPrimary(0);
+	            		}
+	            		paymentMethodDao.save(pm);
+	            	}           	
+	            	return "SUCCESS";
+	            }
+            }
+            
+        } catch (Exception se) {        	
+            System.out.println("Error occoured");
+            se.printStackTrace();
+            return "NOT_FOUND";
+        }
+       return null;
+    }
+}

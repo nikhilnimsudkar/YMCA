@@ -1,0 +1,819 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.persistence.OneToOne;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
+/**
+ * This class represents the basic "user" object in YMCA Portal that allows for authentication
+ * and user management.  It implements Acegi Security's UserDetails interface.
+ *
+ * @author <a href="mailto:matt@raibledesigns.com">Matt Raible</a>
+ *         Updated by Dan Kibler (dan@getrolling.com)
+ *         Extended to implement Acegi UserDetails interface
+ *         by David Carter david@carter.net
+ */
+@Entity
+@Table(name = "contact")
+public class User extends BaseObject implements Serializable {
+    private static final long serialVersionUID = 3832626162173359411L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name ="PartyId")
+    private Long partyId;
+    
+    @Column(length = 50)
+    private String username;                    // required
+    
+    @Column()
+    private String password;                    // required
+    
+    @Transient
+    private String confirmPassword;
+    
+    @Column(name = "password_hint")
+    @XmlTransient
+    private String passwordHint;
+
+    @Column(name ="PersonFirstName")
+    private String personFirstName;                   // required
+    
+    @Column(name ="PersonLastName")
+    private String personLastName;                    // required
+    
+    @Column(name="PrimaryEmailAddress")
+    private String primaryEmailAddress;                       // required; unique
+    
+    @Column(name="PrimaryFormattedPhoneNumber")
+    private String primaryFormattedPhoneNumber;
+    
+    @Column(name="FormattedPhoneNumber")
+    private String formattedPhoneNumber;
+    
+    @Column(name="ContactPointPurpose")
+    private String contactPointPurpose;
+    
+    @Column(name = "DateOfBirth")
+    private Date dateOfBirth;
+    
+    @Column(name = "relationships")
+    private String relationships;
+    
+    @Column(name = "area_of_interest")
+    private String areaOfInterest;
+    
+    private String primaryURL;
+    @Column(name = "is_active", columnDefinition="boolean default true")
+   	private boolean isActive;  
+    
+    @Embedded
+    private Address address = new Address();
+    
+    @Version
+    private Integer version;
+    
+    @ManyToMany(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
+    @JoinTable(
+            name = "user_role",
+            joinColumns = { @JoinColumn(name = "user_id") },
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<Role>();
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "id")
+    private List<Activity> interactions = new ArrayList<>();
+    
+    @Column(name = "account_enabled")
+    private boolean enabled;
+    
+    @Column(name = "account_expired")
+    private boolean accountExpired;
+    
+    @Column(name = "account_locked")
+    private boolean accountLocked;
+    
+    @Column(name = "credentials_expired")
+    private boolean credentialsExpired;
+    
+    @Column(name = "profile_image")
+    private String profileImage;
+    
+    @Column(name = "is_primary", nullable = false, columnDefinition="boolean default false")
+    private boolean isPrimary;
+    
+    @Column(name = "is_member", nullable = false, columnDefinition="boolean default false")
+    private boolean isMember;
+    
+    @Column(name = "fcrm_contact_id")
+    private String fcrmContactId;
+    
+    @Column(name = "gender")
+    private String gender;
+    
+    @Column(name = "is_adult")
+    private String isAdult;
+    
+    @Column(name = "usr_sequence")
+    private String usrSequence;
+
+	//@OneToOne(cascade={CascadeType.ALL})  
+    //@JoinColumn(name="waivers_and_tc_id_FK")
+    @OneToMany(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+	@JoinColumn(name="id")
+    private Set<ContactWaiversAndTC> contactWaiversAndTC = new HashSet<ContactWaiversAndTC>(0);
+    
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "id")
+    private List<Donation> donation = new ArrayList<Donation>();
+    
+    @OneToOne(cascade={CascadeType.ALL})
+	@JoinColumn(name="location")
+	private Location location;
+   
+    public Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		this.location = location;
+	}
+
+	private Long facilityAccessNo;	
+
+	public Long getFacilityAccessNo() {
+		return facilityAccessNo;
+	}
+
+	public void setFacilityAccessNo(Long facilityAccessNo) {
+		this.facilityAccessNo = facilityAccessNo;
+	}
+    /**
+     * Default constructor - creates a new instance with no values set.
+     */
+    public User() {
+    }
+
+    /**
+     * Create a new instance and set the username.
+     *
+     * @param username login name for user.
+     */
+    public User(final String username) {
+        this.username = username;
+    }
+
+    
+    public Long getPartyId() {
+        return partyId;
+    }
+
+   
+    public String getUsername() {
+        return username;
+    }
+
+    
+    public String getPassword() {
+        return password;
+    }
+
+    
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+   
+    public String getPasswordHint() {
+        return passwordHint;
+    }
+
+    
+    public String getPersonFirstName() {
+        return personFirstName;
+    }
+
+   
+    public String getPersonLastName() {
+        return personLastName;
+    }
+
+    
+    public String getPrimaryEmailAddress() {
+        return primaryEmailAddress;
+    }
+
+    
+    public String getPrimaryFormattedPhoneNumber() {
+        return primaryFormattedPhoneNumber;
+    }
+
+   
+    public String getFormattedPhoneNumber() {
+		return formattedPhoneNumber;
+	}
+
+	public void setFormattedPhoneNumber(String formattedPhoneNumber) {
+		this.formattedPhoneNumber = formattedPhoneNumber;
+	}
+
+	public String getContactPointPurpose() {
+		return contactPointPurpose;
+	}
+
+	public void setContactPointPurpose(String contactPointPurpose) {
+		this.contactPointPurpose = contactPointPurpose;
+	}
+
+	public List<Activity> getInteractions() {
+		return interactions;
+	}
+
+	public void setInteractions(List<Activity> interactions) {
+		this.interactions = interactions;
+	}
+
+	public String getPrimaryURL() {
+        return primaryURL;
+    }
+
+    public boolean isActive() {
+		return isActive;
+	}
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
+
+	/**
+     * Returns the full name.
+     *
+     * @return firstName + ' ' + lastName
+     */
+    @Transient
+    public String getFullName() {
+        return personFirstName + ' ' + personLastName;
+    }
+
+   
+    public Address getAddress() {
+        return address;
+    }
+
+   
+    public Set<Role> getRoles() {
+        return roles;
+    }
+    
+
+    /**
+     * Convert user roles to LabelValue objects for convenience.
+     *
+     * @return a list of LabelValue objects with role information
+     */
+    @Transient
+    public List<LabelValue> getRoleList() {
+        List<LabelValue> userRoles = new ArrayList<LabelValue>();
+
+        if (this.roles != null) {
+            for (Role role : roles) {
+                // convert the user's roles to LabelValue Objects
+                userRoles.add(new LabelValue(role.getName(), role.getName()));
+            }
+        }
+
+        return userRoles;
+    }
+
+    /**
+     * Adds a role for the user
+     *
+     * @param role the fully instantiated role
+     */
+    public void addRole(Role role) {
+        getRoles().add(role);
+    }
+
+   
+	/**
+     * @return GrantedAuthority[] an array of roles.
+     * @see org.springframework.security.core.userdetails.UserDetails#getAuthorities()
+     */
+    @Transient
+    public Set<Role> getAuthorities() {
+        Set<Role> authorities = new LinkedHashSet<Role>();
+        authorities.addAll(roles);
+        return authorities;
+    }
+
+    
+    public Integer getVersion() {
+        return version;
+    }
+
+   
+    public Set<ContactWaiversAndTC> getContactWaiversAndTC() {
+		return contactWaiversAndTC;
+	}
+
+	public void setContactWaiversAndTC(Set<ContactWaiversAndTC> contactWaiversAndTC) {
+		this.contactWaiversAndTC = contactWaiversAndTC;
+	}
+
+	public Date getDateOfBirth() {
+		return dateOfBirth;
+	}
+
+	public void setDateOfBirth(Date dateOfBirth) {
+		this.dateOfBirth = dateOfBirth;
+	}
+
+	public String getRelationships() {
+		return relationships;
+	}
+
+	public void setRelationships(String relationships) {
+		this.relationships = relationships;
+	}
+
+	public String getAreaOfInterest() {
+		return areaOfInterest;
+	}
+
+	public void setAreaOfInterest(String areaOfInterest) {
+		this.areaOfInterest = areaOfInterest;
+	}
+
+	public boolean isEnabled() {
+        return enabled;
+    }
+
+   
+    public boolean isAccountExpired() {
+        return accountExpired;
+    }
+
+    /**
+     * @see org.springframework.security.core.userdetails.UserDetails#isAccountNonExpired()
+     * @return true if account is still active
+     */
+    @Transient
+    public boolean isAccountNonExpired() {
+        return !isAccountExpired();
+    }
+
+   
+    public boolean isAccountLocked() {
+        return accountLocked;
+    }
+
+    /**
+     * @see org.springframework.security.core.userdetails.UserDetails#isAccountNonLocked()
+     * @return false if account is locked
+     */
+    @Transient
+    public boolean isAccountNonLocked() {
+        return !isAccountLocked();
+    }
+
+    
+    public boolean isCredentialsExpired() {
+        return credentialsExpired;
+    }
+
+    /**
+     * @see org.springframework.security.core.userdetails.UserDetails#isCredentialsNonExpired()
+     * @return true if credentials haven't expired
+     */
+    @Transient
+    public boolean isCredentialsNonExpired() {
+        return !credentialsExpired;
+    }
+
+    public void setPartyId(Long partyId) {
+        this.partyId = partyId;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
+    public void setPasswordHint(String passwordHint) {
+        this.passwordHint = passwordHint;
+    }
+
+    public void setPersonFirstName(String personFirstName) {
+        this.personFirstName = personFirstName;
+    }
+
+    public void setPersonLastName(String personLastName) {
+        this.personLastName = personLastName;
+    }
+
+    public void setPrimaryEmailAddress(String primaryEmailAddress) {
+        this.primaryEmailAddress = primaryEmailAddress;
+    }
+
+    public void setPrimaryFormattedPhoneNumber(String primaryFormattedPhoneNumber) {
+        this.primaryFormattedPhoneNumber = primaryFormattedPhoneNumber;
+    }
+
+    public void setPrimaryURL(String primaryURL) {
+        this.primaryURL = primaryURL;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void setAccountExpired(boolean accountExpired) {
+        this.accountExpired = accountExpired;
+    }
+
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
+    }
+
+    public void setCredentialsExpired(boolean credentialsExpired) {
+        this.credentialsExpired = credentialsExpired;
+    }
+
+	public String getProfileImage() {
+		return profileImage;
+	}
+
+	public void setProfileImage(String profileImage) {
+		this.profileImage = profileImage;
+	}
+
+	public boolean isPrimary() {
+		return isPrimary;
+	}
+
+	public boolean isMember() {
+		return isMember;
+	}
+
+	public void setMember(boolean isMember) {
+		this.isMember = isMember;
+	}
+
+	public String getFcrmContactId() {
+		return fcrmContactId;
+	}
+
+	public void setFcrmContactId(String fcrmContactId) {
+		this.fcrmContactId = fcrmContactId;
+	}
+
+	public void setPrimary(boolean isPrimary) {
+		this.isPrimary = isPrimary;
+	}
+
+	public List<Donation> getDonation() {
+		return donation;
+	}
+
+	public void setDonation(List<Donation> donation) {
+		this.donation = donation;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public String getUsrSequence() {
+		return usrSequence;
+	}
+
+	public void setUsrSequence(String usrSequence) {
+		this.usrSequence = usrSequence;
+	}
+
+	public String getIsAdult() {
+		return isAdult;
+	}
+
+	public void setIsAdult(String isAdult) {
+		this.isAdult = isAdult;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		User other = (User) obj;
+		if (accountExpired != other.accountExpired)
+			return false;
+		if (accountLocked != other.accountLocked)
+			return false;
+		if (address == null) {
+			if (other.address != null)
+				return false;
+		} else if (!address.equals(other.address))
+			return false;
+		if (areaOfInterest == null) {
+			if (other.areaOfInterest != null)
+				return false;
+		} else if (!areaOfInterest.equals(other.areaOfInterest))
+			return false;
+		if (confirmPassword == null) {
+			if (other.confirmPassword != null)
+				return false;
+		} else if (!confirmPassword.equals(other.confirmPassword))
+			return false;
+		if (contactPointPurpose == null) {
+			if (other.contactPointPurpose != null)
+				return false;
+		} else if (!contactPointPurpose.equals(other.contactPointPurpose))
+			return false;
+		if (contactWaiversAndTC == null) {
+			if (other.contactWaiversAndTC != null)
+				return false;
+		} else if (!contactWaiversAndTC.equals(other.contactWaiversAndTC))
+			return false;
+		if (credentialsExpired != other.credentialsExpired)
+			return false;
+		if (dateOfBirth == null) {
+			if (other.dateOfBirth != null)
+				return false;
+		} else if (!dateOfBirth.equals(other.dateOfBirth))
+			return false;
+		if (donation == null) {
+			if (other.donation != null)
+				return false;
+		} else if (!donation.equals(other.donation))
+			return false;
+		if (enabled != other.enabled)
+			return false;
+		if (facilityAccessNo == null) {
+			if (other.facilityAccessNo != null)
+				return false;
+		} else if (!facilityAccessNo.equals(other.facilityAccessNo))
+			return false;
+		if (fcrmContactId == null) {
+			if (other.fcrmContactId != null)
+				return false;
+		} else if (!fcrmContactId.equals(other.fcrmContactId))
+			return false;
+		if (formattedPhoneNumber == null) {
+			if (other.formattedPhoneNumber != null)
+				return false;
+		} else if (!formattedPhoneNumber.equals(other.formattedPhoneNumber))
+			return false;
+		if (gender == null) {
+			if (other.gender != null)
+				return false;
+		} else if (!gender.equals(other.gender))
+			return false;
+		if (interactions == null) {
+			if (other.interactions != null)
+				return false;
+		} else if (!interactions.equals(other.interactions))
+			return false;
+		if (isActive != other.isActive)
+			return false;
+		if (isAdult == null) {
+			if (other.isAdult != null)
+				return false;
+		} else if (!isAdult.equals(other.isAdult))
+			return false;
+		if (isMember != other.isMember)
+			return false;
+		if (isPrimary != other.isPrimary)
+			return false;
+		if (location == null) {
+			if (other.location != null)
+				return false;
+		} else if (!location.equals(other.location))
+			return false;
+		if (partyId == null) {
+			if (other.partyId != null)
+				return false;
+		} else if (!partyId.equals(other.partyId))
+			return false;
+		if (password == null) {
+			if (other.password != null)
+				return false;
+		} else if (!password.equals(other.password))
+			return false;
+		if (passwordHint == null) {
+			if (other.passwordHint != null)
+				return false;
+		} else if (!passwordHint.equals(other.passwordHint))
+			return false;
+		if (personFirstName == null) {
+			if (other.personFirstName != null)
+				return false;
+		} else if (!personFirstName.equals(other.personFirstName))
+			return false;
+		if (personLastName == null) {
+			if (other.personLastName != null)
+				return false;
+		} else if (!personLastName.equals(other.personLastName))
+			return false;
+		if (primaryEmailAddress == null) {
+			if (other.primaryEmailAddress != null)
+				return false;
+		} else if (!primaryEmailAddress.equals(other.primaryEmailAddress))
+			return false;
+		if (primaryFormattedPhoneNumber == null) {
+			if (other.primaryFormattedPhoneNumber != null)
+				return false;
+		} else if (!primaryFormattedPhoneNumber
+				.equals(other.primaryFormattedPhoneNumber))
+			return false;
+		if (primaryURL == null) {
+			if (other.primaryURL != null)
+				return false;
+		} else if (!primaryURL.equals(other.primaryURL))
+			return false;
+		if (profileImage == null) {
+			if (other.profileImage != null)
+				return false;
+		} else if (!profileImage.equals(other.profileImage))
+			return false;
+		if (relationships == null) {
+			if (other.relationships != null)
+				return false;
+		} else if (!relationships.equals(other.relationships))
+			return false;
+		if (roles == null) {
+			if (other.roles != null)
+				return false;
+		} else if (!roles.equals(other.roles))
+			return false;
+		if (username == null) {
+			if (other.username != null)
+				return false;
+		} else if (!username.equals(other.username))
+			return false;
+		if (usrSequence == null) {
+			if (other.usrSequence != null)
+				return false;
+		} else if (!usrSequence.equals(other.usrSequence))
+			return false;
+		if (version == null) {
+			if (other.version != null)
+				return false;
+		} else if (!version.equals(other.version))
+			return false;
+		return true;
+	}
+
+    @Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (accountExpired ? 1231 : 1237);
+		result = prime * result + (accountLocked ? 1231 : 1237);
+		result = prime * result + ((address == null) ? 0 : address.hashCode());
+		result = prime * result
+				+ ((areaOfInterest == null) ? 0 : areaOfInterest.hashCode());
+		result = prime * result
+				+ ((confirmPassword == null) ? 0 : confirmPassword.hashCode());
+		result = prime
+				* result
+				+ ((contactPointPurpose == null) ? 0 : contactPointPurpose
+						.hashCode());
+		result = prime
+				* result
+				+ ((contactWaiversAndTC == null) ? 0 : contactWaiversAndTC
+						.hashCode());
+		result = prime * result + (credentialsExpired ? 1231 : 1237);
+		result = prime * result
+				+ ((dateOfBirth == null) ? 0 : dateOfBirth.hashCode());
+		result = prime * result
+				+ ((donation == null) ? 0 : donation.hashCode());
+		result = prime * result + (enabled ? 1231 : 1237);
+		result = prime
+				* result
+				+ ((facilityAccessNo == null) ? 0 : facilityAccessNo.hashCode());
+		result = prime * result
+				+ ((fcrmContactId == null) ? 0 : fcrmContactId.hashCode());
+		result = prime
+				* result
+				+ ((formattedPhoneNumber == null) ? 0 : formattedPhoneNumber
+						.hashCode());
+		result = prime * result + ((gender == null) ? 0 : gender.hashCode());
+		result = prime * result
+				+ ((interactions == null) ? 0 : interactions.hashCode());
+		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + ((isAdult == null) ? 0 : isAdult.hashCode());
+		result = prime * result + (isMember ? 1231 : 1237);
+		result = prime * result + (isPrimary ? 1231 : 1237);
+		result = prime * result
+				+ ((location == null) ? 0 : location.hashCode());
+		result = prime * result + ((partyId == null) ? 0 : partyId.hashCode());
+		result = prime * result
+				+ ((password == null) ? 0 : password.hashCode());
+		result = prime * result
+				+ ((passwordHint == null) ? 0 : passwordHint.hashCode());
+		result = prime * result
+				+ ((personFirstName == null) ? 0 : personFirstName.hashCode());
+		result = prime * result
+				+ ((personLastName == null) ? 0 : personLastName.hashCode());
+		result = prime
+				* result
+				+ ((primaryEmailAddress == null) ? 0 : primaryEmailAddress
+						.hashCode());
+		result = prime
+				* result
+				+ ((primaryFormattedPhoneNumber == null) ? 0
+						: primaryFormattedPhoneNumber.hashCode());
+		result = prime * result
+				+ ((primaryURL == null) ? 0 : primaryURL.hashCode());
+		result = prime * result
+				+ ((profileImage == null) ? 0 : profileImage.hashCode());
+		result = prime * result
+				+ ((relationships == null) ? 0 : relationships.hashCode());
+		result = prime * result + ((roles == null) ? 0 : roles.hashCode());
+		result = prime * result
+				+ ((username == null) ? 0 : username.hashCode());
+		result = prime * result
+				+ ((usrSequence == null) ? 0 : usrSequence.hashCode());
+		result = prime * result + ((version == null) ? 0 : version.hashCode());
+		return result;
+	}
+
+    @Override
+	public String toString() {
+		return "User [partyId=" + partyId + ", username=" + username
+				+ ", password=" + password + ", confirmPassword="
+				+ confirmPassword + ", passwordHint=" + passwordHint
+				+ ", personFirstName=" + personFirstName + ", personLastName="
+				+ personLastName + ", primaryEmailAddress="
+				+ primaryEmailAddress + ", primaryFormattedPhoneNumber="
+				+ primaryFormattedPhoneNumber + ", formattedPhoneNumber="
+				+ formattedPhoneNumber + ", contactPointPurpose="
+				+ contactPointPurpose + ", dateOfBirth=" + dateOfBirth
+				+ ", relationships=" + relationships + ", areaOfInterest="
+				+ areaOfInterest + ", primaryURL=" + primaryURL + ", isActive="
+				+ isActive + ", address=" + address + ", version=" + version
+				+ ", roles=" + roles + ", interactions=" + interactions
+				+ ", enabled=" + enabled + ", accountExpired=" + accountExpired
+				+ ", accountLocked=" + accountLocked + ", credentialsExpired="
+				+ credentialsExpired + ", profileImage=" + profileImage
+				+ ", isPrimary=" + isPrimary + ", isMember=" + isMember
+				+ ", fcrmContactId=" + fcrmContactId + ", gender=" + gender
+				+ ", isAdult=" + isAdult + ", usrSequence=" + usrSequence
+				+ ", contactWaiversAndTC=" + contactWaiversAndTC
+				+ ", donation=" + donation + ", location=" + location
+				+ ", facilityAccessNo=" + facilityAccessNo + "]";
+	}
+}

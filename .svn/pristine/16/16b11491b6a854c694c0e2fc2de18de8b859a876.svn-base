@@ -1,0 +1,20 @@
+package com.ymca.dao;
+
+
+
+//import antlr.collections.List;
+
+//import java.util.List;
+
+import java.util.List;
+
+import com.ymca.model.Account;
+import com.ymca.model.Interaction;
+import com.ymca.model.Signup;
+
+public interface InteractionDao extends GenericDao<Interaction, Long>{
+	
+	
+	Interaction findByTypeAndCustomer(String type,Account customer);
+	List<Interaction> findBySignupAndType(Signup signup, String type);
+}

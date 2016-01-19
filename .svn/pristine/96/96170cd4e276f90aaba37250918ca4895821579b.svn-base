@@ -1,0 +1,11 @@
+sc.username=iuser
+sc.password=Serene123
+sc.hostname=https://eaag-test.crm.us2.oraclecloud.com
+
+
+
+# FQL mapping between SOAP action and object name#
+Opportunity=http://xmlns.oracle.com/apps/sales/opptyMgmt/opportunities/opportunityService/findOpportunityAppointment=http://xmlns.oracle.com/apps/crmCommon/activities/activitiesService/transient/findAppointment
+Lead=http://xmlns.oracle.com/apps/crmCommon/activities/activitiesService/transient/findAppointment
+Sales=http://xmlns.oracle.com/apps/cdm/foundation/parties/personService/applicationModule/findPerson
+Person=http://xmlns.oracle.com/apps/cdm/foundation/parties/personService/applicationModule/findPerson

@@ -1,0 +1,783 @@
+
+<%
+
+    	
+    System.out.println("contextPath--->"+contextPath);
+    %>
+<script src="<%=contextPath %>/resources/js/app/payment.js"></script>
+<script src="<%=contextPath %>/resources/js/sha512.js"></script>
+<%@ include file="../../layouts/include_taglib.jsp"%>
+<script src="<%=contextPath %>/resources/js/jquery.validate.min.js"></script>
+
+		
+<div id="purchaseinfoPg" style="margin:0">
+	<div class="k-loading-mask" style="width:100%;height:100%; position:absolute; top:114px; left:0px;display:none; z-index:9999">
+		<span class="k-loading-text">Loading... Please wait</span>
+		<div class="k-loading-image">
+			<div class="k-loading-color"></div>
+		</div>
+	</div>
+	<!-- hidden fields -->
+	<span id="pastdueamount1" style="display:none"> ${pastDueAmount}</span>
+			<span id="currentPastDueAmount" style="display:none"> ${currentPastDueAmount}</span>
+	<input type="hidden" name="AccountID" id="AccountID" value="${ accInfo.accountId }">
+	<!--<input type="hidden" name="pastdueamount1" id="pastdueamount1" value="${pastDueAmount}">
+		<input type="hidden" name="currentPastDueAmount" id="currentPastDueAmount" value="${currentPastDueAmount}">-->
+	<div id="tabstrip3" style="width:800px;margin:0">
+		<div id="payment_cart">
+			<form:form commandName="paymentMethod" id="addCardInfoForm" method="post" action="#">
+			<div class="pay_header">
+				
+				<span class="head" style="margin-left:3px;">payment INFORMATION</span>
+				<!--<span class="autopaySpan">
+					<button id="pmPrimary" class="k-button" style="margin-right: 10px; text-shadow: none;">Make Primary</button>
+					<button id="autopayBtn" class="k-button">AUTOPAY</button>
+				</span>-->
+				
+				<div id="purchase_info" >
+					<div>
+						<select id="paymentInfoRadio" name="paymentInfoRadio" style="width:350px;">
+							
+							<c:forEach var="paymentInfo" items="${paymentInfoLst}" varStatus="count">
+								<c:choose>
+								<c:when test="${ paymentInfo[4] == 'CREDIT' }">
+									<option value="${ paymentInfo[4] }__${ paymentInfo[0] }__${ paymentInfo[8] }"> ${ paymentInfo[3] } ${paymentInfo[2] } ${ paymentInfo[5] }/${ paymentInfo[6] } </option>
+								</c:when>
+								<c:when test="${ paymentInfo[4] == 'ACH' }">
+									<option value="${ paymentInfo[4] }__${ paymentInfo[0] }__${ paymentInfo[8] }"> ${ paymentInfo[3] }, ${paymentInfo[2] } </option>
+								</c:when>
+								</c:choose>
+								<%-- 
+								<c:if test="${ paymentInfo.portalStatus == 'Active' && paymentInfo.paymentType == 'Credit' }">
+									<c:choose>
+										<c:when test="${ paymentInfo.isPrimary == '1' }">
+											<option selected value="${paymentInfo.paymentId }">${paymentInfo.nickName } ${paymentInfo.cardNumber } ${paymentInfo.expirationMonth }/${paymentInfo.expirationYear }</option>
+										</c:when>
+										<c:when test="${ paymentInfo.isPrimary == '0' || paymentInfo.isPrimary == null}">
+											<option value="${paymentInfo.paymentId }">${paymentInfo.nickName } ${paymentInfo.cardNumber } ${paymentInfo.expirationMonth }/${paymentInfo.expirationYear }</option>
+										</c:when>
+									</c:choose>	
+								</c:if> --%>
+								
+							</c:forEach>
+							<option value="NewCard">Add New Card</option>
+							<option value="NewBankInfo">Add New Bank Info</option>
+							
+						</select>
+					</div>
+						
+					<div id="addcard" style="margin-top:10px; margin-bottom:10px; height:44px; display:none;">
+						  
+							
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Name on card</div>
+									<div><input type="text" class="k-textbox" placeholder="Full Name on Card" name="fullName" id="fullName" value="Test Payment" tabIndex="1" maxlength="50" ></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Card Number</div>
+									<div><input autocomplete="off" type="text" class="k-textbox" placeholder="Card Number" name="cardNum" id="cardNum" value="4111111111111111" tabIndex="2" maxlength="16"></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Expiration date</div>
+									<div>
+										<span>
+											<select id="addCardExpirationMonthSelect" name="addCardExpirationMonthSelect" style="width:50px;">
+							                      <option value="01">01</option>
+							                      <option value="02">02</option>
+							                      <option value="03">03</option>
+							                      <option value="04">04</option>
+							                      <option value="05">05</option>
+							                      <option value="06">06</option>
+							                      <option value="07">07</option>
+							                      <option value="08">08</option>
+							                      <option value="09">09</option>
+							                      <option value="10">10</option>
+							                      <option value="11">11</option>
+							                      <option value="12">12</option>
+											</select>
+										</span>
+										<span>
+											<select id="addCardExpirationYearSelect" name="addCardExpirationYearSelect" style="width:70px;">
+											</select>
+										</span>
+									</div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Security Code</div>
+									<div><input  autocomplete="off" type="password" class="k-textbox" placeholder="Security Code" name="securityCode" id="securityCode" value="1111" tabIndex="3" maxlength="4"></div>
+								</div>
+							</div>
+							
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Address Line 1</div>
+									<div><!-- <textarea placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" class="k-textbox" style="width: 279px; height: 46px;"></textarea> -->
+										<input type="text" class="k-textbox" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1" value="1234 Fifth Street" tabIndex="4">
+									</div> 
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Address Line 2</div>
+									<div><input type="text" class="k-textbox" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2" value="" tabIndex="5"></div> 
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">City</div>
+									<div><input type="text" class="k-textbox" placeholder="Billing City" name="billingCity" id="billingCity" value="Beaumont" tabIndex="6"></div> 
+								</div>
+								<div class="addcarddiv" style="width:45px;">
+									<div style="height:20px;">State</div>
+									<div><input type="text" class="k-textbox" placeholder="" name="billingState" id="billingState" value="TX" style="width:45px;" tabIndex="7"></div> 
+								</div>
+								<div class="addcarddiv" style="width:60px">
+									<div style="height:20px;">Zip</div>
+									<div><input type="text" class="k-textbox" placeholder="Zip" name="billingZip" id="billingZip" value="77708" style="width:60px;" tabIndex="8"></div> 
+								</div>
+								
+							</div>
+							
+							<div style="height:50px;">
+								
+								<div id="savecardcheckbox" class="addcarddiv" style="width:124px">
+									<div><input type="checkbox" name="SaveCard" id="SaveCard">&nbsp;&nbsp;Save Card</div>
+								</div>
+								<div id="nickname" class="addcarddiv" style="display:none;">
+									<div style="height:20px;">Nick Name</div>
+									<div><input type="text" class="k-textbox" placeholder="Nick Name" name="nickName" id="nickName" value="" tabIndex="9"></div> 
+								</div>
+							</div>
+						
+					</div>
+					
+					<div id="addBank" style="margin-top:10px; margin-bottom:10px; height:140px; display:none;   float: left; ">										
+							<div style="height:50px;">
+							<div class="addcarddiv">
+								<div style="height:20px;">Bank Account Type</div>
+								<div>
+									<span>
+										<select id="bankAccountTypeSelect" name="bankAccountTypeSelect" tabIndex="1" style="width:130px;">
+						                      <option value="CHECKING">Checking</option>
+						                      <option value="SAVINGS">Savings</option>
+										</select>
+									</span>
+								</div>
+							</div>
+							</div>
+							<div style="height:50px;">
+								<div class="addcarddiv">
+									<div style="height:20px;">Bank Account Number</div>
+									<div><input type="text" class="k-textbox" placeholder="Bank Account Number" name="bankAccountNumber" id="bankAccountNumber" value=""  style="width: 15.4em;" tabIndex="1"></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Bank Routing Number</div>
+									<div><input type="text" class="k-textbox" placeholder="Bank Routing Number" name="bankRoutingNumber" id="bankRoutingNumber" value=""  style="width: 15.4em;" tabIndex="2"></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Check Number</div>
+									<div><input type="text" class="k-textbox" placeholder="Check Number" name="checkNumber" id="checkNumber" value=""  style="width: 15.4em;" tabIndex="3"></div>
+								</div>
+								<div class="addcarddiv">
+									<div style="height:20px;">Account Name</div>
+									<div><input type="text" class="k-textbox" placeholder="Account Name" name="bankAccountName" id="bankAccountName" value=""  style="width: 15.4em;" tabIndex="4"></div>
+								</div>
+							</div>	
+							<div style="height:50px;">
+								<div id="savecardcheckbox" class="addcarddiv" style="width:124px">
+									<div><input type="checkbox" disabled="disabled" name="SaveCardACH" id="SaveCardACH">&nbsp;&nbsp;Save Card</div>
+									
+								</div>
+								<div id="nickname" class="addcarddiv" >
+									<div style="height:20px;">Nick Name</div>
+									<div><input type="text" class="k-textbox" placeholder="Nick Name" name="nickNameACH" id="nickNameACH" value=""  tabIndex="5"></div> 
+								</div>
+								<div class="addcarddiv" style="display:none;">
+									 <span id="paymentTokenIdSpan"></span>
+									 <span id="paymentAmountSpan"></span>
+								</div>
+							</div>										
+					</div>
+				</div>
+			</div>
+			<div style="clear: both;"></div> 
+			<div class="pay_header">
+				<!--<span class="head" style="margin-left:3px;">CART ITEMS</span>-->
+				<div id="cart_info">
+					<table width="100%">
+						<tr>
+							<td id="cartitem" colspan="4">
+							
+							</td>
+						</tr>
+						<tr height="40px"><td></td></tr>
+						<tr>
+							<td colspan="3" align="right" width="75%"><strong><span id="pastDuePayment">PastDueAmount</span></strong></td>
+							<td align="left"><strong><span id="pastDueAmount">${pastDueAmount}</span></strong></td>
+													
+						</tr>
+						<tr height="40px">
+							<td></td>
+						</tr>
+						<tr>
+							<td colspan="4" align="right" style="padding-right:10px;">
+								<div id="cartbtns" style="font-size:13px">
+									<!--<span id="backtoprogram" class="k-button" onclick="backtoregistration()" style="font-weight:bold">Continue shopping</span>-->
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<button id="placeorderBtn" class="k-button">make payment</button>
+								</div>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			
+			</form:form>
+
+		</div>
+	</div>
+</div>
+
+<script>
+var path = window.location.pathname;
+//alert("path-- "+path);
+var transactionAmount = $("#pastdueamount1").text();
+
+var transactionAmount1=$("#currentPastDueAmount").text();
+
+var tag="PASTDUE";
+if(path=="/ymca-web/payCurrentPastDue")
+{
+	$("#pastDuePayment").html("CurrentAndPastDueAmount");
+	if(transactionAmount==0)
+	{
+		$("#pastDuePayment").html("CurrentDueAmount");
+	}
+	$("#pastDueAmount").html(transactionAmount1);
+	tag="CURRENTPASTDUE";
+}
+
+var merchantId = "TESTTERMINAL";  
+var transactionAmount = "0.00";
+var JetDirectToken	= "1234567890ABCDEFGHIJKabcdefghijk";
+var paymentOrderId = Math.floor((Math.random()*1000000000000)+1);
+var paymentOrderNumber = paymentOrderId.toString();
+$(document).ready(function() {
+		
+		var currentYear = new Date().getFullYear();
+		
+		for(var i=0; i<30 ; i++){
+			var currentYear2digit = parseInt(currentYear.toString().substring(2, 4));
+			$('#addCardExpirationYearSelect').append($('<option>', {value: currentYear2digit,text: currentYear}));
+			currentYear = currentYear +1;
+		}
+		
+		$("#addCardExpirationMonthSelect").kendoDropDownList({
+			width:50
+		});
+		$("#addCardExpirationYearSelect").kendoDropDownList();
+		$("#bankAccountTypeSelect").kendoDropDownList();
+		$("#paymentInfoRadio").kendoDropDownList();
+		
+		$("#paymentInfoRadio").change(function(){      
+			if($("#paymentInfoRadio").val()=='NewCard'){
+				$('#addcard').slideDown();
+				$('#addBank').slideUp();
+			}
+			else if($("#paymentInfoRadio").val()=='NewBankInfo'){
+				$('#addBank').slideDown();
+				$('#addcard').slideUp();
+			}
+			else{
+				$('#addcard').slideUp();
+				$('#addBank').slideUp();
+			}
+		});
+		
+		$( "#SaveCard" ).click(function(){
+			if($('#SaveCard').is(":checked")){
+				$("#nickname").show();
+				$("div#savecardcheckbox").css("padding-top","21px");
+			}
+			else{
+				$("#nickname").hide();
+				
+			}
+		});
+		
+		// place order event
+  $( "#placeorderBtn" ).click(function(){
+			var proceed = false;
+			$("#tcSuccessSpan").css("display", "none");		
+			$("#tcSuccessSpan" ).html("");	
+			$("#tcErrorSpan").css("display", "none");		
+			$( "#tcErrorSpan" ).html("");
+			//alert("hi validate inside ");
+			$("#addCardInfoForm").validate({
+				//alert("hi validate inside ");
+				rules: {
+					fullName:"required",
+					cardNum: {
+						required: true,
+						creditcard: true
+					},
+					securityCode: {
+						required: true,
+						digits: true,
+						minlength: 3,
+						maxlength: 4
+					},
+					billingAddressLine1:"required",
+					billingCity:"required",
+					billingState:"required",
+					billingZip:"required",
+					bankAccountNumber:"required",
+					bankRoutingNumber:"required",
+					checkNumber:"required",
+					bankAccountName:"required"
+				},
+				messages: {
+					fullName: "Please provide your full name",
+					cardNum: {
+						required: "Please provide Card Number",
+						creditcard: "Please provide Valid Card Number"
+					},
+					securityCode: {
+						required: "Please provide Security code",
+						digits: "Please enter only Numeric value",
+						minlength: "Security code must be at least {0} digits",
+						maxlength: "Security code must be at most {0} digits"
+					},
+					billingAddressLine1:"Please provide Billing Address",
+					billingCity:"Please provide Billing City",
+					billingState:"Please provide Billing State",
+					billingZip:"Please provide Billing Zip",
+					bankAccountNumber:"Please provide Bank Account Number",
+					bankRoutingNumber:"Please provide Bank Routing Number",
+					checkNumber:"Please provide Check Number",
+					bankAccountName:"Please provide Bank Account Name"
+				},
+				errorPlacement: function(error, element){
+					for(j=1; j<=8; j++){
+						if(element[0].tabIndex==j){
+							//alert(j);
+							//alert($( "#tcErrorSpan" ).html());
+							 if($( "#tcErrorSpan" ).html()==""){
+								 $("#tcErrorSpan").css("display", "block");		
+								 $( "#tcErrorSpan" ).html(error);
+								 element[0].focus();
+							 }
+							 break;
+						}
+					}
+					
+				},
+				
+				submitHandler: function(form) {
+					//submitPlaceOrderForm();
+
+	if($("#paymentInfoRadio").val()=='NewCard' || $("#paymentInfoRadio").val()=='NewBankInfo'){
+		if(($("#paymentInfoRadio").val()=='NewCard' && $('#SaveCard').is(":checked") && $("#nickName").val()=="") 
+				|| ($("#paymentInfoRadio").val()=='NewBankInfo' && $("#nickNameACH").val()=="")){
+			 console.log(" Please provide Nick Name ");
+			 showErrorMessageForSignup("Please provide Nick Name");
+			 return;
+		}else{
+			console.log(" in else ");
+			if($("#paymentInfoRadio").val()=='NewCard'){
+				processCCpayment();
+			}else{
+                processACHpayment();
+			}
+		}
+	}else{
+		var selectedPaymentMethod = $("#paymentInfoRadio").data("kendoDropDownList").text();
+		var paymentDDvalue = $('#paymentInfoRadio').val();
+		var paymentDDValueSplit = paymentDDvalue.split("__");
+		
+		console.log("  type  --> "+paymentDDValueSplit[0]);
+		console.log("  token --> "+paymentDDValueSplit[1]);
+		console.log("  token --> "+paymentDDValueSplit[2]);
+		
+		var paymentMethodType = paymentDDValueSplit[0];
+		var paymentMethodToken = paymentDDValueSplit[1];
+		var paymentMethodId = paymentDDValueSplit[2];
+		alert("jkjkjk");
+		if (paymentMethodType && paymentMethodType == 'CREDIT') {
+			alert("jkjkjk CREDIT");
+			processCCpaymentbytoken(paymentMethodId, paymentMethodToken);
+			}else{
+				alert("jkjkjk ACH");
+			processACHpaymentbytoken(paymentMethodId, paymentMethodToken);
+			//processACHpaymentbytoken();
+		    }
+	   }
+			console.log("HI after submitHandler");
+				}
+			});
+				
+			
+  });
+		//
+});
+	function showErrorMessageForSignup(msg){
+	$("#tcErrorSpan").css("display", "block");		
+	$("#tcErrorSpan").html(msg);
+	$("#tcSuccessSpan").css("display", "none");
+}
+
+function processCCpayment(){
+	console.log("  processpayment  ");
+	
+	console.log("  AccountID  "+$("#AccountID").val());
+	console.log("  cardNum  "+$("#cardNum").val());
+	console.log("  addCardExpirationMonthSelect  "+$("#addCardExpirationMonthSelect").val());
+	console.log("  addCardExpirationYearSelect  "+$("#addCardExpirationYearSelect").val());
+	
+	
+	$(".k-loading-mask").show();
+	$.ajax({
+		async:false,
+		type: "GET",
+		dataType: "json",
+		url: "isCardAlreadyExist?accountID="+$("#AccountID").val()+"&cardNumber="+$("#cardNum").val()+"&expMonth="+$("#addCardExpirationMonthSelect").val()+"&expYear="+$("#addCardExpirationYearSelect").val(),
+		success: function( data ) {
+		  console.log(" got data ::  ");
+  		  
+  		  if(data){
+	  		  	console.log(" got data ::  >> "+data);
+	  		    console.log(" got data paymentId ::  >> "+data.paymentId);
+				if($('#SaveCard').is(":checked") && data.paymentId && data.paymentId > 0){
+					$(".k-loading-mask").hide();
+					showErrorMessageForSignup("Card Information already exist or inactivated. To activate please contact Y Agent.");
+				   	console.log("Card Information already exist or inactivated. To activate please contact Y Agent.");
+					return;
+				}else{							
+					var saveCard = 'N';
+					if($('#SaveCard').is(":checked")){
+						saveCard = 'Y';
+					}
+					//alert("HI paymentOrderNumber "+paymentOrderNumber);
+					//var transactionAmount = "140";
+					var transactionAmount = $("#pastDueAmount").text() + "0";
+					//alert("HI transactionAmount-->>> "+transactionAmount);
+					//transactionAmount = $.trim(orderamount.replace("$",""));
+					console.log(" transactionAmount  "+transactionAmount);
+					//alert("HI transactionAmount "+transactionAmount);
+					var jsSha = new jsSHA(merchantId+transactionAmount+JetDirectToken+paymentOrderId);
+					hash = jsSha.getHash("SHA-512", "HEX");	
+					console.log("  paymentOrderNumber  "+paymentOrderNumber);
+					console.log("  hash  "+hash.toString());
+					console.log("  transactionAmount  "+transactionAmount);
+					
+					console.log("  nickName11  "+$("#nickName").val());
+					console.log("  fullName11  "+$("#fullName").val());
+					console.log("  securityCode  "+$("#securityCode").val());
+					console.log("  billingAddressLine1  "+$("#billingAddressLine1").val());
+					console.log("  billingAddressLine2  "+$("#billingAddressLine2").val());
+					console.log("  billingCity  "+$("#billingCity").val());
+					console.log("  billingState  "+$("#billingState").val());
+					console.log("  billingZip  "+$("#billingZip").val());
+					console.log("  saveCard  "+saveCard);
+					var jsonData = {
+						trans_type : "SALE", // "TOKENIZE" // "AUTHONLY", "SALE"
+						ud1 : $("#AccountID").val(),
+						ud2 : $("#nickName").val(),
+						name : $("#fullName").val(),
+						cardNum : $("#cardNum").val(),
+						cscNumber : $("#securityCode").val(),
+						expMonth : $("#addCardExpirationMonthSelect").val(),
+						expYr : $("#addCardExpirationYearSelect").val(),
+						amount : transactionAmount,
+						AddressLine1 : $("#billingAddressLine1").val(),
+						AddressLine2 : $("#billingAddressLine2").val(),
+						City : $("#billingCity").val(),
+						state : $("#billingState").val(),
+						zipcode : $("#billingZip").val(),
+						email : "test@gmail.com",
+						contry : "USA",
+						jetPayHash : hash.toString(),
+						paymentOrderId : paymentOrderNumber,
+						isSaveCard : saveCard
+					};
+					var win = document.getElementById("childIframeId").contentWindow;
+					win.postMessage(jsonData, '*');
+					
+					console.log(" Payment request sent. ");
+					$.ajax({
+						type: "POST",
+						url: "checkPaymentProcessStatus",
+						data: { "orderNumber" : paymentOrderNumber },
+						success: function( data ) {
+						  console.log(" got data :: 11 ");
+				  		  
+				  		  if(data){
+					  		  	console.log(" got data ::  >> "+data);
+							    data_split_add_cart = data.split("__");
+								if(data_split_add_cart[0]=='SUCCESS'){
+									
+									console.log(" Token : "+data_split_add_cart[1]);
+									console.log(" PaymentMethodId : "+data_split_add_cart[2]);
+									
+									payId = data_split_add_cart[2];
+									alert(":hwereeee");
+									proceedtosignup(payId,'',paymentOrderNumber,"CREDIT");
+			
+									
+								}else{
+									//proceedtosignup(payId,'',paymentOrderNumber,"CREDIT");
+									console.log(" failed status : "+data_split_add_cart[1]);
+									$(".k-loading-mask").hide();
+									showErrorMessageForSignup("Error occured while processing payment. \n"+data_split_add_cart[1]);
+													//  $("#payment_cart").html("");
+									}
+					  	  }else{
+					  		  $(".k-loading-mask").hide();
+					  		  showErrorMessageForSignup("There was some error. Please try again later.");
+							
+					  	  }
+					  },
+					  error: function( xhr,status,error ){
+						  $(".k-loading-mask").hide();
+						  showErrorMessageForSignup("There was some error. Please try again later.");
+					  }
+					});
+					}
+	  	  }else{
+	  		  $(".k-loading-mask").hide();
+	  		  showErrorMessageForSignup("There was some error. Please try again later.");
+			  return;
+	  	  }
+	  },
+	  error: function( xhr,status,error ){
+		  $(".k-loading-mask").hide();
+  		  showErrorMessageForSignup("There was some error. Please try again later.");
+		  return;
+	  }
+	});
+}
+
+function proceedtosignup(paymentId, jp_request_hash, orderNumber, paymentMode){
+	alert("fdggg");
+	console.log("  proceedtosignup  ");
+	$(".k-loading-mask").show();
+		//var paymentId = payId;
+		//var orderNumber = orderNumber;
+					alert("HI tag "+tag);
+					data= '&orderNumber='+orderNumber+'&paymentId='+paymentId+'&paymentMode='+'&paymentMode'+'&tag='+tag;
+			$.ajax({
+			type: "POST",
+			url: "pastDuePaymentProcess",
+			//data: { "orderNumber" : paymentOrderId.toString() },
+			  data: data,
+			success: function( data ) {
+			 // console.log(" got data :: 11 ");
+			 
+			   data_s = data.split("__");
+			 //console.log(" cartType "+cartType);
+			// console.log(" data_s "+data_s);
+			 if(data_s[0]=="SUCCESS"){
+				 $(".k-loading-mask").hide();
+				  $("#payment_cart").html("");
+				  $("#payment_cart").html('<div id="statusBlock" class="k-block k-success-colored" style="width: 90%;margin: 20px; padding: 10px;">Thank you for making payment.<br>Your transaction Id is: '+orderNumber+'</div>');
+				  
+				  $("#tcErrorSpan").css("display", "none");		
+				  $("#tcErrorSpan" ).html("");	
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");
+			  ///
+			  	  }else{
+		  		 console.log(" NOT got data ::  >> ");
+				  console.log(" 466  ");
+				  $("#tcErrorSpan").css("display", "block");		
+				  $("#tcErrorSpan" ).html("There is some error, please try after some time");	
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");
+				  $(".k-loading-mask").hide();
+		  	  }
+	  		//  $(".k-loading-mask").hide();
+		  },
+		  	  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(" 476  ");
+			  console.log(" 476  "+xhr);
+			  console.log(" 476  "+status);
+			  console.log(" 476  "+error);
+			  $("#tcErrorSpan").css("display", "block");		
+			  $("#tcErrorSpan" ).html("There is some error, please try after some time");	
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");
+			  $(".k-loading-mask").hide();
+		  }
+		});
+}
+
+function processACHpayment(){
+	
+	console.log(" processACHpayment ");
+	//var orderamount = $("#ordertotal").text();
+var transactionAmount = $("#pastDueAmount").text() + "0";
+	//var transactionAmount = $.trim(orderamount.replace("$",""));
+	transactionAmount = $.trim(transactionAmount.replace(".00",""));
+//	var transactionAmount="10";
+	var bankAccountNumber =  $("#bankAccountNumber").val();
+	var bankRoutingNumber =  $("#bankRoutingNumber").val();
+	var checkNumber =  $("#checkNumber").val();
+	var accountName =  $("#bankAccountName").val();
+	var totalAmt =  transactionAmount;
+	var accountID =  $("#AccountID").val();
+	var nickName =  $("#nickNameACH").val();
+	var accountType =  $("#bankAccountTypeSelect").val();
+	
+	$(".k-loading-mask").show();
+	$.ajax({
+		async:false,
+		type: "GET",
+		dataType: "json",
+		url: "isBankInfoAlreadyExist?accountID="+accountID+"&bankAccountNumber="+bankAccountNumber,
+		success: function( data ) {
+		  console.log(" got data ::  ");
+  		  
+  		  if(data){
+	  		  	console.log(" got data ::  >> "+data);
+	  		    console.log(" got data paymentId ::  >> "+data.paymentId);
+				if(data.paymentId && data.paymentId > 0){
+					showErrorMessageForSignup("Bank Information already exist or inactivated. To activate please contact Y Agent.");
+					$(".k-loading-mask").hide();
+					return;
+				}else{
+	
+					$.ajax({
+						  type: "POST",
+						  url: "processACHPayment",	
+						  data: { bankAccountNumber: bankAccountNumber, bankRoutingNumber : bankRoutingNumber, checkNumber : checkNumber, 
+							  	  accountName : accountName, totalAmt : totalAmt, accountType : accountType, nickName : nickName, accountID : accountID},
+						  success: function( data ) {
+							  
+							  if(data){
+								  	console.log(" data :: "+data);
+								  
+								  	data_split_add_cart = data.split("__");
+									if(data_split_add_cart[0]=='SUCCESS'){
+										
+										console.log(" Token : "+data_split_add_cart[1]);
+										console.log(" PaymentMethodId : "+data_split_add_cart[2]);
+										console.log(" TransactionId : "+data_split_add_cart[3]);
+										
+										payId = data_split_add_cart[2];
+										transactionId = data_split_add_cart[3];
+										
+										proceedtosignup(payId,"",transactionId,"ACH");
+										
+									}else{
+										console.log(" failed status : "+data_split_add_cart[1]);
+										$(".k-loading-mask").hide();
+										showErrorMessageForSignup("Error occured while processing payment. \n"+data_split_add_cart[1]);
+										
+									}
+							  }else {
+								  $(".k-loading-mask").hide();
+								  showErrorMessageForSignup("Error occurred while processing the payment. Please try again later.");
+							  }
+						  },
+						  error: function( xhr,status,error ){
+							  $(".k-loading-mask").hide();
+							  showErrorMessageForSignup("Error occurred while processing the payment. Please try again later.");
+						  }
+					});
+				}
+		  }else{
+			  $(".k-loading-mask").hide();
+			  showErrorMessageForSignup("There was some error. Please try again later.");
+			  return;
+	  	  }
+	  },
+	  error: function( xhr,status,error ){
+		  $(".k-loading-mask").hide();
+		  showErrorMessageForSignup("There was some error. Please try again later.");
+		  return;
+	  }
+});
+}
+
+function processCCpaymentbytoken(payId,token){
+			console.log(" processpaymentbytoken  ");
+	//transactionAmount = $("#ordertotal").text();
+	//transactionAmount = $.trim(orderamount.replace("$",""));
+	var transactionAmount = $("#pastDueAmount").text() + "0";
+//var token=paymentMethodToken;
+	
+	console.log(" transactionAmount  >>  "+transactionAmount);
+	$(".k-loading-mask").show();
+	$.ajax({
+		  type: "POST",
+		  url: "processPaymentByTokenId",	
+		  data: { token: token, totalAmount : Math.ceil(transactionAmount)},
+		  success: function( data ) {
+			  console.log(" processPaymentByTokenId ");
+			  if(data != null && data.responseText == "APPROVED"){	
+				  console.log(" Success processPaymentByTokenId >> ");
+				  
+				  var transactionId = data.transId;
+				  console.log(" transactionId  >>  "+transactionId);
+				 proceedtosignup(payId,'',transactionId,"CREDIT");
+				 
+			  }else {
+				  $(".k-loading-mask").hide();
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcErrorSpan").css("display", "block");	
+				  $( "#tcErrorSpan" ).html("The transaction failed..");	
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(" Error processPaymentByTokenId ");
+			  $(".k-loading-mask").hide();
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcErrorSpan").css("display", "block");	
+			  $( "#tcErrorSpan" ).html("There was some error. Please try again later");							  		 
+		  }
+	});
+}
+
+function processACHpaymentbytoken(payId,token){
+	//function processACHpaymentbytoken(){
+	
+				console.log(" processACHpaymentbytoken  ");
+	
+	//orderamount = $("#ordertotal").text();
+	//transactionAmount = $.trim(orderamount.replace("$",""));
+	//transactionAmount = $.trim(transactionAmount.replace(".00",""));
+	var transactionAmount = $("#pastDueAmount").text() + "0";
+	transactionAmount = $.trim(transactionAmount.replace(".00",""));
+//var token=paymentMethodToken;
+	console.log(" transactionAmount  >>  "+transactionAmount);
+	//console.log(" payId  >>  "+payId);
+	//console.log(" token  >>  "+token);
+	
+	$(".k-loading-mask").show();
+	
+	$.ajax({
+		  type: "POST",
+		  url: "processACHPaymentByTokenId",	
+		  data: { token: token, totalAmount : transactionAmount, checkNumber : '', cardName : ''},
+		  success: function( data ) {				 
+			  if(data != null && data.actCode == "000"){
+				  var transactionId = data.transId; 
+				  console.log(" Success processACHPaymentByTokenId >> ");
+				  console.log(data);
+				proceedtosignup(payId,'',transactionId,"ACH");
+				
+			 }else{
+				  $(".k-loading-mask").hide();
+				  console.log(" Error processACHPaymentByTokenId ");
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcErrorSpan").css("display", "block");	
+				  $( "#tcErrorSpan" ).html("Error occurred while processing the payment. Please try again later <br />ActionCode :<b>"+data.actCode+"</b> Error message : "+data.responseText);
+			 }
+		  },
+		  error: function( xhr,status,error ){
+			  $(".k-loading-mask").hide();
+			  $("#statusBlock-payment").css("display", "block");	
+			  $("#tcloginErrorSpan-payment").css("display", "block");	
+			  $( "#tcloginErrorSpan-payment" ).html("There was some error. Please try again later");							  		 
+		  }
+	});
+}
+</script>

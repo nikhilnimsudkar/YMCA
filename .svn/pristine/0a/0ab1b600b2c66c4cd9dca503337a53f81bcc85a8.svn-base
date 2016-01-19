@@ -1,0 +1,94 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+       
+<body>
+<%@ include file="../../layouts/include_taglib.jsp" %>
+<div id="main">
+<div id="content" style="margin-top:30px;margin-bottom:30px;">
+		<form:form commandName="paymentMethod" class="bootstrap-frm" id="addBankInfoForm" method="post" action="addBankInfo" style="border: none;">  
+			<div>
+				  <h2><span>Add Bank Information</span></h2>				  
+				   			  
+				  <input type="text" placeholder="Bank Routing Number" name="bankRoutingNumber" id="bankRoutingNumber" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Checking Account Number" name="checkingAccountNumber" id="checkingAccountNumber" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Drivers License Number" name="driversLicenseNumber" id="driversLicenseNumber" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="State Of DL" name="stateOfDL" id="stateOfDL" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Phone Number" name="phoneNumber" id="phoneNumber" value="" style="width: 230px;"/>
+				  <!-- <input type="text" placeholder="Token Number" name="tokenNumber" id="tokenNumber" value="" style="width: 230px;"/> --> 
+				  
+				  <h2><span>Billing Address Information</span></h2>
+				  <input type="text" placeholder="Billing AddressLine1" name="billingAddressLine1" id="billingAddressLine1Bank" value=""  style="width: 230px;"/>
+				  <input type="text" placeholder="Billing AddressLine2" name="billingAddressLine2" id="billingAddressLine2Bank" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing City" name="billingCity" id="billingCityBank" value="" style="width: 230px;"/>
+				  <input type="text" placeholder="Billing State" name="billingState" id="billingStateBank" value="" style="width: 230px;"/><br />
+				  
+				  
+				  <!-- <label><input type="text" name="paymentId" id="paymentId" value="" style="display:none;" /></label> -->
+				  <%-- <input type="text" style="display:none;" name="paymentId" value="${paymentInfo.paymentId}">
+				  <input type="text" style="display:none;" name="accountId" value="${paymentInfo.accountId}">
+				   --%>
+				  <div id="statusBlock">
+					<span class="k-block k-success-colored" id="addBankSuccessSpan"></span>
+					<span class="k-block k-error-colored" id="addbankErrorSpan"></span>
+				  </div>
+					
+				  <span id="addBankInfoButton" class="k-button" style="width: 150px; text-shadow: none;">Add</span>
+			</div>
+			<div id="PaymentInformationBackLnk" align="right">
+	        		<a href="/ymca-web/viewPaymentInformation">Back to Payment Information</a>
+	        </div>
+		</form:form>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {		
+		
+		$( "#addBankInfoButton" ).click(function(){	
+			$(".k-loading-mask").show();
+			$(".k-loading-text").html("Please wait while the Bank Information is Updated");			
+			$.ajax({
+				  type: "POST",
+				  url: $('#addBankInfoForm').attr( "action"),
+				  data: $('#addBankInfoForm').serialize(),
+				  success: function( data ) {				  	  
+				  	  if(data=='SUCCESS'){
+					  	  $("#addbankErrorSpan").css("display", "none");		
+						  $("#addbankErrorSpan" ).html("");	
+						  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 4000);
+						  setTimeout(function(){$(".k-loading-text").html("Bank Information Added successfully");$(".k-loading-text").fadeIn("slow");}, 5000);
+					  	  setTimeout(function(){$(".k-loading-text").fadeOut("slow");}, 6900);
+					  	  
+					  	  $("#addBankSuccessSpan").css("display", "block");		
+						  $("#addBankSuccessSpan" ).html("Bank Information Added successfully");
+					  	  
+					  	  //setTimeout(function(){location.reload();}, 7000);
+					  	  
+				  	  }else if(data == 'NOT_FOUND'){
+				  		  $("#addBankSuccessSpan").css("display", "none");		
+						  $("#addBankSuccessSpan" ).html("");	
+						  $("#addbankErrorSpan").css("display", "block");		
+						  $( "#addbankErrorSpan" ).html("Payment Information Not Found.");
+						  $(".k-loading-mask").hide();
+				  	  }else {
+				  		  $("#addBankSuccessSpan").css("display", "none");		
+						  $("#addBankSuccessSpan" ).html("");	
+						  $("#addbankErrorSpan").css("display", "block");		
+						  $( "#addbankErrorSpan" ).html("There was some error. Please try again later");
+						  $(".k-loading-mask").hide();
+				  	  }					  
+				  },
+				  error: function( xhr,status,error ){
+					  $("#addBankSuccessSpan").css("display", "none");		
+					  $("#addBankSuccessSpan" ).html("");	
+					  $("#addbankErrorSpan").css("display", "block");		
+					  $( "#addbankErrorSpan" ).html("There was some error. Please try again later");
+					  $(".k-loading-mask").hide();
+				  }
+			});
+			
+		});		   
+	});
+</script>
+
+</body>

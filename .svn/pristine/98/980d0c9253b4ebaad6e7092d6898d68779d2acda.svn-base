@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+  <definition name="membership_signup" extends="register_member">
+    <put-attribute name="body" value="/WEB-INF/views/customer/membership_signup.jsp" />
+  </definition>
+  
+  <definition name="customer_home" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/home.jsp" />
+  </definition>
+  
+  <definition name="myProfileView" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/myProfile.jsp" />
+  </definition>
+  
+  <definition name="requestcancellation" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/RequestCancellation.jsp" />
+  </definition>
+  
+  <definition name="receivecancellation" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/ReceiveCancellation.jsp" />
+  </definition>
+  
+  <definition name="membershipConfirmation" extends="register_member">
+    <put-attribute name="body" value="/WEB-INF/views/customer/membership_confirmation.jsp" />
+  </definition>
+  
+  <definition name="trial_pass_signup" extends="trial_pass_register">
+    <put-attribute name="body" value="/WEB-INF/views/customer/trialPass_signup.jsp" />
+  </definition>
+  
+  <definition name="trial_pass_confirmation" extends="trial_pass_register">
+    <put-attribute name="body" value="/WEB-INF/views/customer/trialPassConfirmation.jsp" />
+  </definition>
+  
+   <definition name="addMember" extends="sc_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/addMember.jsp" />
+  </definition>
+  
+  <definition name="viewPaymentHistory" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/paymentHistory.jsp" />
+  </definition>
+  <definition name="viewPaymentInformation" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/paymentInformation.jsp" />
+  </definition>
+  <definition name="currentmembership" extends="cp_default">
+    <put-attribute name="body" value="/WEB-INF/views/customer/CurrentMembership.jsp" />
+  </definition>
+</tiles-definitions>

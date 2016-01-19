@@ -1,0 +1,118 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
+/**
+ * This class is used to represent an address with address,
+ * city, province and postal-code information.
+ *
+ * @author <a href="mailto:matt@raibledesigns.com">Matt Raible</a>
+ */
+@Embeddable
+public class Address extends BaseObject implements Serializable {
+    private static final long serialVersionUID = 3617859655330969141L;
+    
+    @Column(name="PrimaryAddressLine1")
+    private String primaryAddressLine1;
+    
+    @Column(name="PrimaryAddressCity")
+    private String primaryAddressCity;
+    
+    @Column(name="PrimaryAddressProvince")
+    private String primaryAddressProvince;
+    
+    @Column(name="PrimaryAddressCountry")
+    private String primaryAddressCountry;
+        
+    @Column(name="PrimaryAddressPostalCode")
+    private String primaryAddressPostalCode;
+
+    
+    public String getPrimaryAddressLine1() {
+        return primaryAddressLine1;
+    }
+
+   
+    public String getPrimaryAddressCity() {
+        return primaryAddressCity;
+    }
+
+    
+    public String getPrimaryAddressProvince() {
+        return primaryAddressProvince;
+    }
+
+   
+    public String getPrimaryAddressCountry() {
+        return primaryAddressCountry;
+    }
+
+   
+    public String getPrimaryAddressPostalCode() {
+        return primaryAddressPostalCode;
+    }
+
+    public void setPrimaryAddressLine1(String primaryAddressLine1) {
+        this.primaryAddressLine1 = primaryAddressLine1;
+    }
+
+    public void setPrimaryAddressCity(String primaryAddressCity) {
+        this.primaryAddressCity = primaryAddressCity;
+    }
+
+    public void setPrimaryAddressCountry(String primaryAddressCountry) {
+        this.primaryAddressCountry = primaryAddressCountry;
+    }
+
+    public void setPrimaryAddressPostalCode(String primaryAddressPostalCode) {
+        this.primaryAddressPostalCode = primaryAddressPostalCode;
+    }
+
+    public void setPrimaryAddressProvince(String primaryAddressProvince) {
+        this.primaryAddressProvince = primaryAddressProvince;
+    }
+
+    /**
+     * Overridden equals method for object comparison. Compares based on hashCode.
+     *
+     * @param o Object to compare
+     * @return true/false based on hashCode
+     */
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Address)) {
+            return false;
+        }
+
+        final Address address1 = (Address) o;
+
+        return this.hashCode() == address1.hashCode();
+    }
+
+    /**
+     * Overridden hashCode method - compares on address, primaryAddressCity, primaryAddressProvince, primaryAddressCountry and postal code.
+     *
+     * @return hashCode
+     */
+    public int hashCode() {
+        int result;
+        result = (primaryAddressLine1 != null ? primaryAddressLine1.hashCode() : 0);
+        result = 29 * result + (primaryAddressCity != null ? primaryAddressCity.hashCode() : 0);
+        result = 29 * result + (primaryAddressProvince != null ? primaryAddressProvince.hashCode() : 0);
+        result = 29 * result + (primaryAddressCountry != null ? primaryAddressCountry.hashCode() : 0);
+        result = 29 * result + (primaryAddressPostalCode != null ? primaryAddressPostalCode.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+	public String toString() {
+		return "Address [primaryAddressLine1=" + primaryAddressLine1 + ", primaryAddressCity=" + primaryAddressCity + ", primaryAddressProvince="
+				+ primaryAddressProvince + ", primaryAddressCountry=" + primaryAddressCountry + ", primaryAddressPostalCode="
+				+ primaryAddressPostalCode + "]";
+	}
+}

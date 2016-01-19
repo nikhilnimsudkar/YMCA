@@ -1,0 +1,355 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+	pageEncoding="ISO-8859-1"%>
+<%
+	String contextPath = request.getContextPath();
+%>
+
+<body>
+	<%@ include file="../../layouts/include_taglib.jsp"%>
+	<div id="main">
+		<div class="k-loading-mask"
+			style="width: 100%; height: 100%; position: absolute; top: 114px; left: 0px; display: none; z-index: 9999">
+			<span class="k-loading-text">Loading... Please wait</span>
+			<div class="k-loading-image">
+				<div class="k-loading-color"></div>
+			</div>
+		</div>
+		<div id="content">
+			<div class="k-window1" id="popup_add" style="display: none;"></div>
+			<form:form commandName="account" id="updateMembershipForm"
+				method="post" action="update_membership">
+				<div id="member">
+
+					<%@ include file="member.jsp"%>
+
+
+				</div>
+
+				<div id="profile">
+					<%@ include file="Form.jsp"%>
+				</div>
+
+				<div id="update">
+
+					<%@ include file="RightSection.jsp"%>
+
+				</div>
+			</form:form>
+		</div>
+	</div>
+
+	<script id="delete-confirmation" type="text/x-kendo-template">
+    <p class="delete-message">Are you sure you want to remove?</p>
+	
+    <div class="confirmbutton"><button class="delete-confirm k-button">Yes</button>&nbsp;&nbsp;&nbsp;
+    <span class="delete-cancel k-button">No</span></div>
+</script>
+
+	<script>
+		$("#enrolled_programs").hide();
+		$(document).ready(function() {
+			$("#top_profile").attr('class', 'current');
+			$("#top_login").attr('class', '');
+			$("#top_payment").attr('class', '');
+
+			$("#tabstrip").kendoTabStrip({
+				animation : {
+					open : {
+						effects : "fadeIn"
+					}
+				}
+			});
+
+			$("#tabstrip1").kendoTabStrip({
+				animation : {
+					open : {
+						effects : "fadeIn"
+					}
+				}
+			});
+			$("#tabstrip2").kendoTabStrip({
+				animation : {
+					open : {
+						effects : "fadeIn"
+					}
+				}
+			});
+
+			$('.scroller').slimScroll({
+				height : '110px',
+				width : '160px',
+				alwaysVisible : true,
+				color : '#666666',
+				distance : '4px',
+				railVisible : true,
+				allowPageScroll : true
+			}).parent().css({
+				border : '1px solid #cccccc'
+			});
+
+		});
+
+		function view_member(mType, member_id) {
+			//alert(member_id);
+			$("#form").show();
+			$("#update").show();
+			$("#profileinfo").show();
+			$("#enrolled_programs").hide();
+			$("#customerAddress").show();
+			$(".k-loading-mask").show();
+			$("#updateProfInfo").css("display", "none");
+			$("#updateProfInfo").html("");
+			$("#tcErrorSpan").css("display", "none");
+			$("#tcErrorSpan").html("");
+			if (member_id != '') {
+				$("#usrId").val(member_id);
+				$.ajax({
+					url : "view_member?member_id=" + member_id,
+					success : function(data) {
+						if (mType == 'A') {
+							$("#customerAddress").hide();
+						}
+						//console.log("Success:"+ data.username);
+						$("#firstName").val(data.firstName);
+						$("#lastName").val(data.lastName);
+						$("#workNumber").val(data.workNumber);
+						$("#phoneNumber").val(data.phoneNumber);
+						$("#homeNumber").val(data.homeNumber);
+						$("#Email").val(data.email);
+
+						$(".k-loading-mask").hide();
+					},
+					error : function(xhr, status, error) {
+						//alert("1" +status);
+						console.log(xhr);
+
+					}
+				});
+			}
+		}
+
+		function enrolled_programs(member_id) {
+
+			$(".k-loading-mask").show();
+			$("#updateProfInfo").css("display", "none");
+			$("#updateProfInfo").html("");
+			$("#tcErrorSpan").css("display", "none");
+			$("#tcErrorSpan").html("");
+			if (member_id != '') {
+				$("#usrId").val(member_id);
+
+				$
+						.ajax({
+
+							url : "enrolled_programs?member_id=" + member_id,
+
+							success : function(data) {
+
+								//console.log("Success:"+ data.productName);
+
+								$("#countrytable").find("tr:gt(0)").remove();
+								var table1 = $("#countrytable");
+
+								$
+										.each(
+												data,
+												function(key, value) {
+
+													var rowNew2 = $("<tr ><td >&nbsp;</td></tr>");
+													rowNew2.appendTo(table1);
+
+				var rowNew = $('<tr style="outline: thin solid;padding-left:4px;"><td style="color:red;padding-left:25px;"></td><td style="color:red;padding-left:25px;"></td><td style="color:red;padding-left:25px;"></td><td style="color:red;padding-left:25px;"></td><td style="color:red;padding-left:25px;"></td><td style="color:red;padding-left:25px;"></td></tr>');
+													rowNew
+															.children()
+															.eq(0)
+															.text("$"+
+																	value['finalAmount']+".00");
+													rowNew
+															.children()
+															.eq(1)
+															.text(
+																	value['location']);
+
+													var dateStr = JSON
+															.parse(value['programStartDate']);
+													
+													rowNew
+															.children()
+															.eq(2)
+															.text(
+																	formatDate(dateStr));
+                                                    var dateStr = JSON
+															.parse(value['programEndDate']);
+													
+													rowNew
+															.children()
+															.eq(3)
+															.text(
+																	formatDate(dateStr));
+																	rowNew
+															.children()
+															.eq(4)
+															.text(
+																	value['status']);
+
+													rowNew.appendTo(table1);
+													var rowNew3 = $("<tr ><td >&nbsp;</td></tr>");
+													rowNew3.appendTo(table1);
+												});
+
+								$(".k-loading-mask").hide();
+							},
+							error : function(xhr, status, error) {
+								alert("1" + error);
+								console.log(xhr);
+
+							}
+						});
+			}
+			$("#customerAddress").hide();
+			$("#profileinfo").hide();
+			$("#enrolled_programs").show();
+			$("#update").hide();
+			$("#form").hide();
+			
+		}
+
+		function formatDate(inputFormat) {
+			function pad(s) {
+				return (s < 10) ? '0' + s : s;
+			}
+			var d = new Date(inputFormat);
+			return [ pad(d.getMonth() + 1), pad(d.getDate()), d.getFullYear() ]
+					.join('/');
+		}
+
+		function remove_member(member_id) {
+		$("#enrolled_programs").hide();
+			$("#form").show();
+			$("#form").show();
+			$("#update").show();
+			$("#profileinfo").show();
+			
+			$("#updateProfInfo").css("display", "none");
+			$("#updateProfInfo").html("");
+			$("#tcErrorSpan").css("display", "none");
+			$("#tcErrorSpan").html("");
+			var kendoWindow = $("<div />").kendoWindow({
+				title : "Confirm",
+				resizable : false,
+				modal : true,
+				width : 400
+			});
+
+			kendoWindow.data("kendoWindow").content(
+					$("#delete-confirmation").html()).center().open();
+
+			kendoWindow.find(".delete-confirm,.delete-cancel").click(
+					function() {
+						if ($(this).hasClass("delete-confirm")) {
+							//alert("Deleting record...");
+							$(".k-loading-mask").show();
+							delete_record(member_id);
+						}
+
+						kendoWindow.data("kendoWindow").close();
+					}).end()
+		}
+
+		function delete_record(member_id) {
+			$
+					.ajax({
+						url : "remove_member?member_id=" + member_id,
+						success : function(data) {
+							// alert(data);
+							if (data == 'SUCCESS') {
+								$(".k-loading-text")
+										.html(
+												"Please wait while the member is removed");
+								setTimeout(function() {
+									$(".k-loading-text").fadeOut("slow");
+								}, 3000);
+								setTimeout(function() {
+									$(".k-loading-text").html(
+											"Member was removed successfully");
+									$(".k-loading-text").fadeIn("slow");
+								}, 4000);
+								setTimeout(function() {
+									$(".k-loading-text").fadeOut("slow");
+								}, 7000);
+								setTimeout(function() {
+									location.reload();
+								}, 7000);
+
+							} else {
+								$(".k-loading-text")
+										.html(
+												"Please wait while the member is removed");
+								setTimeout(function() {
+									$(".k-loading-text").fadeOut("slow");
+								}, 3000);
+								setTimeout(
+										function() {
+											$(".k-loading-text")
+													.html(
+															"There was some Error while processing your request");
+											$(".k-loading-text").fadeIn("slow");
+										}, 4000);
+								setTimeout(function() {
+									$(".k-loading-text").fadeOut("slow");
+									$(".k-loading-mask").hide();
+								}, 7000);
+								setTimeout(function() {
+									location.reload();
+								}, 7000);
+							}
+
+						},
+						error : function(xhr, status, error) {
+							//alert("1" +status);
+							console.log(xhr);
+							$(".k-loading-text").html(
+									"Please wait while the member is removed");
+							setTimeout(function() {
+								$(".k-loading-text").fadeOut("slow");
+							}, 3000);
+							setTimeout(
+									function() {
+										$(".k-loading-text")
+												.html(
+														"There was some Error while processing your request");
+										$(".k-loading-text").fadeIn("slow");
+									}, 4000);
+							setTimeout(function() {
+								$(".k-loading-text").fadeOut("slow");
+								$(".k-loading-mask").hide();
+							}, 7000);
+							setTimeout(function() {
+								location.reload();
+							}, 7000);
+						}
+					});
+
+		}
+
+		function add_member() {
+			var window_add = $("#popup_add");
+			window_add.clone().kendoWindow({
+				title : "Add Members",
+				content : "addMember",
+				modal : false,
+				width : "700px",
+				close : onClose,
+				deactivate : function(e) {
+					this.destroy();
+				}
+			}).data("kendoWindow").center().open();
+			$('[data-role="draggable"]').css('top', '20px');
+		}
+
+		var onClose = function() {
+			//this.destroy();   
+		};
+	</script>
+
+</body>

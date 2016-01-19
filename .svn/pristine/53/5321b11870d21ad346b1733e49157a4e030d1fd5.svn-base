@@ -1,0 +1,157 @@
+package com.ymca.model;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "signup_associated_item_detail")
+public class SignupAssociatedItemDetail extends BaseObject implements Serializable {
+	
+	private static final long serialVersionUID = -3202944701848397747L;
+
+	public SignupAssociatedItemDetail(){
+    }
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long Id;
+	
+	@Column(name="sc_id")
+    private Long scId;
+
+	@Column(name="RecordName")
+    private String recordName;
+
+	@Column(name="Type_c")
+    private String type_c;
+
+	@Column(name="Description_c")
+    private String description_c;
+	
+	@Column(name="Status_c")
+    private String status_c;
+
+	@Column(name="ActivityPriority_c")
+    private String activityPriority_c;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="item_detail_id")
+	private ItemDetail itemDetail;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="signup_Id")
+	private Signup signup;
+	
+	public Long getId() {
+		return Id;
+	}
+
+	public void setId(Long id) {
+		Id = id;
+	}
+
+	public String getRecordName() {
+		return recordName;
+	}
+
+	public void setRecordName(String recordName) {
+		this.recordName = recordName;
+	}
+
+	public Long getScId() {
+		return scId;
+	}
+
+	public void setScId(Long scId) {
+		this.scId = scId;
+	}
+
+	public String getType_c() {
+		return type_c;
+	}
+
+	public void setType_c(String type_c) {
+		this.type_c = type_c;
+	}
+
+	public String getDescription_c() {
+		return description_c;
+	}
+
+	public void setDescription_c(String description_c) {
+		this.description_c = description_c;
+	}
+
+	public String getStatus_c() {
+		return status_c;
+	}
+
+	public void setStatus_c(String status_c) {
+		this.status_c = status_c;
+	}
+
+	public String getActivityPriority_c() {
+		return activityPriority_c;
+	}
+
+	public void setActivityPriority_c(String activityPriority_c) {
+		this.activityPriority_c = activityPriority_c;
+	}
+
+	public ItemDetail getItemDetail() {
+		return itemDetail;
+	}
+
+	public void setItemDetail(ItemDetail itemDetail) {
+		this.itemDetail = itemDetail;
+	}
+
+	public Signup getSignup() {
+		return signup;
+	}
+
+	public void setSignup(Signup signup) {
+		this.signup = signup;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((Id == null) ? 0 : Id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SignupAssociatedItemDetail other = (SignupAssociatedItemDetail) obj;
+		if (Id == null) {
+			if (other.Id != null)
+				return false;
+		} else if (!Id.equals(other.Id))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "SignUpAssociatedItemDetail [Id=" + Id + ", RecordName="
+				+ recordName + "]";
+	}
+	
+}

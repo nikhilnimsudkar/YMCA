@@ -1,0 +1,128 @@
+// JavaScript Document
+$(document).ready(function() {
+		$("#top_profile").attr('class','');
+		$("#top_login").attr('class','');
+		$("#top_payment").attr('class','');
+		$("#top_programregistration").attr('class','');
+		$("#top_childcare").attr('class','current');
+		
+		$("#page_name").html("CHILD CARE MANAGEMENT");
+		//$("#page_name").html("PAYMENT INFORMATION");
+		$("#location").kendoDropDownList();
+		$("#type").kendoDropDownList();
+		
+		$("#agerangeslider").kendoRangeSlider({
+            change: rangeSliderOnChange,
+            slide: rangeSliderOnSlide,
+            min: 1,
+            max: 100,
+            smallStep: 1,
+            largeStep: 2,
+            tickPlacement: "both"
+        });
+		
+		$( "#SearchBtn" ).click(function(){
+			 $("#tcSuccessSpan").css("display", "none");
+			 $("#tcErrorSpan").css("display", "none");
+			 $(".k-loading-mask").show();
+			 //$("#details-checkout").fadeOut("fast");
+			 getChildcareGrid();
+			 getInserviceGrid();
+			 getAfterSchoolGrid();
+			 
+			 $(".k-loading-mask").hide();
+		});
+});
+
+function getChildcareGrid(){
+		var location = $("#location").val();
+		var age_min = $("#min_age").val();
+		var age_max = $("#max_age").val();
+		var keyword = $("#keyword").val();
+		
+		$.ajax({
+			  type: "GET",
+			  url:"searchchildcare?location="+location+"&keyword="+keyword+"&minage="+age_min+"&maxage="+age_max, 
+			  success: function( data ) {
+				$("#childcare_session").html(data);
+				
+				$("#childcare_list").kendoGrid({
+					dataSource: {
+						pageSize: 10
+					},
+					pageable: true
+				});
+				$("#childcare_list").show();
+				$("input[type='checkbox']").uniform();
+			  },
+			  error: function( xhr,status,error ){
+				  $("#tcSuccessSpan").css("display", "none");
+			 	  $("#tcErrorSpan").css("display", "none");
+				  $("#tcErrorSpan").html("There is some error please try again later");
+			  }
+		});
+}
+
+function getInserviceGrid(){
+		var location = $("#location").val();
+		var age_min = $("#min_age").val();
+		var age_max = $("#max_age").val();
+		var keyword = $("#keyword").val();
+		
+		$.ajax({
+			  type: "GET",
+			  url:"searchInservice?location="+location+"&keyword="+keyword+"&minage="+age_min+"&maxage="+age_max,
+			  success: function( data ) {
+				$("#inservice_session").html(data);
+				
+				$("#inservice_list").kendoGrid({
+					dataSource: {
+						pageSize: 10
+					},
+					pageable: true
+				});
+				$("#inservice_list").show();
+			  },
+			  error: function( xhr,status,error ){
+				  $("#tcSuccessSpan").css("display", "none");
+			 	  $("#tcErrorSpan").css("display", "none");
+				  $("#tcErrorSpan").html("There is some error please try again later");
+			  }
+		});
+}
+
+function getAfterSchoolGrid(){
+	var location = $("#location").val();
+	var age_min = $("#min_age").val();
+	var age_max = $("#max_age").val();
+	var keyword = $("#keyword").val();
+	
+	$.ajax({
+		  type: "GET",
+		  url:"searchAfterschool?location="+location+"&keyword="+keyword+"&minage="+age_min+"&maxage="+age_max,
+		  success: function( data ) {
+			$("#afterschool_session").html(data);
+			
+			$("#afterschool_list").kendoGrid({
+				dataSource: {
+					pageSize: 10
+				},
+				pageable: true
+			});
+			$("#afterschool_list").show();
+		  },
+		  error: function( xhr,status,error ){
+			  $("#tcSuccessSpan").css("display", "none");
+		 	  $("#tcErrorSpan").css("display", "none");
+			  $("#tcErrorSpan").html("There is some error please try again later");
+		  }
+	});
+}
+
+function rangeSliderOnSlide(e) {
+	//kendoConsole.log("Slide :: new slide values are: " + e.value.toString().replace(",", " - "));
+}
+
+function rangeSliderOnChange(e) {
+	//kendoConsole.log("Change :: new values are: " + e.value.toString().replace(",", " - "));
+}

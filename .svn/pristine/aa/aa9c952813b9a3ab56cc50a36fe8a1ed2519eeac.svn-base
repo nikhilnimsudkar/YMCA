@@ -1,0 +1,113 @@
+/**
+ * @author gpatwa
+ */
+package com.serene.job.writer;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import org.apache.commons.jxpath.JXPathContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
+import com.serene.job.common.ResultsetToHashMap;
+import com.serene.job.dao.ChildFieldMappingDao;
+import com.serene.job.dao.ChildObjectDao;
+import com.serene.job.dao.JobFieldMappingDao;
+import com.serene.job.model.ChildFieldMapping;
+import com.serene.job.model.ChildObject;
+import com.serene.job.model.FieldMapping;
+import com.serene.job.model.JobSchedulerMetadata;
+import com.serene.ws.service.FusionWebService;
+
+@Service
+@Scope("prototype")
+public class FusionCallbackWriter {
+	
+
+	private static Logger log = LoggerFactory.getLogger(FusionCallbackWriter.class);
+
+	private JobSchedulerMetadata jobSchedulerMetadata ;
+	
+	@Resource
+	private JdbcTemplate jdbcTemplate;
+	
+	@Resource
+	private JobFieldMappingDao jobFieldMappingDao ;
+
+	@Resource
+	private ChildObjectDao childObjectDao; 
+	
+	@Resource
+	private ChildFieldMappingDao childFieldMappingDao; 
+	
+	@Resource 
+	private FusionWebService fusionWebService ;
+	
+	
+	@Resource
+	private ResultsetToHashMap resultsetToHashMap ; 
+	
+	public void setDataSource(DataSource dataSource) {
+		jdbcTemplate.setDataSource(dataSource);
+	}
+
+	public void updateResponse(List<Map<String,Object>> requests,Map<String,Object> responseData,List<String> operationTypes) throws Exception {
+		for (Map<String,Object> request : requests) {
+			try {
+				updateResponse(request,responseData,operationTypes) ;
+			} catch(Exception ex) {
+				log.error(" Error while updating the response back ",ex);
+			}
+		}
+	}
+
+	/**
+	 * Current limitation, the to field id should be same as column name in the table 
+	 * @param requestData
+	 * @param responseData
+	 * @param operationTypes
+	 * @throws Exception
+	 */
+	@Transactional(value=TxType.REQUIRES_NEW)
+	public void updateResponse(Map<String,Object> requestData,Map<String,Object> responseData,List<String> operationTypes) throws Exception {
+		List<FieldMapping> fieldMappings = jobFieldMappingDao.findByJobNameAndCallbackUpdateAndStatus(jobSchedulerMetadata.getJobName(), true,true); 
+		String sql = "select * from " + jobSchedulerMetadata.getToObjectName() + " where "  + jobSchedulerMetadata.getFromObjectIdField() + " =  " + requestData.get(jobSchedulerMetadata.getFromObjectIdField()) +   " limit 1";
+		List<Map<String,Object>> respone =  jdbcTemplate.query(sql, resultsetToHashMap);
+		if (!respone.isEmpty()) {
+			log.error(" Unable to find response for id "  + jobSchedulerMetadata.getFromObjectIdField() + " value " + requestData.get(jobSchedulerMetadata.getFromObjectIdField()));
+			return ;
+		}
+		Map<String,Object> out = new HashMap<String, Object>();
+		for(FieldMapping mapping:  fieldMappings) {
+			if (mapping.getCallbackUpdate()) {
+				out.put(mapping.getFromField(), respone.get(0).get(mapping.getToField()));
+			}
+		}
+		fusionWebService.update(out, jobSchedulerMetadata.getFromObjectName());
+	}
+	
+	@Transactional(value=TxType.REQUIRES_NEW)
+	public void updateChildResponse(ChildObject childObject,Map<String,Object> requestData,Map<String,Object> responseData,List<String> operationTypes) throws Exception {
+		// TODO need to implements for child objects too 
+	
+	}
+
+	public JobSchedulerMetadata getJobSchedulerMetadata() {
+		return jobSchedulerMetadata;
+	}
+
+	public void setJobSchedulerMetadata(JobSchedulerMetadata jobSchedulerMetadata) {
+		this.jobSchedulerMetadata = jobSchedulerMetadata;
+	}
+	
+}

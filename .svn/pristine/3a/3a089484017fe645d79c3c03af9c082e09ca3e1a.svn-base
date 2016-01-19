@@ -1,0 +1,916 @@
+
+/* Common functions */
+
+function convertJsonDate(dtObj){
+	var dtStr = "";
+	var sday = ("0" + (dtObj.date)).slice(-2);
+	var smonth = ("0" + (dtObj.month + 1)).slice(-2);
+	var syear = dtObj.year;
+	var strYear = syear.toString();
+	if(strYear.length==3)
+		strYear = "20"+strYear.substring(1,strYear.length);
+	else
+		strYear = syear;
+	dtStr = smonth + "/" + sday + "/" + strYear;
+	return dtStr;
+}
+
+function currencyFormat (num) {
+    return "$" + num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+}
+
+function formatTime(date) {
+	var UTCtime = date.getTime();
+	console.log(UTCtime);
+	var now = new Date();
+	var timezoneOffset = now.getTimezoneOffset();
+	console.log(timezoneOffset);
+	var timezoneInMillisecond = timezoneOffset * 60000;
+	
+	var date = new Date(UTCtime + timezoneInMillisecond);
+	console.log(date);
+	  var hours = date.getHours();
+	  var minutes = date.getMinutes();
+	  var ampm = hours >= 12 ? 'pm' : 'am';
+	  hours = hours % 12;
+	  hours = hours ? hours : 12; // the hour '0' should be '12'
+	  minutes = minutes < 10 ? '0'+minutes : minutes;
+	  var strTime = hours + ':' + minutes + ' ' + ampm;
+	  return strTime;
+}
+
+function formatDate(inputFormat) {
+	  function pad(s) { return (s < 10) ? '0' + s : s; }
+	  var d = new Date(inputFormat);
+	  return [pad(d.getMonth()+1), pad(d.getDate()), pad(d.getFullYear ())].join('/');
+}
+
+function isNumber(val){
+   if (isNaN(val) || val == 'undefined' || val == null) 
+	   return 0;
+   else
+	   return val;
+}
+
+function backtoregistration(){
+	
+	$(".k-loading-mask").show();
+    
+    $("#tcSuccessSpan").css("display", "none");		
+	$("#tcSuccessSpan" ).html("");	
+	$("#tcErrorSpan").css("display", "none");		
+	$( "#tcErrorSpan" ).html("");
+	$("#purchase").fadeOut();
+	
+	$("#familymembers").fadeOut(200);
+	
+	var cartType = $.sessionStorage.getItem("CartType");
+	
+	if(cartType){
+		if(cartType == 'Program'){
+			$("#program").fadeIn(100);
+			getProgramSession();
+		}else if(cartType == 'Event'){
+			$("#event").fadeIn(100);
+			getEventSession();
+		}
+	}
+}
+
+function ArrNoDupe(a) {
+    var temp = {};
+    for (var i = 0; i < a.length; i++)
+        temp[a[i]] = true;
+    var r = [];
+    for (var k in temp)
+        r.push(k);
+    return r;
+}
+
+function validateCheckout(cartType) {
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	console.log(" validateCheckout 86 ");
+	var contactData = [];
+	if(cartType && cartType == 'EVENT'){
+		console.log(" validateCheckout 89 ");
+		contactData.push($("#loggedInUserContactId").val());
+	}else{
+		console.log(" validateCheckout 92 ");
+		$('#allmembers').find('input[class="usercheck"]').each(function(){
+			if($("#user_"+this.value).is(':checked')){
+				contactData.push(this.value);
+			}
+		});
+		
+		/*if(contactData==""){
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("Please select atleast one Member");
+			  return false;
+		}*/
+	}
+	/*
+	for(var i=0; i<contactData.length; i++){
+		$("#contactHealthHistory_"+contactData[i]).show();
+		$("#updateFlag_"+contactData[i]).val("Y");
+	}*/
+	
+	var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+
+	if(withinRegistrationDate(itemDetailsId,contactData.join(','))){
+		console.log(" validateCheckout 116 ");
+		if(checkAgeRange(itemDetailsId,contactData.join(','))){
+			console.log(" validateCheckout 118 ");
+			$.sessionStorage.setItem('contact_ids', contactData.join(','));
+			location.href = '#/product/'+itemDetailsId+'/'+contactData.join(',');
+			//console.log(" validateCheckout 122 ");
+			return true;
+		}
+	}else{
+		console.log(" validateCheckout 124 ");
+		$("#tcSuccessSpan").css("display", "none");		
+		$("#tcSuccessSpan" ).html("");	
+		$("#tcErrorSpan").css("display", "block");
+		if(cartType && cartType == 'EVENT'){
+			$( "#tcErrorSpan" ).html("Event Registration date has expired for some of the Selected Programs");
+		}else{
+			$( "#tcErrorSpan" ).html("Program Registration date has expired for some of the Selected Programs");
+		}
+	}
+	
+	return false;
+}
+
+function getFamilymembers(){
+	//alert("commons.js");
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getContacts",
+		  dataType: "json",
+		  success: function( data ) {
+			  if(data.length>0){
+				  var allContacts = "";
+				 
+				  $.each(data, function(i,member) {
+					  //alert(member.isChild);
+					  allContacts = allContacts + "<div style='margin: 10px;'>";
+					  allContacts = allContacts + "<span><input type='checkbox' name='user_"+member.contactId+"' id='user_"+member.contactId+"' value='"+member.contactId+"' class='usercheck'></span>";
+					  allContacts = allContacts + "&nbsp;&nbsp;<span class='name'>"+member.fname + " " +member.lname+"</span>";
+					  allContacts = allContacts + "&nbsp;&nbsp;<span><input type='hidden' name='user_"+member.id+"' value='"+member.isChild+"'></span>";
+					  allContacts = allContacts + "</div>";
+				  });
+				  
+				  $("#familymembers").slideDown();
+				  $("#allmembers").html(allContacts);
+				  $("input[type='checkbox']").uniform();
+				 
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+}
+
+function showContactHealthHistoryOrCheckOut(cartType){
+
+	console.log("   cartType  ::  "+cartType);
+	
+	var contactData = [];
+	if(cartType && cartType == 'EVENT'){
+		
+		console.log("   cartType  ::  177 ");
+		contactData.push($("#loggedInUserContactId").val());
+		
+		if(contactData.length > 0){
+			console.log(" showContactHealthHistory ");
+			var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+			var itemDetailIds = itemDetailsId.replace(",,", ",");
+			console.log(" showContactHealthHistory   itemDetailIds  --->  "+itemDetailIds);
+			if(itemDetailIds){
+				$.ajax({
+					  type: "GET", 
+					  url:"isHealthHistoryRequired?itemDetailId="+itemDetailIds,
+					  async:false,
+					  dataType: "json",
+					  success: function( data ) {
+						  console.log(" showContactHealthHistory 178 ");
+						  if(data && data.RESULT == 'YES'){
+							  console.log(" getContactHistory 180 ");
+							  //$("#contactHealthHistoryDiv").slideDown();
+							  if(validateCheckout(cartType)){
+								  setTimeout(function(){
+									  if(cart.errMsg==""){
+										  $("#checkout_content").hide();
+										  getContactHistory(contactData);
+									  }
+								  }, 1000);
+							  }
+						  }else{
+							  console.log(" showContactHealthHistory 183 ");
+							  if(validateCheckout(cartType)){
+								  setTimeout(function(){
+									  if(cart.errMsg==""){
+										  $("#checkout_content").show();
+									  }
+								  }, 1000);
+							  }
+						  }
+					  },
+					  error: function( xhr,status,error ){
+						  //alert("1" +status);
+						  console.log(" isHealthHistoryRequired "+xhr);
+					  }
+				});
+			}else{
+				$("#contactHealthHistoryDiv").slideDown();
+			}
+		}else{
+			console.log("No contacts to show health history.");
+		}
+		
+	}else if(cartType && cartType == 'PROGRAM'){
+		console.log("   cartType  ::  227 ");
+		
+		$('#allmembers').find('input[class="usercheck"]').each(function(){
+			if($("#user_"+this.value).is(':checked')){
+				contactData.push(this.value);
+			}
+		});
+		if(contactData.length > 0){
+			console.log(" showContactHealthHistory program ");
+			var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+			var itemDetailIds = itemDetailsId.replace(",,", ",");
+			console.log(" showContactHealthHistory   itemDetailIds  --->  "+itemDetailIds);
+			if(itemDetailIds){
+				$.ajax({
+					  type: "GET", 
+					  url:"isHealthHistoryRequired?itemDetailId="+itemDetailIds,
+					  async:false,
+					  dataType: "json",
+					  success: function( data ) {
+						  console.log(" showContactHealthHistory 361 ");
+						  if(data && data.RESULT == 'YES'){
+							  console.log(" getContactHistory 363 ");
+							  //$("#contactHealthHistoryDiv").slideDown();
+							  if(validateCheckout(cartType)){
+								  setTimeout(function(){
+									  if(cart.errMsg==""){
+										  $("#familymembers").fadeOut(200);
+										  getContactHistory(contactData);
+									  }
+								  }, 1000);
+							  }
+						  }else{
+							  console.log(" showContactHealthHistory 373 ");
+							  if(validateCheckout(cartType)){
+								  setTimeout(function(){
+									  if(cart.errMsg==""){
+										  $("#familymembers").fadeOut(200);
+										  $("#checkout_content").show();
+									  }
+								  }, 1000);
+							  }
+						  }
+					  },
+					  error: function( xhr,status,error ){
+						  //alert("1" +status);
+						  console.log(" isHealthHistoryRequired "+xhr);
+					  }
+				});
+			}else{
+				$("#contactHealthHistoryDiv").slideDown();
+			}
+		}else{
+			  console.log("No contacts to show health history.");
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("Please select atleast one Member");
+		}
+	}
+	
+	console.log("   contactData.length   ::   "+contactData.length);	
+}
+
+function hideContactHealthHistory(){
+	$("#contactHealthHistoryDiv").hide();
+}
+
+function addfamilyMember(){
+	$.ajax({
+		  type: "GET",
+		  url:"addMember",
+		  async:false,
+		  success: function( data ) {
+			  $("#popup_add").html(data);
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+}
+
+function closeAllwindow(){
+
+	 $("div.k-window1").each(function(index, element){
+		var window = $(this);
+		if (!window.data("kendoWindow")) {
+			window.kendoWindow({
+				width: "1050px"
+			});
+		}
+		window.data("kendoWindow").close();
+	});
+}
+
+function fnApplyPromo(isFromUpdateCart){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 
+	 //alert();
+	 var promocode = $( "#c_promocode" ).val();
+	 
+	 if(promocode=='' && isFromUpdateCart){
+		 return;
+	 }
+	 
+	 if(promocode==''){
+		  $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan" ).html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $( "#tcErrorSpan" ).html("Please enter Valid Promco code");
+		  return;
+	 }
+	 var cartObj = this.cart;
+	 var found = false;
+	 $.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getPromodetails?promocode="+promocode,
+		  dataType: "json",
+		  success: function( data ) {
+			  console.log(data);
+			  if(data.length==1){
+				  $.each(data, function(i,promo) {
+					  if(promo.itemDetails.length>0){
+						  
+						  for (var c = 0; c < cartObj.contents.length; c ++) {
+							  
+								  $.each(promo.itemDetails, function(j,itemInfo) {
+									  
+										  if(cartObj.contents[c].item.itemDetailsId == itemInfo.itemDetailsId){
+											  var p_price = parseFloat(0);
+											  /*
+											  if(cartObj.contents[c].contact.isMember)
+												p_price = cartObj.contents[c].item.signuppriceArr[0].memberprice;
+											  else
+												p_price = cartObj.contents[c].item.signuppriceArr[0].nonmemberPrice;
+											*/
+											  
+											  var noOfTicketsOrPackages = 1;
+											  if(cartObj.contents[c].item.subType == 'EVENT'){
+												  noOfTicketsOrPackages = cartObj.contents[c].noOfTicketsOrPackages;
+											  }
+											  p_price = cartObj.contents[c].signupPrice * parseInt(noOfTicketsOrPackages);
+											  var discount = parseFloat(0);
+											  var discount_type = promo.discounttype;
+											  if(discount_type=='AMOUNT')
+												  discount = promo.discountValue;
+											  else if(discount_type=='PERCENTAGE'){
+												  discount = parseFloat(promo.discountPercentage) * parseFloat(p_price);
+												  discount = discount/100;
+											  }
+											  
+											  $( ".custom_promo" ).show();
+											  cartPreviewModel.updateCart(cartObj.contents[c],parseFloat(discount),promocode);
+											  //break;
+											  found = true;
+										  }
+										  
+								  });
+								  
+							}
+					  }
+				  });
+			  }
+			  else{
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+				  return;
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(xhr);
+			 
+		  }
+	});
+	 
+	 if (!found) {
+		 $("#tcSuccessSpan").css("display", "none");		
+		  $("#tcSuccessSpan" ).html("");	
+		  $("#tcErrorSpan").css("display", "block");		
+		  $( "#tcErrorSpan" ).html("The Promo code you enetered is invalid");
+	  }
+}
+
+function fnUpdatePromo(){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 //alert();
+	console.log(this);
+}
+
+function fnCheckout(){
+	 $("#tcSuccessSpan").css("display", "none");		
+	 $("#tcSuccessSpan" ).html("");	
+	 $("#tcErrorSpan").css("display", "none");		
+	 $( "#tcErrorSpan" ).html("");
+	 
+	 /*
+	 if(cartPreviewModel.totalPrice()=='$0.00'){
+		 $("#tcErrorSpan").css("display", "block");		
+		 $( "#tcErrorSpan" ).html("Please add atleast 1 program to signup");
+		 return;
+	 }*/
+	// validation start
+	 
+	//fillPaymentMethodDD();
+	$(".k-loading-mask").show();
+	$("#payment_cart").show();
+	$("#details-checkout").fadeOut("fast");
+	$("#purchase").fadeIn("slow", function(){
+			$(".k-loading-mask").show();
+			$("#pmPrimary").hide();
+			$("#autopayBtn").hide();
+			
+			var trrow = "";
+			if(cart.contents.length>0){
+				$.each(cart.contents, function(i,itemDetailsSession) {
+					
+					//if(!itemDetailsSession.waitlist){
+						var stdt = convertJsonDate(itemDetailsSession.item.start_date);
+						var enddt = convertJsonDate(itemDetailsSession.item.end_date);
+						var stTime = new Date(itemDetailsSession.item.start_time.time);
+						var endTime = new Date(itemDetailsSession.item.end_time.time);
+						
+						/*
+						if(itemDetailsSession.contact.isMember)
+							discount = parseFloat(itemDetailsSession.item.memberdiscount) + parseFloat(itemDetailsSession.discount1);
+						else
+							discount = parseFloat(itemDetailsSession.item.nonmemberdiscount) + parseFloat(itemDetailsSession.discount1);
+						
+						if(itemDetailsSession.contact.isMember)
+							itemprice = (parseFloat(itemDetailsSession.item.memberprice) - parseFloat(itemDetailsSession.item.memberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+						else
+							itemprice = (parseFloat(itemDetailsSession.item.nonmemberprice) - parseFloat(itemDetailsSession.item.nonmemberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+						*/
+						
+						var discount = parseFloat(itemDetailsSession.autoDiscount) + parseFloat(itemDetailsSession.discount1);
+						var fa = parseFloat(itemDetailsSession.FAamount);
+						var itemprice = ((parseFloat(itemDetailsSession.signupPrice) * itemDetailsSession.noOfTicketsOrPackages) + parseFloat(itemDetailsSession.joinFee) + parseFloat(itemDetailsSession.setupFee)  + parseFloat(itemDetailsSession.registrationPrice) + parseFloat(itemDetailsSession.depositAmount) - parseFloat(itemDetailsSession.autoDiscount) - parseFloat(itemDetailsSession.discount1) - parseFloat(itemDetailsSession.FAamount)) * itemDetailsSession.quantity;
+						var subtotal = (parseFloat(itemDetailsSession.signupPrice) * itemDetailsSession.noOfTicketsOrPackages) + parseFloat(itemDetailsSession.joinFee) + parseFloat(itemDetailsSession.setupFee) + parseFloat(itemDetailsSession.registrationPrice) + parseFloat(itemDetailsSession.depositAmount);
+						//alert(subtotal);
+						
+						trrow = trrow + "<table width='100%'><tr>";
+						trrow = trrow + "<td><span><strong>" + itemDetailsSession.contact.fname + " " + itemDetailsSession.contact.lname + "";
+						if(itemDetailsSession.waitlist)
+							trrow = trrow + "<span class='alertNotice'> (WL)</span>"
+						trrow = trrow + "<br>"  + itemDetailsSession.item.name + " [Category: " + itemDetailsSession.item.category + "]</strong></span></td>";
+						trrow = trrow + "<td><span>" + itemDetailsSession.item.days + "</span></td>";
+						trrow = trrow + "<td><span>" + stdt + " - " + enddt + "</span></td>";
+						trrow = trrow + "<td><span>" + formatTime(stTime)  + " - " +  formatTime(endTime) + "</span></td>";
+						trrow = trrow + "</tr>";
+						
+						trrow = trrow + "<tr height='10px;'>";
+						trrow = trrow + "<td colspan='3' align='right'>Sub Total</td>";
+						/*
+						if(itemDetailsSession.contact.isMember)
+							trrow = trrow + "<td align='center'><span>" + currencyFormat(itemDetailsSession.item.memberprice) + "</span></td>";
+						else
+							trrow = trrow + "<td align='center'><span>" + currencyFormat(itemDetailsSession.item.nonmemberprice) + "</span></td>";
+						*/
+	
+						trrow = trrow + "<td align='center'><span>" + currencyFormat(subtotal) + "</span></td>";
+						trrow = trrow + "</tr>";
+						
+						trrow = trrow + "<tr height='10px;'>";
+						trrow = trrow + "<td colspan='3' align='right'>Discount</td>";
+						trrow = trrow + "<td align='center'><span class='discountpricelbl'>-" + currencyFormat(discount) + "</span></td>";
+						trrow = trrow + "</tr>";
+						
+						trrow = trrow + "<tr height='10px;'>";
+						trrow = trrow + "<td colspan='3' align='right'>FA Amount</td>";
+						trrow = trrow + "<td align='center'><span class='discountpricelbl'>-" + currencyFormat(fa) + "</span></td>";
+						trrow = trrow + "</tr>";
+						
+						trrow = trrow + "<tr height='10px;'>";
+						trrow = trrow + "<td colspan='3' align='right'>Final amount</td>";
+						trrow = trrow + "<td align='center'><span>" + currencyFormat(itemprice) + "</span></td>";
+						trrow = trrow + "</tr>";
+						
+						trrow = trrow + "<tr height='10px;'>";
+						trrow = trrow + "<td></td>";
+						trrow = trrow + "</tr></table>";
+					//}
+				});
+			}
+			$("#cartitem").html(trrow);
+			$("#ordertotal").text(cartPreviewModel.totalPrice());
+			
+			$(".k-loading-mask").hide();
+	});
+}
+
+function cancelProgram(signupId){
+	
+}
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function checkKeyPressEventIsNumeric(e){
+	if(e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)){
+		return false;
+    }
+}
+
+function fillPaymentMethodDD(){
+	var paymentMethodHtml = '';		
+	$.ajax({
+		  type: "GET",
+		  url: "viewPaymentInformationByLoggedInUser",								  
+		  success: function( data ) {				  	  
+			  if(data != null && data.length > 0){	
+				  $.ajax({
+					  type: "GET",
+					  url: "getACHPaymentInformationByLoggedInUser",								  
+					  success: function( achData ) {											  										  
+						  									  
+						  if(data != null && data.length > 0){														 
+							  for(var i = 0; i<data.length; i++){        
+								   var dataArr = data[i];
+								   //p.portalStatus, p.paymentType, p.isPrimary, p.paymentId, p.nickName, p.cardNumber, p.expirationMonth, p.expirationYear										       
+								   //paymentInfoRadio						   
+								   /* if(dataArr[2]){
+									   paymentMethodHtml += '<option selected value="'+ dataArr[8] +'">'+ dataArr[4] +' '+dataArr[5] +' '+dataArr[6] +'/'+dataArr[7]+'</option>';
+									   $("#paymentTokenIdSpan").html(dataArr[8]);
+								   }else{
+									   paymentMethodHtml += '<option value="'+ dataArr[8] +'">'+ dataArr[4] +' '+dataArr[5] +' '+dataArr[6] +'/'+dataArr[7]+'</option>';
+								   }	 */				
+								   if(dataArr[2]){
+									   paymentMethodHtml += '<option selected value="'+ dataArr[9] + '_' + dataArr[6] +'">'+ dataArr[7] +' '+dataArr[3] +' '+dataArr[4] +'/'+dataArr[5]+'</option>';
+									   $("#paymentTokenIdSpan").html(dataArr[6]);
+									}else{
+									   paymentMethodHtml += '<option value="'+ dataArr[9] + '_' + dataArr[6] +'">'+ dataArr[7] +' '+dataArr[3] +' '+dataArr[4] +'/'+dataArr[5]+'</option>';
+									}
+							  }
+						  }
+				  		  if(achData != null && achData.length > 0){
+							  for(var i = 0; i<achData.length; i++){        
+							       var dataArr = achData[i];
+							       //p.transId,  p.bankRoutingNumber, p.fullName, p.paymentType,  p.checkingAccountNumber, p.driversLicenseNumber, p.stateOfDL, p.phoneNumber, p.nickName, p.portalStatus,  p.tokenNumber , p.paymentId, p.isPrimary											       
+							       if(dataArr[12]){
+							    	   paymentMethodHtml += '<option selected value="'+ dataArr[11] + '_' + dataArr[10] +'">'+ dataArr[2] +', '+dataArr[4] +'</option></span>';
+							    	   $("#paymentTokenIdSpan").html(dataArr[8]);
+							       }else{
+							    	   paymentMethodHtml += '<option value="'+ dataArr[11] + '_' + dataArr[10] +'">'+ dataArr[2] +', '+dataArr[4] +'</option></span>';
+							       }													       
+						      }
+				  		  }
+					      
+					  },
+					  error: function( xhr,status,error ){
+						  $("#statusBlock").css("display", "block");	
+						  $("#tcloginErrorSpan").css("display", "block");	
+						  $( "#tcloginErrorSpan" ).html("There was some error. Please try again later");	
+						  $(".k-loading-mask").hide();								  		 
+					  }
+					});
+				}										 
+		  },
+		  error: function( xhr,status,error ){
+			  $("#statusBlock").css("display", "block");	
+			  $("#tcloginErrorSpan").css("display", "block");	
+			  $( "#tcloginErrorSpan" ).html("There was some error. Please try again later");	
+			  $(".k-loading-mask").hide();								  		 
+		  }
+	});
+	
+	paymentMethodHtml += '<option value="New">Add New Card</option>';
+    paymentMethodHtml += '<option value="NewBank">Add New Bank Info</option>';
+    $("#paymentInfoRadio").html(paymentMethodHtml);
+    $("#paymentInfoRadio").kendoDropDownList();
+}
+
+function computePrice(arr, type){
+	//console.log(arr);
+	var pricecell = "";
+ 	$.each(arr, function(i,price) {
+
+ 		if(price.type=='Sign Up'){
+ 			pricecell = pricecell + "<span>" +price.priceoption + "</span>";
+ 			if(price.priceoption!="")
+ 				pricecell = pricecell + "<span>: </span>";
+ 			
+ 			if(type=="M")
+ 				pricecell = pricecell + "<span>$" +price.memberPrice + "</span>";
+ 			else
+ 				pricecell = pricecell + "<span>$" +price.nonmemberPrice + "</span>";
+ 			
+ 			pricecell = pricecell + "<br>";
+ 		}
+ 	});
+ 	
+ 	return pricecell;
+}
+
+function getSetupFeeByItemDetailIdAndPartyId(itemDetailId,partyId){
+	var setupfee = 0;
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getSetupFeeByItemDetailIdAndPartyId?itemDetailId="+itemDetailId+"&partyId="+partyId,
+		  dataType: "json",
+		  success: function( data ) {
+			  console.log(data);
+			  setupfee = data;
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("Error while getting setup fee");
+			 
+		  }
+	});
+	return setupfee;
+}
+
+function getFAObj(itemDetailId){
+	var FAObj;
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"getFA?itemDetailId="+itemDetailId,
+		  dataType: "json",
+		  success: function( data ) {
+			  console.log(data);
+			  FAObj = data;
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("Error while getting setup fee");
+			 
+		  }
+	});
+	return FAObj;
+}
+
+function withinRegistrationDate(iIds, cIds){
+	var proceed = false;
+	
+	var itemDetailsId = iIds.split(",");
+	var contactId = cIds.split(",");
+	for(var c = 0; c<contactId.length; c++){  
+		for(var i = 0; i<itemDetailsId.length; i++){  
+			$.ajax({
+				  type: "GET",
+				  async: false,
+				  url:"checkProgramRegistrationDate?itemDetailId="+itemDetailsId[i]+"&contactId="+contactId[c],
+				  dataType: "json",
+				  success: function( data ) {
+					  //console.log(data);
+					  if(data)
+						  proceed = true;
+					  else
+						  proceed = false;
+				  },
+				  error: function( xhr,status,error ){
+					  proceed = false;
+					 
+				  }
+			});
+			if(!proceed)
+				break;
+		}
+	}
+	
+	//alert(proceed);
+	return proceed;
+}
+
+function checkAndUpdateCapacity(){
+	var proceed = false;
+	var itemIdsAndremainingCapacity = "";
+	var itemIdsConfirmedAndWaitlistedItems = [];
+	
+	var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+	console.log(itemDetailsId);
+	//uniqueitemDetailsId = ArrNoDupe(itemDetailsId);
+	//console.log(uniqueitemDetailsId);
+	
+	//alert(itemDetailsId);
+	if(cart.contents.length>0){
+		var itemDetailId = itemDetailsId.split(",");
+		for(var k=0; k<itemDetailId.length; k++){
+			var confirmedItems = 0;
+			var waitlistedItems = 0;
+			$.each(cart.contents, function(i,itemsData) {
+				
+				console.log("   itemsData.item.subType  >>>  "+itemsData.item.subType);
+				var noOfTickets = 1;
+				if(itemsData.item.subType == 'EVENT'){
+					noOfTickets = parseInt(itemsData.noOfTickets)
+				}
+				console.log("   itemsData.noOfTickets  >>>  "+itemsData.noOfTickets);
+				if(itemsData.item.itemDetailsId==itemDetailId[k]){
+					if(itemsData.waitlist)
+						waitlistedItems = parseInt(waitlistedItems) + parseInt(noOfTickets);
+					else
+						confirmedItems = parseInt(confirmedItems) + parseInt(noOfTickets);
+				}
+			});
+			itemIdsConfirmedAndWaitlistedItems.push(itemDetailId[k]+"_"+confirmedItems+"_"+waitlistedItems);
+		}
+	}
+	
+	//alert(itemIdsConfirmedAndWaitlistedItems);
+	if(itemIdsConfirmedAndWaitlistedItems.length>0){
+		$.ajax({
+			  type: "GET",
+			  async: false,
+			  url:"checkAndUpdateCapacity?itemIdsConfirmedAndWaitlistedItems="+itemIdsConfirmedAndWaitlistedItems.join(","),
+			  success: function( data ) {
+				  //alert("data: "+data)
+				  //console.log(data);
+				  var capacityUpdateStatus = data.split("^")[0];
+				  itemIdsAndremainingCapacity = data.split("^")[1];
+				  //alert("capacityUpdateStatus:"+capacityUpdateStatus);
+				  //console.log(data);
+				  if(capacityUpdateStatus=="true")
+					  proceed = true;
+				  else{
+					  proceed = false;
+					  //alert("itemIdsAndremainingCapacity: "+itemIdsAndremainingCapacity);
+					  
+				  }
+			  },
+			  error: function( xhr,status,error ){
+				  proceed = false;
+				 
+			  }
+		});
+	}
+		
+	if(!proceed){
+		$("#tcSuccessSpan").css("display", "none");		
+		$("#tcSuccessSpan" ).html("");	
+		$("#tcErrorSpan").css("display", "block");		
+		$( "#tcErrorSpan" ).html("Sorry the programs you selected has already been booked, Please check your updated cart");
+		
+		if(itemIdsAndremainingCapacity!=""){
+			 cartPreviewModel.updateWaitlistIncart(itemIdsAndremainingCapacity);
+		}
+		
+		setTimeout(function(){
+			gotocartpage();
+		}, 3000);
+		
+	}
+	
+	return proceed;
+}
+
+function UpdateCapacityAfterPaymentFail(){
+	var itemDetailsId = $.sessionStorage.getItem('itemDetailsId');
+	//itemDetailsId = ArrNoDupe(itemDetailsId);
+	
+	if(cart.contents.length>0){
+
+		$.each(cart.contents, function(i,itemsData) {
+			var confirmedItems = 0;
+			var waitlistedItems = 0;
+			var qty = 1 ;
+			if(itemsData.item.subType == 'EVENT'){
+			     qty = parseInt(itemsData.noOfTickets)
+			 }
+			if(itemsData.waitlist)
+				waitlistedItems = waitlistedItems + qty;
+			else
+				confirmedItems = confirmedItems + qty;
+
+			// TODO need to optimize and make call a single call  
+			var itemDetailId =  itemsData.item.itemDetailsId ;
+			$.ajax({
+				  type: "GET",
+				  async: false,
+				  url:"UpdateCapacityAfterPaymentFail?itemDetailsId="+itemDetailId+"&confirmedItems="+confirmedItems+"&waitlistedItems="+waitlistedItems,
+				  dataType: "json",
+				  success: function( data ) {
+					  console.log(data);
+				  },
+				  error: function( xhr,status,error ){
+					  console.log(error);
+				  }
+			});
+			
+		});
+	}
+	
+/*	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"UpdateCapacityAfterPaymentFail?itemDetailsId="+itemDetailsId+"&confirmedItems="+confirmedItems+"&waitlistedItems="+waitlistedItems,
+		  dataType: "json",
+		  success: function( data ) {
+			  console.log(data);
+		  },
+		  error: function( xhr,status,error ){
+			 			 
+		  }
+	});*/
+}
+
+function checkAgeRange(iIds, cIds){
+	var proceed = false;
+	var errMsg = "";
+	
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"checkAgeRange?itemDetailIds="+iIds+"&contactIds="+cIds,
+		  success: function( data ) {
+			  console.log(data);
+			  var ageStatus = data.split("_")[0];
+			  errMsg = data.split("_")[1];
+			 // alert(ageStatus);
+			  if(ageStatus=="true")
+				  proceed = true;
+			  else
+				  proceed = false;
+		  },
+		  error: function( xhr,status,error ){
+			  proceed = false;
+			 
+		  }
+	});
+	
+	//alert(proceed);
+	if(!proceed){
+		$("#tcSuccessSpan").css("display", "none");		
+		$("#tcSuccessSpan" ).html("");	
+		$("#tcErrorSpan").css("display", "block");		
+		$( "#tcErrorSpan" ).html("You cannot register for program due to below errors: <br>"+errMsg);
+		return;
+	}
+	
+	return proceed;
+}
+
+function isMember(contactId){
+	var proceed = false;
+	
+	$.ajax({
+		  type: "GET",
+		  async: false,
+		  url:"checkIfMember?contactId="+contactId,
+		  success: function( data ) {
+			  
+			  if(data)
+				  proceed = true;
+			  else
+				  proceed = false;
+		  },
+		  error: function( xhr,status,error ){
+			  proceed = false;
+			 
+		  }
+	});
+	
+	return proceed;
+}

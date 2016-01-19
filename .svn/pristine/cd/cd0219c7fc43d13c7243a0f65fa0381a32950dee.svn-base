@@ -1,0 +1,9 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import com.ymca.model.WaiversAndTC;
+
+public interface WaiversAndTCDao extends GenericDao<WaiversAndTC, Long>  {
+	List<WaiversAndTC> getTcByType(String type);
+}

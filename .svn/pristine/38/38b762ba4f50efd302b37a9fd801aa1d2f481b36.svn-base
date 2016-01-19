@@ -1,0 +1,19 @@
+package com.ymca.dao;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import com.ymca.model.Account;
+
+public interface AccountDao  extends GenericDao<Account, Long>  {
+	Account findByAccountId(Long accountId);
+	Account getByName(String accountName);
+	Account getByEmail(String accountName);
+	Account getByToken(String token);
+	Account getByAddressLine1IgnoringCase(String address1);
+	
+	//@Query("select p.productId, p.productName, p.description, p.productType, p.duration, p.pricingRule.tierPrice, p.waiversAndTC.tcDescription from ItemDetails i inner join i.product p where p.productType='MEMBERSHIP' and i.locations.locationId =?1")")" +
+	@Query("select a.addressLine1, a.addressLine2, a.city, a.state, a.postalCode, u.personFirstName, u.personLastName, u.dateOfBirth, u.primaryFormattedPhoneNumber, u.primaryEmailAddress from Account a inner join a.user u where u.primaryEmailAddress =?1")
+	List<Account> getAccountByEmail(String email);
+}

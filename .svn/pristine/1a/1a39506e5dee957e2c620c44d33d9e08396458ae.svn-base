@@ -1,0 +1,53 @@
+<%@ include file="../../layouts/include_taglib.jsp"%>
+
+<!-- <table style="padding-left:4px;padding-top:4px; width: 100%;">
+		
+	<div id="tabstrip4" class="k-block" style=" background-color:#FFFFFF;margin-left:-572px;width:768px;"> -->
+
+		<table cellpadding="0" cellspacing="0" width="95%"  rules="none" style="padding-left:4px;padding-top:4px;">
+					
+					<span class="head" width="100%"style="margin-left:4px;" >List of Facilities for Rent</span>	
+					<tr><td>
+        &nbsp;
+        <!--you just need a space in a row-->
+    </td></tr>	
+					<tr>
+								<td style="color: black;padding-left:4px;padding:3px;">Facility Name</td>
+								<td style="color: black;">Facility Location</td>
+								 
+							 
+
+					</tr>
+						<c:forEach var="facility" items="${facilityList}" varStatus="status">
+						
+	    
+
+							<tr style="outline:thin solid; padding-left:4px;">
+								<td style="color: red;padding-left:4px;padding:3px;">${facility.Item}</td>
+								<td style="color: red;">${facility.location}</td>
+								 
+							 <!--  <td style="padding-bottom:3px;padding-left:4px;"></td> -->
+							  <td style="padding-bottom:3px;" align="center"><span id="requestBooking" class="k-button" style="width: 70px; text-shadow: none;">REQUEST BOOKING</span></td>
+							  <!-- <td style="padding-bottom:3px;"></td> -->
+
+							</tr>
+							<tr>
+    <td>
+        &nbsp;
+        <!--you just need a space in a row-->
+    </td>
+</tr>
+
+</c:forEach>
+	
+</table>
+
+<!-- </div>
+
+</table> -->
+
+	
+
+					
+
+	

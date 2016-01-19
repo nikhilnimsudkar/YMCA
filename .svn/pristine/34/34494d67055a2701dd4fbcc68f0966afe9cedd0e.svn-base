@@ -1,0 +1,79 @@
+/**
+ * @author gpatwa
+ */
+package com.serene.job.scheduler;
+
+import java.util.concurrent.ScheduledFuture;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.stereotype.Service;
+
+
+@Service
+@Lazy(false)
+@Scope("prototype")
+public class SpringJobScheduler {
+
+	private static Logger log = LoggerFactory.getLogger(SpringJobScheduler.class);
+	
+	@Resource
+	protected ApplicationContext applicationContext;
+	
+	@Resource 
+	private ThreadPoolTaskScheduler threadPoolTaskScheduler ;
+
+	//@Resource
+	//private ThreadPoolTaskExecutor threadPoolTaskExecutor ;
+	
+	public void initializeJob(final AbstractJobScheduler jobScheduler){
+		
+		//ThreadPoolTaskScheduler scheduler = (ThreadPoolTaskScheduler) applicationContext.getBean("scheduler");
+		threadPoolTaskScheduler.setThreadGroupName(jobScheduler.getJobSchedulerMetadata().getJobGroup());
+		threadPoolTaskScheduler.setThreadNamePrefix(jobScheduler.getJobSchedulerMetadata().getJobName()+"-");
+		threadPoolTaskScheduler.setThreadNamePrefix(jobScheduler.getJobSchedulerMetadata().getJobGroup()+"-");
+		threadPoolTaskScheduler.setPoolSize(1);
+		CronTrigger trigger = new CronTrigger(jobScheduler.getJobSchedulerMetadata().getCronExpression());
+		JobThread task = new JobThread(jobScheduler);
+		task.setName(jobScheduler.getJobSchedulerMetadata().getJobName());
+		/*	    Runnable task = new Runnable() {
+	        public void run() {
+	        	jobScheduler.runJob();
+	        }
+	     };*/
+		ScheduledFuture scedulefuture=  threadPoolTaskScheduler.schedule(task, trigger);
+		// threadPoolTaskScheduler.initialize();
+	}
+}
+
+class JobThread extends Thread {
+	
+	private static Logger log = LoggerFactory.getLogger(SpringJobScheduler.class);
+	
+	private AbstractJobScheduler jobScheduler ;
+	
+	public JobThread(String groupName,String threadName){
+		
+	}
+	
+	public JobThread(AbstractJobScheduler jobScheduler2) {
+		super(jobScheduler2.getJobSchedulerMetadata().getJobName());
+		this.jobScheduler = jobScheduler2;
+	}
+
+	@Override
+	public void run()  {
+		try {
+			jobScheduler.runJob();
+		} catch (Exception e) {
+			log.error(" Error while running the job " + jobScheduler.getJobSchedulerMetadata().getJobName(),e);
+		}
+	}
+}  

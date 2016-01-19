@@ -1,0 +1,895 @@
+
+/* functions related to payment */
+
+var hash = '';
+var merchantId = "TESTTERMINAL";  
+var transactionAmount = "0";
+var JetDirectToken	= "1234567890ABCDEFGHIJKabcdefghijk";
+var paymentOrderId = Math.floor((Math.random()*1000000000000)+1);
+
+// payment cart page
+function submitPlaceOrderForm(){
+	
+	if(!checkAndUpdateCapacity()){
+		return;
+	}
+		
+	if($("#paymentInfoRadio").val()=='NewCard' || $("#paymentInfoRadio").val()=='NewBankInfo'){
+		if(($("#paymentInfoRadio").val()=='NewCard' && $('#SaveCard').is(":checked") && $("#nickName").val()=="") 
+				|| ($("#paymentInfoRadio").val()=='NewBankInfo' && $('#SaveCardACH').is(":checked") && $("#nickNameACH").val()=="")){
+			 showErrorMessageForSignup("Please provide Nick Name");
+			 return;
+		}else{
+			console.log(" in else ");
+			if($("#paymentInfoRadio").val()=='NewCard'){
+				processCCpayment();
+			}else{
+				processACHpayment();
+			}
+		}
+	}else if($("#paymentInfoRadio").val()=='Cash' || $("#paymentInfoRadio").val()=='None' || $("#paymentInfoRadio").val()=='Check'){
+		proceedtosignup('0','','0',$("#paymentInfoRadio").val());		
+	}else{
+		var selectedPaymentMethod = $("#paymentInfoRadio").data("kendoDropDownList").text();
+		var paymentDDvalue = $('#paymentInfoRadio').val();
+		var paymentDDValueSplit = paymentDDvalue.split("__");
+		
+		console.log("  type  --> "+paymentDDValueSplit[0]);
+		console.log("  token --> "+paymentDDValueSplit[1]);
+		console.log("  token --> "+paymentDDValueSplit[2]);
+		
+		var paymentMethodType = paymentDDValueSplit[0];
+		var paymentMethodToken = paymentDDValueSplit[1];
+		var paymentMethodId = paymentDDValueSplit[2];
+		
+		if (paymentMethodType && paymentMethodType == 'CREDIT') {
+			processCCpaymentbytoken(paymentMethodId, paymentMethodToken);
+		} else {
+			processACHpaymentbytoken(paymentMethodId, paymentMethodToken);
+		}
+	}
+}
+
+function processCCpayment(){
+	console.log("  processpayment  ");
+	
+	console.log("  AccountID  "+$("#AccountID").val());
+	console.log("  cardNum  "+$("#cardNum").val());
+	console.log("  addCardExpirationMonthSelect  "+$("#addCardExpirationMonthSelect").val());
+	console.log("  addCardExpirationYearSelect  "+$("#addCardExpirationYearSelect").val());
+	
+	$(".k-loading-mask").show();
+	$.ajax({
+		async:false,
+		type: "GET",
+		dataType: "json",
+		url: "isCardAlreadyExist?accountID="+$("#AccountID").val()+"&cardNumber="+$("#cardNum").val()+"&expMonth="+$("#addCardExpirationMonthSelect").val()+"&expYear="+$("#addCardExpirationYearSelect").val(),
+		success: function( data ) {
+		  console.log(" got data ::  ");
+		  
+  		  if(data){
+	  		  	console.log(" got data ::  >> "+data);
+	  		    console.log(" got data paymentId ::  >> "+data.paymentId);
+				if($('#SaveCard').is(":checked") && data.paymentId && data.paymentId > 0){
+					$(".k-loading-mask").hide();
+					showErrorMessageForSignup("Card Information already exist or inactivated. To activate please contact Y Agent.");
+				   	console.log("Card Information already exist or inactivated. To activate please contact Y Agent.");
+				   	
+				   	UpdateCapacityAfterPaymentFail();
+					return;
+				}else{
+					var saveCard = 'N';
+					if($('#SaveCard').is(":checked")){
+						saveCard = 'Y';
+					}
+					
+					var paymentOrderNumber = paymentOrderId.toString();
+					
+					orderamount = $("#ordertotal").text();
+					transactionAmount = $.trim(orderamount.replace("$",""));
+					transactionAmount = $.trim(transactionAmount.replace(".00",""));
+					transactionAmount = $.trim(transactionAmount.replace(",",""));
+					
+					console.log(" transactionAmount  "+transactionAmount);
+					
+					var jsSha = new jsSHA(merchantId+transactionAmount+JetDirectToken+paymentOrderId);
+					hash = jsSha.getHash("SHA-512", "HEX");	
+					console.log("  paymentOrderNumber  "+paymentOrderNumber);
+					console.log("  hash  "+hash.toString());
+					console.log("  transactionAmount  "+transactionAmount);
+					
+					console.log("  nickName11  "+$("#nickName").val());
+					console.log("  fullName11  "+$("#fullName").val());
+					console.log("  securityCode  "+$("#securityCode").val());
+					console.log("  billingAddressLine1  "+$("#billingAddressLine1").val());
+					console.log("  billingAddressLine2  "+$("#billingAddressLine2").val());
+					console.log("  billingCity  "+$("#billingCity").val());
+					console.log("  billingState  "+$("#billingState").val());
+					console.log("  billingZip  "+$("#billingZip").val());
+					console.log("  saveCard  "+saveCard);
+					
+					var jsonData = {
+						trans_type : "SALE", // "TOKENIZE" // "AUTHONLY", "SALE"
+						ud1 : $("#AccountID").val(),
+						ud2 : $("#nickName").val(),
+						name : $("#fullName").val(),
+						cardNum : $("#cardNum").val(),
+						cscNumber : $("#securityCode").val(),
+						expMonth : $("#addCardExpirationMonthSelect").val(),
+						expYr : $("#addCardExpirationYearSelect").val(),
+						amount : transactionAmount,
+						AddressLine1 : $("#billingAddressLine1").val(),
+						AddressLine2 : $("#billingAddressLine2").val(),
+						City : $("#billingCity").val(),
+						state : $("#billingState").val(),
+						zipcode : $("#billingZip").val(),
+						email : "test@gmail.com",
+						contry : "USA",
+						jetPayHash : hash.toString(),
+						paymentOrderId : paymentOrderNumber,
+						isSaveCard : saveCard
+					};
+					var win = document.getElementById("childIframeId").contentWindow;
+					win.postMessage(jsonData, '*');
+					console.log(" Payment request sent. ");
+					
+					$.ajax({
+						type: "POST",
+						url: "checkPaymentProcessStatus",
+						data: { "orderNumber" : paymentOrderNumber },
+						success: function( data ) {
+						  console.log(" got data :: 11 ");
+				  		  
+				  		  if(data){
+					  		  	console.log(" got data ::  >> "+data);
+							    data_split_add_cart = data.split("__");
+								if(data_split_add_cart[0]=='SUCCESS'){
+									
+									console.log(" Token : "+data_split_add_cart[1]);
+									console.log(" PaymentMethodId : "+data_split_add_cart[2]);
+									
+									payId = data_split_add_cart[2];
+									
+									proceedtosignup(payId,'',paymentOrderNumber,"Credit");
+									
+								}else{
+									console.log(" failed status : "+data_split_add_cart[1]);
+									$(".k-loading-mask").hide();
+									showErrorMessageForSignup("Error occured while processing payment. \n"+data_split_add_cart[1]);
+									UpdateCapacityAfterPaymentFail();
+								}
+					  	  }else{
+					  		  $(".k-loading-mask").hide();
+					  		  showErrorMessageForSignup("There was some error. Please try again later.");
+					  		  UpdateCapacityAfterPaymentFail();
+					  	  }
+					  },
+					  error: function( xhr,status,error ){
+						  $(".k-loading-mask").hide();
+						  showErrorMessageForSignup("There was some error. Please try again later.");
+						  UpdateCapacityAfterPaymentFail();
+					  }
+					});
+				}
+	  	  }else{
+	  		  $(".k-loading-mask").hide();
+	  		  showErrorMessageForSignup("There was some error. Please try again later.");
+	  		  UpdateCapacityAfterPaymentFail();
+			  return;
+	  	  }
+	  },
+	  error: function( xhr,status,error ){
+		  $(".k-loading-mask").hide();
+  		  showErrorMessageForSignup("There was some error. Please try again later.");
+  		  UpdateCapacityAfterPaymentFail();
+		  return;
+	  }
+	});
+}
+
+function processACHpayment(){
+	console.log(" processACHpayment ");
+	var orderamount = $("#ordertotal").text();
+	var transactionAmount = $.trim(orderamount.replace("$",""));
+	transactionAmount = $.trim(transactionAmount.replace(".00",""));
+	transactionAmount = $.trim(transactionAmount.replace(",",""));
+	
+	var bankAccountNumber =  $("#bankAccountNumber").val();
+	var bankRoutingNumber =  $("#bankRoutingNumber").val();
+	var checkNumber =  $("#checkNumber").val();
+	var accountName =  $("#bankAccountName").val();
+	var totalAmt =  transactionAmount;
+	var accountID =  $("#AccountID").val();
+	var nickName =  $("#nickNameACH").val();
+	var accountType =  $("#bankAccountTypeSelect").val();
+	
+	$(".k-loading-mask").show();
+	$.ajax({
+		async:false,
+		type: "GET",
+		dataType: "json",
+		url: "isBankInfoAlreadyExist?accountID="+accountID+"&bankAccountNumber="+bankAccountNumber,
+		success: function( data ) {
+		  console.log(" got data ::  ");
+  		  
+  		  if(data){
+	  		  	console.log(" got data ::  >> "+data);
+	  		    console.log(" got data paymentId ::  >> "+data.paymentId);
+				if(data.paymentId && data.paymentId > 0){
+					showErrorMessageForSignup("Bank Information already exist or inactivated. To activate please contact Y Agent.");
+					$(".k-loading-mask").hide();
+					UpdateCapacityAfterPaymentFail();
+					return;
+				}else{
+	
+					$.ajax({
+						  type: "POST",
+						  url: "processACHPayment",	
+						  data: { bankAccountNumber: bankAccountNumber, bankRoutingNumber : bankRoutingNumber, checkNumber : checkNumber, 
+							  	  accountName : accountName, totalAmt : totalAmt, accountType : accountType, nickName : nickName, accountID : accountID},
+						  success: function( data ) {
+							  
+							  if(data){
+								  	console.log(" data :: "+data);
+								  
+								  	data_split_add_cart = data.split("__");
+									if(data_split_add_cart[0]=='SUCCESS'){
+										
+										console.log(" Token : "+data_split_add_cart[1]);
+										console.log(" PaymentMethodId : "+data_split_add_cart[2]);
+										console.log(" TransactionId : "+data_split_add_cart[3]);
+										
+										payId = data_split_add_cart[2];
+										transactionId = data_split_add_cart[3];
+										
+										proceedtosignup(payId,"",transactionId,"ACH");
+										
+									}else{
+										console.log(" failed status : "+data_split_add_cart[1]);
+										$(".k-loading-mask").hide();
+										showErrorMessageForSignup("Error occured while processing payment. \n"+data_split_add_cart[1]);
+										UpdateCapacityAfterPaymentFail();
+									}
+							  }else {
+								  $(".k-loading-mask").hide();
+								  showErrorMessageForSignup("Error occurred while processing the payment. Please try again later.");
+								  UpdateCapacityAfterPaymentFail();
+							  }
+						  },
+						  error: function( xhr,status,error ){
+							  $(".k-loading-mask").hide();
+							  showErrorMessageForSignup("Error occurred while processing the payment. Please try again later.");
+							  UpdateCapacityAfterPaymentFail();
+						  }
+					});
+				}
+		  }else{
+			  $(".k-loading-mask").hide();
+			  showErrorMessageForSignup("There was some error. Please try again later.");
+			  UpdateCapacityAfterPaymentFail();
+			  return;
+	  	  }
+	  },
+	  error: function( xhr,status,error ){
+		  $(".k-loading-mask").hide();
+		  showErrorMessageForSignup("There was some error. Please try again later.");
+		  UpdateCapacityAfterPaymentFail();
+		  return;
+	  }
+});
+}
+
+function processCCpaymentbytoken(payId,token){
+	console.log(" processpaymentbytoken  ");
+	orderamount = $("#ordertotal").text();
+	transactionAmount = $.trim(orderamount.replace("$",""));
+	//alert(transactionAmount);
+	transactionAmount = $.trim(transactionAmount.replace(".00",""));
+	transactionAmount = $.trim(transactionAmount.replace(",",""));
+	if (transactionAmount == "0.00") {
+		transactionAmount = "0";
+	}
+	console.log(" payId  >>  "+payId);
+	console.log(" token  >>  "+token);
+	console.log(" transactionAmount  >>  "+transactionAmount);
+	
+	//var jsSha = new jsSHA(merchantId+transactionAmount+JetDirectToken+paymentOrderId);
+	//hash = jsSha.getHash("SHA-512", "HEX");	
+	//var jp_request_hash = hash;
+	$(".k-loading-mask").show();
+	$.ajax({
+		  type: "POST",
+		  url: "processPaymentByTokenId",	
+		  data: { token: token, totalAmount : Math.ceil(transactionAmount)},
+		  success: function( data ) {
+			  console.log(" processPaymentByTokenId ");
+			  if(data != null && data.responseText == "APPROVED"){	
+				  console.log(" Success processPaymentByTokenId >> ");
+				  
+				  var transactionId = data.transId;
+				  console.log(" transactionId  >>  "+transactionId);
+				  proceedtosignup(payId,'',transactionId,"Credit");
+			  }else {
+				  $(".k-loading-mask").hide();
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcErrorSpan").css("display", "block");	
+				  $( "#tcErrorSpan" ).html("The transaction failed..");	
+				  UpdateCapacityAfterPaymentFail();
+			  }
+		  },
+		  error: function( xhr,status,error ){
+			  console.log(" Error processPaymentByTokenId ");
+			  $(".k-loading-mask").hide();
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcErrorSpan").css("display", "block");	
+			  $( "#tcErrorSpan" ).html("There was some error. Please try again later");	
+			  UpdateCapacityAfterPaymentFail();
+		  }
+	});
+}
+
+function processACHpaymentbytoken(payId,token){
+	console.log(" processACHpaymentbytoken  ");
+	
+	orderamount = $("#ordertotal").text();
+	transactionAmount = $.trim(orderamount.replace("$",""));
+	transactionAmount = $.trim(transactionAmount.replace(".00",""));
+	transactionAmount = $.trim(transactionAmount.replace(",",""));
+	
+	console.log(" transactionAmount  >>  "+transactionAmount);
+	console.log(" payId  >>  "+payId);
+	console.log(" token  >>  "+token);
+	
+	//var selectedPaymentMethod = $("#paymentInfoRadio").data("kendoDropDownList").text();
+	//var selectedPaymentMethodArr = selectedPaymentMethod.split(", ");
+	//var checkNumber = selectedPaymentMethodArr[1];
+	//var cardName = selectedPaymentMethodArr[0];
+	//var jp_request_hash = hash;
+	$(".k-loading-mask").show();
+	
+	$.ajax({
+		  type: "POST",
+		  url: "processACHPaymentByTokenId",	
+		  data: { token: token, totalAmount : transactionAmount, checkNumber : '', cardName : ''},
+		  success: function( data ) {				 
+			  if(data != null && data.actCode == "000"){
+				  var transactionId = data.transId; 
+				  console.log(" Success processACHPaymentByTokenId >> ");
+				  console.log(data);
+				  proceedtosignup(payId,'',transactionId,"ACH");
+			 }else{
+				  $(".k-loading-mask").hide();
+				  console.log(" Error processACHPaymentByTokenId ");
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcErrorSpan").css("display", "block");	
+				  $( "#tcErrorSpan" ).html("Error occurred while processing the payment. Please try again later <br />ActionCode :<b>"+data.actCode+"</b> Error message : "+data.responseText);
+				  UpdateCapacityAfterPaymentFail();
+			 }
+		  },
+		  error: function( xhr,status,error ){
+			  $(".k-loading-mask").hide();
+			  $("#statusBlock-payment").css("display", "block");	
+			  $("#tcloginErrorSpan-payment").css("display", "block");	
+			  $( "#tcloginErrorSpan-payment" ).html("There was some error. Please try again later");	
+			  UpdateCapacityAfterPaymentFail();
+		  }
+	});
+}
+
+function proceedtosignup(paymentId, jp_request_hash, orderNumber, paymentMode){
+	console.log("  proceedtosignup  ");
+	$(".k-loading-mask").show();
+	
+	//proceedtosignupforCC(paymentId, jp_request_hash, orderNumber, paymentMode);
+	//return;
+	
+	var sessionData1 = [], contactData1 = [],
+		data = $('form').find('input:not([name="selectedItemSession"])').serialize();
+
+	var cartItems = [];
+	var campActivity = []  ;
+	var campTransport  = [] ;
+	
+	
+	console.log("  proceedtosignup 383 "+cart.contents.length);
+	if(cart.contents.length>0){
+		$.each(cart.contents, function(i,itemDetailsSession) {
+			/*
+			var itemprice = 0;
+			if(itemDetailsSession.contact.isMember)
+				itemprice = (parseFloat(itemDetailsSession.item.memberprice) - parseFloat(itemDetailsSession.item.memberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+			else
+				itemprice = (parseFloat(itemDetailsSession.item.nonmemberprice) - parseFloat(itemDetailsSession.item.nonmemberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+			*/
+			
+			//calculateItemAmountOnSignupRecord();
+			var isChargeAmount = true;
+        	if(itemDetailsSession.item.programType == 'CHILD CARE' && (itemDetailsSession.item.category != 'IN-SERVICE' || itemDetailsSession.item.category != 'After School') && itemDetailsSession.item.hasConfirmedDays == 'false'){
+				isChargeAmount = false;
+			}else if(itemDetailsSession.waitlist){
+				isChargeAmount = false;
+			}
+        	
+        	var itemprice = 0, itempriceOnSignup = 0, itempriceOnInvoice = 0, itempriceOnInvoiceAndPayerForNonRecurring = 0, itempriceOnInvoiceForRecurring = 0;
+			if(isChargeAmount){
+
+				//if(itemDetailsSession.item.programType == 'CHILD CARE'){ // && itemDetailsSession.item.category == 'After School'
+					itemprice = calculateItemAmountOnCart(itemDetailsSession);
+					itempriceOnSignup = calculateItemAmountOnSignupRecord(itemDetailsSession);
+					itempriceOnInvoiceAndPayerForNonRecurring = calculateItemAmountOnInvoiceAndPayerForNonRecurring(itemDetailsSession);
+					itempriceOnInvoiceForRecurring = calculateItemAmountOnInvoiceForRecurring(itemDetailsSession);
+					
+				/*}else{
+					itemprice = (parseFloat(itemDetailsSession.signupPrice * parseInt(itemDetailsSession.noOfTicketsOrPackages)) + parseFloat(itemDetailsSession.joinFee) + parseFloat(itemDetailsSession.setupFee) + parseFloat(itemDetailsSession.registrationPrice) + parseFloat(itemDetailsSession.depositAmount) - parseFloat(itemDetailsSession.autoDiscount) - parseFloat(itemDetailsSession.discount1) - parseFloat(itemDetailsSession.FAamount)) * itemDetailsSession.quantity;
+				}*/
+			}
+			
+			var discount = parseFloat(itemDetailsSession.autoDiscount) + parseFloat(itemDetailsSession.discount1);
+			var fa = parseFloat(itemDetailsSession.FAamount);
+			var signupAmount = itemDetailsSession.signupPrice;
+			var proRatedSignupPrice = itemDetailsSession.proRatedSignupPrice;
+			var setupFee = itemDetailsSession.setupFee;
+			var registrationFee = itemDetailsSession.registrationPrice;
+			var depositAmount = itemDetailsSession.depositAmount;
+			var priceOption = itemDetailsSession.priceOption;
+			var billingOption = itemDetailsSession.billingOptionVal;
+			var noOfTickets = itemDetailsSession.noOfTickets;
+			var joinFee = itemDetailsSession.joinFee;
+			var specialrequest = itemDetailsSession.specialrequest;
+			var gradeLevel = '';
+			if(itemDetailsSession.gradeLevel){
+				gradeLevel = itemDetailsSession.gradeLevel;
+			}
+			
+			var selectedStartDate = '';
+			if(itemDetailsSession.selectedStartDate){
+				selectedStartDate = itemDetailsSession.selectedStartDate;
+			}
+			
+			var FAobj = itemDetailsSession.FAobj;
+			
+			var FApercent = "0";
+			var FAstartDate = " ";
+			var FAendDate = " ";
+			console.log("FA length" +FAobj.length)
+			if(FAobj!=null && FAobj.length>0){
+				FApercent = FAobj[0].FApercent;
+				FAstartDate = convertJsonDate(FAobj[0].FAstartDate);
+				FAendDate = convertJsonDate(FAobj[0].FAendDate);
+			}
+			
+			var hasWLDays = itemDetailsSession.item.hasWLDays;
+			var selectedDays = itemDetailsSession.item.days;
+			selectedDays = selectedDays.replace(new RegExp(",", 'g'), ";");
+			
+			var selectedDaysId = itemDetailsSession.item.dayId;
+			selectedDaysId = selectedDaysId.replace(new RegExp(",", 'g'), ";");
+			
+			var WLDays = " ";
+			if(hasWLDays && WLDays.length>0){
+				 WLDays = itemDetailsSession.item.WLDays;
+			}
+
+			//var d = itemDetailsSession.item.prodId+"__"+itemDetailsSession.contact.contactId+"__"+itemprice+"__"+discount+"__"+fa+"__"+FAobj+"__"+signupAmount+"__"+setupFee+"__"+registrationFee+"__"+depositAmount+"__"+priceOption+"__"+FApercent+"__"+FAstartDate+"__"+FAendDate+"__"+itemDetailsSession.waitlist+"__"+noOfTickets+"__"+specialrequest+"__"+joinFee+"__"+billingOption;
+			
+			var itemDetailId = itemDetailsSession.item.itemDetailsId;
+			
+			var emgContact = $("input[name=emg_user_"+itemDetailId+"]:checked").val();
+			console.log("  emg_user_  ::::  "+$("input[name=emg_user_"+itemDetailId+"]:checked").val());
+			var authContacts = '';
+			  var authVal = $("select#auth_user_"+itemDetailId).val();
+			 // alert(authVal);
+			  if(typeof authVal != 'undefined'){
+				  console.log(" authVal length :: "+authVal.length);
+				  
+				  for(var k=0;k<authVal.length;k++){
+					  authContacts = authContacts +""+ authVal[k]+";";
+				  }
+			  }
+
+			// Please convert this to a map, not good design, at   
+			if (gradeLevel == '' || gradeLevel == null || typeof(gradeLevel) == 'undefined') gradeLevel = "";
+			if (selectedStartDate == '' || selectedStartDate == null || typeof(selectedStartDate) == 'undefined') selectedStartDate = "";
+			
+			var parentSignUpItem = itemDetailsSession.parentSignUpItem ; 
+			if (parentSignUpItem == '' || parentSignUpItem == null || typeof(parentSignUpItem) == 'undefined') parentSignUpItem = "";
+
+			var cartItemsMap = new Object();
+			
+			cartItemsMap.itemDetailId = itemDetailsSession.item.prodId;
+			cartItemsMap.contactId = itemDetailsSession.contact.contactId;
+			cartItemsMap.itemprice = itemprice;
+			cartItemsMap.discount = discount;
+			cartItemsMap.fa = fa;
+			cartItemsMap.FAobj = FAobj;
+			cartItemsMap.signupAmount = signupAmount;
+			cartItemsMap.setupFee = setupFee;
+			cartItemsMap.registrationFee = registrationFee;
+			cartItemsMap.depositAmount = depositAmount;
+			cartItemsMap.priceOption= priceOption;
+			cartItemsMap.FApercent = FApercent;
+			cartItemsMap.FAstartDate = FAstartDate;
+			cartItemsMap.FAendDate = FAendDate;
+			cartItemsMap.waitlist = itemDetailsSession.waitlist;
+			cartItemsMap.noOfTickets = noOfTickets;
+			cartItemsMap.specialrequest = specialrequest;
+			cartItemsMap.joinFee = joinFee;
+			cartItemsMap.programType = itemDetailsSession.item.programType;
+			cartItemsMap.hasWLDays = hasWLDays;
+			cartItemsMap.WLDays = WLDays;
+			cartItemsMap.selectedDays = selectedDays;
+			cartItemsMap.selectedDaysId = selectedDaysId;
+			cartItemsMap.billingOption = billingOption;
+			cartItemsMap.itempriceOnSignup = itempriceOnSignup;
+			cartItemsMap.itempriceOnInvoiceAndPayerForNonRecurring = itempriceOnInvoiceAndPayerForNonRecurring;
+			cartItemsMap.itempriceOnInvoiceForRecurring = itempriceOnInvoiceForRecurring;
+			cartItemsMap.category = itemDetailsSession.item.category;
+			cartItemsMap.gradeLevel = gradeLevel;
+			cartItemsMap.selectedStartDate = selectedStartDate;
+			cartItemsMap.parentSignUpItem = parentSignUpItem;
+			cartItemsMap.activities = getActivitiesyByCIdAndItemId(itemDetailsSession.contact.contactId,itemDetailsSession.item.prodId);
+			cartItemsMap.emgContact = emgContact;
+			cartItemsMap.authContacts = authContacts;
+			cartItemsMap.dueDate = convertDateToMMDDYYYY(itemDetailsSession.dueDate);
+			cartItemsMap.billDate = convertDateToMMDDYYYY(itemDetailsSession.billDate);
+			cartItemsMap.nextBillDate = convertDateToMMDDYYYY(itemDetailsSession.nextBillDate);
+			cartItemsMap.isRecurring = itemDetailsSession.isRecurring;
+			
+			/*var d = itemDetailsSession.item.prodId + "__"
+					+ itemDetailsSession.contact.contactId
+					+ "__" + itemprice + "__" + discount + "__"
+					+ fa + "__" + FAobj + "__" + signupAmount
+					+ "__" + setupFee + "__" + registrationFee
+					+ "__" + depositAmount + "__" + priceOption
+					+ "__" + FApercent + "__" + FAstartDate
+					+ "__" + FAendDate + "__"
+					+ itemDetailsSession.waitlist + "__"
+					+ noOfTickets + "__" + specialrequest
+					+ "__" + joinFee + "__"
+					+ itemDetailsSession.item.programType;
+			d = d + "__" + hasWLDays + "__" + WLDays + "__" + selectedDays + "__" + selectedDaysId;
+			d = d + "__"+billingOption;
+			d = d + "__"+itempriceOnSignup;
+			d = d + "__"+itemDetailsSession.item.category;
+			d = d + "__"+gradeLevel;
+			d = d + "__"+selectedStartDate;
+			d = d + "__"+parentSignUpItem;
+			d = d + "__"+getActivitiesyByCIdAndItemId(itemDetailsSession.contact.contactId,itemDetailsSession.item.prodId);
+			d = d + "__"+emgContact;
+			d = d + "__"+authContacts;*/
+			
+			//d = d +"__"+campActivity+"__"+campTransport ;
+			//d = d.replace(new RegExp("____", "g"), "__ __");
+			//var d2 = d.replace(/____/g, "__ __");
+			
+			//console.log("  cartItemsMap  >>>>>  "+cartItemsMap);
+			
+			var jsonData = JSON.stringify(cartItemsMap);
+			cartItems.push(jsonData);
+			
+		});
+	}
+		/*}else if(cartType == 'Event'){
+			if(event_cart.contents.length>0){
+				$.each(event_cart.contents, function(i,itemDetailsSession) {
+					var itemprice = 0;
+					
+					if(itemDetailsSession.contact.isMember)
+						itemprice = (parseFloat(itemDetailsSession.item.memberprice) - parseFloat(itemDetailsSession.item.memberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+					else
+						itemprice = (parseFloat(itemDetailsSession.item.nonmemberprice) - parseFloat(itemDetailsSession.item.nonmemberdiscount) - parseFloat(itemDetailsSession.discount1)) * itemDetailsSession.quantity;
+					
+					cartItems.push(itemDetailsSession.item.prodId+"__"+itemDetailsSession.contact.contactId+"__"+itemprice);
+				});
+			}
+		}*/
+	//}
+	console.log("  proceedtosignup 432 ");
+	var orderamount = $("#ordertotal").text();
+	var transactionAmount = $.trim(orderamount.replace("$",""));
+	transactionAmount = $.trim(transactionAmount.replace(".00",""));
+	transactionAmount = $.trim(transactionAmount.replace(",",""));
+
+	var bankAccountNumber =  $("#bankAccountNumber").val();
+	var bankRoutingNumber =  $("#bankRoutingNumber").val();
+	var checkNumber =  $("#checkNumber").val();
+	var accountName =  $("#bankAccountName").val();
+	var totalAmt =  transactionAmount;
+	var accountID =  $("#AccountID").val();
+	var nickName =  $("#nickNameACH").val();
+	var accountType =  $("#bankAccountTypeSelect").val();
+	
+	if($("#paymentInfoRadio").val()=='Check'){
+		data += '&paymentMode='+paymentMode+'&jp_request_hash='+jp_request_hash+'&orderNumber='+orderNumber+'&paymentId='+paymentId+'&cartItems='+cartItems.join('_AND_')+'&bankAccountNumber='+bankAccountNumber +'&bankRoutingNumber='+bankRoutingNumber +'&checkNumber='+checkNumber +'&accountName='+accountName+'&totalAmt='+totalAmt;
+	}else{
+		data += '&paymentMode='+paymentMode+'&jp_request_hash='+jp_request_hash+'&orderNumber='+orderNumber+'&paymentId='+paymentId+'&cartItems='+cartItems.join('_AND_');
+	}	
+	data += "&optyId=" + $("optyId").val();
+
+	//var itemActivity = $.sessionStorage.getItem("selectedItemActivity");
+	//data += "&itemActivity=" + itemActivity.join(',');
+
+	
+	//alert(data);
+	console.log(" proceedtosignup 436 ");
+	$.ajax({
+		  type: "POST",
+		  url: $('#signupFrm').attr( "action"),
+		  async:false,
+		  data: data,
+		  success: function( data ) {
+			  console.log(" proceedtosignup 443 ");
+			  //alert(data);
+			 console.log(data);
+			 var data_s = data.split("__");
+			 //console.log(" cartType "+cartType);
+			 console.log(" data_s 0 "+data_s[0]);
+			 console.log(" data_s 1 "+data_s[1]);
+			 console.log(" data_s 2 "+data_s[2]);
+			 if(data_s[0]=="SUCCESS"){
+				 console.log(" proceedtosignup 450 ");
+				  $.sessionStorage.clear();
+				  //if(cartType){
+						//if(cartType == 'Program'){
+							cart.clear();
+						//}else if(cartType == 'Event'){
+						//	event_cart.clear();
+						//}
+				  //}
+				  $(".k-loading-mask").hide();
+				  $("#payment_cart").html("");
+				  //alert(data_s[2]);
+				  if(data_s[2]==false || data_s[2]=='false'){
+					  $("#payment_cart").html('<div id="statusBlock" class="k-block k-success-colored" style="width: 90%;margin: 20px; padding: 10px;">Thank you for enrolling.<br>Your transaction Id is: '+orderNumber+'</div><div style="width: 90%;margin: 20px; padding: 10px;"><br><input id="newsignup" type="button" class="k-button" value="Signup for New Child Care Program" onclick="gotochildcareprogram();"></div>');
+				  }
+				  else{
+					  $("#payment_cart").html('<div id="statusBlock" class="k-block k-success-colored" style="width: 90%;margin: 20px; padding: 10px;">Thank you for enrolling.<br>Your transaction Id is: '+orderNumber+'</div><div style="width: 90%;margin: 20px; padding: 10px;"><br><input id="newsignup" type="button" class="k-button" value="Signup for New Program" onclick="gotosignupprogram();"></div>');
+				  }
+				  $("#searchprogram").html("");
+				  $("#searchprogram").hide();
+				  $("#program_details").css("width", "98%");
+				  $("#searchevent").html("");
+				  $("#searchevent").hide();
+				  $("#event_details").css("width", "98%");
+				  $("#tcErrorSpan").css("display", "none");		
+				  $("#tcErrorSpan" ).html("");	
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");
+			 }
+			 else{
+				  console.log(" 466  ");
+				  $("#tcErrorSpan").css("display", "block");		
+				  $("#tcErrorSpan" ).html("There is some error, please try after some time");	
+				  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");
+				  $(".k-loading-mask").hide();
+			 }
+		  },
+		  error: function( xhr,status,error ){
+			  //alert("1" +status);
+			  console.log(" 476  ");
+			  console.log(" 476  "+xhr);
+			  console.log(" 476  "+status);
+			  console.log(" 476  "+error);
+			  $("#tcErrorSpan").css("display", "block");		
+			  $("#tcErrorSpan" ).html("There is some error, please try after some time");	
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");
+			  $(".k-loading-mask").hide();
+		  }
+	});
+}
+
+function convertDateToMMDDYYYY(date){
+	if(date != null){
+		var dd = date.getDate();
+		var mm = date.getMonth() + 1;
+		var yyyy = date.getFullYear();
+	}else{
+		return null;
+	}
+	return mm+"/"+dd+"/"+yyyy;
+}
+
+function calculateItemAmountOnSignupRecord(current){
+	
+	var itemAmountOnSignupRecord = 0;
+	var sumOfAdditive = 0;
+	var sumOfSubtractive = 0;
+	
+	/*if (current.item.signuppriceArr.length >0) {
+		var pricingRule = getPricingRule(current.contact,current.item);
+		if(pricingRule.additiveOrSubtractive && pricingRule.additiveOrSubtractive == 'Additive'){
+			sumOfAdditive += current.signupPrice;
+		}else if(pricingRule.additiveOrSubtractive && pricingRule.additiveOrSubtractive == 'Subtractive'){
+			sumOfSubtractive += current.signupPrice;
+		}
+	}*/
+	
+	/*if (current.item.registrationpriceArr.length >0) {
+		if(current.item.registrationpriceArr[0].additiveOrSubtractive && current.item.registrationpriceArr[0].additiveOrSubtractive == 'Additive'){
+			sumOfAdditive += parseFloat(current.registrationPrice);
+		}else if(current.item.registrationpriceArr[0].additiveOrSubtractive && current.item.registrationpriceArr[0].additiveOrSubtractive == 'Subtractive'){
+			sumOfSubtractive += parseFloat(current.registrationPrice);
+		}
+	}*/
+	
+		/*if (current.item.depositpriceArr.length >0) {
+			if(current.item.depositpriceArr[0].additiveOrSubtractive && current.item.depositpriceArr[0].additiveOrSubtractive == 'Additive'){
+				sumOfAdditive += parseFloat(current.depositAmount);
+			}else if(current.item.depositpriceArr[0].additiveOrSubtractive && current.item.depositpriceArr[0].additiveOrSubtractive == 'Subtractive'){
+				sumOfSubtractive += parseFloat(current.depositAmount);
+			}
+		}*/
+	
+	/*if (current.setupFee > 0 && current.item.setupfeepriceArr.length >0) {
+		if(current.item.setupfeepriceArr[0].additiveOrSubtractive && current.item.setupfeepriceArr[0].additiveOrSubtractive == 'Additive'){
+			sumOfAdditive += parseFloat(current.setupFee);
+		}else if(current.item.setupfeepriceArr[0].additiveOrSubtractive && current.item.setupfeepriceArr[0].additiveOrSubtractive == 'Subtractive'){
+			sumOfSubtractive += parseFloat(current.setupFee);
+		}
+	}*/
+	
+	itemAmountOnSignupRecord = (parseFloat(current.signupPrice) - sumOfSubtractive - parseFloat(current.autoDiscount) - parseFloat(current.discount1) - parseFloat(current.FAamount)) * current.quantity;
+	return itemAmountOnSignupRecord;
+}
+
+/* Purpose: Calculate Invoice amount for non recurring / Payer Amount for non recurring */
+function calculateItemAmountOnInvoiceAndPayerForNonRecurring(current){
+	
+	var itemAmountOnInvoiceRecord = 0;
+	var sumOfAdditive = 0;
+	var sumOfSubtractive = 0;
+	
+	if (current.item.signuppriceArr.length >0) {
+		var pricingRule = getPricingRule(current.contact,current.item);
+		if(pricingRule.additiveOrSubtractive && pricingRule.additiveOrSubtractive == 'Additive'){
+			sumOfAdditive += current.signupPrice;
+		}else if(pricingRule.additiveOrSubtractive && pricingRule.additiveOrSubtractive == 'Subtractive'){
+			sumOfSubtractive += current.signupPrice;
+		}
+	}
+	
+	if (current.item.registrationpriceArr.length >0) {
+		if(current.item.registrationpriceArr[0].additiveOrSubtractive && current.item.registrationpriceArr[0].additiveOrSubtractive == 'Additive'){
+			sumOfAdditive += parseFloat(current.registrationPrice);
+		}else if(current.item.registrationpriceArr[0].additiveOrSubtractive && current.item.registrationpriceArr[0].additiveOrSubtractive == 'Subtractive'){
+			sumOfSubtractive += parseFloat(current.registrationPrice);
+		}
+	}
+	
+		/*if (current.item.depositpriceArr.length >0) {
+			if(current.item.depositpriceArr[0].additiveOrSubtractive && current.item.depositpriceArr[0].additiveOrSubtractive == 'Additive'){
+				sumOfAdditive += parseFloat(current.depositAmount);
+			}else if(current.item.depositpriceArr[0].additiveOrSubtractive && current.item.depositpriceArr[0].additiveOrSubtractive == 'Subtractive'){
+				sumOfSubtractive += parseFloat(current.depositAmount);
+			}
+		}*/
+	
+	if (current.setupFee > 0 && current.item.setupfeepriceArr.length >0) {
+		if(current.item.setupfeepriceArr[0].additiveOrSubtractive && current.item.setupfeepriceArr[0].additiveOrSubtractive == 'Additive'){
+			sumOfAdditive += parseFloat(current.setupFee);
+		}else if(current.item.setupfeepriceArr[0].additiveOrSubtractive && current.item.setupfeepriceArr[0].additiveOrSubtractive == 'Subtractive'){
+			sumOfSubtractive += parseFloat(current.setupFee);
+		}
+	}
+	
+	itemAmountOnInvoiceRecord = (parseFloat(sumOfAdditive) - parseFloat(sumOfSubtractive) - parseFloat(current.autoDiscount) - parseFloat(current.discount1) - parseFloat(current.FAamount)) * current.quantity;
+	return itemAmountOnInvoiceRecord;
+}
+
+/* Purpose: Calculate Invoice amount for recurring */
+function calculateItemAmountOnInvoiceForRecurring(current){
+	
+	var itemAmountOnInvoiceForRecurring = 0;
+	var sumOfAdditive = 0;
+	var sumOfSubtractive = 0;
+	
+	if (current.item.signuppriceArr.length >0) {
+		var pricingRule = getPricingRule(current.contact,current.item);
+		if(pricingRule.additiveOrSubtractive && pricingRule.additiveOrSubtractive == 'Additive'){
+			if(current.proRatedSignupPriceForFutureSelectedStartDate > 0){
+				sumOfAdditive += current.proRatedSignupPriceForFutureSelectedStartDate;
+			}else{
+				sumOfAdditive += current.signupPrice;
+			}
+			
+		}else if(pricingRule.additiveOrSubtractive && pricingRule.additiveOrSubtractive == 'Subtractive'){
+			if(current.proRatedSignupPriceForFutureSelectedStartDate > 0){
+				sumOfSubtractive += current.proRatedSignupPriceForFutureSelectedStartDate;
+			}else{
+				sumOfSubtractive += current.signupPrice;
+			}
+		}
+	}
+	
+	if (current.item.registrationpriceArr.length >0) {
+		if(current.item.registrationpriceArr[0].additiveOrSubtractive && current.item.registrationpriceArr[0].additiveOrSubtractive == 'Additive'){
+			sumOfAdditive += parseFloat(current.registrationPrice);
+		}else if(current.item.registrationpriceArr[0].additiveOrSubtractive && current.item.registrationpriceArr[0].additiveOrSubtractive == 'Subtractive'){
+			sumOfSubtractive += parseFloat(current.registrationPrice);
+		}
+	}
+	
+		/*if (current.item.depositpriceArr.length >0) {
+			if(current.item.depositpriceArr[0].additiveOrSubtractive && current.item.depositpriceArr[0].additiveOrSubtractive == 'Additive'){
+				sumOfAdditive += parseFloat(current.depositAmount);
+			}else if(current.item.depositpriceArr[0].additiveOrSubtractive && current.item.depositpriceArr[0].additiveOrSubtractive == 'Subtractive'){
+				sumOfSubtractive += parseFloat(current.depositAmount);
+			}
+		}*/
+	
+	if (current.setupFee > 0 && current.item.setupfeepriceArr.length >0) {
+		if(current.item.setupfeepriceArr[0].additiveOrSubtractive && current.item.setupfeepriceArr[0].additiveOrSubtractive == 'Additive'){
+			sumOfAdditive += parseFloat(current.setupFee);
+		}else if(current.item.setupfeepriceArr[0].additiveOrSubtractive && current.item.setupfeepriceArr[0].additiveOrSubtractive == 'Subtractive'){
+			sumOfSubtractive += parseFloat(current.setupFee);
+		}
+	}
+	
+	itemAmountOnInvoiceRecord = (parseFloat(sumOfAdditive) - parseFloat(sumOfSubtractive) - parseFloat(current.autoDiscount) - parseFloat(current.discount1) - parseFloat(current.FAamount)) * current.quantity;
+	return itemAmountOnInvoiceRecord;
+}
+
+/*
+function addcccard (){
+//alert($('#addCardInfoForm').serialize());
+	var payId = 0;
+	$.ajax({
+		  type: "POST",
+		  async:false,
+		  url: "addCardInfo",
+		  data: $('#addCardInfoForm').serialize(),
+		  success: function( data ) {
+			  data_split = data.split("__S__");
+		  	  if(data_split[0]=='SUCCESS'){
+			  	  $("#tcErrorSpan").css("display", "none");		
+				  $("#tcErrorSpan" ).html("");	
+			  	  $("#tcSuccessSpan").css("display", "block");		
+				  $("#tcSuccessSpan" ).html("Card Information Added successfully");
+				  $(".k-loading-mask").hide();
+				  payId = data_split[1];
+			  	  //setTimeout(function(){location.reload();}, 7000);
+			  	  
+		  	  }else if(data == 'NOT_FOUND'){
+		  		  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("Payment Information Not Found.");
+				  $(".k-loading-mask").hide();
+				  
+		  	  }else {
+		  		  $("#tcSuccessSpan").css("display", "none");		
+				  $("#tcSuccessSpan" ).html("");	
+				  $("#tcErrorSpan").css("display", "block");		
+				  $( "#tcErrorSpan" ).html("Please verify you entered information correctly");
+				  $(".k-loading-mask").hide();
+		  	  }
+		  },
+		  error: function( xhr,status,error ){
+			  $("#tcSuccessSpan").css("display", "none");		
+			  $("#tcSuccessSpan" ).html("");	
+			  $("#tcErrorSpan").css("display", "block");		
+			  $( "#tcErrorSpan" ).html("There was some error. Please try again later");
+			  $(".k-loading-mask").hide();
+		  }
+	});
+	
+	return payId;
+}
+*/
+function showErrorMessageForSignup(msg){
+	$("#tcErrorSpan").css("display", "block");		
+	$("#tcErrorSpan").html(msg);
+	$("#tcSuccessSpan").css("display", "none");
+}
+
+function gotosignupprogram(){
+	programRegistrationAction();
+	location.href='program';
+}
+
+function gotochildcareprogram(){
+	childCareRegistrationAction(); 
+	location.href='childcare';
+}
